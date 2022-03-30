@@ -5,7 +5,8 @@ phases:
       CL: [ 0.0, 0.5, 1.0 ]
       CD: [ 0., 0.03, 0.12 ]
     thrust_rate:
-      value: 1.0
+      value: data:propulsion:initial_climb:thrust_rate
+      default: 1.0
     parts:
       - segment: altitude_change
         target:

@@ -70,7 +70,7 @@ class InputDefinition:
     input_unit: Optional[str] = None
 
     #: Default value. Used if value is a variable name.
-    default_value: Optional[Number] = None
+    default_value: Number = np.nan
 
     #: True if the opposite value should be used, if input is defined by a variable.
     use_opposite: bool = False
@@ -111,7 +111,7 @@ class InputDefinition:
         except TypeError:
             return self._value
 
-    def set_value(self, value):
+    def set_value(self, value: Union[Number, str]):
         """
         Sets value or associated variable name.
 
@@ -139,7 +139,7 @@ class InputDefinition:
         input_def = cls(
             parameter_name,
             input_unit=definition_dict.get("unit"),
-            default_value=definition_dict.get("default"),
+            default_value=definition_dict.get("default", np.nan),
         )
         input_def.variable_name = definition_dict.get("variable_name")
         input_def.set_value(definition_dict.get("value"))
@@ -153,11 +153,14 @@ class InputDefinition:
 
         :param inputs:
         """
-        if self.variable_name and self.variable_name in inputs:
-            if self.use_opposite:
-                self.set_value(-inputs[self.variable_name])
+        if self.variable_name:
+            if self.variable_name in inputs:
+                if self.use_opposite:
+                    self.set_value(-inputs[self.variable_name])
+                else:
+                    self.set_value(inputs[self.variable_name])
             else:
-                self.set_value(inputs[self.variable_name])
+                self.set_value(self.default_value)
 
     def get_input_definition(self) -> Optional[Variable]:
         """
@@ -169,7 +172,7 @@ class InputDefinition:
             shape_by_conn = self.variable_name.endswith(":CD") or self.variable_name.endswith(":CL")
             return Variable(
                 name=self.variable_name,
-                val=np.nan,
+                val=self.default_value,
                 shape_by_conn=shape_by_conn,
                 units=self.input_unit,
                 desc="Input defined by the mission.",

@@ -57,6 +57,16 @@ def test_input_definition_units():
     assert inp3.get_value() == 3600.0
 
 
+def test_initialization():
+    mission_builder = MissionBuilder(
+        pth.join(DATA_FOLDER_PATH, "mission.yml"),
+        propulsion=Mock(IPropulsion),
+        reference_area=100.0,
+    )
+
+    assert mission_builder._structure == _get_expected_structure()
+
+
 def test_inputs():
     mission_builder = MissionBuilder(
         pth.join(DATA_FOLDER_PATH, "mission.yml"),
@@ -79,6 +89,7 @@ def test_inputs():
         Variable("data:mission:sizing:main:range", val=np.nan, units="m"),
         Variable("data:mission:sizing:taxi_in:duration", val=np.nan, units="s"),
         Variable("data:mission:sizing:taxi_in:thrust_rate", val=np.nan),
+        Variable("data:propulsion:initial_climb:thrust_rate", val=1.0),
         Variable("data:propulsion:climb:thrust_rate", val=np.nan),
         Variable("data:propulsion:descent:thrust_rate", val=np.nan),
     }
@@ -95,6 +106,7 @@ def test_inputs():
         Variable("data:mission:operational:taxi_in:thrust_rate", val=np.nan),
         Variable("data:mission:operational:taxi_out:duration", val=np.nan, units="s"),
         Variable("data:mission:operational:taxi_out:thrust_rate", val=np.nan),
+        Variable("data:propulsion:initial_climb:thrust_rate", val=1.0),
         Variable("data:propulsion:climb:thrust_rate", val=np.nan),
         Variable("data:propulsion:descent:thrust_rate", val=np.nan),
     }
@@ -147,6 +159,8 @@ def test_build():
     initial_climb = main_route.flight_sequence[0]
     assert isinstance(initial_climb, FlightSequence)
     assert len(initial_climb.flight_sequence) == 3
+    # Here we test that phase parameter is distributed among segments AND that default
+    # value of variable is used.
     assert_allclose([segment.thrust_rate for segment in initial_climb.flight_sequence], 1.0)
 
     climb1 = initial_climb.flight_sequence[0]
@@ -246,14 +260,8 @@ def test_get_reserve():
     assert_allclose(mission_builder.get_reserve(flight_points, "sizing"), 25000 * 0.03)
 
 
-def test_initialization():
-    mission_builder = MissionBuilder(
-        pth.join(DATA_FOLDER_PATH, "mission.yml"),
-        propulsion=Mock(IPropulsion),
-        reference_area=100.0,
-    )
-
-    assert mission_builder._structure == OrderedDict(
+def _get_expected_structure():
+    return OrderedDict(
         [
             (
                 "sizing",
@@ -264,7 +272,7 @@ def test_initialization():
                             InputDefinition(
                                 parameter_name="mission",
                                 input_unit=None,
-                                default_value=None,
+                                default_value=np.nan,
                                 use_opposite=False,
                                 is_relative=False,
                                 _value="sizing",
@@ -281,7 +289,7 @@ def test_initialization():
                                             InputDefinition(
                                                 parameter_name="route",
                                                 input_unit=None,
-                                                default_value=None,
+                                                default_value=np.nan,
                                                 use_opposite=False,
                                                 is_relative=False,
                                                 _value="main",
@@ -293,7 +301,7 @@ def test_initialization():
                                             InputDefinition(
                                                 parameter_name="range",
                                                 input_unit="m",
-                                                default_value=None,
+                                                default_value=np.nan,
                                                 use_opposite=False,
                                                 is_relative=False,
                                                 _value=None,
@@ -305,7 +313,7 @@ def test_initialization():
                                             InputDefinition(
                                                 parameter_name="distance_accuracy",
                                                 input_unit="m",
-                                                default_value=None,
+                                                default_value=np.nan,
                                                 use_opposite=False,
                                                 is_relative=False,
                                                 _value=500,
@@ -322,7 +330,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="phase",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value="initial_climb",
@@ -334,7 +342,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="engine_setting",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value="takeoff",
@@ -347,7 +355,7 @@ def test_initialization():
                                                                 "CD": InputDefinition(
                                                                     parameter_name="CD",
                                                                     input_unit=None,
-                                                                    default_value=None,
+                                                                    default_value=np.nan,
                                                                     use_opposite=False,
                                                                     is_relative=False,
                                                                     _value=[0.0, 0.03, 0.12],
@@ -356,7 +364,7 @@ def test_initialization():
                                                                 "CL": InputDefinition(
                                                                     parameter_name="CL",
                                                                     input_unit=None,
-                                                                    default_value=None,
+                                                                    default_value=np.nan,
                                                                     use_opposite=False,
                                                                     is_relative=False,
                                                                     _value=[0.0, 0.5, 1.0],
@@ -369,11 +377,11 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="thrust_rate",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=1.0,
                                                                 use_opposite=False,
                                                                 is_relative=False,
-                                                                _value=1.0,
-                                                                _variable_name=None,
+                                                                _value=None,
+                                                                _variable_name="data:propulsion:initial_climb:thrust_rate",
                                                             ),
                                                         ),
                                                         (
@@ -383,7 +391,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="altitude_change",
@@ -393,7 +401,7 @@ def test_initialization():
                                                                         "altitude": InputDefinition(
                                                                             parameter_name="altitude",
                                                                             input_unit="ft",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=400.0,
@@ -402,7 +410,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="m/s",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value="constant",
@@ -418,7 +426,7 @@ def test_initialization():
                                                                                 InputDefinition(
                                                                                     parameter_name="CL",
                                                                                     input_unit=None,
-                                                                                    default_value=None,
+                                                                                    default_value=np.nan,
                                                                                     use_opposite=False,
                                                                                     is_relative=False,
                                                                                     _value=None,
@@ -430,7 +438,7 @@ def test_initialization():
                                                                                 InputDefinition(
                                                                                     parameter_name="CD",
                                                                                     input_unit=None,
-                                                                                    default_value=None,
+                                                                                    default_value=np.nan,
                                                                                     use_opposite=False,
                                                                                     is_relative=False,
                                                                                     _value=None,
@@ -442,7 +450,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="speed_change",
@@ -452,7 +460,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="kn",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=250,
@@ -465,7 +473,7 @@ def test_initialization():
                                                                         "CD": InputDefinition(
                                                                             parameter_name="CD",
                                                                             input_unit=None,
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=None,
@@ -474,7 +482,7 @@ def test_initialization():
                                                                         "CL": InputDefinition(
                                                                             parameter_name="CL",
                                                                             input_unit=None,
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=None,
@@ -484,7 +492,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="altitude_change",
@@ -494,7 +502,7 @@ def test_initialization():
                                                                         "altitude": InputDefinition(
                                                                             parameter_name="altitude",
                                                                             input_unit="ft",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=1500.0,
@@ -503,7 +511,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="m/s",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value="constant",
@@ -522,7 +530,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="phase",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value="climb",
@@ -534,7 +542,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="engine_setting",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value="climb",
@@ -550,7 +558,7 @@ def test_initialization():
                                                                         InputDefinition(
                                                                             parameter_name="CL",
                                                                             input_unit=None,
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=None,
@@ -562,7 +570,7 @@ def test_initialization():
                                                                         InputDefinition(
                                                                             parameter_name="CD",
                                                                             input_unit=None,
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=None,
@@ -577,7 +585,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="thrust_rate",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value=None,
@@ -591,7 +599,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="altitude_change",
@@ -601,7 +609,7 @@ def test_initialization():
                                                                         "altitude": InputDefinition(
                                                                             parameter_name="altitude",
                                                                             input_unit="ft",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=10000.0,
@@ -610,7 +618,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="m/s",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value="constant",
@@ -622,7 +630,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="speed_change",
@@ -632,7 +640,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="kn",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=300.0,
@@ -644,7 +652,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="altitude_change",
@@ -654,7 +662,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="m/s",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value="constant",
@@ -663,7 +671,7 @@ def test_initialization():
                                                                         "mach": InputDefinition(
                                                                             parameter_name="mach",
                                                                             input_unit=None,
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=None,
@@ -675,7 +683,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="altitude_change",
@@ -685,7 +693,7 @@ def test_initialization():
                                                                         "altitude": InputDefinition(
                                                                             parameter_name="altitude",
                                                                             input_unit="m",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=-20000.0,
@@ -694,7 +702,7 @@ def test_initialization():
                                                                         "mach": InputDefinition(
                                                                             parameter_name="mach",
                                                                             input_unit=None,
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value="constant",
@@ -714,7 +722,7 @@ def test_initialization():
                                                 "engine_setting": InputDefinition(
                                                     parameter_name="engine_setting",
                                                     input_unit=None,
-                                                    default_value=None,
+                                                    default_value=np.nan,
                                                     use_opposite=False,
                                                     is_relative=False,
                                                     _value="cruise",
@@ -727,7 +735,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="CL",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value=None,
@@ -739,7 +747,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="CD",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value=None,
@@ -751,7 +759,7 @@ def test_initialization():
                                                 "segment": InputDefinition(
                                                     parameter_name="segment",
                                                     input_unit=None,
-                                                    default_value=None,
+                                                    default_value=np.nan,
                                                     use_opposite=False,
                                                     is_relative=False,
                                                     _value="optimal_cruise",
@@ -769,7 +777,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="phase",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value="descent",
@@ -781,7 +789,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="engine_setting",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value="idle",
@@ -797,7 +805,7 @@ def test_initialization():
                                                                         InputDefinition(
                                                                             parameter_name="CL",
                                                                             input_unit=None,
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=None,
@@ -809,7 +817,7 @@ def test_initialization():
                                                                         InputDefinition(
                                                                             parameter_name="CD",
                                                                             input_unit=None,
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=None,
@@ -824,7 +832,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="thrust_rate",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value=None,
@@ -838,7 +846,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="altitude_change",
@@ -848,7 +856,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="kn",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=300,
@@ -857,7 +865,7 @@ def test_initialization():
                                                                         "mach": InputDefinition(
                                                                             parameter_name="mach",
                                                                             input_unit=None,
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value="constant",
@@ -869,7 +877,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="altitude_change",
@@ -879,7 +887,7 @@ def test_initialization():
                                                                         "altitude": InputDefinition(
                                                                             parameter_name="altitude",
                                                                             input_unit="ft",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=10000.0,
@@ -888,7 +896,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="m/s",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value="constant",
@@ -900,7 +908,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="speed_change",
@@ -910,7 +918,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="kn",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=250.0,
@@ -922,7 +930,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="altitude_change",
@@ -932,7 +940,7 @@ def test_initialization():
                                                                         "altitude": InputDefinition(
                                                                             parameter_name="altitude",
                                                                             input_unit="m",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=None,
@@ -941,7 +949,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="m/s",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value="constant",
@@ -964,7 +972,7 @@ def test_initialization():
                                             InputDefinition(
                                                 parameter_name="route",
                                                 input_unit=None,
-                                                default_value=None,
+                                                default_value=np.nan,
                                                 use_opposite=False,
                                                 is_relative=False,
                                                 _value="diversion",
@@ -976,7 +984,7 @@ def test_initialization():
                                             InputDefinition(
                                                 parameter_name="range",
                                                 input_unit="m",
-                                                default_value=None,
+                                                default_value=np.nan,
                                                 use_opposite=False,
                                                 is_relative=False,
                                                 _value=None,
@@ -988,7 +996,7 @@ def test_initialization():
                                             InputDefinition(
                                                 parameter_name="distance_accuracy",
                                                 input_unit="km",
-                                                default_value=None,
+                                                default_value=np.nan,
                                                 use_opposite=False,
                                                 is_relative=False,
                                                 _value=0.1,
@@ -1005,7 +1013,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="phase",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value="diversion_climb",
@@ -1017,7 +1025,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="engine_setting",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value="climb",
@@ -1033,7 +1041,7 @@ def test_initialization():
                                                                         InputDefinition(
                                                                             parameter_name="CL",
                                                                             input_unit=None,
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=None,
@@ -1045,7 +1053,7 @@ def test_initialization():
                                                                         InputDefinition(
                                                                             parameter_name="CD",
                                                                             input_unit=None,
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=None,
@@ -1060,7 +1068,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="thrust_rate",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value=0.93,
@@ -1072,7 +1080,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="time_step",
                                                                 input_unit="s",
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value=5.0,
@@ -1086,7 +1094,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="altitude_change",
@@ -1096,7 +1104,7 @@ def test_initialization():
                                                                         "altitude": InputDefinition(
                                                                             parameter_name="altitude",
                                                                             input_unit="ft",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=10000.0,
@@ -1105,7 +1113,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="m/s",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value="constant",
@@ -1117,7 +1125,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="speed_change",
@@ -1127,7 +1135,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="kn",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=300.0,
@@ -1139,7 +1147,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="altitude_change",
@@ -1149,7 +1157,7 @@ def test_initialization():
                                                                         "altitude": InputDefinition(
                                                                             parameter_name="altitude",
                                                                             input_unit="ft",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=22000.0,
@@ -1158,7 +1166,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="m/s",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value="constant",
@@ -1178,7 +1186,7 @@ def test_initialization():
                                                 "engine_setting": InputDefinition(
                                                     parameter_name="engine_setting",
                                                     input_unit=None,
-                                                    default_value=None,
+                                                    default_value=np.nan,
                                                     use_opposite=False,
                                                     is_relative=False,
                                                     _value="cruise",
@@ -1191,7 +1199,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="CL",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value=None,
@@ -1203,7 +1211,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="CD",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value=None,
@@ -1215,7 +1223,7 @@ def test_initialization():
                                                 "segment": InputDefinition(
                                                     parameter_name="segment",
                                                     input_unit=None,
-                                                    default_value=None,
+                                                    default_value=np.nan,
                                                     use_opposite=False,
                                                     is_relative=False,
                                                     _value="cruise",
@@ -1233,7 +1241,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="phase",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value="descent",
@@ -1245,7 +1253,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="engine_setting",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value="idle",
@@ -1261,7 +1269,7 @@ def test_initialization():
                                                                         InputDefinition(
                                                                             parameter_name="CL",
                                                                             input_unit=None,
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=None,
@@ -1273,7 +1281,7 @@ def test_initialization():
                                                                         InputDefinition(
                                                                             parameter_name="CD",
                                                                             input_unit=None,
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=None,
@@ -1288,7 +1296,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="thrust_rate",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value=None,
@@ -1302,7 +1310,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="altitude_change",
@@ -1312,7 +1320,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="kn",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=300,
@@ -1321,7 +1329,7 @@ def test_initialization():
                                                                         "mach": InputDefinition(
                                                                             parameter_name="mach",
                                                                             input_unit=None,
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value="constant",
@@ -1333,7 +1341,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="altitude_change",
@@ -1343,7 +1351,7 @@ def test_initialization():
                                                                         "altitude": InputDefinition(
                                                                             parameter_name="altitude",
                                                                             input_unit="ft",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=10000.0,
@@ -1352,7 +1360,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="m/s",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value="constant",
@@ -1364,7 +1372,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="speed_change",
@@ -1374,7 +1382,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="kn",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=250.0,
@@ -1386,7 +1394,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="altitude_change",
@@ -1396,7 +1404,7 @@ def test_initialization():
                                                                         "altitude": InputDefinition(
                                                                             parameter_name="altitude",
                                                                             input_unit="m",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=None,
@@ -1405,7 +1413,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="m/s",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value="constant",
@@ -1428,7 +1436,7 @@ def test_initialization():
                                             InputDefinition(
                                                 parameter_name="phase",
                                                 input_unit=None,
-                                                default_value=None,
+                                                default_value=np.nan,
                                                 use_opposite=False,
                                                 is_relative=False,
                                                 _value="holding",
@@ -1446,7 +1454,7 @@ def test_initialization():
                                                                 InputDefinition(
                                                                     parameter_name="CL",
                                                                     input_unit=None,
-                                                                    default_value=None,
+                                                                    default_value=np.nan,
                                                                     use_opposite=False,
                                                                     is_relative=False,
                                                                     _value=None,
@@ -1458,7 +1466,7 @@ def test_initialization():
                                                                 InputDefinition(
                                                                     parameter_name="CD",
                                                                     input_unit=None,
-                                                                    default_value=None,
+                                                                    default_value=np.nan,
                                                                     use_opposite=False,
                                                                     is_relative=False,
                                                                     _value=None,
@@ -1470,7 +1478,7 @@ def test_initialization():
                                                     "segment": InputDefinition(
                                                         parameter_name="segment",
                                                         input_unit=None,
-                                                        default_value=None,
+                                                        default_value=np.nan,
                                                         use_opposite=False,
                                                         is_relative=False,
                                                         _value="holding",
@@ -1480,7 +1488,7 @@ def test_initialization():
                                                         "delta_time": InputDefinition(
                                                             parameter_name="time",
                                                             input_unit="s",
-                                                            default_value=None,
+                                                            default_value=np.nan,
                                                             use_opposite=False,
                                                             is_relative=True,
                                                             _value=None,
@@ -1499,7 +1507,7 @@ def test_initialization():
                                             InputDefinition(
                                                 parameter_name="phase",
                                                 input_unit=None,
-                                                default_value=None,
+                                                default_value=np.nan,
                                                 use_opposite=False,
                                                 is_relative=False,
                                                 _value="taxi_in",
@@ -1511,7 +1519,7 @@ def test_initialization():
                                             InputDefinition(
                                                 parameter_name="thrust_rate",
                                                 input_unit=None,
-                                                default_value=None,
+                                                default_value=np.nan,
                                                 use_opposite=False,
                                                 is_relative=False,
                                                 _value=None,
@@ -1525,7 +1533,7 @@ def test_initialization():
                                                     "segment": InputDefinition(
                                                         parameter_name="segment",
                                                         input_unit=None,
-                                                        default_value=None,
+                                                        default_value=np.nan,
                                                         use_opposite=False,
                                                         is_relative=False,
                                                         _value="taxi",
@@ -1535,7 +1543,7 @@ def test_initialization():
                                                         "delta_time": InputDefinition(
                                                             parameter_name="time",
                                                             input_unit="s",
-                                                            default_value=None,
+                                                            default_value=np.nan,
                                                             use_opposite=False,
                                                             is_relative=True,
                                                             _value=None,
@@ -1545,7 +1553,7 @@ def test_initialization():
                                                     "true_airspeed": InputDefinition(
                                                         parameter_name="true_airspeed",
                                                         input_unit="m/s",
-                                                        default_value=None,
+                                                        default_value=np.nan,
                                                         use_opposite=False,
                                                         is_relative=False,
                                                         _value=0.0,
@@ -1561,7 +1569,7 @@ def test_initialization():
                                         "multiplier": InputDefinition(
                                             parameter_name="multiplier",
                                             input_unit=None,
-                                            default_value=None,
+                                            default_value=np.nan,
                                             use_opposite=False,
                                             is_relative=False,
                                             _value=0.03,
@@ -1570,7 +1578,7 @@ def test_initialization():
                                         "ref": InputDefinition(
                                             parameter_name="ref",
                                             input_unit=None,
-                                            default_value=None,
+                                            default_value=np.nan,
                                             use_opposite=False,
                                             is_relative=False,
                                             _value="main",
@@ -1592,7 +1600,7 @@ def test_initialization():
                             InputDefinition(
                                 parameter_name="mission",
                                 input_unit=None,
-                                default_value=None,
+                                default_value=np.nan,
                                 use_opposite=False,
                                 is_relative=False,
                                 _value="operational",
@@ -1609,7 +1617,7 @@ def test_initialization():
                                             InputDefinition(
                                                 parameter_name="phase",
                                                 input_unit=None,
-                                                default_value=None,
+                                                default_value=np.nan,
                                                 use_opposite=False,
                                                 is_relative=False,
                                                 _value="taxi_out",
@@ -1623,7 +1631,7 @@ def test_initialization():
                                                     "segment": InputDefinition(
                                                         parameter_name="segment",
                                                         input_unit=None,
-                                                        default_value=None,
+                                                        default_value=np.nan,
                                                         use_opposite=False,
                                                         is_relative=False,
                                                         _value="taxi",
@@ -1633,7 +1641,7 @@ def test_initialization():
                                                         "delta_time": InputDefinition(
                                                             parameter_name="time",
                                                             input_unit="s",
-                                                            default_value=None,
+                                                            default_value=np.nan,
                                                             use_opposite=False,
                                                             is_relative=True,
                                                             _value=None,
@@ -1643,7 +1651,7 @@ def test_initialization():
                                                     "thrust_rate": InputDefinition(
                                                         parameter_name="thrust_rate",
                                                         input_unit=None,
-                                                        default_value=None,
+                                                        default_value=np.nan,
                                                         use_opposite=False,
                                                         is_relative=False,
                                                         _value=None,
@@ -1652,7 +1660,7 @@ def test_initialization():
                                                     "true_airspeed": InputDefinition(
                                                         parameter_name="true_airspeed",
                                                         input_unit="m/s",
-                                                        default_value=None,
+                                                        default_value=np.nan,
                                                         use_opposite=False,
                                                         is_relative=False,
                                                         _value=0.0,
@@ -1670,7 +1678,7 @@ def test_initialization():
                                             InputDefinition(
                                                 parameter_name="route",
                                                 input_unit=None,
-                                                default_value=None,
+                                                default_value=np.nan,
                                                 use_opposite=False,
                                                 is_relative=False,
                                                 _value="main",
@@ -1682,7 +1690,7 @@ def test_initialization():
                                             InputDefinition(
                                                 parameter_name="range",
                                                 input_unit="m",
-                                                default_value=None,
+                                                default_value=np.nan,
                                                 use_opposite=False,
                                                 is_relative=False,
                                                 _value=None,
@@ -1694,7 +1702,7 @@ def test_initialization():
                                             InputDefinition(
                                                 parameter_name="distance_accuracy",
                                                 input_unit="m",
-                                                default_value=None,
+                                                default_value=np.nan,
                                                 use_opposite=False,
                                                 is_relative=False,
                                                 _value=500,
@@ -1711,7 +1719,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="phase",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value="initial_climb",
@@ -1723,7 +1731,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="engine_setting",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value="takeoff",
@@ -1736,7 +1744,7 @@ def test_initialization():
                                                                 "CD": InputDefinition(
                                                                     parameter_name="CD",
                                                                     input_unit=None,
-                                                                    default_value=None,
+                                                                    default_value=np.nan,
                                                                     use_opposite=False,
                                                                     is_relative=False,
                                                                     _value=[0.0, 0.03, 0.12],
@@ -1745,7 +1753,7 @@ def test_initialization():
                                                                 "CL": InputDefinition(
                                                                     parameter_name="CL",
                                                                     input_unit=None,
-                                                                    default_value=None,
+                                                                    default_value=np.nan,
                                                                     use_opposite=False,
                                                                     is_relative=False,
                                                                     _value=[0.0, 0.5, 1.0],
@@ -1758,11 +1766,11 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="thrust_rate",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=1.0,
                                                                 use_opposite=False,
                                                                 is_relative=False,
-                                                                _value=1.0,
-                                                                _variable_name=None,
+                                                                _value=None,
+                                                                _variable_name="data:propulsion:initial_climb:thrust_rate",
                                                             ),
                                                         ),
                                                         (
@@ -1772,7 +1780,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="altitude_change",
@@ -1782,7 +1790,7 @@ def test_initialization():
                                                                         "altitude": InputDefinition(
                                                                             parameter_name="altitude",
                                                                             input_unit="ft",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=400.0,
@@ -1791,7 +1799,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="m/s",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value="constant",
@@ -1807,7 +1815,7 @@ def test_initialization():
                                                                                 InputDefinition(
                                                                                     parameter_name="CL",
                                                                                     input_unit=None,
-                                                                                    default_value=None,
+                                                                                    default_value=np.nan,
                                                                                     use_opposite=False,
                                                                                     is_relative=False,
                                                                                     _value=None,
@@ -1819,7 +1827,7 @@ def test_initialization():
                                                                                 InputDefinition(
                                                                                     parameter_name="CD",
                                                                                     input_unit=None,
-                                                                                    default_value=None,
+                                                                                    default_value=np.nan,
                                                                                     use_opposite=False,
                                                                                     is_relative=False,
                                                                                     _value=None,
@@ -1831,7 +1839,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="speed_change",
@@ -1841,7 +1849,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="kn",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=250,
@@ -1854,7 +1862,7 @@ def test_initialization():
                                                                         "CD": InputDefinition(
                                                                             parameter_name="CD",
                                                                             input_unit=None,
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=None,
@@ -1863,7 +1871,7 @@ def test_initialization():
                                                                         "CL": InputDefinition(
                                                                             parameter_name="CL",
                                                                             input_unit=None,
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=None,
@@ -1873,7 +1881,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="altitude_change",
@@ -1883,7 +1891,7 @@ def test_initialization():
                                                                         "altitude": InputDefinition(
                                                                             parameter_name="altitude",
                                                                             input_unit="ft",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=1500.0,
@@ -1892,7 +1900,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="m/s",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value="constant",
@@ -1911,7 +1919,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="phase",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value="climb",
@@ -1923,7 +1931,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="engine_setting",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value="climb",
@@ -1939,7 +1947,7 @@ def test_initialization():
                                                                         InputDefinition(
                                                                             parameter_name="CL",
                                                                             input_unit=None,
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=None,
@@ -1951,7 +1959,7 @@ def test_initialization():
                                                                         InputDefinition(
                                                                             parameter_name="CD",
                                                                             input_unit=None,
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=None,
@@ -1966,7 +1974,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="thrust_rate",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value=None,
@@ -1980,7 +1988,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="altitude_change",
@@ -1990,7 +1998,7 @@ def test_initialization():
                                                                         "altitude": InputDefinition(
                                                                             parameter_name="altitude",
                                                                             input_unit="ft",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=10000.0,
@@ -1999,7 +2007,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="m/s",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value="constant",
@@ -2011,7 +2019,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="speed_change",
@@ -2021,7 +2029,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="kn",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=300.0,
@@ -2033,7 +2041,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="altitude_change",
@@ -2043,7 +2051,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="m/s",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value="constant",
@@ -2052,7 +2060,7 @@ def test_initialization():
                                                                         "mach": InputDefinition(
                                                                             parameter_name="mach",
                                                                             input_unit=None,
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=None,
@@ -2064,7 +2072,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="altitude_change",
@@ -2074,7 +2082,7 @@ def test_initialization():
                                                                         "altitude": InputDefinition(
                                                                             parameter_name="altitude",
                                                                             input_unit="m",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=-20000.0,
@@ -2083,7 +2091,7 @@ def test_initialization():
                                                                         "mach": InputDefinition(
                                                                             parameter_name="mach",
                                                                             input_unit=None,
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value="constant",
@@ -2103,7 +2111,7 @@ def test_initialization():
                                                 "engine_setting": InputDefinition(
                                                     parameter_name="engine_setting",
                                                     input_unit=None,
-                                                    default_value=None,
+                                                    default_value=np.nan,
                                                     use_opposite=False,
                                                     is_relative=False,
                                                     _value="cruise",
@@ -2116,7 +2124,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="CL",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value=None,
@@ -2128,7 +2136,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="CD",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value=None,
@@ -2140,7 +2148,7 @@ def test_initialization():
                                                 "segment": InputDefinition(
                                                     parameter_name="segment",
                                                     input_unit=None,
-                                                    default_value=None,
+                                                    default_value=np.nan,
                                                     use_opposite=False,
                                                     is_relative=False,
                                                     _value="optimal_cruise",
@@ -2158,7 +2166,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="phase",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value="descent",
@@ -2170,7 +2178,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="engine_setting",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value="idle",
@@ -2186,7 +2194,7 @@ def test_initialization():
                                                                         InputDefinition(
                                                                             parameter_name="CL",
                                                                             input_unit=None,
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=None,
@@ -2198,7 +2206,7 @@ def test_initialization():
                                                                         InputDefinition(
                                                                             parameter_name="CD",
                                                                             input_unit=None,
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=None,
@@ -2213,7 +2221,7 @@ def test_initialization():
                                                             InputDefinition(
                                                                 parameter_name="thrust_rate",
                                                                 input_unit=None,
-                                                                default_value=None,
+                                                                default_value=np.nan,
                                                                 use_opposite=False,
                                                                 is_relative=False,
                                                                 _value=None,
@@ -2227,7 +2235,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="altitude_change",
@@ -2237,7 +2245,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="kn",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=300,
@@ -2246,7 +2254,7 @@ def test_initialization():
                                                                         "mach": InputDefinition(
                                                                             parameter_name="mach",
                                                                             input_unit=None,
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value="constant",
@@ -2258,7 +2266,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="altitude_change",
@@ -2268,7 +2276,7 @@ def test_initialization():
                                                                         "altitude": InputDefinition(
                                                                             parameter_name="altitude",
                                                                             input_unit="ft",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=10000.0,
@@ -2277,7 +2285,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="m/s",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value="constant",
@@ -2289,7 +2297,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="speed_change",
@@ -2299,7 +2307,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="kn",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=250.0,
@@ -2311,7 +2319,7 @@ def test_initialization():
                                                                     "segment": InputDefinition(
                                                                         parameter_name="segment",
                                                                         input_unit=None,
-                                                                        default_value=None,
+                                                                        default_value=np.nan,
                                                                         use_opposite=False,
                                                                         is_relative=False,
                                                                         _value="altitude_change",
@@ -2321,7 +2329,7 @@ def test_initialization():
                                                                         "altitude": InputDefinition(
                                                                             parameter_name="altitude",
                                                                             input_unit="m",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value=None,
@@ -2330,7 +2338,7 @@ def test_initialization():
                                                                         "equivalent_airspeed": InputDefinition(
                                                                             parameter_name="equivalent_airspeed",
                                                                             input_unit="m/s",
-                                                                            default_value=None,
+                                                                            default_value=np.nan,
                                                                             use_opposite=False,
                                                                             is_relative=False,
                                                                             _value="constant",
@@ -2353,7 +2361,7 @@ def test_initialization():
                                             InputDefinition(
                                                 parameter_name="phase",
                                                 input_unit=None,
-                                                default_value=None,
+                                                default_value=np.nan,
                                                 use_opposite=False,
                                                 is_relative=False,
                                                 _value="taxi_in",
@@ -2365,7 +2373,7 @@ def test_initialization():
                                             InputDefinition(
                                                 parameter_name="thrust_rate",
                                                 input_unit=None,
-                                                default_value=None,
+                                                default_value=np.nan,
                                                 use_opposite=False,
                                                 is_relative=False,
                                                 _value=None,
@@ -2379,7 +2387,7 @@ def test_initialization():
                                                     "segment": InputDefinition(
                                                         parameter_name="segment",
                                                         input_unit=None,
-                                                        default_value=None,
+                                                        default_value=np.nan,
                                                         use_opposite=False,
                                                         is_relative=False,
                                                         _value="taxi",
@@ -2389,7 +2397,7 @@ def test_initialization():
                                                         "delta_time": InputDefinition(
                                                             parameter_name="time",
                                                             input_unit="s",
-                                                            default_value=None,
+                                                            default_value=np.nan,
                                                             use_opposite=False,
                                                             is_relative=True,
                                                             _value=None,
@@ -2399,7 +2407,7 @@ def test_initialization():
                                                     "true_airspeed": InputDefinition(
                                                         parameter_name="true_airspeed",
                                                         input_unit="m/s",
-                                                        default_value=None,
+                                                        default_value=np.nan,
                                                         use_opposite=False,
                                                         is_relative=False,
                                                         _value=0.0,
@@ -2415,7 +2423,7 @@ def test_initialization():
                                         "multiplier": InputDefinition(
                                             parameter_name="multiplier",
                                             input_unit=None,
-                                            default_value=None,
+                                            default_value=np.nan,
                                             use_opposite=False,
                                             is_relative=False,
                                             _value=0.02,
@@ -2424,7 +2432,7 @@ def test_initialization():
                                         "ref": InputDefinition(
                                             parameter_name="ref",
                                             input_unit=None,
-                                            default_value=None,
+                                            default_value=np.nan,
                                             use_opposite=False,
                                             is_relative=False,
                                             _value="main",
