@@ -321,11 +321,8 @@
               "type": "string"
             },
             "multiplier": {
-              "type": [
-                "number",
-                "string"
-              ]
-            }
+          "$ref": "#/definitions/parameter_value_without_unit"
+        }
           }
         }
       }
