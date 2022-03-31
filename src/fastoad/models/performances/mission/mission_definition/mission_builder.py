@@ -18,7 +18,7 @@ from collections import OrderedDict
 from copy import deepcopy
 from dataclasses import dataclass, field
 from numbers import Number
-from typing import Dict, List, Mapping, Optional, Union
+from typing import Dict, Iterable, List, Mapping, Optional, Union
 
 import numpy as np
 import openmdao.api as om
@@ -59,34 +59,40 @@ class InputDefinition:
     """
     Class for managing definition of mission inputs.
 
-    It stores value
-
+    It stores and processes input definition from mission files:
+        - provides values to be used for mission computation (management of units and variables)
+        - provides information for OpenMDAO declaration
     """
 
     #: The parameter this input is defined for.
     parameter_name: str
 
-    #: Unit used by self.set_value().
+    #: Value, matching `input_unit`. At instantiation, it can also be the variable name.
+    input_value: Optional[Union[Number, Iterable, str]]
+
+    #: Unit used for self.input_value.
     input_unit: Optional[str] = None
 
     #: Default value. Used if value is a variable name.
     default_value: Number = np.nan
 
-    #: True if the opposite value should be used, if input is defined by a variable.
-    use_opposite: bool = False
-
     #: True if variable is defined as relative.
     is_relative: bool = False
 
-    #: Unit used by self.get_value(). Automatically determined from self.parameter_name,
+    #: Prefix used when generating variable name because "~" was used in variable name input.
+    prefix: str = ""
+
+    #: Unit used for self.value. Automatically determined from self.parameter_name,
     #: mainly from unit definition for FlightPoint class.
     output_unit: Optional[str] = field(default=None, init=False, repr=False)
 
-    _value: Optional[Union[str, Number]] = field(default=None)
+    #: True if the opposite value should be used, if input is defined by a variable.
+    _use_opposite: bool = field(default=False, init=False, repr=True)
 
-    _variable_name: Optional[str] = field(default=None)
+    _variable_name: Optional[str] = field(default=None, init=False, repr=True)
 
     def __post_init__(self):
+
         if self.parameter_name.startswith("delta_"):
             self.is_relative = True
             self.parameter_name = self.parameter_name[6:]
@@ -100,67 +106,69 @@ class InputDefinition:
         if self.input_unit is None:
             self.input_unit = self.output_unit
 
-    def get_value(self):
+        # This is done at end of initialization, because self.variable_name property may need
+        # data as self.parameter_name, self.prefix...
+        if isinstance(self.input_value, str) and (
+            ":" in self.input_value or self.input_value.startswith(("~", "-~"))
+        ):
+            self.variable_name = self.input_value
+            self.input_value = None
+
+    @property
+    def value(self):
         """
 
-        :return: Value of variable in DEFAULT unit (unit used by mission calculation), or None
-                 if input is a variable and set_variable_input() has NOT been called.
+        :return: Value of variable in DEFAULT unit (unit used by mission calculation),
+                 or None if input is a variable and set_variable_input() has NOT been called,
+                 or the unchanged value if it is not a number.
         """
         try:
-            return om.convert_units(self._value, self.input_unit, self.output_unit)
+            return om.convert_units(self.input_value, self.input_unit, self.output_unit)
         except TypeError:
-            return self._value
-
-    def set_value(self, value: Union[Number, str]):
-        """
-        Sets value or associated variable name.
-
-        If a numerical value is provided, it is expected to match self.input_unit.
-
-        :param value:
-        """
-        if isinstance(value, str) and ":" in value:
-            self.variable_name = value
-            self._value = None
-        else:
-            self._value = value
+            return self.input_value
 
     @classmethod
-    def from_dict(cls, parameter_name, definition_dict: dict):
+    def from_dict(cls, parameter_name, definition_dict: dict, prefix=None):
         """
         Instantiates InputDefinition from definition_dict.
 
-        :param parameter_name:
-        :param definition_dict:
+        definition_dict["value"] is used as `input_value` in instantiation. It can be an actual
+        value or a variable name.
+
+        :param parameter_name: used if definition_dict["value"] == "~" (or "-~")
+        :param definition_dict: dict with keys ("value", "unit", "default"). "unit" and "default"
+                                are optional.
+        :param prefix: used if "~" is in definition_dict["value"]
         """
         if "value" not in definition_dict:
             return None
 
         input_def = cls(
             parameter_name,
+            definition_dict["value"],
             input_unit=definition_dict.get("unit"),
             default_value=definition_dict.get("default", np.nan),
+            prefix=prefix,
         )
-        input_def.variable_name = definition_dict.get("variable_name")
-        input_def.set_value(definition_dict.get("value"))
         return input_def
 
     def set_variable_value(self, inputs: Mapping):
         """
         Sets numerical value from OpenMDAO inputs.
 
-        OpenMDAO value is assumed to be provided with unit self.unit.
+        OpenMDAO value is assumed to be provided with unit self.input_unit.
 
         :param inputs:
         """
         if self.variable_name:
-            if self.variable_name in inputs:
-                if self.use_opposite:
-                    self.set_value(-inputs[self.variable_name])
-                else:
-                    self.set_value(inputs[self.variable_name])
+            # Note: OpenMDAO `inputs` object has no `get()` method, so we need to do this:
+            value = (
+                inputs[self.variable_name] if self.variable_name in inputs else self.default_value
+            )
+            if self._use_opposite:
+                self.input_value = -value
             else:
-                self.set_value(self.default_value)
+                self.input_value = value
 
     def get_input_definition(self) -> Optional[Variable]:
         """
@@ -187,14 +195,25 @@ class InputDefinition:
     @variable_name.setter
     def variable_name(self, var_name: Optional[str]):
         if isinstance(var_name, str):
-            if var_name.startswith("-"):
-                self.use_opposite = True
-            self._variable_name = var_name.strip("- ")
+            self._use_opposite = var_name.startswith("-")
+            var_name = var_name.strip("- ")
+
+            if var_name.startswith("~"):
+                # If value is "~", the parameter name in the mission file is used as suffix.
+                # Otherwise, the string after the "~" is used as suffix.
+                suffix = var_name.strip("~")
+                replacement = self.prefix + ":"
+                if suffix == "":
+                    replacement += self.parameter_name
+
+                var_name = var_name.replace("~", replacement)
+
+            self._variable_name = var_name
         else:
             self._variable_name = None
 
     def __str__(self):
-        return str(self._value)
+        return str(self.value)
 
 
 class MissionBuilder:
@@ -208,7 +227,7 @@ class MissionBuilder:
         """
         This class builds and computes a mission from a provided definition.
 
-        :param mission_definition: as file path or MissionDefinition instance
+        :param mission_definition: a file path or MissionDefinition instance
         :param propulsion: if not provided, the property :attr:`propulsion` must be
                            set before calling :meth:`build`
         :param reference_area: if not provided, the property :attr:`reference_area` must be
@@ -235,6 +254,7 @@ class MissionBuilder:
             self._definition = mission_definition
 
         self._structure = self._build_structure()
+
         for mission_name, mission_structure in self._structure.items():
             self._input_definitions[mission_name] = []
             self._parse_inputs(mission_name, mission_structure)
@@ -303,8 +323,8 @@ class MissionBuilder:
 
         last_part_spec = self.definition[MISSION_DEFINITION_TAG][mission_name][PARTS_TAG][-1]
         if RESERVE_TAG in last_part_spec:
-            ref_name = last_part_spec[RESERVE_TAG]["ref"].get_value()
-            multiplier = last_part_spec[RESERVE_TAG]["multiplier"].get_value()
+            ref_name = last_part_spec[RESERVE_TAG]["ref"].value
+            multiplier = last_part_spec[RESERVE_TAG]["multiplier"].value
 
             route_points = flight_points.loc[
                 flight_points.name.str.contains("%s:%s" % (mission_name, ref_name))
@@ -469,7 +489,7 @@ class MissionBuilder:
             phase.name = list(part_structure.values())[0]
 
         if "range" in route_structure:
-            flight_range = route_structure["range"].get_value()
+            flight_range = route_structure["range"].value
             route = RangedRoute(
                 climb_phases, cruise_phase, descent_phases, flight_distance=flight_range
             )
@@ -478,7 +498,7 @@ class MissionBuilder:
             route.flight_sequence.extend(climb_phases)
 
         if "distance_accuracy" in route_structure:
-            route.distance_accuracy = route_structure["distance_accuracy"].get_value()
+            route.distance_accuracy = route_structure["distance_accuracy"].value
 
         return route
 
@@ -519,11 +539,11 @@ class MissionBuilder:
         part_kwargs.update(self._base_kwargs)
         for key, value in part_kwargs.items():
             if key == "polar":
-                value = Polar(value["CL"].get_value(), value["CD"].get_value())
+                value = Polar(value["CL"].value, value["CD"].value)
             elif key == "target":
                 if not isinstance(value, FlightPoint):
                     target_parameters = {
-                        param.parameter_name: param.get_value() for param in value.values()
+                        param.parameter_name: param.value for param in value.values()
                     }
                     relative_fields = [
                         param.parameter_name for param in value.values() if param.is_relative
@@ -545,7 +565,7 @@ class MissionBuilder:
     def _replace_input_definitions_by_values(part_kwargs):
         for key, input_def in part_kwargs.items():
             if isinstance(input_def, InputDefinition):
-                part_kwargs[key] = input_def.get_value()
+                part_kwargs[key] = input_def.value
 
     def _propagate_name(self, part: IFlightPart, new_name: str):
         """
@@ -580,13 +600,17 @@ class MissionBuilder:
 
                 if isinstance(value, list):
                     try:
-                        _ = np.array(value) + 1
+                        _ = np.asarray(value) + 1
                         is_numeric_list = True
                     except TypeError:
                         is_numeric_list = False
 
                 if isinstance(value, dict) and "value" in value.keys():
-                    definition[key] = InputDefinition.from_dict(key, definition[key])
+                    if value["value"] is None:
+                        value["value"] = "~"
+                    definition[key] = InputDefinition.from_dict(
+                        key, definition[key], prefix=prefix + prefix_addition
+                    )
                     self._input_definitions[mission_name].append(definition[key])
                 elif not isinstance(value, dict) and (
                     not isinstance(value, list) or is_numeric_list
@@ -595,18 +619,7 @@ class MissionBuilder:
                         # "~" alone is interpreted as "null" by the yaml parser
                         # We get back to "~" to make the next step easier.
                         value = "~"
-                    if isinstance(value, str) and value.startswith(("~", "-~")):
-                        # If value is "~", the parameter name in the mission file is used as suffix.
-                        # Otherwise, the string after the "~" is used as suffix.
-                        suffix = value.strip("-~")
-                        replacement = prefix + prefix_addition + ":"
-                        if suffix == "":
-                            replacement += key
-
-                        value = value.replace("~", replacement)
-
-                    definition[key] = InputDefinition(key)
-                    definition[key].set_value(value)
+                    definition[key] = InputDefinition(key, value, prefix=prefix + prefix_addition)
                     self._input_definitions[mission_name].append(definition[key])
                 else:
                     self._parse_inputs(
