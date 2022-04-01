@@ -43,7 +43,7 @@ PHASE_DEFINITIONS_TAG = "phases"
 POLAR_TAG = "polar"
 
 
-class MissionDefinition(dict):
+class MissionDefinition(OrderedDict):
     def __init__(self, file_path: Union[str, PathLike] = None):
         """
         Class for reading a mission definition from a YAML file.
