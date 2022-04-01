@@ -10,7 +10,7 @@ on:
     # The branches below must be a subset of the branches above
     branches: [ master ]
   schedule:
-    - cron: '12 5 * * *'
+    - cron: '12 5 * * 1-5'
 
 
 jobs:
@@ -35,6 +35,11 @@ jobs:
           pip install git+https://github.com/OpenMDAO/OpenMDAO.git
           pip install .
           pip install pytest pytest-cov nbval
+        shell: bash
+
+      - name: List installed packages
+        # List packages and versions for postmortem analysis.
+        run: pip list
         shell: bash
 
       - name: Unit tests
