@@ -14,16 +14,16 @@
 
 import sys
 
-if sys.version_info < (3, 10):
-    from importlib_metadata import distribution, PackageNotFoundError
+if sys.version_info >= (3, 10):
+    import importlib.metadata as importlib_metadata
 else:
-    from importlib.metadata import distribution, PackageNotFoundError
+    import importlib_metadata
 
 try:
     # Change here if project is renamed and does not equal the package name
     dist_name = "FAST-OAD-core"
-    __version__ = distribution(dist_name).version
-except PackageNotFoundError:
+    __version__ = importlib_metadata.distribution(dist_name).version
+except importlib_metadata.PackageNotFoundError:
     __version__ = "unknown"
 finally:
-    del distribution
+    del importlib_metadata
