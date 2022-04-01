@@ -10,7 +10,7 @@ on:
     # The branches below must be a subset of the branches above
     branches: [ master ]
   schedule:
-    - cron: '12 5 * * 1-5'
+    - cron: '12 5 * * *'
 
 
 jobs:
@@ -39,7 +39,7 @@ jobs:
 
       - name: List installed packages
         # List packages and versions for postmortem analysis.
-        run: pip list
+        run: pip list --format=freeze
         shell: bash
 
       - name: Unit tests
