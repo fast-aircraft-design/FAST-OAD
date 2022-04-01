@@ -83,12 +83,13 @@ class MissionDefinition(OrderedDict):
         """
         Does a second pass validation of file content.
 
-        Also applies this feature:
-                - polar: foo:bar
-            is translated to:
-                - polar:
-                    CL: foo:bar:CL
-                    CD: foo:bar:CD
+        Also applies thess features:
+            * None values are set back to "~".
+            *       - polar: foo:bar
+                is translated to:
+                    - polar:
+                        CL: foo:bar:CL
+                        CD: foo:bar:CD
 
         Errors are raised if file content is incorrect.
 
@@ -125,6 +126,8 @@ class MissionDefinition(OrderedDict):
                 # reserve definition should be the last part
                 Ensure(part_type).equals(RESERVE_TAG)
 
+        cls._convert_none_values(content)
+
     @staticmethod
     def _process_polar_definition(struct: dict):
         """
@@ -135,3 +138,18 @@ class MissionDefinition(OrderedDict):
             polar_def = struct[POLAR_TAG]
             if isinstance(polar_def, str) and ":" in polar_def:
                 struct[POLAR_TAG] = OrderedDict({"CL": polar_def + ":CL", "CD": polar_def + ":CD"})
+
+    @classmethod
+    def _convert_none_values(cls, struct: Union[dict, list]):
+        """
+        Recursively transforms any None value in struct to "~"
+        """
+        if isinstance(struct, dict):
+            for key, value in struct.items():
+                if value is None:
+                    struct[key] = "~"
+                else:
+                    cls._convert_none_values(value)
+        elif isinstance(struct, list):
+            for item in struct:
+                cls._convert_none_values(item)
