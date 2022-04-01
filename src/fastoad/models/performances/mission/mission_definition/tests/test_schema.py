@@ -544,7 +544,7 @@ def _get_expected_dict():
                                             OrderedDict(
                                                 [
                                                     ("segment", "taxi"),
-                                                    ("thrust_rate", None),
+                                                    ("thrust_rate", "~"),
                                                     ("true_airspeed", 0.0),
                                                     (
                                                         "target",
@@ -561,7 +561,7 @@ def _get_expected_dict():
                             "taxi_in",
                             OrderedDict(
                                 [
-                                    ("thrust_rate", None),
+                                    ("thrust_rate", "~"),
                                     (
                                         "parts",
                                         [
@@ -591,7 +591,7 @@ def _get_expected_dict():
                             "main",
                             OrderedDict(
                                 [
-                                    ("range", None),
+                                    ("range", "~"),
                                     ("distance_accuracy", 500),
                                     (
                                         "climb_parts",
@@ -632,7 +632,7 @@ def _get_expected_dict():
                             "diversion",
                             OrderedDict(
                                 [
-                                    ("range", None),
+                                    ("range", "~"),
                                     (
                                         "distance_accuracy",
                                         OrderedDict([("value", 0.1), ("unit", "km")]),

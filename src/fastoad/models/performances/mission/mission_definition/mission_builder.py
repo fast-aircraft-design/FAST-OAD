@@ -606,8 +606,6 @@ class MissionBuilder:
                         is_numeric_list = False
 
                 if isinstance(value, dict) and "value" in value.keys():
-                    if value["value"] is None:
-                        value["value"] = "~"
                     definition[key] = InputDefinition.from_dict(
                         key, definition[key], prefix=prefix + prefix_addition
                     )
@@ -615,10 +613,6 @@ class MissionBuilder:
                 elif not isinstance(value, dict) and (
                     not isinstance(value, list) or is_numeric_list
                 ):
-                    if value is None:
-                        # "~" alone is interpreted as "null" by the yaml parser
-                        # We get back to "~" to make the next step easier.
-                        value = "~"
                     definition[key] = InputDefinition(key, value, prefix=prefix + prefix_addition)
                     self._input_definitions[mission_name].append(definition[key])
                 else:
