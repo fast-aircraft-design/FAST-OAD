@@ -46,7 +46,7 @@ Examples:
 hard-coded value with no unit
 *****************************
 
-When no unit is provided, the value can be set directly. As for :ref:`setting-values-value-unit`,
+When no unit is provided, the value can be "inlined". As for :ref:`setting-values-value-unit`,
 if the concerned parameter is not dimensionless, SI units will be assumed.
 
 Example:
@@ -64,14 +64,52 @@ Example:
 OpenMDAO variable
 *****************
 
-It is possible to provide a variable name instead of a hard-coded value. Then the
-value and unit will be set by some FAST-OAD module, or by the input file.
+It is possible to provide a variable name instead of a hard-coded value. This variable will be
+declared as input of the OpenMDAO component.
+
+Unit can be specified. In that case, it will be the unit for OpenMDAO declaration and usage. In any
+case, the unit for computation will be the internal unit of the segments (SI units). Conversion
+will be done when needed.
+
+Also, a default value can be specified, which will be the declared default value for OpenMDAO. It
+has to be consistent with declared unit. If no default value is specified, numpy.nan will be
+used in OpenMDAO declaration.
+
 
 Example:
 
 .. code-block:: yaml
 
+    altitude:
+        value: data:dummy_category:some_altitude
+        unit: ft
+        default: 35000.0
+
+As for numeric values, the definition can be inlined if no unit or default value has to be declared:
+
+.. code-block:: yaml
+
     altitude: data:dummy_category:some_altitude
+
+
+Using opposite value
+*********************
+
+Sometimes, it can be convenient to use the opposite value of a variable. It can be done by simply
+putting the minus sign "-" just before the variable:
+
+.. code-block:: yaml
+
+    delta_mass:
+        value: -data:dummy_category:consumed_fuel
+        unit: kg
+        default: 125.0
+
+.. important::
+
+    The specified default value is for the declared variable, even when the minus sign is used.
+    Therefore, if default value is set as negative and the variable is preceded by a minus sign,
+    the actually used value (if the default value is kept) will be positive.
 
 
 .. _setting-values-contextual-variable-name:
