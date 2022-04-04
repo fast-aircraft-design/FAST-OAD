@@ -80,12 +80,6 @@ class MissionWrapper(MissionBuilder):
             desc=f'Starting altitude for mission "{mission_name}"',
         )
         component.add_input(
-            f"{self._variable_prefix}:start:mass",
-            0.0,
-            units="kg",
-            desc=f'Starting mass for mission "{mission_name}"',
-        )
-        component.add_input(
             f"{self._variable_prefix}:start:true_airspeed",
             0.0,
             units="m/s",
@@ -118,7 +112,6 @@ class MissionWrapper(MissionBuilder):
 
         start_flight_point = FlightPoint(
             altitude=inputs[f"{self._variable_prefix}:start:altitude"],
-            mass=inputs[f"{self._variable_prefix}:start:mass"],
             true_airspeed=inputs[f"{self._variable_prefix}:start:true_airspeed"],
         )
         flight_points = mission.compute_from(start_flight_point)
