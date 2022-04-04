@@ -2,7 +2,7 @@
 Schema for mission definition files.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -43,7 +43,7 @@ PHASE_DEFINITIONS_TAG = "phases"
 POLAR_TAG = "polar"
 
 
-class MissionDefinition(dict):
+class MissionDefinition(OrderedDict):
     def __init__(self, file_path: Union[str, PathLike] = None):
         """
         Class for reading a mission definition from a YAML file.
@@ -66,7 +66,7 @@ class MissionDefinition(dict):
         :param file_path: path of YAML file to read.
         """
         self.clear()
-        yaml = YAML()
+        yaml = YAML(typ="safe", pure=True)
 
         with open(file_path) as yaml_file:
             data = yaml.load(yaml_file)
@@ -83,12 +83,13 @@ class MissionDefinition(dict):
         """
         Does a second pass validation of file content.
 
-        Also applies this feature:
-                - polar: foo:bar
-            is translated to:
-                - polar:
-                    CL: foo:bar:CL
-                    CD: foo:bar:CD
+        Also applies thess features:
+            * None values are set back to "~".
+            *       - polar: foo:bar
+                is translated to:
+                    - polar:
+                        CL: foo:bar:CL
+                        CD: foo:bar:CD
 
         Errors are raised if file content is incorrect.
 
@@ -125,6 +126,8 @@ class MissionDefinition(dict):
                 # reserve definition should be the last part
                 Ensure(part_type).equals(RESERVE_TAG)
 
+        cls._convert_none_values(content)
+
     @staticmethod
     def _process_polar_definition(struct: dict):
         """
@@ -135,3 +138,18 @@ class MissionDefinition(dict):
             polar_def = struct[POLAR_TAG]
             if isinstance(polar_def, str) and ":" in polar_def:
                 struct[POLAR_TAG] = OrderedDict({"CL": polar_def + ":CL", "CD": polar_def + ":CD"})
+
+    @classmethod
+    def _convert_none_values(cls, struct: Union[dict, list]):
+        """
+        Recursively transforms any None value in struct to "~"
+        """
+        if isinstance(struct, dict):
+            for key, value in struct.items():
+                if value is None:
+                    struct[key] = "~"
+                else:
+                    cls._convert_none_values(value)
+        elif isinstance(struct, list):
+            for item in struct:
+                cls._convert_none_values(item)

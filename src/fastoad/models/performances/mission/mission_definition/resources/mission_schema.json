@@ -94,8 +94,11 @@
               "properties": {
                 "value": {
                   "$ref": "#/definitions/inline_number_value"
+                },
+                 "default": {
+                  "type": "number"
                 }
-              },
+             },
               "required": [
                 "value"
               ],
@@ -122,6 +125,9 @@
                 },
                 "unit": {
                   "type": "string"
+                },
+                "default": {
+                  "type": "number"
                 }
               },
               "required": [
@@ -315,11 +321,8 @@
               "type": "string"
             },
             "multiplier": {
-              "type": [
-                "number",
-                "string"
-              ]
-            }
+          "$ref": "#/definitions/parameter_value_without_unit"
+        }
           }
         }
       }
