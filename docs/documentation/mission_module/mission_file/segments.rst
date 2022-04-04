@@ -231,6 +231,74 @@ Python documentation: :class:`~fastoad.models.performances.mission.segments.taxi
       time:
         value: 300              # taxi for 300 seconds (5 minutes)
 
+:code:`transition` segment
+==========================
+
+A :code:`transition` segment is intended to "fill the gaps" when some flight part is not available
+for computation or is needed to be assessed without spending CPU time.
+
+It can be used in various ways:
+
+.. contents::
+   :local:
+   :depth: 1
+
+Target definition
+-----------------
+The most simple way is specifying a target with absolute and/or relative parameters. The second and
+last point of the flight segment will simply uses these values.
+
+**Example:**
+
+.. code-block:: yaml
+
+    segment: transition # Rough simulation of a takeoff
+    target:
+      delta_time: 60            # 60 seconds after start point
+      delta_altitude:           # 35 ft above start point
+        value: 35
+        unit: ft
+      delta_mass: -80.0         # 80kg lost from start point
+      true_airspeed: 85         # 85m/s at end of segment.
+
+Usage of a mass ratio
+---------------------
+
+As seen above, it is possible to force a mass evolution of a certain amount by specifying
+:code:`delta_mass`.
+
+It is also possible to specify a mass ratio. This can be done outside the target, as a segment
+parameter.
+
+**Example:**
+
+    segment: transition # Rough climb simulation
+    mass_ratio: 0.97            # Aircraft end mass will be 97% of total start mass
+    target:
+      altitude: 10000.
+      mach: 0.78
+      delta_ground_distance:    # 250 km after start point.
+        value: 250
+        unit: km
+
+Reserve mass ratio
+------------------
+
+Another segment parameter is :code:`reserve_mass_ratio`. When using this parameter, another flight
+point is added to computed segment, where the aircraft mass is decreased by a fraction of the mass
+that remains at the end of the segment (including this reserve consumption).
+
+Typically, it will be used as last segment to compute a reserve based on the Zero-Fuel-Weight mass.
+
+**Example:**
+
+    segment: transition # Rough reserve simulation
+    reserve_mass_ratio: 0.06
+    target:
+      altitude: 0.
+      mach: 0.
+
+
 
 .. _segment-target:
 
