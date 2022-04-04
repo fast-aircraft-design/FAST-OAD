@@ -22,7 +22,13 @@ The performance module, as any FAST-OAD module, is linked to the MDA process by 
 of its input and output variables. But unlike other modules, the list of inputs and outputs is not
 fixed, and widely depends on the mission definition.
 
-The input variables are defined in the mission file, as described :ref:`here <setting-values-variable-name>`.
+The input variables are defined in the mission file, as described
+:ref:`here <setting-values-variable-name>`. Additionally, 2 input variables are created to define the
+starting point of the mission (both are zero by default):
+
+ - :code:`data:mission:<mission_name>:start:altitude`
+ - :code:`data:mission:<mission_name>:start:true_airspeed`
+
 
 Most outputs variables are automatically decided by the structure of the mission. Distance, duration
 and fuel burn are provided as outputs for each part of the mission.
