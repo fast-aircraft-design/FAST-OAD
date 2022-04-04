@@ -257,7 +257,7 @@ class MissionBuilder:
 
         for mission_name, mission_structure in self._structure.items():
             self._input_definitions[mission_name] = []
-            self._parse_inputs(mission_name, mission_structure)
+            self._structure[mission_name] = self._parse_inputs(mission_name, mission_structure)
 
     @property
     def propulsion(self) -> IPropulsion:
@@ -586,39 +586,52 @@ class MissionBuilder:
                     subpart.name = part.name
 
     def _parse_inputs(self, mission_name, definition, parent=None, prefix=None):
+        """
+        Returns the `definition` structure where all inputs (string/numeric values, numeric lists,
+        dicts with a "value key"), have been converted to an InputDefinition instance.
+
+        Created InputDefinition instances are stored in self._input_definitions[mission_name].
+
+        :param mission_name:
+        :param definition:
+        :param parent:
+        :param prefix:
+        :return: amended definition
+        """
         if prefix is None:
             prefix = "data:mission"
 
+        is_numeric_list = True
+        try:
+            _ = np.asarray(definition) + 1
+        except TypeError:
+            is_numeric_list = False
+
         if isinstance(definition, dict):
-            for key, value in definition.items():
+            if "value" in definition.keys():
+                input_definition = InputDefinition.from_dict(parent, definition, prefix=prefix)
+                self._input_definitions[mission_name].append(input_definition)
+                return input_definition
+            else:
                 name = (
                     str(definition.get("mission", ""))
                     + str(definition.get("route", ""))
                     + str(definition.get("phase", ""))
                 )
-                prefix_addition = ":" + name if name else ""
+                prefix += ":" + name if name else ""
 
-                if isinstance(value, list):
-                    try:
-                        _ = np.asarray(value) + 1
-                        is_numeric_list = True
-                    except TypeError:
-                        is_numeric_list = False
-
-                if isinstance(value, dict) and "value" in value.keys():
-                    definition[key] = InputDefinition.from_dict(
-                        key, definition[key], prefix=prefix + prefix_addition
+                for key, value in definition.items():
+                    definition[key] = self._parse_inputs(
+                        mission_name, value, parent=key, prefix=prefix
                     )
-                    self._input_definitions[mission_name].append(definition[key])
-                elif not isinstance(value, dict) and (
-                    not isinstance(value, list) or is_numeric_list
-                ):
-                    definition[key] = InputDefinition(key, value, prefix=prefix + prefix_addition)
-                    self._input_definitions[mission_name].append(definition[key])
-                else:
-                    self._parse_inputs(
-                        mission_name, value, parent=key, prefix=prefix + prefix_addition
-                    )
-        elif isinstance(definition, list):
-            for value in definition:
-                self._parse_inputs(mission_name, value, parent=parent, prefix=prefix)
+                return definition
+        elif isinstance(definition, list) and not is_numeric_list:
+            for i, value in enumerate(definition):
+                definition[i] = self._parse_inputs(
+                    mission_name, value, parent=parent, prefix=prefix
+                )
+            return definition
+        else:
+            input_definition = InputDefinition(parent, definition, prefix=prefix)
+            self._input_definitions[mission_name].append(input_definition)
+            return input_definition
