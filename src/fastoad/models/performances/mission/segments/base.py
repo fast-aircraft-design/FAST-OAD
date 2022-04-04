@@ -81,6 +81,10 @@ class FlightSegment(IFlightPart):
 
     As a dataclass, attributes can be set at instantiation.
 
+    This class implements the time computation. For this computation to work, subclasses must
+    implement abstract methods :meth:`get_get_distance_to_target`,
+    :meth:`get_gamma_and_acceleration` and :meth:`compute_propulsion`.
+
     When subclassing this class, the attribute "mission_file_keyword" can be set,
     so that the segment can be used in mission file definition with this keyword:
 
