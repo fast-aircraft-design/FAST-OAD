@@ -43,8 +43,8 @@ Available segments are:
 .. _segment-speed_change:
 
 
-:code:`speed_change`
-====================
+:code:`speed_change` segment
+============================
 
 A :code:`speed_change` segment simulates an acceleration or deceleration flight part, at constant
 altitude and thrust rate. It ends when the target speed (mach, true_airspeed or
@@ -52,7 +52,7 @@ equivalent_airspeed) is reached.
 
 Python documentation: :mod:`~fastoad.models.performances.mission.segments.speed_change.SpeedChangeSegment`
 
-Example:
+**Example:**
 
 .. code-block:: yaml
 
@@ -69,8 +69,8 @@ Example:
 
 .. _segment-altitude_change:
 
-:code:`altitude_change`
-=======================
+:code:`altitude_change` segment
+===============================
 
 An :code:`altitude_change` segment simulates a climb or descent flight part at constant thrust rate.
 Typically, it ends when the target altitude is reached.
@@ -80,7 +80,7 @@ Mach 0.8 while keeping equivalent_airspeed constant).
 
 Python documentation: :class:`~fastoad.models.performances.mission.segments.altitude_change.AltitudeChangeSegment`
 
-Examples:
+**Examples:**
 
 .. code-block:: yaml
 
@@ -119,8 +119,8 @@ Examples:
 
 .. _segment-cruise:
 
-:code:`cruise`
-==============
+:code:`cruise` segment
+======================
 
 A :code:`cruise` segment simulates a flight part at constant speed and altitude, and regulated
 thrust rate (drag is compensated).
@@ -137,7 +137,7 @@ prepending climb, if any).
 
 Python documentation: :class:`~fastoad.models.performances.mission.segments.cruise.ClimbAndCruiseSegment`
 
-Examples:
+**Examples:**
 
 .. code-block:: yaml
 
@@ -163,8 +163,8 @@ Examples:
 
 .. _segment-optimal_cruise:
 
-:code:`optimal_cruise`
-======================
+:code:`optimal_cruise` segment
+==============================
 
 An :code:`optimal_cruise` segment simulates a cruise climb, i.e. a cruise where the aircraft
 climbs gradually to keep being at altitude of maximum lift/drag ratio.
@@ -178,6 +178,8 @@ Such segment will be implemented in the future.*
 
 Python documentation: :class:`~fastoad.models.performances.mission.segments.cruise.OptimalCruiseSegment`
 
+**Example:**
+
 .. code-block:: yaml
 
     segment: optimal_cruise
@@ -189,8 +191,8 @@ Python documentation: :class:`~fastoad.models.performances.mission.segments.crui
         unit: NM
 
 
-:code:`holding`
-===============
+:code:`holding` segment
+=======================
 
 A :code:`holding` segment simulates a flight part at constant speed and altitude, and regulated
 thrust rate (drag is compensated). It ends when
@@ -198,7 +200,7 @@ the target time is covered.
 
 Python documentation: :class:`~fastoad.models.performances.mission.segments.hold.HoldSegment`
 
-Example:
+**Example:**
 
 .. code-block:: yaml
 
@@ -211,15 +213,15 @@ Example:
         unit: min
 
 
-:code:`taxi`
-============
+:code:`taxi` segment
+====================
 
 A :code:`taxi` segment simulates the mission parts between gate and takeoff or landing, at constant
 thrust rate. It ends when the target time is covered.
 
 Python documentation: :class:`~fastoad.models.performances.mission.segments.taxi.TaxiSegment`
 
-Example:
+**Example:**
 
 .. code-block:: yaml
 
@@ -247,6 +249,38 @@ a variable name, but it can also be a string. The most common string value is :c
 that tells the parameter value should be kept constant and equal to the start value.
 In any case, please refer to the documentation of the flight segment.
 
+Absolute and relative values
+============================
+
+Amost all target parameters are considered as absolute values, i.e. the target is considered
+reached if the named parameter gets equal to the provided value.
+
+They can also be specified as relative values, meaning that the target is considered reached if the
+named parameter gets equal to the provided value **added** to start value. To do so, the parameter
+name will be preceded by :code:`delta_`.
+
+**Examples:**
+
+.. code-block:: yaml
+
+    target:
+      altitude: # Target will be reached at 35000 ft.
+        value: 35000
+        unit: ft
+
+.. code-block:: yaml
+
+    target:
+      delta_altitude: # Target will be 5000 ft above the start altitude of the segment.
+        value: 5000
+        unit: ft
+
+.. important::
+    There are 2 exceptions : :code:`ground_distance` and :code:`time` are always considered as
+    relative values. Therefore, :code:`delta_ground_distance` and :code:`delta_time` will have the
+    same effect.
+
+
 
 .. _segment-special-parameters:
 
@@ -267,8 +301,8 @@ There are some special parameters that are detailed below.
 
 .. _segment-parameter-engine_setting:
 
-:code:`engine_setting`
-======================
+:code:`engine_setting` parameter
+================================
 
 Expected value for :code:`engine_setting` are :code:`takeoff`, :code:`climb`
 , :code:`cruise` or :code:`idle`
@@ -282,8 +316,8 @@ If another propulsion model is used, this parameter may become irrelevant, and t
 
 .. _segment-parameter-polar:
 
-:code:`polar`
-=============
+:code:`polar` parameter(s)
+==========================
 
 The aerodynamic polar defines the relation between lift and drag coefficients
 (respectively CL and CD).
