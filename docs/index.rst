@@ -18,10 +18,13 @@ If you want to add your own models, please check out :ref:`add-modules`.
 
 .. note::
 
-    Since version 1.0, FAST-OAD aims at providing a stable core software to propose a
-    safe base for development of custom models.
+    Since version 1.3, FAST-OAD has its core features in
+    `FAST-OAD-core <https://pypi.org/project/fast-oad-core/>`_ package, while the legacy
+    models are in `FAST-OAD-CS25 <https://pypi.org/project/fast-oad-cs25/>`_ package.
 
-    Models in FAST-OAD are still a work in progress.
+    Yet, installing FAST-OAD keeps installing both FAST-OAD-core and FAST-OAD-CS25.
+
+    Models in FAST-OAD-CS25 are still a work in progress.
 
 
 
