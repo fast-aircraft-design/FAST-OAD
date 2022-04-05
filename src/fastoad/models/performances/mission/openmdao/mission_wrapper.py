@@ -113,6 +113,7 @@ class MissionWrapper(MissionBuilder):
         start_flight_point = FlightPoint(
             altitude=inputs[f"{self._variable_prefix}:start:altitude"],
             true_airspeed=inputs[f"{self._variable_prefix}:start:true_airspeed"],
+            mass=0.0,
         )
         flight_points = mission.compute_from(start_flight_point)
         flight_points.loc[0, "name"] = flight_points.loc[1, "name"]

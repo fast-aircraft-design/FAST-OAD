@@ -81,7 +81,7 @@ class FlightPoint:
     time: float = 0.0  #: Time in seconds.
     altitude: float = None  #: Altitude in meters.
     ground_distance: float = 0.0  #: Covered ground distance in meters.
-    mass: float = 0.0  #: Mass in kg.
+    mass: float = None  #: Mass in kg.
     true_airspeed: float = None  #: True airspeed (TAS) in m/s.
     equivalent_airspeed: float = None  #: Equivalent airspeed (EAS) in m/s.
     mach: float = None  #: Mach number.

@@ -35,7 +35,7 @@ def test_start():
     # A second call is done to ensure first run did not modify anything (like target definition)
     run1()
 
-    start_point = FlightPoint(altitude=0, true_airspeed=100.0)
+    start_point = FlightPoint(altitude=0, true_airspeed=100.0, mass=0.0)
     segment = Start(target=start_point)
 
     def run2():
