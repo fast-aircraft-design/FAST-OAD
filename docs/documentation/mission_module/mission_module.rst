@@ -23,11 +23,17 @@ of its input and output variables. But unlike other modules, the list of inputs 
 fixed, and widely depends on the mission definition.
 
 The input variables are defined in the mission file, as described
-:ref:`here <setting-values-variable-name>`. Additionally, 2 input variables are created to define the
-starting point of the mission (both are zero by default):
+:ref:`here <setting-values-variable-name>`. Additionally, input variables are created to define the
+start point of the mission:
 
- - :code:`data:mission:<mission_name>:start:altitude`
- - :code:`data:mission:<mission_name>:start:true_airspeed`
+ - :code:`data:mission:<mission_name>:start:altitude` (always created, default value = 0.0)
+ - :code:`data:mission:<mission_name>:start:true_airspeed` (always created, default value = 0.0)
+ - :code:`data:mission:<mission_name>:start:mass` (depends on mission definition)
+
+The start mass is created only if needed (and then its default value is NaN, meaning input file
+must supply it). The mission definition may define a target mass for the end of the first segment
+(typically when TakeOff Weight is the needed input and taxi-out is simulated) and in such case,
+there is not need to specify start mass.
 
 
 Most outputs variables are automatically decided by the structure of the mission. Distance, duration
