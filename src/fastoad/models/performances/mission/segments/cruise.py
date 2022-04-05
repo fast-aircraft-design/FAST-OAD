@@ -159,8 +159,8 @@ class ClimbAndCruiseSegment(CruiseSegment, mission_file_keyword="cruise"):
 
         return results
 
+    @staticmethod
     def _climb_to_altitude_and_cruise(
-        self,
         start: FlightPoint,
         cruise_altitude: float,
         climb_segment: AltitudeChangeSegment,

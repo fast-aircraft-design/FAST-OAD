@@ -96,7 +96,7 @@ class MissionWrapper(MissionBuilder):
 
         :param inputs: the input vector of the OpenMDAO component
         :param outputs: the output vector of the OpenMDAO component
-        :return: a pandas DataFrame where columns names match fields of
+        :return: a pandas DataFrame where column names match fields of
                  :class:`~fastoad.model_base.flight_point.FlightPoint`
         """
         mission = self.build(inputs, self.mission_name)

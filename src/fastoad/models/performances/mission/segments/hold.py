@@ -11,10 +11,8 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import pandas as pd
 
-from fastoad.model_base import FlightPoint
-from .base import RegulatedThrustSegment, FixedDurationSegment
+from .base import FixedDurationSegment, RegulatedThrustSegment
 
 
 class HoldSegment(RegulatedThrustSegment, FixedDurationSegment, mission_file_keyword="holding"):
@@ -27,5 +25,4 @@ class HoldSegment(RegulatedThrustSegment, FixedDurationSegment, mission_file_key
     the time duration of the segment, independently of the initial time value.
     """
 
-    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        return super(HoldSegment, self).compute_from(start)
+    pass

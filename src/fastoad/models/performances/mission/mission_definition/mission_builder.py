@@ -346,10 +346,7 @@ class MissionBuilder:
 
         input_definition = VariableList()
         for input_def in self._input_definitions[mission_name]:
-            if (
-                input_def._variable_name
-                and input_def._variable_name not in input_definition.names()
-            ):
+            if input_def.variable_name and input_def.variable_name not in input_definition.names():
                 input_definition.append(input_def.get_input_definition())
 
         return input_definition
@@ -612,19 +609,17 @@ class MissionBuilder:
                 input_definition = InputDefinition.from_dict(parent, definition, prefix=prefix)
                 self._input_definitions[mission_name].append(input_definition)
                 return input_definition
-            else:
-                name = (
-                    str(definition.get("mission", ""))
-                    + str(definition.get("route", ""))
-                    + str(definition.get("phase", ""))
-                )
-                prefix += ":" + name if name else ""
 
-                for key, value in definition.items():
-                    definition[key] = self._parse_inputs(
-                        mission_name, value, parent=key, prefix=prefix
-                    )
-                return definition
+            name = (
+                str(definition.get("mission", ""))
+                + str(definition.get("route", ""))
+                + str(definition.get("phase", ""))
+            )
+            prefix += ":" + name if name else ""
+
+            for key, value in definition.items():
+                definition[key] = self._parse_inputs(mission_name, value, parent=key, prefix=prefix)
+            return definition
         elif isinstance(definition, list) and not is_numeric_list:
             for i, value in enumerate(definition):
                 definition[i] = self._parse_inputs(
