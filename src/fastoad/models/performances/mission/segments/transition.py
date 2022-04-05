@@ -63,7 +63,7 @@ class DummyTransitionSegment(FlightSegment, mission_file_keyword="transition"):
     def _compute_from(self, start: FlightPoint) -> pd.DataFrame:
         end = deepcopy(self.target)
         end.name = self.name
-        if end.mass == 0:
+        if not end.mass:
             end.mass = start.mass * self.mass_ratio
         self.complete_flight_point(end)
 
