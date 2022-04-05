@@ -99,6 +99,14 @@ class FlightSegment(IFlightPart):
             my_phase:
                 parts:
                     - segment: new_segment
+
+    .. Important::
+
+        When subclassing, if you intend to overload :meth:`compute_from` without calling the
+        super method, you should consider overriding :meth:`_compute_from` instead. Therefore,
+        you will take benefit of the preprocessing of start and target flight points that is
+        done in :meth:`compute_from`
+
     """
 
     #: A FlightPoint instance that provides parameter values that should all be reached at the
@@ -179,6 +187,7 @@ class FlightSegment(IFlightPart):
 
     @classmethod
     def get_attribute_unit(cls, attribute_name: str) -> str:
+        """Returns unit for specified attribute."""
         return cls._attribute_units.get(attribute_name)
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
@@ -201,12 +210,15 @@ class FlightSegment(IFlightPart):
             start.time = 0.0
         if start.ground_distance is None:
             start.ground_distance = 0.0
-        self._set_start_point(start)
+
+        self._target = self._target.make_absolute(start)
 
         self.complete_flight_point(start)
 
-        flight_points = [start]
+        return self._compute_from(start)
 
+    def _compute_from(self, start: FlightPoint) -> pd.DataFrame:
+        flight_points = [start]
         previous_point_to_target = self.get_distance_to_target(flight_points)
         tol = 1.0e-5  # Such accuracy is not needed, but ensures reproducibility of results.
         while np.abs(previous_point_to_target) > tol:
@@ -260,11 +272,7 @@ class FlightSegment(IFlightPart):
             previous_point_to_target = last_point_to_target
 
         flight_points_df = pd.DataFrame(flight_points)
-
         return flight_points_df
-
-    def _set_start_point(self, start_point):
-        self._target = self._target.make_absolute(start_point)
 
     def _check_values(self, flight_point: FlightPoint) -> str:
         """
