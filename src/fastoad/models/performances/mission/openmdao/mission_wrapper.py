@@ -86,6 +86,19 @@ class MissionWrapper(MissionBuilder):
             desc=f'Starting speed for mission "{mission_name}"',
         )
 
+        # Mass is needed if there is no target mass in first segment.
+        struct = self._structure[mission_name]
+        while "parts" in struct:
+            struct = struct["parts"][0]
+
+        if "mass" not in struct["target"]:
+            component.add_input(
+                f"{self._variable_prefix}:start:mass",
+                np.nan,
+                units="kg",
+                desc=f'Starting mass for mission "{mission_name}"',
+            )
+
     def compute(self, inputs: Vector, outputs: Vector) -> pd.DataFrame:
         """
         To be used during compute() of an OpenMDAO component.
@@ -115,6 +128,9 @@ class MissionWrapper(MissionBuilder):
             true_airspeed=inputs[f"{self._variable_prefix}:start:true_airspeed"],
             mass=0.0,
         )
+        if f"{self._variable_prefix}:start:mass" in inputs:
+            start_flight_point.mass = inputs[f"{self._variable_prefix}:start:mass"]
+
         flight_points = mission.compute_from(start_flight_point)
         flight_points.loc[0, "name"] = flight_points.loc[1, "name"]
 

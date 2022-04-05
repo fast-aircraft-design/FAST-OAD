@@ -156,7 +156,9 @@ def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
             propulsion_id="test.wrapper.propulsion.dummy_engine",
             out_file=pth.join(RESULTS_FOLDER_PATH, "breguet.csv"),
             use_initializer_iteration=False,
-            mission_wrapper=MissionWrapper(pth.join(DATA_FOLDER_PATH, "test_breguet.yml")),
+            mission_wrapper=MissionWrapper(
+                pth.join(DATA_FOLDER_PATH, "test_breguet_from_block_fuel.yml")
+            ),
             mission_name="operational",
             reference_area_variable="data:geometry:aircraft:reference_area",
         ),
@@ -164,6 +166,8 @@ def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
     )
     # plot_flight(problem.model.component.flight_points, "test_mission.png")
     assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6346.0, atol=1.0)
+
+    assert_allclose(problem["data:mission:operational:taxi_out:fuel"], 100.0, atol=1.0)
 
     assert_allclose(problem["data:mission:operational:main_route:climb:duration"], 0.0, atol=1.0)
     assert_allclose(problem["data:mission:operational:main_route:climb:fuel"], 839.0, atol=1.0)
