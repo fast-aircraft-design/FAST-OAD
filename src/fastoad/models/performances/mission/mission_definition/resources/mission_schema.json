@@ -95,10 +95,10 @@
                 "value": {
                   "$ref": "#/definitions/inline_number_value"
                 },
-                 "default": {
+                "default": {
                   "type": "number"
                 }
-             },
+              },
               "required": [
                 "value"
               ],
@@ -240,7 +240,14 @@
             "parts": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/segment"
+                "oneOf": [
+                  {
+                    "$ref": "#/definitions/mission_phase"
+                  },
+                  {
+                    "$ref": "#/definitions/segment"
+                  }
+                ]
               }
             }
           },
@@ -321,8 +328,8 @@
               "type": "string"
             },
             "multiplier": {
-          "$ref": "#/definitions/parameter_value_without_unit"
-        }
+              "$ref": "#/definitions/parameter_value_without_unit"
+            }
           }
         }
       }

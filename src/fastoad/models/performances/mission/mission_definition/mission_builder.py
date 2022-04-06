@@ -40,6 +40,7 @@ from .schema import (
     PHASE_TAG,
     RESERVE_TAG,
     ROUTE_DEFINITIONS_TAG,
+    ROUTE_TAG,
     SEGMENT_TAG,
 )
 from ..base import FlightSequence, IFlightPart
@@ -426,7 +427,7 @@ class MissionBuilder:
                 phase_name = part_definition["phase"]
                 phase_definition = OrderedDict({"phase": phase_name})
                 phase_definition.update(
-                    deepcopy(self.definition[PHASE_DEFINITIONS_TAG][phase_name])
+                    self._build_phase_structure(self.definition[PHASE_DEFINITIONS_TAG][phase_name])
                 )
                 mission_parts.append(phase_definition)
             else:
@@ -453,10 +454,27 @@ class MissionBuilder:
         parts = []
         for part_definition in definition:
             phase_name = part_definition["phase"]
-            phase_structure = OrderedDict({"phase": phase_name})
-            phase_structure.update(deepcopy(self.definition[PHASE_DEFINITIONS_TAG][phase_name]))
+            phase_structure = self._build_phase_structure(
+                self.definition[PHASE_DEFINITIONS_TAG][phase_name]
+            )
+            phase_structure[PHASE_TAG] = phase_name
             parts.append(phase_structure)
         return parts
+
+    def _build_phase_structure(self, phase_definition):
+        phase_structure = OrderedDict()
+        phase_structure.update(deepcopy(phase_definition))
+
+        for i, part in enumerate(phase_structure[PARTS_TAG]):
+            if PHASE_TAG in part:
+                phase_name = part[PHASE_TAG]
+                subphase_structure = self._build_phase_structure(
+                    deepcopy(self.definition[PHASE_DEFINITIONS_TAG][phase_name])
+                )
+                subphase_structure[PHASE_TAG] = phase_name
+                phase_structure[PARTS_TAG][i] = subphase_structure
+
+        return phase_structure
 
     def _build_mission(self, mission_structure: OrderedDict) -> FlightSequence:
         """
@@ -469,15 +487,17 @@ class MissionBuilder:
 
         mission.name = mission_structure["mission"]
         for part_spec in mission_structure[PARTS_TAG]:
-            if "route" in part_spec:
+            if ROUTE_TAG in part_spec:
                 part = self._build_route(part_spec)
-            elif "phase" in part_spec:
+                part.name = part_spec[ROUTE_TAG]
+            elif PHASE_TAG in part_spec:
                 part = self._build_phase(part_spec)
-            elif "segment" in part_spec:
+                part.name = part_spec[PHASE_TAG]
+            elif SEGMENT_TAG in part_spec:
                 part = self._build_segment(part_spec, {})
+                part.name = part_spec[SEGMENT_TAG]
             else:  # reserve definition is used differently
                 continue
-            part.name = list(part_spec.values())[0]
             mission.flight_sequence.append(part)
 
         return mission
@@ -495,7 +515,7 @@ class MissionBuilder:
         for part_structure in route_structure[CLIMB_PARTS_TAG]:
             phase = self._build_phase(part_structure)
             climb_phases.append(phase)
-            phase.name = list(part_structure.values())[0]
+            phase.name = part_structure[PHASE_TAG]
 
         cruise_phase = self._build_segment(
             route_structure[CRUISE_PART_TAG],
@@ -506,7 +526,7 @@ class MissionBuilder:
         for part_structure in route_structure[DESCENT_PARTS_TAG]:
             phase = self._build_phase(part_structure)
             descent_phases.append(phase)
-            phase.name = list(part_structure.values())[0]
+            phase.name = part_structure[PHASE_TAG]
 
         if "range" in route_structure:
             flight_range = route_structure["range"].value
@@ -525,7 +545,7 @@ class MissionBuilder:
 
         return route
 
-    def _build_phase(self, phase_structure):
+    def _build_phase(self, phase_structure, kwargs=None):
         """
         Builds phase instance
 
@@ -533,13 +553,24 @@ class MissionBuilder:
         :return: the phase instance
         """
         phase = FlightSequence()
-        kwargs = {name: value for name, value in phase_structure.items() if name != PARTS_TAG}
+        if kwargs is None:
+            kwargs = {}
+        kwargs.update(
+            {
+                name: value
+                for name, value in phase_structure.items()
+                if name != PARTS_TAG and name != PHASE_TAG
+            }
+        )
         self._replace_input_definitions_by_values(kwargs)
-        del kwargs[PHASE_TAG]
 
         for part_structure in phase_structure[PARTS_TAG]:
-            segment = self._build_segment(part_structure, kwargs)
-            phase.flight_sequence.append(segment)
+            if PHASE_TAG in part_structure:
+                flight_part = self._build_phase(part_structure, kwargs)
+                flight_part.name = part_structure[PHASE_TAG]
+            else:
+                flight_part = self._build_segment(part_structure, kwargs)
+            phase.flight_sequence.append(flight_part)
 
         return phase
 
