@@ -15,7 +15,19 @@ phases:
             unit: ft
           delta_mass: -data:mission:operational:takeoff:fuel
           true_airspeed: data:mission:operational:takeoff:V2
-  climb:
+  climb1:
+    parts:
+      - segment: transition
+        target:
+          altitude:
+            value: 10000
+            unit: ft
+          mach: 0.78
+          ground_distance:
+            value: 200
+            unit: NM
+        mass_ratio: 0.988
+  climb2:
     parts:
       - segment: transition
         target:
@@ -24,9 +36,13 @@ phases:
             unit: ft
           mach: 0.78
           ground_distance:
-            value: 250
+            value: 50
             unit: NM
-        mass_ratio: 0.988
+        mass_ratio: 1.0
+  climb:
+    parts:
+      - phase: climb1
+      - phase: climb2
   descent:
     parts:
       - segment: transition
