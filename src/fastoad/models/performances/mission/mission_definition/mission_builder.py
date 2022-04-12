@@ -366,6 +366,29 @@ class MissionBuilder:
             "Mission name must be specified if several missions are defined in mission file."
         )
 
+    def get_mission_start_mass_input(self, mission_name: str) -> Optional[str]:
+        """
+
+        :param mission_name:
+        :return: Target mass variable of first segment, if any.
+        """
+        part = self._structure[mission_name][PARTS_TAG][0]
+        while PARTS_TAG in part:
+            part = part[PARTS_TAG][0]
+        if "mass" in part["target"]:
+            return part["target"]["mass"].variable_name
+
+    def get_mission_part_names(self, mission_name: str) -> List[str]:
+        """
+
+        :param mission_name:
+        :return: list of names of parts (phase or route) for specified mission.
+        """
+        return [
+            str(part.get(ROUTE_TAG, "")) + str(part.get(PHASE_TAG, ""))
+            for part in self._structure[mission_name][PARTS_TAG]
+        ]
+
     def _build_structure(self) -> OrderedDict:
         """
         Builds mission structures.
