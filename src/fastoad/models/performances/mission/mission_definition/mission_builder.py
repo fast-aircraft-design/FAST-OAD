@@ -488,7 +488,10 @@ class MissionBuilder:
         if "range" in route_structure:
             flight_range = route_structure["range"].value
             route = RangedRoute(
-                climb_phases, cruise_phase, descent_phases, flight_distance=flight_range
+                climb_phases=climb_phases,
+                cruise_segment=cruise_phase,
+                descent_phases=descent_phases,
+                flight_distance=flight_range,
             )
         else:
             route = FlightSequence()
