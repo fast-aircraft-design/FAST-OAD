@@ -33,7 +33,7 @@ class SimpleRoute(FlightSequence):
     """
     Computes a simple route.
 
-    The computed route will be be made of:
+    The computed route will be made of:
         - any number of climb phases
         - one cruise segment
         - any number of descent phases.
