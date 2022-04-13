@@ -19,11 +19,12 @@ from typing import List
 import pandas as pd
 
 from fastoad.model_base import FlightPoint
+from fastoad.utils.datacls import BaseDataClass
 
 
-class IFlightPart(ABC):
-    def __init__(self):
-        self.name = ""
+@dataclass
+class IFlightPart(ABC, BaseDataClass):
+    name: str = ""
 
     @abstractmethod
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
@@ -45,6 +46,7 @@ class FlightSequence(IFlightPart):
     """
 
     def __post_init__(self):
+        super().__post_init__()
         self._flight_sequence = []
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:

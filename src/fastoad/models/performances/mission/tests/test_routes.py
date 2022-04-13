@@ -189,7 +189,12 @@ def test_ranged_route(low_speed_polar, high_speed_polar, cleanup):
         time_step=5.0,
     )
 
-    flight_calculator = RangedRoute([initial_climb, climb], cruise, [descent], total_distance)
+    flight_calculator = RangedRoute(
+        climb_phases=[initial_climb, climb],
+        cruise_segment=cruise,
+        descent_phases=[descent],
+        flight_distance=total_distance,
+    )
     assert flight_calculator.cruise_speed == ("mach", 0.78)
 
     start = FlightPoint(

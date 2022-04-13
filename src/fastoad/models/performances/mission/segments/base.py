@@ -28,6 +28,7 @@ from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IPropulsion
 from fastoad.models.performances.mission.polar import Polar
+from fastoad.utils.datacls import BaseDataClass
 from ..base import IFlightPart
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
 
@@ -114,16 +115,16 @@ class FlightSegment(IFlightPart):
     #: Possible parameters depend on the current segment. A parameter can also be set to
     #: :attr:`~fastoad.models.performances.mission.segments.base.FlightSegment.CONSTANT_VALUE`
     #: to tell that initial value should be kept during all segment.
-    target: FlightPoint
+    target: FlightPoint = BaseDataClass.no_default
 
     #: A IPropulsion instance that will be called at each time step.
-    propulsion: IPropulsion
+    propulsion: IPropulsion = BaseDataClass.no_default
 
     #: The Polar instance that will provide drag data.
-    polar: Polar
+    polar: Polar = BaseDataClass.no_default
 
     #: The reference area, in m**2.
-    reference_area: float
+    reference_area: float = BaseDataClass.no_default
 
     #: Used time step for computation (actual time step can be lower at some particular times of
     #: the flight path).
@@ -179,11 +180,6 @@ class FlightSegment(IFlightPart):
             self._target = value
 
         cls.target = property(_get_target, _set_target)
-
-    def __post_init__(self):
-        # It is better to have this method ready so subclasses can call it, even if
-        # it does nothing right now.
-        pass
 
     @classmethod
     def get_attribute_unit(cls, attribute_name: str) -> str:
