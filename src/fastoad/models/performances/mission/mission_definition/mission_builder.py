@@ -14,7 +14,7 @@ Mission generator.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from copy import deepcopy
 from dataclasses import dataclass, field
 from numbers import Number
@@ -49,6 +49,9 @@ from ..routes import RangedRoute
 from ..segments.base import FlightSegment, SegmentDefinitions
 
 # FIXME: should be set in Route class
+NAME_TAG = "name"
+TYPE_TAG = "type"
+SEGMENT_TYPE_TAG = "segment_type"
 BASE_UNITS = {
     "range": "m",
     "distance_accuracy": "m",
@@ -217,6 +220,151 @@ class InputDefinition:
         return str(self.value)
 
 
+@dataclass
+class StructureBuilder:
+    definition: dict
+    input_definitions: dict = field(default_factory=lambda: defaultdict(list), init=False)
+
+    def build_structure(self) -> dict:
+        structure = {}
+        for mission_name in self.definition[MISSION_DEFINITION_TAG]:
+            structure[mission_name] = self.build_mission_structure(mission_name)
+        return structure
+
+    def build_mission_structure(self, mission_name) -> OrderedDict:
+        mission_definition = self.definition[MISSION_DEFINITION_TAG][mission_name]
+        mission_structure = OrderedDict(deepcopy(mission_definition))
+        mission_structure[NAME_TAG] = mission_name
+        mission_structure[TYPE_TAG] = "mission"
+
+        mission_parts = []
+        for part_definition in mission_definition[PARTS_TAG]:
+            if ROUTE_TAG in part_definition:
+                route_name = part_definition[ROUTE_TAG]
+                route_structure = self.build_route_structure(route_name, mission_name)
+                mission_parts.append(route_structure)
+            elif PHASE_TAG in part_definition:
+                phase_name = part_definition[PHASE_TAG]
+                phase_structure = self.build_phase_structure(phase_name, mission_name)
+                mission_parts.append(phase_structure)
+            elif SEGMENT_TAG in part_definition:
+                segment_definition = self.build_segment_structure(part_definition, mission_name)
+                mission_parts.append(segment_definition)
+            else:
+                mission_parts.append(part_definition)
+
+        mission_structure[PARTS_TAG] = mission_parts
+
+        self._parse_inputs(mission_name, mission_structure)
+        return mission_structure
+
+    def build_route_structure(self, route_name, parent_name) -> OrderedDict:
+        """Builds structure of a route from its definition."""
+        route_definition = self.definition[ROUTE_DEFINITIONS_TAG][route_name]
+        route_structure = OrderedDict(deepcopy(route_definition))
+        route_structure[NAME_TAG] = f"{parent_name}:{route_name}"
+        route_structure[TYPE_TAG] = ROUTE_TAG
+
+        route_structure[CLIMB_PARTS_TAG] = self._get_route_climb_or_descent_structure(
+            route_definition[CLIMB_PARTS_TAG], route_structure[NAME_TAG]
+        )
+        route_structure[CRUISE_PART_TAG] = self.build_segment_structure(
+            route_definition[CRUISE_PART_TAG], f"{route_structure[NAME_TAG]}:cruise"
+        )
+        route_structure[DESCENT_PARTS_TAG] = self._get_route_climb_or_descent_structure(
+            route_definition[DESCENT_PARTS_TAG], route_structure[NAME_TAG]
+        )
+
+        return route_structure
+
+    def build_phase_structure(self, phase_name, parent_name) -> OrderedDict:
+        phase_definition = self.definition[PHASE_DEFINITIONS_TAG][phase_name]
+        phase_structure = OrderedDict(deepcopy(phase_definition))
+        phase_structure[NAME_TAG] = f"{parent_name}:{phase_name}"
+        phase_structure[TYPE_TAG] = PHASE_TAG
+
+        for i, part in enumerate(phase_structure[PARTS_TAG]):
+            if PHASE_TAG in part:
+                phase_structure[PARTS_TAG][i] = self.build_phase_structure(
+                    part[PHASE_TAG], phase_structure[NAME_TAG]
+                )
+            elif SEGMENT_TAG in part:
+                phase_structure[PARTS_TAG][i] = self.build_segment_structure(
+                    part, phase_structure[NAME_TAG]
+                )
+            else:
+                raise RuntimeError(f"Unexpected structure in definition of phase {phase_name}")
+
+        return phase_structure
+
+    @staticmethod
+    def build_segment_structure(segment_definition: dict, parent_name) -> dict:
+        segment_structure = deepcopy(segment_definition)
+        segment_structure[NAME_TAG] = parent_name
+        segment_structure[TYPE_TAG] = SEGMENT_TAG
+        segment_structure[SEGMENT_TYPE_TAG] = segment_structure[SEGMENT_TAG]
+        del segment_structure[SEGMENT_TAG]
+
+        return segment_structure
+
+    def _get_route_climb_or_descent_structure(self, definition, parent_name):
+        parts = []
+        for part_definition in definition:
+            phase_name = part_definition["phase"]
+            phase_structure = self.build_phase_structure(phase_name, parent_name)
+            parts.append(phase_structure)
+        return parts
+
+    def _parse_inputs(self, mission_name, definition, parent=None, prefix=None):
+        """
+        Returns the `definition` structure where all inputs (string/numeric values, numeric lists,
+        dicts with a "value key"), have been converted to an InputDefinition instance.
+
+        Created InputDefinition instances are stored in self._input_definitions[mission_name].
+
+        :param mission_name:
+        :param definition:
+        :param parent:
+        :param prefix:
+        :return: amended definition
+        """
+        if prefix is None:
+            prefix = "data:mission"
+
+        is_numeric_list = True
+        try:
+            _ = np.asarray(definition) + 1
+        except TypeError:
+            is_numeric_list = False
+
+        if isinstance(definition, dict):
+            if "value" in definition.keys():
+                input_definition = InputDefinition.from_dict(parent, definition, prefix=prefix)
+                self.input_definitions[mission_name].append(input_definition)
+                return input_definition
+
+            name = definition.get(NAME_TAG, "")
+            if name:
+                prefix = f"data:mission:{name}"
+
+            for key, value in definition.items():
+                if key not in [NAME_TAG, TYPE_TAG, SEGMENT_TYPE_TAG]:
+                    definition[key] = self._parse_inputs(
+                        mission_name, value, parent=key, prefix=prefix
+                    )
+            return definition
+        elif isinstance(definition, list) and not is_numeric_list:
+            for i, value in enumerate(definition):
+                definition[i] = self._parse_inputs(
+                    mission_name, value, parent=parent, prefix=prefix
+                )
+            return definition
+        else:
+            input_definition = InputDefinition(parent, definition, prefix=prefix)
+            self.input_definitions[mission_name].append(input_definition)
+            return input_definition
+
+
 class MissionBuilder:
     def __init__(
         self,
@@ -254,11 +402,10 @@ class MissionBuilder:
         else:
             self._definition = mission_definition
 
-        self._structure = self._build_structure()
+        structure_builder = StructureBuilder(self._definition)
+        self._structure = structure_builder.build_structure()
 
-        for mission_name, mission_structure in self._structure.items():
-            self._input_definitions[mission_name] = []
-            self._structure[mission_name] = self._parse_inputs(mission_name, mission_structure)
+        self._input_definitions = structure_builder.input_definitions
 
     @property
     def propulsion(self) -> IPropulsion:
@@ -293,7 +440,6 @@ class MissionBuilder:
         if mission_name is None:
             mission_name = self.get_unique_mission_name()
         mission = self._build_mission(self._structure[mission_name])
-        self._propagate_name(mission, mission.name)
         return mission
 
     def get_route_ranges(
@@ -390,92 +536,6 @@ class MissionBuilder:
             for part in self._structure[mission_name][PARTS_TAG]
         ]
 
-    def _build_structure(self) -> OrderedDict:
-        """
-        Builds mission structures.
-
-        Unlike definition that is a mirror of the definition file, mission structures are
-        a mirror of the matching missions, so that building the actual mission instance will
-        just be a translation of the structure.
-        E.g., the definition can contain a phase that is defined once, but used in several routes.
-        The structure will define each route with the complete definition of the phase in each one.
-
-        The returned dict has mission names as keys and mission structures as values.
-        """
-        structure = OrderedDict()
-        structure.update(deepcopy(self.definition[MISSION_DEFINITION_TAG]))
-        for mission_name, mission_definition in self.definition[MISSION_DEFINITION_TAG].items():
-            mission_structure = OrderedDict({"mission": mission_name})
-            mission_structure.update(self._build_mission_structure(mission_definition))
-            structure[mission_name] = mission_structure
-        return structure
-
-    def _build_mission_structure(self, mission_definition) -> OrderedDict:
-        """Builds structure of a mission from its definition."""
-        mission_structure = OrderedDict()
-        mission_structure.update(deepcopy(mission_definition))
-        mission_parts = []
-        for part_definition in mission_definition[PARTS_TAG]:
-            if "route" in part_definition:
-                route_name = part_definition["route"]
-                route_structure = OrderedDict({"route": route_name})
-                route_structure.update(
-                    self._build_route_structure(self.definition[ROUTE_DEFINITIONS_TAG][route_name])
-                )
-                mission_parts.append(route_structure)
-            elif "phase" in part_definition:
-                phase_name = part_definition["phase"]
-                phase_definition = OrderedDict({"phase": phase_name})
-                phase_definition.update(
-                    self._build_phase_structure(self.definition[PHASE_DEFINITIONS_TAG][phase_name])
-                )
-                mission_parts.append(phase_definition)
-            else:
-                mission_parts.append(part_definition)
-
-        mission_structure[PARTS_TAG] = mission_parts
-        return mission_structure
-
-    def _build_route_structure(self, route_definition) -> OrderedDict:
-        """Builds structure of a route from its definition."""
-        route_structure = OrderedDict()
-        route_structure.update(deepcopy(route_definition))
-
-        route_structure[CLIMB_PARTS_TAG] = self._get_route_climb_or_descent_structure(
-            route_definition[CLIMB_PARTS_TAG]
-        )
-        route_structure[DESCENT_PARTS_TAG] = self._get_route_climb_or_descent_structure(
-            route_definition[DESCENT_PARTS_TAG]
-        )
-
-        return route_structure
-
-    def _get_route_climb_or_descent_structure(self, definition):
-        parts = []
-        for part_definition in definition:
-            phase_name = part_definition["phase"]
-            phase_structure = self._build_phase_structure(
-                self.definition[PHASE_DEFINITIONS_TAG][phase_name]
-            )
-            phase_structure[PHASE_TAG] = phase_name
-            parts.append(phase_structure)
-        return parts
-
-    def _build_phase_structure(self, phase_definition):
-        phase_structure = OrderedDict()
-        phase_structure.update(deepcopy(phase_definition))
-
-        for i, part in enumerate(phase_structure[PARTS_TAG]):
-            if PHASE_TAG in part:
-                phase_name = part[PHASE_TAG]
-                subphase_structure = self._build_phase_structure(
-                    deepcopy(self.definition[PHASE_DEFINITIONS_TAG][phase_name])
-                )
-                subphase_structure[PHASE_TAG] = phase_name
-                phase_structure[PARTS_TAG][i] = subphase_structure
-
-        return phase_structure
-
     def _build_mission(self, mission_structure: OrderedDict) -> FlightSequence:
         """
         Builds mission instance from provided structure.
@@ -485,20 +545,18 @@ class MissionBuilder:
         """
         mission = FlightSequence()
 
-        mission.name = mission_structure["mission"]
+        mission.name = mission_structure[NAME_TAG]
         for part_spec in mission_structure[PARTS_TAG]:
-            if ROUTE_TAG in part_spec:
-                part = self._build_route(part_spec)
-                part.name = part_spec[ROUTE_TAG]
-            elif PHASE_TAG in part_spec:
-                part = self._build_phase(part_spec)
-                part.name = part_spec[PHASE_TAG]
-            elif SEGMENT_TAG in part_spec:
-                part = self._build_segment(part_spec, {})
-                part.name = part_spec[SEGMENT_TAG]
+            if TYPE_TAG in part_spec:
+                if part_spec[TYPE_TAG] == SEGMENT_TAG:
+                    part = self._build_segment(part_spec, {})
+                if part_spec[TYPE_TAG] == ROUTE_TAG:
+                    part = self._build_route(part_spec)
+                elif part_spec[TYPE_TAG] == PHASE_TAG:
+                    part = self._build_phase(part_spec)
+                mission.flight_sequence.append(part)
             else:  # reserve definition is used differently
                 continue
-            mission.flight_sequence.append(part)
 
         return mission
 
@@ -515,18 +573,15 @@ class MissionBuilder:
         for part_structure in route_structure[CLIMB_PARTS_TAG]:
             phase = self._build_phase(part_structure)
             climb_phases.append(phase)
-            phase.name = part_structure[PHASE_TAG]
 
         cruise_phase = self._build_segment(
             route_structure[CRUISE_PART_TAG],
-            {"name": "cruise", "target": FlightPoint(ground_distance=0.0)},
+            {"target": FlightPoint(ground_distance=0.0)},
         )
-        cruise_phase.name = "cruise"
 
         for part_structure in route_structure[DESCENT_PARTS_TAG]:
             phase = self._build_phase(part_structure)
             descent_phases.append(phase)
-            phase.name = part_structure[PHASE_TAG]
 
         if "range" in route_structure:
             flight_range = route_structure["range"].value
@@ -543,6 +598,7 @@ class MissionBuilder:
         if "distance_accuracy" in route_structure:
             route.distance_accuracy = route_structure["distance_accuracy"].value
 
+        route.name = route_structure[NAME_TAG]
         return route
 
     def _build_phase(self, phase_structure, kwargs=None):
@@ -552,22 +608,21 @@ class MissionBuilder:
         :param phase_structure: structure of the phase to build
         :return: the phase instance
         """
-        phase = FlightSequence()
+        phase = FlightSequence(name=phase_structure[NAME_TAG])
         if kwargs is None:
             kwargs = {}
         kwargs.update(
             {
                 name: value
                 for name, value in phase_structure.items()
-                if name != PARTS_TAG and name != PHASE_TAG
+                if name != PARTS_TAG and name != TYPE_TAG
             }
         )
         self._replace_input_definitions_by_values(kwargs)
 
         for part_structure in phase_structure[PARTS_TAG]:
-            if PHASE_TAG in part_structure:
+            if part_structure[TYPE_TAG] == PHASE_TAG:
                 flight_part = self._build_phase(part_structure, kwargs)
-                flight_part.name = part_structure[PHASE_TAG]
             else:
                 flight_part = self._build_segment(part_structure, kwargs)
             phase.flight_sequence.append(flight_part)
@@ -585,10 +640,14 @@ class MissionBuilder:
         :param tag: the expected tag for specifying the segment type
         :return: the FlightSegment instance
         """
-        segment_class = SegmentDefinitions.get_segment_class(str(segment_definition[tag]))
+        segment_class = SegmentDefinitions.get_segment_class(segment_definition[SEGMENT_TYPE_TAG])
         part_kwargs = kwargs.copy()
         part_kwargs.update(
-            {name: value for name, value in segment_definition.items() if name != tag}
+            {
+                name: value
+                for name, value in segment_definition.items()
+                if name != SEGMENT_TYPE_TAG and name != TYPE_TAG
+            }
         )
         part_kwargs.update(self._base_kwargs)
         for key, value in part_kwargs.items():
@@ -620,6 +679,34 @@ class MissionBuilder:
         for key, input_def in part_kwargs.items():
             if isinstance(input_def, InputDefinition):
                 part_kwargs[key] = input_def.value
+
+    def _propagate_name_in_structure(self, part, new_name: str):
+        """
+        Changes the `name` property of all flight sub-parts of provided IFlightPart instance.
+
+        If a subpart has a non-empty name, its new name is its old name, prepended with `new_name`.
+        Otherwise, its names becomes the one of its parent after modification.
+
+        :param part:
+        :param new_name:
+        """
+        part[NAME_TAG] = new_name
+        if CRUISE_PART_TAG in part:
+            subpart = part[CRUISE_PART_TAG]
+            if NAME_TAG in subpart and subpart[NAME_TAG]:
+                subpart[NAME_TAG] = ":".join([new_name, subpart[NAME_TAG]])
+            else:
+                subpart[NAME_TAG] = new_name
+        for part_tag in [PARTS_TAG, CLIMB_PARTS_TAG, DESCENT_PARTS_TAG]:
+            if part_tag in part:
+                for subpart in part[part_tag]:
+                    if isinstance(subpart, dict):
+                        if NAME_TAG in subpart and subpart[NAME_TAG]:
+                            self._propagate_name_in_structure(
+                                subpart, ":".join([new_name, subpart[NAME_TAG]])
+                            )
+                        else:
+                            subpart[NAME_TAG] = new_name
 
     def _propagate_name(self, part: IFlightPart, new_name: str):
         """
@@ -667,15 +754,15 @@ class MissionBuilder:
                 self._input_definitions[mission_name].append(input_definition)
                 return input_definition
 
-            name = (
-                str(definition.get("mission", ""))
-                + str(definition.get("route", ""))
-                + str(definition.get("phase", ""))
-            )
-            prefix += ":" + name if name else ""
+            name = definition.get(NAME_TAG, "")
+            if name:
+                prefix = f"data:mission:{name}"
 
             for key, value in definition.items():
-                definition[key] = self._parse_inputs(mission_name, value, parent=key, prefix=prefix)
+                if key not in [NAME_TAG, TYPE_TAG, SEGMENT_TYPE_TAG]:
+                    definition[key] = self._parse_inputs(
+                        mission_name, value, parent=key, prefix=prefix
+                    )
             return definition
         elif isinstance(definition, list) and not is_numeric_list:
             for i, value in enumerate(definition):
