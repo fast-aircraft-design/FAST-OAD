@@ -14,11 +14,12 @@ Mission generator.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from collections import OrderedDict, defaultdict
+from abc import ABC, abstractmethod
+from collections import OrderedDict
 from copy import deepcopy
-from dataclasses import dataclass, field
+from dataclasses import InitVar, dataclass, field
 from numbers import Number
-from typing import Dict, Iterable, List, Mapping, Optional, Union
+from typing import Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
 import numpy as np
 import openmdao.api as om
@@ -43,7 +44,7 @@ from .schema import (
     ROUTE_TAG,
     SEGMENT_TAG,
 )
-from ..base import FlightSequence, IFlightPart
+from ..base import FlightSequence
 from ..polar import Polar
 from ..routes import RangedRoute
 from ..segments.base import FlightSegment, SegmentDefinitions
@@ -90,12 +91,18 @@ class InputDefinition:
     #: mainly from unit definition for FlightPoint class.
     output_unit: Optional[str] = field(default=None, init=False, repr=False)
 
+    #: Used only for tests
+    variable_name: InitVar[Optional[str]] = None
+
+    #: Used only for tests
+    use_opposite: InitVar[Optional[bool]] = None
+
     #: True if the opposite value should be used, if input is defined by a variable.
     _use_opposite: bool = field(default=False, init=False, repr=True)
 
     _variable_name: Optional[str] = field(default=None, init=False, repr=True)
 
-    def __post_init__(self):
+    def __post_init__(self, variable_name, use_opposite):
 
         if self.parameter_name.startswith("delta_"):
             self.is_relative = True
@@ -110,13 +117,21 @@ class InputDefinition:
         if self.input_unit is None:
             self.input_unit = self.output_unit
 
-        # This is done at end of initialization, because self.variable_name property may need
-        # data as self.parameter_name, self.prefix...
-        if isinstance(self.input_value, str) and (
+        if variable_name and not isinstance(variable_name, property):
+            # dataclass "feature": default value of 'variable_name' is 'property' because it
+            # is defined as a property.
+            self.variable_name = variable_name
+            self.input_value = None
+        elif isinstance(self.input_value, str) and (
             ":" in self.input_value or self.input_value.startswith(("~", "-~"))
         ):
+            # This is done at end of initialization, because self.variable_name property may need
+            # data as self.parameter_name, self.prefix...
             self.variable_name = self.input_value
             self.input_value = None
+
+        if use_opposite is not None:
+            self._use_opposite = use_opposite
 
     @property
     def value(self):
@@ -221,109 +236,113 @@ class InputDefinition:
 
 
 @dataclass
-class StructureBuilder:
-    definition: dict
-    input_definitions: dict = field(default_factory=lambda: defaultdict(list), init=False)
+class AbstractStructureBuilder(ABC):
+    """
+    Base class for building structures of mission parts.
 
-    def build_structure(self) -> dict:
-        structure = {}
-        for mission_name in self.definition[MISSION_DEFINITION_TAG]:
-            structure[mission_name] = self.build_mission_structure(mission_name)
-        return structure
+    "Structures" are dicts that are derived from the mission definition file so that they can be
+    readily translated into the matching implementation.
 
-    def build_mission_structure(self, mission_name) -> OrderedDict:
-        mission_definition = self.definition[MISSION_DEFINITION_TAG][mission_name]
-        mission_structure = OrderedDict(deepcopy(mission_definition))
-        mission_structure[NAME_TAG] = mission_name
-        mission_structure[TYPE_TAG] = "mission"
+    Usage:
 
-        mission_parts = []
-        for part_definition in mission_definition[PARTS_TAG]:
-            if ROUTE_TAG in part_definition:
-                route_name = part_definition[ROUTE_TAG]
-                route_structure = self.build_route_structure(route_name, mission_name)
-                mission_parts.append(route_structure)
-            elif PHASE_TAG in part_definition:
-                phase_name = part_definition[PHASE_TAG]
-                phase_structure = self.build_phase_structure(phase_name, mission_name)
-                mission_parts.append(phase_structure)
-            elif SEGMENT_TAG in part_definition:
-                segment_definition = self.build_segment_structure(part_definition, mission_name)
-                mission_parts.append(segment_definition)
-            else:
-                mission_parts.append(part_definition)
+    Subclasses must implement the build method that will create the specific part of the structure
+    dict (name and type fields are automated).
 
-        mission_structure[PARTS_TAG] = mission_parts
+    If the structure has to contain the result of another result, :meth:`insert_builder` should
+    be used to ensure a correct processing of the global structure, especially to get a correct
+    resolution of :attr:`input_definitions`.
+    """
 
-        self._parse_inputs(mission_name, mission_structure)
-        return mission_structure
+    definition: InitVar[dict]
+    name: str
+    parent_name: str = None
 
-    def build_route_structure(self, route_name, parent_name) -> OrderedDict:
-        """Builds structure of a route from its definition."""
-        route_definition = self.definition[ROUTE_DEFINITIONS_TAG][route_name]
-        route_structure = OrderedDict(deepcopy(route_definition))
-        route_structure[NAME_TAG] = f"{parent_name}:{route_name}"
-        route_structure[TYPE_TAG] = ROUTE_TAG
+    _structure: dict = field(default=None, init=False)
+    _input_definitions: List[InputDefinition] = field(default_factory=list, init=False)
+    _builders: List[Tuple["AbstractStructureBuilder", dict]] = field(
+        default_factory=list, init=False
+    )
 
-        route_structure[CLIMB_PARTS_TAG] = self._get_route_climb_or_descent_structure(
-            route_definition[CLIMB_PARTS_TAG], route_structure[NAME_TAG]
-        )
-        route_structure[CRUISE_PART_TAG] = self.build_segment_structure(
-            route_definition[CRUISE_PART_TAG], f"{route_structure[NAME_TAG]}:cruise"
-        )
-        route_structure[DESCENT_PARTS_TAG] = self._get_route_climb_or_descent_structure(
-            route_definition[DESCENT_PARTS_TAG], route_structure[NAME_TAG]
-        )
+    #: Defined by subclass
+    type = None
 
-        return route_structure
+    def __init_subclass__(cls, *, structure_type=None):
+        cls.type = structure_type
 
-    def build_phase_structure(self, phase_name, parent_name) -> OrderedDict:
-        phase_definition = self.definition[PHASE_DEFINITIONS_TAG][phase_name]
-        phase_structure = OrderedDict(deepcopy(phase_definition))
-        phase_structure[NAME_TAG] = f"{parent_name}:{phase_name}"
-        phase_structure[TYPE_TAG] = PHASE_TAG
+    def __post_init__(self, definition):
+        self._structure = self.build(definition)
+        self._structure[NAME_TAG] = self.qualified_name
+        if self.__class__.type:
+            self._structure[TYPE_TAG] = self.__class__.type
+        self._parse_inputs(self._structure, self._input_definitions)
 
-        for i, part in enumerate(phase_structure[PARTS_TAG]):
-            if PHASE_TAG in part:
-                phase_structure[PARTS_TAG][i] = self.build_phase_structure(
-                    part[PHASE_TAG], phase_structure[NAME_TAG]
-                )
-            elif SEGMENT_TAG in part:
-                phase_structure[PARTS_TAG][i] = self.build_segment_structure(
-                    part, phase_structure[NAME_TAG]
-                )
-            else:
-                raise RuntimeError(f"Unexpected structure in definition of phase {phase_name}")
+    @property
+    def structure(self) -> dict:
+        """
+        The resulting mission structure.
 
-        return phase_structure
+        A dictionary that is ready to be translated to the matching implementation.
+        Inputs
+        """
+        for builder, place_holder in self._builders:
+            place_holder.update(builder._structure)
+            self._input_definitions += builder.input_definitions
+        self._builders = []  # Builders have been used and can be forgotten.
+        return self._structure
 
-    @staticmethod
-    def build_segment_structure(segment_definition: dict, parent_name) -> dict:
-        segment_structure = deepcopy(segment_definition)
-        segment_structure[NAME_TAG] = parent_name
-        segment_structure[TYPE_TAG] = SEGMENT_TAG
-        segment_structure[SEGMENT_TYPE_TAG] = segment_structure[SEGMENT_TAG]
-        del segment_structure[SEGMENT_TAG]
+    @property
+    def input_definitions(self) -> List[InputDefinition]:
+        """List of InputDefinition instances in the structure."""
+        if not self._input_definitions:
+            _ = self.structure  # -> it builds self._input_definitions
+        return self._input_definitions
 
-        return segment_structure
+    def insert_builder(self, builder: "AbstractStructureBuilder", place_holder: dict):
+        """
+        Method to be used when another StructureBuilder object is needed in :meth:`build`.
 
-    def _get_route_climb_or_descent_structure(self, definition, parent_name):
-        parts = []
-        for part_definition in definition:
-            phase_name = part_definition["phase"]
-            phase_structure = self.build_phase_structure(phase_name, parent_name)
-            parts.append(phase_structure)
-        return parts
+        Not using this method will prevent a correct processing of :attr:`input_definitions`.
 
-    def _parse_inputs(self, mission_name, definition, parent=None, prefix=None):
+        At location where the builder result should be used, an empty dict should be put, and this
+        empty dict should be provided as `place_holder` argument.
+
+        :param builder:
+        :param place_holder:
+        """
+        self._builders += builder._builders
+        self._builders.append((builder, place_holder))
+
+    @abstractmethod
+    def build(self, definition: dict) -> dict:
+        """
+        This method creates the needed structure dict.
+
+        Keys "name" and "type" are not needed, as they will be written later on in the process.
+
+        :param definition: the dict that will be converted.
+        :return: the structure dict
+        """
+        pass
+
+    @property
+    def qualified_name(self):
+        """Name of the current structure, preceded by the parent names, separated by colons (:)."""
+        if not self.parent_name:
+            return self.name
+
+        name = self.parent_name
+        if self.name:
+            name += f":{self.name}"
+        return name
+
+    def _parse_inputs(self, structure, input_definitions, parent=None, prefix=None):
         """
         Returns the `definition` structure where all inputs (string/numeric values, numeric lists,
         dicts with a "value key"), have been converted to an InputDefinition instance.
 
-        Created InputDefinition instances are stored in self._input_definitions[mission_name].
+        Created InputDefinition instances are stored in self._input_definitions.
 
-        :param mission_name:
-        :param definition:
+        :param structure:
         :param parent:
         :param prefix:
         :return: amended definition
@@ -331,38 +350,161 @@ class StructureBuilder:
         if prefix is None:
             prefix = "data:mission"
 
-        is_numeric_list = True
-        try:
-            _ = np.asarray(definition) + 1
-        except TypeError:
-            is_numeric_list = False
-
-        if isinstance(definition, dict):
-            if "value" in definition.keys():
-                input_definition = InputDefinition.from_dict(parent, definition, prefix=prefix)
-                self.input_definitions[mission_name].append(input_definition)
+        if isinstance(structure, dict):
+            if "value" in structure.keys():
+                input_definition = InputDefinition.from_dict(parent, structure, prefix=prefix)
+                input_definitions.append(input_definition)
                 return input_definition
 
-            name = definition.get(NAME_TAG, "")
+            name = structure.get(NAME_TAG, "")
             if name:
                 prefix = f"data:mission:{name}"
 
-            for key, value in definition.items():
-                if key not in [NAME_TAG, TYPE_TAG, SEGMENT_TYPE_TAG]:
-                    definition[key] = self._parse_inputs(
-                        mission_name, value, parent=key, prefix=prefix
+            for key, value in structure.items():
+                if key not in [
+                    NAME_TAG,
+                    TYPE_TAG,
+                    SEGMENT_TYPE_TAG,
+                    PARTS_TAG,
+                    CLIMB_PARTS_TAG,
+                    DESCENT_PARTS_TAG,
+                    CRUISE_PART_TAG,
+                ]:
+                    structure[key] = self._parse_inputs(
+                        value, input_definitions, parent=key, prefix=prefix
                     )
-            return definition
-        elif isinstance(definition, list) and not is_numeric_list:
-            for i, value in enumerate(definition):
-                definition[i] = self._parse_inputs(
-                    mission_name, value, parent=parent, prefix=prefix
-                )
-            return definition
+            return structure
         else:
-            input_definition = InputDefinition(parent, definition, prefix=prefix)
-            self.input_definitions[mission_name].append(input_definition)
+            input_definition = InputDefinition(parent, structure, prefix=prefix)
+            input_definitions.append(input_definition)
             return input_definition
+
+
+class DefaultStructureBuilder(AbstractStructureBuilder):
+    """
+    Builder for structures that do not need to process the given definition.
+
+    :param definition: the definition for the part only
+    """
+
+    def build(self, definition: dict) -> dict:
+        return deepcopy(definition)
+
+
+class SegmentStructureBuilder(AbstractStructureBuilder, structure_type=SEGMENT_TAG):
+    """
+    Structure builder for segment definition.
+
+    :param definition: the definition for the segment only
+    """
+
+    def build(self, definition: dict) -> dict:
+        segment_structure = deepcopy(definition)
+        del segment_structure[SEGMENT_TAG]
+        segment_structure[SEGMENT_TYPE_TAG] = definition[SEGMENT_TAG]
+
+        return segment_structure
+
+
+class PhaseStructureBuilder(AbstractStructureBuilder, structure_type=PHASE_TAG):
+    """
+    Structure builder for phase definition.
+
+    :param definition: the whole content of definition file
+    """
+
+    def build(self, definition: dict) -> dict:
+        phase_definition = definition[PHASE_DEFINITIONS_TAG][self.name]
+        phase_structure = OrderedDict(deepcopy(phase_definition))
+
+        for i, part in enumerate(phase_definition[PARTS_TAG]):
+            if PHASE_TAG in part:
+                builder = PhaseStructureBuilder(definition, part[PHASE_TAG], self.qualified_name)
+            elif SEGMENT_TAG in part:
+                builder = SegmentStructureBuilder(part, "", self.qualified_name)
+            else:
+                raise RuntimeError(f"Unexpected structure in definition of phase {self.name}")
+
+            phase_structure[PARTS_TAG][i] = {}
+            self.insert_builder(builder, phase_structure[PARTS_TAG][i])
+            self._input_definitions += builder.input_definitions
+
+        return phase_structure
+
+
+class RouteStructureBuilder(AbstractStructureBuilder, structure_type=ROUTE_TAG):
+    """
+    Structure builder for route definition.
+
+    :param definition: the whole content of definition file
+    """
+
+    def build(self, definition: dict) -> dict:
+        route_definition = definition[ROUTE_DEFINITIONS_TAG][self.name]
+        route_structure = OrderedDict(deepcopy(route_definition))
+
+        route_structure[CLIMB_PARTS_TAG] = self._get_route_climb_or_descent_structure(
+            definition, route_definition[CLIMB_PARTS_TAG]
+        )
+
+        builder = SegmentStructureBuilder(
+            route_definition[CRUISE_PART_TAG], "cruise", self.qualified_name
+        )
+        route_structure[CRUISE_PART_TAG] = {}
+        self.insert_builder(builder, route_structure[CRUISE_PART_TAG])
+
+        route_structure[DESCENT_PARTS_TAG] = self._get_route_climb_or_descent_structure(
+            definition, route_definition[DESCENT_PARTS_TAG]
+        )
+
+        return route_structure
+
+    def _get_route_climb_or_descent_structure(self, global_definition, parts_definition):
+        parts = []
+        for part_definition in parts_definition:
+            phase_name = part_definition["phase"]
+            builder = PhaseStructureBuilder(global_definition, phase_name, self.qualified_name)
+            phase_structure = {}
+            self.insert_builder(builder, phase_structure)
+            parts.append(phase_structure)
+        return parts
+
+
+class MissionStructureBuilder(AbstractStructureBuilder, structure_type="mission"):
+    """
+    Structure builder for mission definition.
+
+    :param definition: the whole content of definition file
+    """
+
+    def build(self, definition: dict) -> dict:
+        mission_definition = definition[MISSION_DEFINITION_TAG][self.name]
+        mission_structure = OrderedDict(deepcopy(mission_definition))
+
+        mission_parts = []
+        for part_definition in mission_definition[PARTS_TAG]:
+            if ROUTE_TAG in part_definition:
+                route_name = part_definition[ROUTE_TAG]
+                builder = RouteStructureBuilder(definition, route_name, self.qualified_name)
+            elif PHASE_TAG in part_definition:
+                phase_name = part_definition[PHASE_TAG]
+                builder = PhaseStructureBuilder(definition, phase_name, self.qualified_name)
+            elif SEGMENT_TAG in part_definition:
+                builder = SegmentStructureBuilder(part_definition, "", self.qualified_name)
+            else:
+                builder = DefaultStructureBuilder(part_definition, "", self.qualified_name)
+
+            part_structure = {}
+            self.insert_builder(builder, part_structure)
+            mission_parts.append(part_structure)
+
+        mission_structure[PARTS_TAG] = mission_parts
+
+        return mission_structure
+
+    @property
+    def qualified_name(self):
+        return self.name
 
 
 class MissionBuilder:
@@ -402,10 +544,11 @@ class MissionBuilder:
         else:
             self._definition = mission_definition
 
-        structure_builder = StructureBuilder(self._definition)
-        self._structure = structure_builder.build_structure()
-
-        self._input_definitions = structure_builder.input_definitions
+        self._structure = {}
+        for mission_name in self._definition[MISSION_DEFINITION_TAG]:
+            builder = MissionStructureBuilder(self._definition, mission_name)
+            self._structure[mission_name] = builder.structure
+            self._input_definitions[mission_name] = builder.input_definitions
 
     @property
     def propulsion(self) -> IPropulsion:
@@ -468,7 +611,7 @@ class MissionBuilder:
         if mission_name is None:
             mission_name = self.get_unique_mission_name()
 
-        last_part_spec = self.definition[MISSION_DEFINITION_TAG][mission_name][PARTS_TAG][-1]
+        last_part_spec = self._structure[mission_name][PARTS_TAG][-1]
         if RESERVE_TAG in last_part_spec:
             ref_name = last_part_spec[RESERVE_TAG]["ref"].value
             multiplier = last_part_spec[RESERVE_TAG]["multiplier"].value
@@ -679,98 +822,3 @@ class MissionBuilder:
         for key, input_def in part_kwargs.items():
             if isinstance(input_def, InputDefinition):
                 part_kwargs[key] = input_def.value
-
-    def _propagate_name_in_structure(self, part, new_name: str):
-        """
-        Changes the `name` property of all flight sub-parts of provided IFlightPart instance.
-
-        If a subpart has a non-empty name, its new name is its old name, prepended with `new_name`.
-        Otherwise, its names becomes the one of its parent after modification.
-
-        :param part:
-        :param new_name:
-        """
-        part[NAME_TAG] = new_name
-        if CRUISE_PART_TAG in part:
-            subpart = part[CRUISE_PART_TAG]
-            if NAME_TAG in subpart and subpart[NAME_TAG]:
-                subpart[NAME_TAG] = ":".join([new_name, subpart[NAME_TAG]])
-            else:
-                subpart[NAME_TAG] = new_name
-        for part_tag in [PARTS_TAG, CLIMB_PARTS_TAG, DESCENT_PARTS_TAG]:
-            if part_tag in part:
-                for subpart in part[part_tag]:
-                    if isinstance(subpart, dict):
-                        if NAME_TAG in subpart and subpart[NAME_TAG]:
-                            self._propagate_name_in_structure(
-                                subpart, ":".join([new_name, subpart[NAME_TAG]])
-                            )
-                        else:
-                            subpart[NAME_TAG] = new_name
-
-    def _propagate_name(self, part: IFlightPart, new_name: str):
-        """
-        Changes the `name` property of all flight sub-parts of provided IFlightPart instance.
-
-        If a subpart has a non-empty name, its new name is its old name, prepended with `new_name`.
-        Otherwise, its names becomes the one of its parent after modification.
-
-        :param part:
-        :param new_name:
-        """
-        part.name = new_name
-        if isinstance(part, FlightSequence):
-            for subpart in part.flight_sequence:
-                if subpart.name:
-                    self._propagate_name(subpart, ":".join([str(part.name), str(subpart.name)]))
-                else:
-                    subpart.name = part.name
-
-    def _parse_inputs(self, mission_name, definition, parent=None, prefix=None):
-        """
-        Returns the `definition` structure where all inputs (string/numeric values, numeric lists,
-        dicts with a "value key"), have been converted to an InputDefinition instance.
-
-        Created InputDefinition instances are stored in self._input_definitions[mission_name].
-
-        :param mission_name:
-        :param definition:
-        :param parent:
-        :param prefix:
-        :return: amended definition
-        """
-        if prefix is None:
-            prefix = "data:mission"
-
-        is_numeric_list = True
-        try:
-            _ = np.asarray(definition) + 1
-        except TypeError:
-            is_numeric_list = False
-
-        if isinstance(definition, dict):
-            if "value" in definition.keys():
-                input_definition = InputDefinition.from_dict(parent, definition, prefix=prefix)
-                self._input_definitions[mission_name].append(input_definition)
-                return input_definition
-
-            name = definition.get(NAME_TAG, "")
-            if name:
-                prefix = f"data:mission:{name}"
-
-            for key, value in definition.items():
-                if key not in [NAME_TAG, TYPE_TAG, SEGMENT_TYPE_TAG]:
-                    definition[key] = self._parse_inputs(
-                        mission_name, value, parent=key, prefix=prefix
-                    )
-            return definition
-        elif isinstance(definition, list) and not is_numeric_list:
-            for i, value in enumerate(definition):
-                definition[i] = self._parse_inputs(
-                    mission_name, value, parent=parent, prefix=prefix
-                )
-            return definition
-        else:
-            input_definition = InputDefinition(parent, definition, prefix=prefix)
-            self._input_definitions[mission_name].append(input_definition)
-            return input_definition

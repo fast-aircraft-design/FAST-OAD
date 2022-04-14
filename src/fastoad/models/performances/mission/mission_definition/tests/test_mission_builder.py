@@ -12,6 +12,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
+from collections import OrderedDict
 from unittest.mock import Mock
 
 import numpy as np
@@ -60,7 +61,7 @@ def test_initialization():
         reference_area=100.0,
     )
 
-    assert repr(mission_builder._structure) == _get_expected_structure()
+    assert mission_builder._structure == _get_expected_structure()
 
 
 def test_inputs():
@@ -261,560 +262,1919 @@ def _get_expected_structure():
     # not settable in constructor.
     # This is very inconvenient to read, but it will hopefully help to locate
     # discrepancies that would occur.
-    return (
-        "{'sizing': OrderedDict([('parts', [OrderedDict([('range', "
-        "InputDefinition(parameter_name='range', input_value=None, input_unit='m', "
-        "default_value=nan, is_relative=False, prefix='data:mission:sizing:main', "
-        "_use_opposite=False, _variable_name='data:mission:sizing:main:range')), "
-        "('distance_accuracy', InputDefinition(parameter_name='distance_accuracy', "
-        "input_value=500, input_unit='m', default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main', _use_opposite=False, "
-        "_variable_name=None)), ('climb_parts', [OrderedDict([('engine_setting', "
-        "InputDefinition(parameter_name='engine_setting', input_value='takeoff', "
-        "input_unit=None, default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:initial_climb', _use_opposite=False, "
-        "_variable_name=None)), ('polar', {'CL': InputDefinition(parameter_name='CL', "
-        "input_value=[0.0, 0.5, 1.0], input_unit=None, default_value=nan, "
-        "is_relative=False, prefix='data:mission:sizing:main:initial_climb', "
-        "_use_opposite=False, _variable_name=None), 'CD': "
-        "InputDefinition(parameter_name='CD', input_value=[0.0, 0.03, 0.12], "
-        "input_unit=None, default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:initial_climb', _use_opposite=False, "
-        "_variable_name=None)}), ('thrust_rate', "
-        "InputDefinition(parameter_name='thrust_rate', input_value=None, "
-        "input_unit=None, default_value=1.0, is_relative=False, "
-        "prefix='data:mission:sizing:main:initial_climb', _use_opposite=False, "
-        "_variable_name='data:propulsion:initial_climb:thrust_rate')), ('parts', "
-        "[{'target': {'altitude': InputDefinition(parameter_name='altitude', "
-        "input_value=400.0, input_unit='ft', default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:initial_climb', _use_opposite=False, "
-        "_variable_name=None), 'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', "
-        "input_value='constant', input_unit='m/s', default_value=nan, "
-        "is_relative=False, prefix='data:mission:sizing:main:initial_climb', "
-        "_use_opposite=False, _variable_name=None)}, 'name': "
-        "'sizing:main:initial_climb', 'type': 'segment', 'segment_type': "
-        "'altitude_change'}, {'polar': OrderedDict([('CL', "
-        "InputDefinition(parameter_name='CL', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:initial_climb', _use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:takeoff:CL')), ('CD', "
-        "InputDefinition(parameter_name='CD', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:initial_climb', _use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:takeoff:CD'))]), 'target': "
-        "{'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', input_value=250, "
-        "input_unit='kn', default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:initial_climb', _use_opposite=False, "
-        "_variable_name=None)}, 'name': 'sizing:main:initial_climb', 'type': "
-        "'segment', 'segment_type': 'speed_change'}, {'polar': {'CL': "
-        "InputDefinition(parameter_name='CL', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:initial_climb', _use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:takeoff:CL'), 'CD': "
-        "InputDefinition(parameter_name='CD', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:initial_climb', _use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:takeoff:CD')}, 'target': "
-        "{'altitude': InputDefinition(parameter_name='altitude', input_value=1500.0, "
-        "input_unit='ft', default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:initial_climb', _use_opposite=False, "
-        "_variable_name=None), 'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', "
-        "input_value='constant', input_unit='m/s', default_value=nan, "
-        "is_relative=False, prefix='data:mission:sizing:main:initial_climb', "
-        "_use_opposite=False, _variable_name=None)}, 'name': "
-        "'sizing:main:initial_climb', 'type': 'segment', 'segment_type': "
-        "'altitude_change'}]), ('name', 'sizing:main:initial_climb'), ('type', "
-        "'phase')]), OrderedDict([('engine_setting', "
-        "InputDefinition(parameter_name='engine_setting', input_value='climb', "
-        "input_unit=None, default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:climb', _use_opposite=False, "
-        "_variable_name=None)), ('polar', OrderedDict([('CL', "
-        "InputDefinition(parameter_name='CL', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:climb', _use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:cruise:CL')), ('CD', "
-        "InputDefinition(parameter_name='CD', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:climb', _use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:cruise:CD'))])), ('thrust_rate', "
-        "InputDefinition(parameter_name='thrust_rate', input_value=None, "
-        "input_unit=None, default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:climb', _use_opposite=False, "
-        "_variable_name='data:propulsion:climb:thrust_rate')), ('parts', [{'target': "
-        "{'altitude': InputDefinition(parameter_name='altitude', input_value=10000.0, "
-        "input_unit='ft', default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:climb', _use_opposite=False, "
-        "_variable_name=None), 'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', "
-        "input_value='constant', input_unit='m/s', default_value=nan, "
-        "is_relative=False, prefix='data:mission:sizing:main:climb', "
-        "_use_opposite=False, _variable_name=None)}, 'name': 'sizing:main:climb', "
-        "'type': 'segment', 'segment_type': 'altitude_change'}, {'target': "
-        "{'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', input_value=300.0, "
-        "input_unit='kn', default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:climb', _use_opposite=False, "
-        "_variable_name=None)}, 'name': 'sizing:main:climb', 'type': 'segment', "
-        "'segment_type': 'speed_change'}, {'target': {'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', "
-        "input_value='constant', input_unit='m/s', default_value=nan, "
-        "is_relative=False, prefix='data:mission:sizing:main:climb', "
-        "_use_opposite=False, _variable_name=None), 'mach': "
-        "InputDefinition(parameter_name='mach', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:climb', _use_opposite=False, "
-        "_variable_name='data:TLAR:cruise_mach')}, 'name': 'sizing:main:climb', "
-        "'type': 'segment', 'segment_type': 'altitude_change'}, {'target': {'mach': "
-        "InputDefinition(parameter_name='mach', input_value='constant', "
-        "input_unit=None, default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:climb', _use_opposite=False, "
-        "_variable_name=None), 'altitude': InputDefinition(parameter_name='altitude', "
-        "input_value=-20000.0, input_unit='m', default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:climb', _use_opposite=False, "
-        "_variable_name=None)}, 'name': 'sizing:main:climb', 'type': 'segment', "
-        "'segment_type': 'altitude_change'}]), ('name', 'sizing:main:climb'), "
-        "('type', 'phase')])]), ('cruise_part', {'engine_setting': "
-        "InputDefinition(parameter_name='engine_setting', input_value='cruise', "
-        "input_unit=None, default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:cruise', _use_opposite=False, "
-        "_variable_name=None), 'polar': OrderedDict([('CL', "
-        "InputDefinition(parameter_name='CL', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:cruise', _use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:cruise:CL')), ('CD', "
-        "InputDefinition(parameter_name='CD', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:cruise', _use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:cruise:CD'))]), 'name': "
-        "'sizing:main:cruise', 'type': 'segment', 'segment_type': 'optimal_cruise'}), "
-        "('descent_parts', [OrderedDict([('engine_setting', "
-        "InputDefinition(parameter_name='engine_setting', input_value='idle', "
-        "input_unit=None, default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:descent', _use_opposite=False, "
-        "_variable_name=None)), ('polar', OrderedDict([('CL', "
-        "InputDefinition(parameter_name='CL', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:descent', _use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:cruise:CL')), ('CD', "
-        "InputDefinition(parameter_name='CD', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:descent', _use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:cruise:CD'))])), ('thrust_rate', "
-        "InputDefinition(parameter_name='thrust_rate', input_value=None, "
-        "input_unit=None, default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:descent', _use_opposite=False, "
-        "_variable_name='data:propulsion:descent:thrust_rate')), ('parts', "
-        "[{'target': {'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', input_value=300, "
-        "input_unit='kn', default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:descent', _use_opposite=False, "
-        "_variable_name=None), 'mach': InputDefinition(parameter_name='mach', "
-        "input_value='constant', input_unit=None, default_value=nan, "
-        "is_relative=False, prefix='data:mission:sizing:main:descent', "
-        "_use_opposite=False, _variable_name=None)}, 'name': 'sizing:main:descent', "
-        "'type': 'segment', 'segment_type': 'altitude_change'}, {'target': "
-        "{'altitude': InputDefinition(parameter_name='altitude', input_value=10000.0, "
-        "input_unit='ft', default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:descent', _use_opposite=False, "
-        "_variable_name=None), 'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', "
-        "input_value='constant', input_unit='m/s', default_value=nan, "
-        "is_relative=False, prefix='data:mission:sizing:main:descent', "
-        "_use_opposite=False, _variable_name=None)}, 'name': 'sizing:main:descent', "
-        "'type': 'segment', 'segment_type': 'altitude_change'}, {'target': "
-        "{'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', input_value=250.0, "
-        "input_unit='kn', default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:descent', _use_opposite=False, "
-        "_variable_name=None)}, 'name': 'sizing:main:descent', 'type': 'segment', "
-        "'segment_type': 'speed_change'}, {'target': {'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', "
-        "input_value='constant', input_unit='m/s', default_value=nan, "
-        "is_relative=False, prefix='data:mission:sizing:main:descent', "
-        "_use_opposite=False, _variable_name=None), 'altitude': "
-        "InputDefinition(parameter_name='altitude', input_value=None, input_unit='m', "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:main:descent', _use_opposite=False, "
-        "_variable_name='data:mission:sizing:main:descent:final_altitude')}, 'name': "
-        "'sizing:main:descent', 'type': 'segment', 'segment_type': "
-        "'altitude_change'}]), ('name', 'sizing:main:descent'), ('type', "
-        "'phase')])]), ('name', 'sizing:main'), ('type', 'route')]), "
-        "OrderedDict([('range', InputDefinition(parameter_name='range', "
-        "input_value=None, input_unit='m', default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:diversion', _use_opposite=False, "
-        "_variable_name='data:mission:sizing:diversion:range')), "
-        "('distance_accuracy', InputDefinition(parameter_name='distance_accuracy', "
-        "input_value=0.1, input_unit='km', default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:diversion', _use_opposite=False, "
-        "_variable_name=None)), ('climb_parts', [OrderedDict([('engine_setting', "
-        "InputDefinition(parameter_name='engine_setting', input_value='climb', "
-        "input_unit=None, default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:diversion:diversion_climb', _use_opposite=False, "
-        "_variable_name=None)), ('polar', OrderedDict([('CL', "
-        "InputDefinition(parameter_name='CL', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:diversion:diversion_climb', _use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:cruise:CL')), ('CD', "
-        "InputDefinition(parameter_name='CD', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:diversion:diversion_climb', _use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:cruise:CD'))])), ('thrust_rate', "
-        "InputDefinition(parameter_name='thrust_rate', input_value=0.93, "
-        "input_unit=None, default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:diversion:diversion_climb', _use_opposite=False, "
-        "_variable_name=None)), ('time_step', "
-        "InputDefinition(parameter_name='time_step', input_value=5.0, input_unit='s', "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:diversion:diversion_climb', _use_opposite=False, "
-        "_variable_name=None)), ('parts', [{'target': {'altitude': "
-        "InputDefinition(parameter_name='altitude', input_value=10000.0, "
-        "input_unit='ft', default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:diversion:diversion_climb', _use_opposite=False, "
-        "_variable_name=None), 'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', "
-        "input_value='constant', input_unit='m/s', default_value=nan, "
-        "is_relative=False, prefix='data:mission:sizing:diversion:diversion_climb', "
-        "_use_opposite=False, _variable_name=None)}, 'name': "
-        "'sizing:diversion:diversion_climb', 'type': 'segment', 'segment_type': "
-        "'altitude_change'}, {'target': {'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', input_value=300.0, "
-        "input_unit='kn', default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:diversion:diversion_climb', _use_opposite=False, "
-        "_variable_name=None)}, 'name': 'sizing:diversion:diversion_climb', 'type': "
-        "'segment', 'segment_type': 'speed_change'}, {'target': {'altitude': "
-        "InputDefinition(parameter_name='altitude', input_value=22000.0, "
-        "input_unit='ft', default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:diversion:diversion_climb', _use_opposite=False, "
-        "_variable_name=None), 'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', "
-        "input_value='constant', input_unit='m/s', default_value=nan, "
-        "is_relative=False, prefix='data:mission:sizing:diversion:diversion_climb', "
-        "_use_opposite=False, _variable_name=None)}, 'name': "
-        "'sizing:diversion:diversion_climb', 'type': 'segment', 'segment_type': "
-        "'altitude_change'}]), ('name', 'sizing:diversion:diversion_climb'), ('type', "
-        "'phase')])]), ('cruise_part', {'engine_setting': "
-        "InputDefinition(parameter_name='engine_setting', input_value='cruise', "
-        "input_unit=None, default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:diversion:cruise', _use_opposite=False, "
-        "_variable_name=None), 'polar': OrderedDict([('CL', "
-        "InputDefinition(parameter_name='CL', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:diversion:cruise', _use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:cruise:CL')), ('CD', "
-        "InputDefinition(parameter_name='CD', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:diversion:cruise', _use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:cruise:CD'))]), 'name': "
-        "'sizing:diversion:cruise', 'type': 'segment', 'segment_type': 'cruise'}), "
-        "('descent_parts', [OrderedDict([('engine_setting', "
-        "InputDefinition(parameter_name='engine_setting', input_value='idle', "
-        "input_unit=None, default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:diversion:descent', _use_opposite=False, "
-        "_variable_name=None)), ('polar', OrderedDict([('CL', "
-        "InputDefinition(parameter_name='CL', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:diversion:descent', _use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:cruise:CL')), ('CD', "
-        "InputDefinition(parameter_name='CD', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:diversion:descent', _use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:cruise:CD'))])), ('thrust_rate', "
-        "InputDefinition(parameter_name='thrust_rate', input_value=None, "
-        "input_unit=None, default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:diversion:descent', _use_opposite=False, "
-        "_variable_name='data:propulsion:descent:thrust_rate')), ('parts', "
-        "[{'target': {'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', input_value=300, "
-        "input_unit='kn', default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:diversion:descent', _use_opposite=False, "
-        "_variable_name=None), 'mach': InputDefinition(parameter_name='mach', "
-        "input_value='constant', input_unit=None, default_value=nan, "
-        "is_relative=False, prefix='data:mission:sizing:diversion:descent', "
-        "_use_opposite=False, _variable_name=None)}, 'name': "
-        "'sizing:diversion:descent', 'type': 'segment', 'segment_type': "
-        "'altitude_change'}, {'target': {'altitude': "
-        "InputDefinition(parameter_name='altitude', input_value=10000.0, "
-        "input_unit='ft', default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:diversion:descent', _use_opposite=False, "
-        "_variable_name=None), 'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', "
-        "input_value='constant', input_unit='m/s', default_value=nan, "
-        "is_relative=False, prefix='data:mission:sizing:diversion:descent', "
-        "_use_opposite=False, _variable_name=None)}, 'name': "
-        "'sizing:diversion:descent', 'type': 'segment', 'segment_type': "
-        "'altitude_change'}, {'target': {'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', input_value=250.0, "
-        "input_unit='kn', default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:diversion:descent', _use_opposite=False, "
-        "_variable_name=None)}, 'name': 'sizing:diversion:descent', 'type': "
-        "'segment', 'segment_type': 'speed_change'}, {'target': "
-        "{'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', "
-        "input_value='constant', input_unit='m/s', default_value=nan, "
-        "is_relative=False, prefix='data:mission:sizing:diversion:descent', "
-        "_use_opposite=False, _variable_name=None), 'altitude': "
-        "InputDefinition(parameter_name='altitude', input_value=None, input_unit='m', "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:diversion:descent', _use_opposite=False, "
-        "_variable_name='data:mission:sizing:diversion:descent:final_altitude')}, "
-        "'name': 'sizing:diversion:descent', 'type': 'segment', 'segment_type': "
-        "'altitude_change'}]), ('name', 'sizing:diversion:descent'), ('type', "
-        "'phase')])]), ('name', 'sizing:diversion'), ('type', 'route')]), "
-        "OrderedDict([('parts', [{'polar': OrderedDict([('CL', "
-        "InputDefinition(parameter_name='CL', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, prefix='data:mission:sizing:holding', "
-        "_use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:cruise:CL')), ('CD', "
-        "InputDefinition(parameter_name='CD', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, prefix='data:mission:sizing:holding', "
-        "_use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:cruise:CD'))]), 'target': "
-        "{'delta_time': InputDefinition(parameter_name='time', input_value=None, "
-        "input_unit='s', default_value=nan, is_relative=True, "
-        "prefix='data:mission:sizing:holding', _use_opposite=False, "
-        "_variable_name='data:mission:sizing:holding:duration')}, 'name': "
-        "'sizing:holding', 'type': 'segment', 'segment_type': 'holding'}]), ('name', "
-        "'sizing:holding'), ('type', 'phase')]), OrderedDict([('thrust_rate', "
-        "InputDefinition(parameter_name='thrust_rate', input_value=None, "
-        "input_unit=None, default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:taxi_in', _use_opposite=False, "
-        "_variable_name='data:mission:sizing:taxi_in:thrust_rate')), ('parts', "
-        "[{'true_airspeed': InputDefinition(parameter_name='true_airspeed', "
-        "input_value=0.0, input_unit='m/s', default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing:taxi_in', _use_opposite=False, "
-        "_variable_name=None), 'target': {'delta_time': "
-        "InputDefinition(parameter_name='time', input_value=None, input_unit='s', "
-        "default_value=nan, is_relative=True, prefix='data:mission:sizing:taxi_in', "
-        "_use_opposite=False, "
-        "_variable_name='data:mission:sizing:taxi_in:duration')}, 'name': "
-        "'sizing:taxi_in', 'type': 'segment', 'segment_type': 'taxi'}]), ('name', "
-        "'sizing:taxi_in'), ('type', 'phase')]), {'reserve': {'ref': "
-        "InputDefinition(parameter_name='ref', input_value='main', input_unit=None, "
-        "default_value=nan, is_relative=False, prefix='data:mission:sizing', "
-        "_use_opposite=False, _variable_name=None), 'multiplier': "
-        "InputDefinition(parameter_name='multiplier', input_value=0.03, "
-        "input_unit=None, default_value=nan, is_relative=False, "
-        "prefix='data:mission:sizing', _use_opposite=False, _variable_name=None)}}]), "
-        "('name', 'sizing'), ('type', 'mission')]), 'operational': "
-        "OrderedDict([('parts', [OrderedDict([('parts', [{'thrust_rate': "
-        "InputDefinition(parameter_name='thrust_rate', input_value=None, "
-        "input_unit=None, default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:taxi_out', _use_opposite=False, "
-        "_variable_name='data:mission:operational:taxi_out:thrust_rate'), "
-        "'true_airspeed': InputDefinition(parameter_name='true_airspeed', "
-        "input_value=0.0, input_unit='m/s', default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:taxi_out', _use_opposite=False, "
-        "_variable_name=None), 'target': {'delta_time': "
-        "InputDefinition(parameter_name='time', input_value=None, input_unit='s', "
-        "default_value=nan, is_relative=True, "
-        "prefix='data:mission:operational:taxi_out', _use_opposite=False, "
-        "_variable_name='data:mission:operational:taxi_out:duration')}, 'name': "
-        "'operational:taxi_out', 'type': 'segment', 'segment_type': 'taxi'}]), "
-        "('name', 'operational:taxi_out'), ('type', 'phase')]), "
-        "OrderedDict([('range', InputDefinition(parameter_name='range', "
-        "input_value=None, input_unit='m', default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main', _use_opposite=False, "
-        "_variable_name='data:mission:operational:main:range')), "
-        "('distance_accuracy', InputDefinition(parameter_name='distance_accuracy', "
-        "input_value=500, input_unit='m', default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main', _use_opposite=False, "
-        "_variable_name=None)), ('climb_parts', [OrderedDict([('engine_setting', "
-        "InputDefinition(parameter_name='engine_setting', input_value='takeoff', "
-        "input_unit=None, default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:initial_climb', _use_opposite=False, "
-        "_variable_name=None)), ('polar', {'CL': InputDefinition(parameter_name='CL', "
-        "input_value=[0.0, 0.5, 1.0], input_unit=None, default_value=nan, "
-        "is_relative=False, prefix='data:mission:operational:main:initial_climb', "
-        "_use_opposite=False, _variable_name=None), 'CD': "
-        "InputDefinition(parameter_name='CD', input_value=[0.0, 0.03, 0.12], "
-        "input_unit=None, default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:initial_climb', _use_opposite=False, "
-        "_variable_name=None)}), ('thrust_rate', "
-        "InputDefinition(parameter_name='thrust_rate', input_value=None, "
-        "input_unit=None, default_value=1.0, is_relative=False, "
-        "prefix='data:mission:operational:main:initial_climb', _use_opposite=False, "
-        "_variable_name='data:propulsion:initial_climb:thrust_rate')), ('parts', "
-        "[{'target': {'altitude': InputDefinition(parameter_name='altitude', "
-        "input_value=400.0, input_unit='ft', default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:initial_climb', _use_opposite=False, "
-        "_variable_name=None), 'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', "
-        "input_value='constant', input_unit='m/s', default_value=nan, "
-        "is_relative=False, prefix='data:mission:operational:main:initial_climb', "
-        "_use_opposite=False, _variable_name=None)}, 'name': "
-        "'operational:main:initial_climb', 'type': 'segment', 'segment_type': "
-        "'altitude_change'}, {'polar': OrderedDict([('CL', "
-        "InputDefinition(parameter_name='CL', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:initial_climb', _use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:takeoff:CL')), ('CD', "
-        "InputDefinition(parameter_name='CD', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:initial_climb', _use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:takeoff:CD'))]), 'target': "
-        "{'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', input_value=250, "
-        "input_unit='kn', default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:initial_climb', _use_opposite=False, "
-        "_variable_name=None)}, 'name': 'operational:main:initial_climb', 'type': "
-        "'segment', 'segment_type': 'speed_change'}, {'polar': {'CL': "
-        "InputDefinition(parameter_name='CL', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:initial_climb', _use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:takeoff:CL'), 'CD': "
-        "InputDefinition(parameter_name='CD', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:initial_climb', _use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:takeoff:CD')}, 'target': "
-        "{'altitude': InputDefinition(parameter_name='altitude', input_value=1500.0, "
-        "input_unit='ft', default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:initial_climb', _use_opposite=False, "
-        "_variable_name=None), 'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', "
-        "input_value='constant', input_unit='m/s', default_value=nan, "
-        "is_relative=False, prefix='data:mission:operational:main:initial_climb', "
-        "_use_opposite=False, _variable_name=None)}, 'name': "
-        "'operational:main:initial_climb', 'type': 'segment', 'segment_type': "
-        "'altitude_change'}]), ('name', 'operational:main:initial_climb'), ('type', "
-        "'phase')]), OrderedDict([('engine_setting', "
-        "InputDefinition(parameter_name='engine_setting', input_value='climb', "
-        "input_unit=None, default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:climb', _use_opposite=False, "
-        "_variable_name=None)), ('polar', OrderedDict([('CL', "
-        "InputDefinition(parameter_name='CL', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:climb', _use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:cruise:CL')), ('CD', "
-        "InputDefinition(parameter_name='CD', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:climb', _use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:cruise:CD'))])), ('thrust_rate', "
-        "InputDefinition(parameter_name='thrust_rate', input_value=None, "
-        "input_unit=None, default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:climb', _use_opposite=False, "
-        "_variable_name='data:propulsion:climb:thrust_rate')), ('parts', [{'target': "
-        "{'altitude': InputDefinition(parameter_name='altitude', input_value=10000.0, "
-        "input_unit='ft', default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:climb', _use_opposite=False, "
-        "_variable_name=None), 'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', "
-        "input_value='constant', input_unit='m/s', default_value=nan, "
-        "is_relative=False, prefix='data:mission:operational:main:climb', "
-        "_use_opposite=False, _variable_name=None)}, 'name': "
-        "'operational:main:climb', 'type': 'segment', 'segment_type': "
-        "'altitude_change'}, {'target': {'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', input_value=300.0, "
-        "input_unit='kn', default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:climb', _use_opposite=False, "
-        "_variable_name=None)}, 'name': 'operational:main:climb', 'type': 'segment', "
-        "'segment_type': 'speed_change'}, {'target': {'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', "
-        "input_value='constant', input_unit='m/s', default_value=nan, "
-        "is_relative=False, prefix='data:mission:operational:main:climb', "
-        "_use_opposite=False, _variable_name=None), 'mach': "
-        "InputDefinition(parameter_name='mach', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:climb', _use_opposite=False, "
-        "_variable_name='data:TLAR:cruise_mach')}, 'name': 'operational:main:climb', "
-        "'type': 'segment', 'segment_type': 'altitude_change'}, {'target': {'mach': "
-        "InputDefinition(parameter_name='mach', input_value='constant', "
-        "input_unit=None, default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:climb', _use_opposite=False, "
-        "_variable_name=None), 'altitude': InputDefinition(parameter_name='altitude', "
-        "input_value=-20000.0, input_unit='m', default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:climb', _use_opposite=False, "
-        "_variable_name=None)}, 'name': 'operational:main:climb', 'type': 'segment', "
-        "'segment_type': 'altitude_change'}]), ('name', 'operational:main:climb'), "
-        "('type', 'phase')])]), ('cruise_part', {'engine_setting': "
-        "InputDefinition(parameter_name='engine_setting', input_value='cruise', "
-        "input_unit=None, default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:cruise', _use_opposite=False, "
-        "_variable_name=None), 'polar': OrderedDict([('CL', "
-        "InputDefinition(parameter_name='CL', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:cruise', _use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:cruise:CL')), ('CD', "
-        "InputDefinition(parameter_name='CD', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:cruise', _use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:cruise:CD'))]), 'name': "
-        "'operational:main:cruise', 'type': 'segment', 'segment_type': "
-        "'optimal_cruise'}), ('descent_parts', [OrderedDict([('engine_setting', "
-        "InputDefinition(parameter_name='engine_setting', input_value='idle', "
-        "input_unit=None, default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:descent', _use_opposite=False, "
-        "_variable_name=None)), ('polar', OrderedDict([('CL', "
-        "InputDefinition(parameter_name='CL', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:descent', _use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:cruise:CL')), ('CD', "
-        "InputDefinition(parameter_name='CD', input_value=None, input_unit=None, "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:descent', _use_opposite=False, "
-        "_variable_name='data:aerodynamics:aircraft:cruise:CD'))])), ('thrust_rate', "
-        "InputDefinition(parameter_name='thrust_rate', input_value=None, "
-        "input_unit=None, default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:descent', _use_opposite=False, "
-        "_variable_name='data:propulsion:descent:thrust_rate')), ('parts', "
-        "[{'target': {'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', input_value=300, "
-        "input_unit='kn', default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:descent', _use_opposite=False, "
-        "_variable_name=None), 'mach': InputDefinition(parameter_name='mach', "
-        "input_value='constant', input_unit=None, default_value=nan, "
-        "is_relative=False, prefix='data:mission:operational:main:descent', "
-        "_use_opposite=False, _variable_name=None)}, 'name': "
-        "'operational:main:descent', 'type': 'segment', 'segment_type': "
-        "'altitude_change'}, {'target': {'altitude': "
-        "InputDefinition(parameter_name='altitude', input_value=10000.0, "
-        "input_unit='ft', default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:descent', _use_opposite=False, "
-        "_variable_name=None), 'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', "
-        "input_value='constant', input_unit='m/s', default_value=nan, "
-        "is_relative=False, prefix='data:mission:operational:main:descent', "
-        "_use_opposite=False, _variable_name=None)}, 'name': "
-        "'operational:main:descent', 'type': 'segment', 'segment_type': "
-        "'altitude_change'}, {'target': {'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', input_value=250.0, "
-        "input_unit='kn', default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:descent', _use_opposite=False, "
-        "_variable_name=None)}, 'name': 'operational:main:descent', 'type': "
-        "'segment', 'segment_type': 'speed_change'}, {'target': "
-        "{'equivalent_airspeed': "
-        "InputDefinition(parameter_name='equivalent_airspeed', "
-        "input_value='constant', input_unit='m/s', default_value=nan, "
-        "is_relative=False, prefix='data:mission:operational:main:descent', "
-        "_use_opposite=False, _variable_name=None), 'altitude': "
-        "InputDefinition(parameter_name='altitude', input_value=None, input_unit='m', "
-        "default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:main:descent', _use_opposite=False, "
-        "_variable_name='data:mission:operational:main:descent:final_altitude')}, "
-        "'name': 'operational:main:descent', 'type': 'segment', 'segment_type': "
-        "'altitude_change'}]), ('name', 'operational:main:descent'), ('type', "
-        "'phase')])]), ('name', 'operational:main'), ('type', 'route')]), "
-        "OrderedDict([('thrust_rate', InputDefinition(parameter_name='thrust_rate', "
-        "input_value=None, input_unit=None, default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:taxi_in', _use_opposite=False, "
-        "_variable_name='data:mission:operational:taxi_in:thrust_rate')), ('parts', "
-        "[{'true_airspeed': InputDefinition(parameter_name='true_airspeed', "
-        "input_value=0.0, input_unit='m/s', default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational:taxi_in', _use_opposite=False, "
-        "_variable_name=None), 'target': {'delta_time': "
-        "InputDefinition(parameter_name='time', input_value=None, input_unit='s', "
-        "default_value=nan, is_relative=True, "
-        "prefix='data:mission:operational:taxi_in', _use_opposite=False, "
-        "_variable_name='data:mission:operational:taxi_in:duration')}, 'name': "
-        "'operational:taxi_in', 'type': 'segment', 'segment_type': 'taxi'}]), "
-        "('name', 'operational:taxi_in'), ('type', 'phase')]), {'reserve': {'ref': "
-        "InputDefinition(parameter_name='ref', input_value='main', input_unit=None, "
-        "default_value=nan, is_relative=False, prefix='data:mission:operational', "
-        "_use_opposite=False, _variable_name=None), 'multiplier': "
-        "InputDefinition(parameter_name='multiplier', input_value=0.02, "
-        "input_unit=None, default_value=nan, is_relative=False, "
-        "prefix='data:mission:operational', _use_opposite=False, "
-        "_variable_name=None)}}]), ('name', 'operational'), ('type', 'mission')])}"
-    )
+    return {
+        "operational": OrderedDict(
+            [
+                (
+                    "parts",
+                    [
+                        OrderedDict(
+                            [
+                                (
+                                    "parts",
+                                    [
+                                        {
+                                            "name": "operational:taxi_out",
+                                            "segment_type": "taxi",
+                                            "target": {
+                                                "delta_time": InputDefinition(
+                                                    parameter_name="time",
+                                                    input_value=None,
+                                                    input_unit="s",
+                                                    default_value=np.nan,
+                                                    is_relative=True,
+                                                    prefix="data:mission:operational:taxi_out",
+                                                    use_opposite=False,
+                                                    variable_name="data:mission:operational:taxi_out:duration",
+                                                )
+                                            },
+                                            "thrust_rate": InputDefinition(
+                                                parameter_name="thrust_rate",
+                                                input_value=None,
+                                                input_unit=None,
+                                                default_value=np.nan,
+                                                is_relative=False,
+                                                prefix="data:mission:operational:taxi_out",
+                                                use_opposite=False,
+                                                variable_name="data:mission:operational:taxi_out:thrust_rate",
+                                            ),
+                                            "true_airspeed": InputDefinition(
+                                                parameter_name="true_airspeed",
+                                                input_value=0.0,
+                                                input_unit="m/s",
+                                                default_value=np.nan,
+                                                is_relative=False,
+                                                prefix="data:mission:operational:taxi_out",
+                                                use_opposite=False,
+                                                variable_name=None,
+                                            ),
+                                            "type": "segment",
+                                        }
+                                    ],
+                                ),
+                                ("name", "operational:taxi_out"),
+                                ("type", "phase"),
+                            ]
+                        ),
+                        OrderedDict(
+                            [
+                                (
+                                    "range",
+                                    InputDefinition(
+                                        parameter_name="range",
+                                        input_value=None,
+                                        input_unit="m",
+                                        default_value=np.nan,
+                                        is_relative=False,
+                                        prefix="data:mission:operational:main",
+                                        use_opposite=False,
+                                        variable_name="data:mission:operational:main:range",
+                                    ),
+                                ),
+                                (
+                                    "distance_accuracy",
+                                    InputDefinition(
+                                        parameter_name="distance_accuracy",
+                                        input_value=500,
+                                        input_unit="m",
+                                        default_value=np.nan,
+                                        is_relative=False,
+                                        prefix="data:mission:operational:main",
+                                        use_opposite=False,
+                                        variable_name=None,
+                                    ),
+                                ),
+                                (
+                                    "climb_parts",
+                                    [
+                                        OrderedDict(
+                                            [
+                                                (
+                                                    "engine_setting",
+                                                    InputDefinition(
+                                                        parameter_name="engine_setting",
+                                                        input_value="takeoff",
+                                                        input_unit=None,
+                                                        default_value=np.nan,
+                                                        is_relative=False,
+                                                        prefix="data:mission:operational:main:initial_climb",
+                                                        use_opposite=False,
+                                                        variable_name=None,
+                                                    ),
+                                                ),
+                                                (
+                                                    "polar",
+                                                    {
+                                                        "CD": InputDefinition(
+                                                            parameter_name="CD",
+                                                            input_value=[0.0, 0.03, 0.12],
+                                                            input_unit=None,
+                                                            default_value=np.nan,
+                                                            is_relative=False,
+                                                            prefix="data:mission:operational:main:initial_climb",
+                                                            use_opposite=False,
+                                                            variable_name=None,
+                                                        ),
+                                                        "CL": InputDefinition(
+                                                            parameter_name="CL",
+                                                            input_value=[0.0, 0.5, 1.0],
+                                                            input_unit=None,
+                                                            default_value=np.nan,
+                                                            is_relative=False,
+                                                            prefix="data:mission:operational:main:initial_climb",
+                                                            use_opposite=False,
+                                                            variable_name=None,
+                                                        ),
+                                                    },
+                                                ),
+                                                (
+                                                    "thrust_rate",
+                                                    InputDefinition(
+                                                        parameter_name="thrust_rate",
+                                                        input_value=None,
+                                                        input_unit=None,
+                                                        default_value=1.0,
+                                                        is_relative=False,
+                                                        prefix="data:mission:operational:main:initial_climb",
+                                                        use_opposite=False,
+                                                        variable_name="data:propulsion:initial_climb:thrust_rate",
+                                                    ),
+                                                ),
+                                                (
+                                                    "parts",
+                                                    [
+                                                        {
+                                                            "name": "operational:main:initial_climb",
+                                                            "segment_type": "altitude_change",
+                                                            "target": {
+                                                                "altitude": InputDefinition(
+                                                                    parameter_name="altitude",
+                                                                    input_value=400.0,
+                                                                    input_unit="ft",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:operational:main:initial_climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value="constant",
+                                                                    input_unit="m/s",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:operational:main:initial_climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                        {
+                                                            "name": "operational:main:initial_climb",
+                                                            "polar": OrderedDict(
+                                                                [
+                                                                    (
+                                                                        "CL",
+                                                                        InputDefinition(
+                                                                            parameter_name="CL",
+                                                                            input_value=None,
+                                                                            input_unit=None,
+                                                                            default_value=np.nan,
+                                                                            is_relative=False,
+                                                                            prefix="data:mission:operational:main:initial_climb",
+                                                                            use_opposite=False,
+                                                                            variable_name="data:aerodynamics:aircraft:takeoff:CL",
+                                                                        ),
+                                                                    ),
+                                                                    (
+                                                                        "CD",
+                                                                        InputDefinition(
+                                                                            parameter_name="CD",
+                                                                            input_value=None,
+                                                                            input_unit=None,
+                                                                            default_value=np.nan,
+                                                                            is_relative=False,
+                                                                            prefix="data:mission:operational:main:initial_climb",
+                                                                            use_opposite=False,
+                                                                            variable_name="data:aerodynamics:aircraft:takeoff:CD",
+                                                                        ),
+                                                                    ),
+                                                                ]
+                                                            ),
+                                                            "segment_type": "speed_change",
+                                                            "target": {
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value=250,
+                                                                    input_unit="kn",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:operational:main:initial_climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                )
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                        {
+                                                            "name": "operational:main:initial_climb",
+                                                            "polar": {
+                                                                "CD": InputDefinition(
+                                                                    parameter_name="CD",
+                                                                    input_value=None,
+                                                                    input_unit=None,
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:operational:main:initial_climb",
+                                                                    use_opposite=False,
+                                                                    variable_name="data:aerodynamics:aircraft:takeoff:CD",
+                                                                ),
+                                                                "CL": InputDefinition(
+                                                                    parameter_name="CL",
+                                                                    input_value=None,
+                                                                    input_unit=None,
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:operational:main:initial_climb",
+                                                                    use_opposite=False,
+                                                                    variable_name="data:aerodynamics:aircraft:takeoff:CL",
+                                                                ),
+                                                            },
+                                                            "segment_type": "altitude_change",
+                                                            "target": {
+                                                                "altitude": InputDefinition(
+                                                                    parameter_name="altitude",
+                                                                    input_value=1500.0,
+                                                                    input_unit="ft",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:operational:main:initial_climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value="constant",
+                                                                    input_unit="m/s",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:operational:main:initial_climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                    ],
+                                                ),
+                                                ("name", "operational:main:initial_climb"),
+                                                ("type", "phase"),
+                                            ]
+                                        ),
+                                        OrderedDict(
+                                            [
+                                                (
+                                                    "engine_setting",
+                                                    InputDefinition(
+                                                        parameter_name="engine_setting",
+                                                        input_value="climb",
+                                                        input_unit=None,
+                                                        default_value=np.nan,
+                                                        is_relative=False,
+                                                        prefix="data:mission:operational:main:climb",
+                                                        use_opposite=False,
+                                                        variable_name=None,
+                                                    ),
+                                                ),
+                                                (
+                                                    "polar",
+                                                    OrderedDict(
+                                                        [
+                                                            (
+                                                                "CL",
+                                                                InputDefinition(
+                                                                    parameter_name="CL",
+                                                                    input_value=None,
+                                                                    input_unit=None,
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:operational:main:climb",
+                                                                    use_opposite=False,
+                                                                    variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                                ),
+                                                            ),
+                                                            (
+                                                                "CD",
+                                                                InputDefinition(
+                                                                    parameter_name="CD",
+                                                                    input_value=None,
+                                                                    input_unit=None,
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:operational:main:climb",
+                                                                    use_opposite=False,
+                                                                    variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                                ),
+                                                            ),
+                                                        ]
+                                                    ),
+                                                ),
+                                                (
+                                                    "thrust_rate",
+                                                    InputDefinition(
+                                                        parameter_name="thrust_rate",
+                                                        input_value=None,
+                                                        input_unit=None,
+                                                        default_value=np.nan,
+                                                        is_relative=False,
+                                                        prefix="data:mission:operational:main:climb",
+                                                        use_opposite=False,
+                                                        variable_name="data:propulsion:climb:thrust_rate",
+                                                    ),
+                                                ),
+                                                (
+                                                    "parts",
+                                                    [
+                                                        {
+                                                            "name": "operational:main:climb",
+                                                            "segment_type": "altitude_change",
+                                                            "target": {
+                                                                "altitude": InputDefinition(
+                                                                    parameter_name="altitude",
+                                                                    input_value=10000.0,
+                                                                    input_unit="ft",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:operational:main:climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value="constant",
+                                                                    input_unit="m/s",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:operational:main:climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                        {
+                                                            "name": "operational:main:climb",
+                                                            "segment_type": "speed_change",
+                                                            "target": {
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value=300.0,
+                                                                    input_unit="kn",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:operational:main:climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                )
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                        {
+                                                            "name": "operational:main:climb",
+                                                            "segment_type": "altitude_change",
+                                                            "target": {
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value="constant",
+                                                                    input_unit="m/s",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:operational:main:climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                                "mach": InputDefinition(
+                                                                    parameter_name="mach",
+                                                                    input_value=None,
+                                                                    input_unit=None,
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:operational:main:climb",
+                                                                    use_opposite=False,
+                                                                    variable_name="data:TLAR:cruise_mach",
+                                                                ),
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                        {
+                                                            "name": "operational:main:climb",
+                                                            "segment_type": "altitude_change",
+                                                            "target": {
+                                                                "altitude": InputDefinition(
+                                                                    parameter_name="altitude",
+                                                                    input_value=-20000.0,
+                                                                    input_unit="m",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:operational:main:climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                                "mach": InputDefinition(
+                                                                    parameter_name="mach",
+                                                                    input_value="constant",
+                                                                    input_unit=None,
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:operational:main:climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                    ],
+                                                ),
+                                                ("name", "operational:main:climb"),
+                                                ("type", "phase"),
+                                            ]
+                                        ),
+                                    ],
+                                ),
+                                (
+                                    "cruise_part",
+                                    {
+                                        "engine_setting": InputDefinition(
+                                            parameter_name="engine_setting",
+                                            input_value="cruise",
+                                            input_unit=None,
+                                            default_value=np.nan,
+                                            is_relative=False,
+                                            prefix="data:mission:operational:main:cruise",
+                                            use_opposite=False,
+                                            variable_name=None,
+                                        ),
+                                        "name": "operational:main:cruise",
+                                        "polar": OrderedDict(
+                                            [
+                                                (
+                                                    "CL",
+                                                    InputDefinition(
+                                                        parameter_name="CL",
+                                                        input_value=None,
+                                                        input_unit=None,
+                                                        default_value=np.nan,
+                                                        is_relative=False,
+                                                        prefix="data:mission:operational:main:cruise",
+                                                        use_opposite=False,
+                                                        variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                    ),
+                                                ),
+                                                (
+                                                    "CD",
+                                                    InputDefinition(
+                                                        parameter_name="CD",
+                                                        input_value=None,
+                                                        input_unit=None,
+                                                        default_value=np.nan,
+                                                        is_relative=False,
+                                                        prefix="data:mission:operational:main:cruise",
+                                                        use_opposite=False,
+                                                        variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                    ),
+                                                ),
+                                            ]
+                                        ),
+                                        "segment_type": "optimal_cruise",
+                                        "type": "segment",
+                                    },
+                                ),
+                                (
+                                    "descent_parts",
+                                    [
+                                        OrderedDict(
+                                            [
+                                                (
+                                                    "engine_setting",
+                                                    InputDefinition(
+                                                        parameter_name="engine_setting",
+                                                        input_value="idle",
+                                                        input_unit=None,
+                                                        default_value=np.nan,
+                                                        is_relative=False,
+                                                        prefix="data:mission:operational:main:descent",
+                                                        use_opposite=False,
+                                                        variable_name=None,
+                                                    ),
+                                                ),
+                                                (
+                                                    "polar",
+                                                    OrderedDict(
+                                                        [
+                                                            (
+                                                                "CL",
+                                                                InputDefinition(
+                                                                    parameter_name="CL",
+                                                                    input_value=None,
+                                                                    input_unit=None,
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:operational:main:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                                ),
+                                                            ),
+                                                            (
+                                                                "CD",
+                                                                InputDefinition(
+                                                                    parameter_name="CD",
+                                                                    input_value=None,
+                                                                    input_unit=None,
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:operational:main:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                                ),
+                                                            ),
+                                                        ]
+                                                    ),
+                                                ),
+                                                (
+                                                    "thrust_rate",
+                                                    InputDefinition(
+                                                        parameter_name="thrust_rate",
+                                                        input_value=None,
+                                                        input_unit=None,
+                                                        default_value=np.nan,
+                                                        is_relative=False,
+                                                        prefix="data:mission:operational:main:descent",
+                                                        use_opposite=False,
+                                                        variable_name="data:propulsion:descent:thrust_rate",
+                                                    ),
+                                                ),
+                                                (
+                                                    "parts",
+                                                    [
+                                                        {
+                                                            "name": "operational:main:descent",
+                                                            "segment_type": "altitude_change",
+                                                            "target": {
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value=300,
+                                                                    input_unit="kn",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:operational:main:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                                "mach": InputDefinition(
+                                                                    parameter_name="mach",
+                                                                    input_value="constant",
+                                                                    input_unit=None,
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:operational:main:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                        {
+                                                            "name": "operational:main:descent",
+                                                            "segment_type": "altitude_change",
+                                                            "target": {
+                                                                "altitude": InputDefinition(
+                                                                    parameter_name="altitude",
+                                                                    input_value=10000.0,
+                                                                    input_unit="ft",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:operational:main:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value="constant",
+                                                                    input_unit="m/s",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:operational:main:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                        {
+                                                            "name": "operational:main:descent",
+                                                            "segment_type": "speed_change",
+                                                            "target": {
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value=250.0,
+                                                                    input_unit="kn",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:operational:main:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                )
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                        {
+                                                            "name": "operational:main:descent",
+                                                            "segment_type": "altitude_change",
+                                                            "target": {
+                                                                "altitude": InputDefinition(
+                                                                    parameter_name="altitude",
+                                                                    input_value=None,
+                                                                    input_unit="m",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:operational:main:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name="data:mission:operational:main:descent:final_altitude",
+                                                                ),
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value="constant",
+                                                                    input_unit="m/s",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:operational:main:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                    ],
+                                                ),
+                                                ("name", "operational:main:descent"),
+                                                ("type", "phase"),
+                                            ]
+                                        )
+                                    ],
+                                ),
+                                ("name", "operational:main"),
+                                ("type", "route"),
+                            ]
+                        ),
+                        OrderedDict(
+                            [
+                                (
+                                    "thrust_rate",
+                                    InputDefinition(
+                                        parameter_name="thrust_rate",
+                                        input_value=None,
+                                        input_unit=None,
+                                        default_value=np.nan,
+                                        is_relative=False,
+                                        prefix="data:mission:operational:taxi_in",
+                                        use_opposite=False,
+                                        variable_name="data:mission:operational:taxi_in:thrust_rate",
+                                    ),
+                                ),
+                                (
+                                    "parts",
+                                    [
+                                        {
+                                            "name": "operational:taxi_in",
+                                            "segment_type": "taxi",
+                                            "target": {
+                                                "delta_time": InputDefinition(
+                                                    parameter_name="time",
+                                                    input_value=None,
+                                                    input_unit="s",
+                                                    default_value=np.nan,
+                                                    is_relative=True,
+                                                    prefix="data:mission:operational:taxi_in",
+                                                    use_opposite=False,
+                                                    variable_name="data:mission:operational:taxi_in:duration",
+                                                )
+                                            },
+                                            "true_airspeed": InputDefinition(
+                                                parameter_name="true_airspeed",
+                                                input_value=0.0,
+                                                input_unit="m/s",
+                                                default_value=np.nan,
+                                                is_relative=False,
+                                                prefix="data:mission:operational:taxi_in",
+                                                use_opposite=False,
+                                                variable_name=None,
+                                            ),
+                                            "type": "segment",
+                                        }
+                                    ],
+                                ),
+                                ("name", "operational:taxi_in"),
+                                ("type", "phase"),
+                            ]
+                        ),
+                        {
+                            "name": "operational",
+                            "reserve": {
+                                "multiplier": InputDefinition(
+                                    parameter_name="multiplier",
+                                    input_value=0.02,
+                                    input_unit=None,
+                                    default_value=np.nan,
+                                    is_relative=False,
+                                    prefix="data:mission:operational",
+                                    use_opposite=False,
+                                    variable_name=None,
+                                ),
+                                "ref": InputDefinition(
+                                    parameter_name="ref",
+                                    input_value="main",
+                                    input_unit=None,
+                                    default_value=np.nan,
+                                    is_relative=False,
+                                    prefix="data:mission:operational",
+                                    use_opposite=False,
+                                    variable_name=None,
+                                ),
+                            },
+                        },
+                    ],
+                ),
+                ("name", "operational"),
+                ("type", "mission"),
+            ]
+        ),
+        "sizing": OrderedDict(
+            [
+                (
+                    "parts",
+                    [
+                        OrderedDict(
+                            [
+                                (
+                                    "range",
+                                    InputDefinition(
+                                        parameter_name="range",
+                                        input_value=None,
+                                        input_unit="m",
+                                        default_value=np.nan,
+                                        is_relative=False,
+                                        prefix="data:mission:sizing:main",
+                                        use_opposite=False,
+                                        variable_name="data:mission:sizing:main:range",
+                                    ),
+                                ),
+                                (
+                                    "distance_accuracy",
+                                    InputDefinition(
+                                        parameter_name="distance_accuracy",
+                                        input_value=500,
+                                        input_unit="m",
+                                        default_value=np.nan,
+                                        is_relative=False,
+                                        prefix="data:mission:sizing:main",
+                                        use_opposite=False,
+                                        variable_name=None,
+                                    ),
+                                ),
+                                (
+                                    "climb_parts",
+                                    [
+                                        OrderedDict(
+                                            [
+                                                (
+                                                    "engine_setting",
+                                                    InputDefinition(
+                                                        parameter_name="engine_setting",
+                                                        input_value="takeoff",
+                                                        input_unit=None,
+                                                        default_value=np.nan,
+                                                        is_relative=False,
+                                                        prefix="data:mission:sizing:main:initial_climb",
+                                                        use_opposite=False,
+                                                        variable_name=None,
+                                                    ),
+                                                ),
+                                                (
+                                                    "polar",
+                                                    {
+                                                        "CD": InputDefinition(
+                                                            parameter_name="CD",
+                                                            input_value=[0.0, 0.03, 0.12],
+                                                            input_unit=None,
+                                                            default_value=np.nan,
+                                                            is_relative=False,
+                                                            prefix="data:mission:sizing:main:initial_climb",
+                                                            use_opposite=False,
+                                                            variable_name=None,
+                                                        ),
+                                                        "CL": InputDefinition(
+                                                            parameter_name="CL",
+                                                            input_value=[0.0, 0.5, 1.0],
+                                                            input_unit=None,
+                                                            default_value=np.nan,
+                                                            is_relative=False,
+                                                            prefix="data:mission:sizing:main:initial_climb",
+                                                            use_opposite=False,
+                                                            variable_name=None,
+                                                        ),
+                                                    },
+                                                ),
+                                                (
+                                                    "thrust_rate",
+                                                    InputDefinition(
+                                                        parameter_name="thrust_rate",
+                                                        input_value=None,
+                                                        input_unit=None,
+                                                        default_value=1.0,
+                                                        is_relative=False,
+                                                        prefix="data:mission:sizing:main:initial_climb",
+                                                        use_opposite=False,
+                                                        variable_name="data:propulsion:initial_climb:thrust_rate",
+                                                    ),
+                                                ),
+                                                (
+                                                    "parts",
+                                                    [
+                                                        {
+                                                            "name": "sizing:main:initial_climb",
+                                                            "segment_type": "altitude_change",
+                                                            "target": {
+                                                                "altitude": InputDefinition(
+                                                                    parameter_name="altitude",
+                                                                    input_value=400.0,
+                                                                    input_unit="ft",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:main:initial_climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value="constant",
+                                                                    input_unit="m/s",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:main:initial_climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                        {
+                                                            "name": "sizing:main:initial_climb",
+                                                            "polar": OrderedDict(
+                                                                [
+                                                                    (
+                                                                        "CL",
+                                                                        InputDefinition(
+                                                                            parameter_name="CL",
+                                                                            input_value=None,
+                                                                            input_unit=None,
+                                                                            default_value=np.nan,
+                                                                            is_relative=False,
+                                                                            prefix="data:mission:sizing:main:initial_climb",
+                                                                            use_opposite=False,
+                                                                            variable_name="data:aerodynamics:aircraft:takeoff:CL",
+                                                                        ),
+                                                                    ),
+                                                                    (
+                                                                        "CD",
+                                                                        InputDefinition(
+                                                                            parameter_name="CD",
+                                                                            input_value=None,
+                                                                            input_unit=None,
+                                                                            default_value=np.nan,
+                                                                            is_relative=False,
+                                                                            prefix="data:mission:sizing:main:initial_climb",
+                                                                            use_opposite=False,
+                                                                            variable_name="data:aerodynamics:aircraft:takeoff:CD",
+                                                                        ),
+                                                                    ),
+                                                                ]
+                                                            ),
+                                                            "segment_type": "speed_change",
+                                                            "target": {
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value=250,
+                                                                    input_unit="kn",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:main:initial_climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                )
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                        {
+                                                            "name": "sizing:main:initial_climb",
+                                                            "polar": {
+                                                                "CD": InputDefinition(
+                                                                    parameter_name="CD",
+                                                                    input_value=None,
+                                                                    input_unit=None,
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:main:initial_climb",
+                                                                    use_opposite=False,
+                                                                    variable_name="data:aerodynamics:aircraft:takeoff:CD",
+                                                                ),
+                                                                "CL": InputDefinition(
+                                                                    parameter_name="CL",
+                                                                    input_value=None,
+                                                                    input_unit=None,
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:main:initial_climb",
+                                                                    use_opposite=False,
+                                                                    variable_name="data:aerodynamics:aircraft:takeoff:CL",
+                                                                ),
+                                                            },
+                                                            "segment_type": "altitude_change",
+                                                            "target": {
+                                                                "altitude": InputDefinition(
+                                                                    parameter_name="altitude",
+                                                                    input_value=1500.0,
+                                                                    input_unit="ft",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:main:initial_climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value="constant",
+                                                                    input_unit="m/s",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:main:initial_climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                    ],
+                                                ),
+                                                ("name", "sizing:main:initial_climb"),
+                                                ("type", "phase"),
+                                            ]
+                                        ),
+                                        OrderedDict(
+                                            [
+                                                (
+                                                    "engine_setting",
+                                                    InputDefinition(
+                                                        parameter_name="engine_setting",
+                                                        input_value="climb",
+                                                        input_unit=None,
+                                                        default_value=np.nan,
+                                                        is_relative=False,
+                                                        prefix="data:mission:sizing:main:climb",
+                                                        use_opposite=False,
+                                                        variable_name=None,
+                                                    ),
+                                                ),
+                                                (
+                                                    "polar",
+                                                    OrderedDict(
+                                                        [
+                                                            (
+                                                                "CL",
+                                                                InputDefinition(
+                                                                    parameter_name="CL",
+                                                                    input_value=None,
+                                                                    input_unit=None,
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:main:climb",
+                                                                    use_opposite=False,
+                                                                    variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                                ),
+                                                            ),
+                                                            (
+                                                                "CD",
+                                                                InputDefinition(
+                                                                    parameter_name="CD",
+                                                                    input_value=None,
+                                                                    input_unit=None,
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:main:climb",
+                                                                    use_opposite=False,
+                                                                    variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                                ),
+                                                            ),
+                                                        ]
+                                                    ),
+                                                ),
+                                                (
+                                                    "thrust_rate",
+                                                    InputDefinition(
+                                                        parameter_name="thrust_rate",
+                                                        input_value=None,
+                                                        input_unit=None,
+                                                        default_value=np.nan,
+                                                        is_relative=False,
+                                                        prefix="data:mission:sizing:main:climb",
+                                                        use_opposite=False,
+                                                        variable_name="data:propulsion:climb:thrust_rate",
+                                                    ),
+                                                ),
+                                                (
+                                                    "parts",
+                                                    [
+                                                        {
+                                                            "name": "sizing:main:climb",
+                                                            "segment_type": "altitude_change",
+                                                            "target": {
+                                                                "altitude": InputDefinition(
+                                                                    parameter_name="altitude",
+                                                                    input_value=10000.0,
+                                                                    input_unit="ft",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:main:climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value="constant",
+                                                                    input_unit="m/s",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:main:climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                        {
+                                                            "name": "sizing:main:climb",
+                                                            "segment_type": "speed_change",
+                                                            "target": {
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value=300.0,
+                                                                    input_unit="kn",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:main:climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                )
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                        {
+                                                            "name": "sizing:main:climb",
+                                                            "segment_type": "altitude_change",
+                                                            "target": {
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value="constant",
+                                                                    input_unit="m/s",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:main:climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                                "mach": InputDefinition(
+                                                                    parameter_name="mach",
+                                                                    input_value=None,
+                                                                    input_unit=None,
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:main:climb",
+                                                                    use_opposite=False,
+                                                                    variable_name="data:TLAR:cruise_mach",
+                                                                ),
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                        {
+                                                            "name": "sizing:main:climb",
+                                                            "segment_type": "altitude_change",
+                                                            "target": {
+                                                                "altitude": InputDefinition(
+                                                                    parameter_name="altitude",
+                                                                    input_value=-20000.0,
+                                                                    input_unit="m",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:main:climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                                "mach": InputDefinition(
+                                                                    parameter_name="mach",
+                                                                    input_value="constant",
+                                                                    input_unit=None,
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:main:climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                    ],
+                                                ),
+                                                ("name", "sizing:main:climb"),
+                                                ("type", "phase"),
+                                            ]
+                                        ),
+                                    ],
+                                ),
+                                (
+                                    "cruise_part",
+                                    {
+                                        "engine_setting": InputDefinition(
+                                            parameter_name="engine_setting",
+                                            input_value="cruise",
+                                            input_unit=None,
+                                            default_value=np.nan,
+                                            is_relative=False,
+                                            prefix="data:mission:sizing:main:cruise",
+                                            use_opposite=False,
+                                            variable_name=None,
+                                        ),
+                                        "name": "sizing:main:cruise",
+                                        "polar": OrderedDict(
+                                            [
+                                                (
+                                                    "CL",
+                                                    InputDefinition(
+                                                        parameter_name="CL",
+                                                        input_value=None,
+                                                        input_unit=None,
+                                                        default_value=np.nan,
+                                                        is_relative=False,
+                                                        prefix="data:mission:sizing:main:cruise",
+                                                        use_opposite=False,
+                                                        variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                    ),
+                                                ),
+                                                (
+                                                    "CD",
+                                                    InputDefinition(
+                                                        parameter_name="CD",
+                                                        input_value=None,
+                                                        input_unit=None,
+                                                        default_value=np.nan,
+                                                        is_relative=False,
+                                                        prefix="data:mission:sizing:main:cruise",
+                                                        use_opposite=False,
+                                                        variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                    ),
+                                                ),
+                                            ]
+                                        ),
+                                        "segment_type": "optimal_cruise",
+                                        "type": "segment",
+                                    },
+                                ),
+                                (
+                                    "descent_parts",
+                                    [
+                                        OrderedDict(
+                                            [
+                                                (
+                                                    "engine_setting",
+                                                    InputDefinition(
+                                                        parameter_name="engine_setting",
+                                                        input_value="idle",
+                                                        input_unit=None,
+                                                        default_value=np.nan,
+                                                        is_relative=False,
+                                                        prefix="data:mission:sizing:main:descent",
+                                                        use_opposite=False,
+                                                        variable_name=None,
+                                                    ),
+                                                ),
+                                                (
+                                                    "polar",
+                                                    OrderedDict(
+                                                        [
+                                                            (
+                                                                "CL",
+                                                                InputDefinition(
+                                                                    parameter_name="CL",
+                                                                    input_value=None,
+                                                                    input_unit=None,
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:main:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                                ),
+                                                            ),
+                                                            (
+                                                                "CD",
+                                                                InputDefinition(
+                                                                    parameter_name="CD",
+                                                                    input_value=None,
+                                                                    input_unit=None,
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:main:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                                ),
+                                                            ),
+                                                        ]
+                                                    ),
+                                                ),
+                                                (
+                                                    "thrust_rate",
+                                                    InputDefinition(
+                                                        parameter_name="thrust_rate",
+                                                        input_value=None,
+                                                        input_unit=None,
+                                                        default_value=np.nan,
+                                                        is_relative=False,
+                                                        prefix="data:mission:sizing:main:descent",
+                                                        use_opposite=False,
+                                                        variable_name="data:propulsion:descent:thrust_rate",
+                                                    ),
+                                                ),
+                                                (
+                                                    "parts",
+                                                    [
+                                                        {
+                                                            "name": "sizing:main:descent",
+                                                            "segment_type": "altitude_change",
+                                                            "target": {
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value=300,
+                                                                    input_unit="kn",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:main:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                                "mach": InputDefinition(
+                                                                    parameter_name="mach",
+                                                                    input_value="constant",
+                                                                    input_unit=None,
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:main:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                        {
+                                                            "name": "sizing:main:descent",
+                                                            "segment_type": "altitude_change",
+                                                            "target": {
+                                                                "altitude": InputDefinition(
+                                                                    parameter_name="altitude",
+                                                                    input_value=10000.0,
+                                                                    input_unit="ft",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:main:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value="constant",
+                                                                    input_unit="m/s",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:main:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                        {
+                                                            "name": "sizing:main:descent",
+                                                            "segment_type": "speed_change",
+                                                            "target": {
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value=250.0,
+                                                                    input_unit="kn",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:main:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                )
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                        {
+                                                            "name": "sizing:main:descent",
+                                                            "segment_type": "altitude_change",
+                                                            "target": {
+                                                                "altitude": InputDefinition(
+                                                                    parameter_name="altitude",
+                                                                    input_value=None,
+                                                                    input_unit="m",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:main:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name="data:mission:sizing:main:descent:final_altitude",
+                                                                ),
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value="constant",
+                                                                    input_unit="m/s",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:main:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                    ],
+                                                ),
+                                                ("name", "sizing:main:descent"),
+                                                ("type", "phase"),
+                                            ]
+                                        )
+                                    ],
+                                ),
+                                ("name", "sizing:main"),
+                                ("type", "route"),
+                            ]
+                        ),
+                        OrderedDict(
+                            [
+                                (
+                                    "range",
+                                    InputDefinition(
+                                        parameter_name="range",
+                                        input_value=None,
+                                        input_unit="m",
+                                        default_value=np.nan,
+                                        is_relative=False,
+                                        prefix="data:mission:sizing:diversion",
+                                        use_opposite=False,
+                                        variable_name="data:mission:sizing:diversion:range",
+                                    ),
+                                ),
+                                (
+                                    "distance_accuracy",
+                                    InputDefinition(
+                                        parameter_name="distance_accuracy",
+                                        input_value=0.1,
+                                        input_unit="km",
+                                        default_value=np.nan,
+                                        is_relative=False,
+                                        prefix="data:mission:sizing:diversion",
+                                        use_opposite=False,
+                                        variable_name=None,
+                                    ),
+                                ),
+                                (
+                                    "climb_parts",
+                                    [
+                                        OrderedDict(
+                                            [
+                                                (
+                                                    "engine_setting",
+                                                    InputDefinition(
+                                                        parameter_name="engine_setting",
+                                                        input_value="climb",
+                                                        input_unit=None,
+                                                        default_value=np.nan,
+                                                        is_relative=False,
+                                                        prefix="data:mission:sizing:diversion:diversion_climb",
+                                                        use_opposite=False,
+                                                        variable_name=None,
+                                                    ),
+                                                ),
+                                                (
+                                                    "polar",
+                                                    OrderedDict(
+                                                        [
+                                                            (
+                                                                "CL",
+                                                                InputDefinition(
+                                                                    parameter_name="CL",
+                                                                    input_value=None,
+                                                                    input_unit=None,
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:diversion:diversion_climb",
+                                                                    use_opposite=False,
+                                                                    variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                                ),
+                                                            ),
+                                                            (
+                                                                "CD",
+                                                                InputDefinition(
+                                                                    parameter_name="CD",
+                                                                    input_value=None,
+                                                                    input_unit=None,
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:diversion:diversion_climb",
+                                                                    use_opposite=False,
+                                                                    variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                                ),
+                                                            ),
+                                                        ]
+                                                    ),
+                                                ),
+                                                (
+                                                    "thrust_rate",
+                                                    InputDefinition(
+                                                        parameter_name="thrust_rate",
+                                                        input_value=0.93,
+                                                        input_unit=None,
+                                                        default_value=np.nan,
+                                                        is_relative=False,
+                                                        prefix="data:mission:sizing:diversion:diversion_climb",
+                                                        use_opposite=False,
+                                                        variable_name=None,
+                                                    ),
+                                                ),
+                                                (
+                                                    "time_step",
+                                                    InputDefinition(
+                                                        parameter_name="time_step",
+                                                        input_value=5.0,
+                                                        input_unit="s",
+                                                        default_value=np.nan,
+                                                        is_relative=False,
+                                                        prefix="data:mission:sizing:diversion:diversion_climb",
+                                                        use_opposite=False,
+                                                        variable_name=None,
+                                                    ),
+                                                ),
+                                                (
+                                                    "parts",
+                                                    [
+                                                        {
+                                                            "name": "sizing:diversion:diversion_climb",
+                                                            "segment_type": "altitude_change",
+                                                            "target": {
+                                                                "altitude": InputDefinition(
+                                                                    parameter_name="altitude",
+                                                                    input_value=10000.0,
+                                                                    input_unit="ft",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:diversion:diversion_climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value="constant",
+                                                                    input_unit="m/s",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:diversion:diversion_climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                        {
+                                                            "name": "sizing:diversion:diversion_climb",
+                                                            "segment_type": "speed_change",
+                                                            "target": {
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value=300.0,
+                                                                    input_unit="kn",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:diversion:diversion_climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                )
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                        {
+                                                            "name": "sizing:diversion:diversion_climb",
+                                                            "segment_type": "altitude_change",
+                                                            "target": {
+                                                                "altitude": InputDefinition(
+                                                                    parameter_name="altitude",
+                                                                    input_value=22000.0,
+                                                                    input_unit="ft",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:diversion:diversion_climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value="constant",
+                                                                    input_unit="m/s",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:diversion:diversion_climb",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                    ],
+                                                ),
+                                                ("name", "sizing:diversion:diversion_climb"),
+                                                ("type", "phase"),
+                                            ]
+                                        )
+                                    ],
+                                ),
+                                (
+                                    "cruise_part",
+                                    {
+                                        "engine_setting": InputDefinition(
+                                            parameter_name="engine_setting",
+                                            input_value="cruise",
+                                            input_unit=None,
+                                            default_value=np.nan,
+                                            is_relative=False,
+                                            prefix="data:mission:sizing:diversion:cruise",
+                                            use_opposite=False,
+                                            variable_name=None,
+                                        ),
+                                        "name": "sizing:diversion:cruise",
+                                        "polar": OrderedDict(
+                                            [
+                                                (
+                                                    "CL",
+                                                    InputDefinition(
+                                                        parameter_name="CL",
+                                                        input_value=None,
+                                                        input_unit=None,
+                                                        default_value=np.nan,
+                                                        is_relative=False,
+                                                        prefix="data:mission:sizing:diversion:cruise",
+                                                        use_opposite=False,
+                                                        variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                    ),
+                                                ),
+                                                (
+                                                    "CD",
+                                                    InputDefinition(
+                                                        parameter_name="CD",
+                                                        input_value=None,
+                                                        input_unit=None,
+                                                        default_value=np.nan,
+                                                        is_relative=False,
+                                                        prefix="data:mission:sizing:diversion:cruise",
+                                                        use_opposite=False,
+                                                        variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                    ),
+                                                ),
+                                            ]
+                                        ),
+                                        "segment_type": "cruise",
+                                        "type": "segment",
+                                    },
+                                ),
+                                (
+                                    "descent_parts",
+                                    [
+                                        OrderedDict(
+                                            [
+                                                (
+                                                    "engine_setting",
+                                                    InputDefinition(
+                                                        parameter_name="engine_setting",
+                                                        input_value="idle",
+                                                        input_unit=None,
+                                                        default_value=np.nan,
+                                                        is_relative=False,
+                                                        prefix="data:mission:sizing:diversion:descent",
+                                                        use_opposite=False,
+                                                        variable_name=None,
+                                                    ),
+                                                ),
+                                                (
+                                                    "polar",
+                                                    OrderedDict(
+                                                        [
+                                                            (
+                                                                "CL",
+                                                                InputDefinition(
+                                                                    parameter_name="CL",
+                                                                    input_value=None,
+                                                                    input_unit=None,
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:diversion:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                                ),
+                                                            ),
+                                                            (
+                                                                "CD",
+                                                                InputDefinition(
+                                                                    parameter_name="CD",
+                                                                    input_value=None,
+                                                                    input_unit=None,
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:diversion:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                                ),
+                                                            ),
+                                                        ]
+                                                    ),
+                                                ),
+                                                (
+                                                    "thrust_rate",
+                                                    InputDefinition(
+                                                        parameter_name="thrust_rate",
+                                                        input_value=None,
+                                                        input_unit=None,
+                                                        default_value=np.nan,
+                                                        is_relative=False,
+                                                        prefix="data:mission:sizing:diversion:descent",
+                                                        use_opposite=False,
+                                                        variable_name="data:propulsion:descent:thrust_rate",
+                                                    ),
+                                                ),
+                                                (
+                                                    "parts",
+                                                    [
+                                                        {
+                                                            "name": "sizing:diversion:descent",
+                                                            "segment_type": "altitude_change",
+                                                            "target": {
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value=300,
+                                                                    input_unit="kn",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:diversion:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                                "mach": InputDefinition(
+                                                                    parameter_name="mach",
+                                                                    input_value="constant",
+                                                                    input_unit=None,
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:diversion:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                        {
+                                                            "name": "sizing:diversion:descent",
+                                                            "segment_type": "altitude_change",
+                                                            "target": {
+                                                                "altitude": InputDefinition(
+                                                                    parameter_name="altitude",
+                                                                    input_value=10000.0,
+                                                                    input_unit="ft",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:diversion:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value="constant",
+                                                                    input_unit="m/s",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:diversion:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                        {
+                                                            "name": "sizing:diversion:descent",
+                                                            "segment_type": "speed_change",
+                                                            "target": {
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value=250.0,
+                                                                    input_unit="kn",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:diversion:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                )
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                        {
+                                                            "name": "sizing:diversion:descent",
+                                                            "segment_type": "altitude_change",
+                                                            "target": {
+                                                                "altitude": InputDefinition(
+                                                                    parameter_name="altitude",
+                                                                    input_value=None,
+                                                                    input_unit="m",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:diversion:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name="data:mission:sizing:diversion:descent:final_altitude",
+                                                                ),
+                                                                "equivalent_airspeed": InputDefinition(
+                                                                    parameter_name="equivalent_airspeed",
+                                                                    input_value="constant",
+                                                                    input_unit="m/s",
+                                                                    default_value=np.nan,
+                                                                    is_relative=False,
+                                                                    prefix="data:mission:sizing:diversion:descent",
+                                                                    use_opposite=False,
+                                                                    variable_name=None,
+                                                                ),
+                                                            },
+                                                            "type": "segment",
+                                                        },
+                                                    ],
+                                                ),
+                                                ("name", "sizing:diversion:descent"),
+                                                ("type", "phase"),
+                                            ]
+                                        )
+                                    ],
+                                ),
+                                ("name", "sizing:diversion"),
+                                ("type", "route"),
+                            ]
+                        ),
+                        OrderedDict(
+                            [
+                                (
+                                    "parts",
+                                    [
+                                        {
+                                            "name": "sizing:holding",
+                                            "polar": OrderedDict(
+                                                [
+                                                    (
+                                                        "CL",
+                                                        InputDefinition(
+                                                            parameter_name="CL",
+                                                            input_value=None,
+                                                            input_unit=None,
+                                                            default_value=np.nan,
+                                                            is_relative=False,
+                                                            prefix="data:mission:sizing:holding",
+                                                            use_opposite=False,
+                                                            variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                        ),
+                                                    ),
+                                                    (
+                                                        "CD",
+                                                        InputDefinition(
+                                                            parameter_name="CD",
+                                                            input_value=None,
+                                                            input_unit=None,
+                                                            default_value=np.nan,
+                                                            is_relative=False,
+                                                            prefix="data:mission:sizing:holding",
+                                                            use_opposite=False,
+                                                            variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                        ),
+                                                    ),
+                                                ]
+                                            ),
+                                            "segment_type": "holding",
+                                            "target": {
+                                                "delta_time": InputDefinition(
+                                                    parameter_name="time",
+                                                    input_value=None,
+                                                    input_unit="s",
+                                                    default_value=np.nan,
+                                                    is_relative=True,
+                                                    prefix="data:mission:sizing:holding",
+                                                    use_opposite=False,
+                                                    variable_name="data:mission:sizing:holding:duration",
+                                                )
+                                            },
+                                            "type": "segment",
+                                        }
+                                    ],
+                                ),
+                                ("name", "sizing:holding"),
+                                ("type", "phase"),
+                            ]
+                        ),
+                        OrderedDict(
+                            [
+                                (
+                                    "thrust_rate",
+                                    InputDefinition(
+                                        parameter_name="thrust_rate",
+                                        input_value=None,
+                                        input_unit=None,
+                                        default_value=np.nan,
+                                        is_relative=False,
+                                        prefix="data:mission:sizing:taxi_in",
+                                        use_opposite=False,
+                                        variable_name="data:mission:sizing:taxi_in:thrust_rate",
+                                    ),
+                                ),
+                                (
+                                    "parts",
+                                    [
+                                        {
+                                            "name": "sizing:taxi_in",
+                                            "segment_type": "taxi",
+                                            "target": {
+                                                "delta_time": InputDefinition(
+                                                    parameter_name="time",
+                                                    input_value=None,
+                                                    input_unit="s",
+                                                    default_value=np.nan,
+                                                    is_relative=True,
+                                                    prefix="data:mission:sizing:taxi_in",
+                                                    use_opposite=False,
+                                                    variable_name="data:mission:sizing:taxi_in:duration",
+                                                )
+                                            },
+                                            "true_airspeed": InputDefinition(
+                                                parameter_name="true_airspeed",
+                                                input_value=0.0,
+                                                input_unit="m/s",
+                                                default_value=np.nan,
+                                                is_relative=False,
+                                                prefix="data:mission:sizing:taxi_in",
+                                                use_opposite=False,
+                                                variable_name=None,
+                                            ),
+                                            "type": "segment",
+                                        }
+                                    ],
+                                ),
+                                ("name", "sizing:taxi_in"),
+                                ("type", "phase"),
+                            ]
+                        ),
+                        {
+                            "name": "sizing",
+                            "reserve": {
+                                "multiplier": InputDefinition(
+                                    parameter_name="multiplier",
+                                    input_value=0.03,
+                                    input_unit=None,
+                                    default_value=np.nan,
+                                    is_relative=False,
+                                    prefix="data:mission:sizing",
+                                    use_opposite=False,
+                                    variable_name=None,
+                                ),
+                                "ref": InputDefinition(
+                                    parameter_name="ref",
+                                    input_value="main",
+                                    input_unit=None,
+                                    default_value=np.nan,
+                                    is_relative=False,
+                                    prefix="data:mission:sizing",
+                                    use_opposite=False,
+                                    variable_name=None,
+                                ),
+                            },
+                        },
+                    ],
+                ),
+                ("name", "sizing"),
+                ("type", "mission"),
+            ]
+        ),
+    }
