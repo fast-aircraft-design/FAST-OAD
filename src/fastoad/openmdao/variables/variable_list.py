@@ -252,7 +252,8 @@ class VariableList(list):
             Variables from _auto_ivc are ignored.
 
         :param problem: OpenMDAO Problem instance to inspect
-        :param use_initial_values: if True, returned instance will contain values before computation
+        :param use_initial_values: if True, or if problem has not been run, returned instance will
+                                   contain values before computation
         :param get_promoted_names: if True, promoted names will be returned instead of absolute ones
                                    (if no promotion, absolute name will be returned)
         :param promoted_only: if True, only promoted variable names will be returned
@@ -348,9 +349,11 @@ class VariableList(list):
         input_vars = VariableList.from_dict(final_inputs)
         output_vars = VariableList.from_dict(final_outputs)
 
-        # Use computed value instead of initial ones, if asked for
-        for variable in input_vars + output_vars:
-            if not use_initial_values:
+        # Use computed value instead of initial ones, if asked for, and if problem has been run.
+        # Note: using problem.get_val() if problem has not been run may lead to unexpected
+        # behaviour when actually running the problem.
+        if not use_initial_values and problem.model.iter_count > 0:
+            for variable in input_vars + output_vars:
                 try:
                     # Maybe useless, but we force units to ensure it is consistent
                     variable.value = problem.get_val(variable.name, units=variable.units)
