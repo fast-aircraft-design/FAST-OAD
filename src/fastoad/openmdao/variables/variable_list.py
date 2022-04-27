@@ -260,8 +260,8 @@ class VariableList(list):
         :return: VariableList instance
         """
 
-        problem = deepcopy(problem)
         if not problem._metadata or problem._metadata["setup_status"] < _SetupStatus.POST_SETUP:
+            problem = deepcopy(problem)
             problem.setup()
 
         # Get inputs and outputs
