@@ -46,9 +46,7 @@
         <TOW units="kg">70000.0</TOW>
         <OWE units="kg">40000.0</OWE>
         <payload units="kg">15000.0</payload>
-        <start>
-          <mass units="kg">70100.4</mass>
-        </start>
+        <ramp_weight units="kg">70100.4</ramp_weight>
         <takeoff>
           <V2 units="m/s" is_input="True">80.0<!--safety speed before reaching 35 feet height in sizing mission--></V2>
           <altitude units="m" is_input="True">0.0<!--altitude at takeoff in sizing mission--></altitude>

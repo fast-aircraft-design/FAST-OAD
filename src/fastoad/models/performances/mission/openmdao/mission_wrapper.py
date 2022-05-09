@@ -72,34 +72,9 @@ class MissionWrapper(MissionBuilder):
         for name, (units, desc) in output_definition.items():
             component.add_output(name, 0.0, units=units, desc=desc)
 
-        # Mission start inputs
-        component.add_input(
-            f"{self._variable_prefix}:start:altitude",
-            0.0,
-            units="ft",
-            desc=f'Starting altitude for mission "{mission_name}"',
-        )
-        component.add_input(
-            f"{self._variable_prefix}:start:true_airspeed",
-            0.0,
-            units="m/s",
-            desc=f'Starting speed for mission "{mission_name}"',
-        )
-
-        # Mass is needed if there is no target mass in first segment.
-        struct = self._structure_builders[mission_name].structure
-        while "parts" in struct:
-            struct = struct["parts"][0]
-
-        if "mass" not in struct["target"]:
-            component.add_input(
-                f"{self._variable_prefix}:start:mass",
-                np.nan,
-                units="kg",
-                desc=f'Starting mass for mission "{mission_name}"',
-            )
-
-    def compute(self, inputs: Vector, outputs: Vector) -> pd.DataFrame:
+    def compute(
+        self, start_flight_point: FlightPoint, inputs: Vector, outputs: Vector
+    ) -> pd.DataFrame:
         """
         To be used during compute() of an OpenMDAO component.
 
@@ -107,6 +82,7 @@ class MissionWrapper(MissionBuilder):
         filled with duration, burned fuel and covered ground distance for each
         part of the flight.
 
+        :param start_flight_point: starting point of mission
         :param inputs: the input vector of the OpenMDAO component
         :param outputs: the output vector of the OpenMDAO component
         :return: a pandas DataFrame where column names match fields of
@@ -122,14 +98,6 @@ class MissionWrapper(MissionBuilder):
                 outputs[name_root + ":fuel"] = start.mass - end.mass
             if name_root + ":distance" in outputs:
                 outputs[name_root + ":distance"] = end.ground_distance - start.ground_distance
-
-        start_flight_point = FlightPoint(
-            altitude=inputs[f"{self._variable_prefix}:start:altitude"],
-            true_airspeed=inputs[f"{self._variable_prefix}:start:true_airspeed"],
-            mass=0.0,
-        )
-        if f"{self._variable_prefix}:start:mass" in inputs:
-            start_flight_point.mass = inputs[f"{self._variable_prefix}:start:mass"]
 
         flight_points = mission.compute_from(start_flight_point)
         flight_points.loc[0, "name"] = flight_points.loc[1, "name"]
@@ -161,6 +129,15 @@ class MissionWrapper(MissionBuilder):
                  outputs in :meth:`setup`.
         """
         return f"{self._variable_prefix}:reserve:fuel"
+
+    @property
+    def need_start_mass(self):
+        # Mass is needed if there is no target mass in first segment.
+        struct = self._structure_builders[self.mission_name].structure
+        while "parts" in struct:
+            struct = struct["parts"][0]
+
+        return "mass" not in struct["target"]
 
     def _identify_outputs(self) -> Dict[str, Tuple[str, str]]:
         """
