@@ -52,10 +52,6 @@
           <altitude units="m" is_input="True">0.0<!--altitude at takeoff in sizing mission--></altitude>
           <fuel units="kg">95.0<!--mass of consumed fuel during takeoff phase in sizing mission--></fuel>
         </takeoff>
-        <taxi_out>
-          <thrust_rate>0.3</thrust_rate>
-          <duration units="s">0.</duration>
-        </taxi_out>
       </operational>
     </mission>
     <weight>
