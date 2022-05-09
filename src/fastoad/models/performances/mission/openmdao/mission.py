@@ -240,6 +240,9 @@ class Mission(om.Group):
 _MissionVariables = namedtuple(
     "_MissionVariables",
     [
+        "START_ALTITUDE",
+        "START_TAS",
+        "RAMP_WEIGHT",
         "TOW",
         "NEEDED_BLOCK_FUEL",
         "NEEDED_FUEL_AT_TAKEOFF",
@@ -295,6 +298,9 @@ class MissionComponent(om.ExplicitComponent):
         mission_name = self.options["mission_name"]
 
         self._mission_vars = _MissionVariables(
+            START_ALTITUDE=f"data:mission:{mission_name}:start:altitude",
+            START_TAS=f"data:mission:{mission_name}:start:true_airspeed",
+            RAMP_WEIGHT=f"data:mission:{mission_name}:ramp_weight",
             TOW=f"data:mission:{mission_name}:TOW",
             NEEDED_BLOCK_FUEL=f"data:mission:{mission_name}:needed_block_fuel",
             NEEDED_FUEL_AT_TAKEOFF=f"data:mission:{mission_name}:needed_onboard_fuel_at_takeoff",
@@ -315,6 +321,28 @@ class MissionComponent(om.ExplicitComponent):
         except ValueError:
             pass
 
+        # Mission start inputs
+        self.add_input(
+            self._mission_vars.START_ALTITUDE,
+            0.0,
+            units="ft",
+            desc=f'Starting altitude for mission "{mission_name}"',
+        )
+        self.add_input(
+            self._mission_vars.START_TAS,
+            0.0,
+            units="m/s",
+            desc=f'Starting speed for mission "{mission_name}"',
+        )
+        if self._mission_wrapper.need_start_mass:
+            self.add_input(
+                self._mission_vars.RAMP_WEIGHT,
+                np.nan,
+                units="kg",
+                desc=f'Starting mass for mission "{mission_name}"',
+            )
+
+        # Global mission outputs
         self.add_output(
             self._mission_vars.NEEDED_BLOCK_FUEL,
             units="kg",
@@ -416,7 +444,17 @@ class MissionComponent(om.ExplicitComponent):
         self._mission_wrapper.propulsion = propulsion_model
         self._mission_wrapper.reference_area = reference_area
 
-        self.flight_points = self._mission_wrapper.compute(inputs, outputs)
+        start_flight_point = FlightPoint(
+            altitude=inputs[self._mission_vars.START_ALTITUDE],
+            true_airspeed=inputs[self._mission_vars.START_TAS],
+            mass=(
+                inputs[self._mission_vars.RAMP_WEIGHT]
+                if self._mission_vars.RAMP_WEIGHT in inputs
+                else 0.0
+            ),
+        )
+
+        self.flight_points = self._mission_wrapper.compute(start_flight_point, inputs, outputs)
 
         # Final ================================================================
         start_of_mission = FlightPoint.create(self.flight_points.iloc[0])
