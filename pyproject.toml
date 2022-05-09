@@ -101,7 +101,7 @@ line-length = 100
 minversion = "6.0"
 addopts = "--cov fastoad --cov-report term-missing --cov-report html --verbose"
 testpaths = ["src", "tests"]
-norecursedirs = ["dist", "build", ".tox"]
+norecursedirs = ["dist", "build", ".tox", ".ipynb_checkpoints"]
 
 [tool.coverage.run]
 branch = true
