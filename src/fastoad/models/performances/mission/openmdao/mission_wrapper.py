@@ -130,14 +130,17 @@ class MissionWrapper(MissionBuilder):
         """
         return f"{self._variable_prefix}:reserve:fuel"
 
-    @property
-    def need_start_mass(self):
+    def need_start_mass(self, mission_name):
         # Mass is needed if there is no target mass in first segment.
-        struct = self._structure_builders[self.mission_name].structure
+        struct = self._structure_builders[mission_name].structure
         while "parts" in struct:
             struct = struct["parts"][0]
 
         return "mass" not in struct["target"]
+
+    def has_taxi_out(self, mission_name):
+        """True if first phase is named "taxi_out"."""
+        return self.get_mission_part_names(mission_name)[0] == f"{mission_name}:taxi_out"
 
     def _identify_outputs(self) -> Dict[str, Tuple[str, str]]:
         """

@@ -89,24 +89,28 @@ class Mission(om.Group):
             "adjust_fuel",
             default=True,
             types=bool,
-            desc="If True, block fuel will fit fuel consumption during mission.\n"
+            desc="If True, block fuel will fit fuel consumption during mission. In that case, a "
+            "solver (local or global) will be needed. (see `add_solver` option for more"
+            "information)\n"
             "If False, block fuel will be taken from input data.",
         )
         self.options.declare(
             "compute_TOW",
             default=False,
             types=bool,
-            desc="If True, TakeOff Weight will be computed from mission block fuel and ZFW.\n"
-            "If False, block fuel will be computed from TOW and ZFW.\n"
+            desc="If True, TakeOff Weight will be computed from onboard fuel at takeoff and ZFW.\n"
+            "If False, block fuel will be computed from ramp weight and ZFW.\n"
             "Not used (actually forced to True) if adjust_fuel is True.",
         )
         self.options.declare(
             "add_solver",
             default=False,
             types=bool,
-            desc="Not used if compute_TOW is False.\n"
-            "Otherwise, setting this option to False will deactivate the local solver.\n"
-            "Useful if a global solver is used.",
+            desc="If True, a local solver is set for the mission computation.\n"
+            "It is useful if `adjust_fuel` is set to True, or to ensure consistency between "
+            "ramp weight and takeoff weight + taxi-out fuel.\n"
+            "If a global solver is used, using a local solver or not should be only a question"
+            "of CPU time consumption and is not expected to modify the results.",
         )
         self.options.declare(
             "is_sizing",
@@ -131,13 +135,18 @@ class Mission(om.Group):
             file_name = self.options["mission_file_path"][i + 2 :] + ".yml"
             with path(resources, file_name) as mission_input_file:
                 self.options["mission_file_path"] = MissionDefinition(mission_input_file)
-        mission_wrapper = MissionWrapper(self.options["mission_file_path"])
+        self._mission_wrapper = MissionWrapper(self.options["mission_file_path"])
         if self.options["mission_name"] is None:
-            self.options["mission_name"] = mission_wrapper.get_unique_mission_name()
+            self.options["mission_name"] = self._mission_wrapper.get_unique_mission_name()
 
         mission_name = self.options["mission_name"]
 
         self.add_subsystem("ZFW_computation", self._get_zfw_component(mission_name), promotes=["*"])
+        self.add_subsystem(
+            "ramp_weight_computation",
+            self._get_ramp_weight_component(mission_name),
+            promotes=["*"],
+        )
 
         if self.options["adjust_fuel"]:
             self.options["compute_TOW"] = True
@@ -145,9 +154,9 @@ class Mission(om.Group):
                 f"data:mission:{mission_name}:needed_onboard_fuel_at_takeoff",
                 f"data:mission:{mission_name}:onboard_fuel_at_takeoff",
             )
-            if self.options["add_solver"]:
-                self.nonlinear_solver = om.NonlinearBlockGS(maxiter=30, rtol=1.0e-4, iprint=0)
-                self.linear_solver = om.DirectSolver()
+        if self.options["add_solver"]:
+            self.nonlinear_solver = om.NonlinearBlockGS(maxiter=30, rtol=1.0e-4, iprint=0)
+            self.linear_solver = om.DirectSolver()
 
         if self.options["compute_TOW"]:
             self.add_subsystem(
@@ -161,12 +170,12 @@ class Mission(om.Group):
         del mission_options["compute_TOW"]
         del mission_options["add_solver"]
         del mission_options["mission_file_path"]
-        mission_options["mission_wrapper"] = mission_wrapper
+        mission_options["mission_wrapper"] = self._mission_wrapper
         mission_options["mission_name"] = mission_name
+
         self.add_subsystem(
             "mission_computation", MissionComponent(**mission_options), promotes=["*"]
         )
-
         self.add_subsystem(
             "block_fuel_computation", self._get_block_fuel_component(mission_name), promotes=["*"]
         )
@@ -215,25 +224,58 @@ class Mission(om.Group):
         )
         return tow_computation
 
+    def _get_ramp_weight_component(self, mission_name: str):
+        """
+
+        :param mission_name:
+        :return: component that computes Ramp Weight from TakeOff Weight and (possibly) Taxi-out
+                 fuel
+        """
+        # Using ExecComp is the only way I found to set a variable equal to another one.
+        # (group.connect() will work only if TOW is an output in the group, and AddSubtractComp
+        # requires at least 2 inputs)
+        # And since our variable names won't be parsed by ExecComp, we use promotion aliases
+        # in a Group.
+        # And when taxi-out fuel has to be used, an AddSubtractComp would do, but it's better
+        # to keep the same logic.
+
+        operation = "a=b"
+        promotions = [
+            ("a", f"data:mission:{mission_name}:ramp_weight"),
+            ("b", f"data:mission:{mission_name}:TOW"),
+        ]
+        if self._mission_wrapper.has_taxi_out(mission_name):
+            operation += "+c"
+            promotions.append(("c", f"data:mission:{mission_name}:taxi_out:fuel"))
+
+        ramp_weight_computation = om.Group()
+        ramp_weight_computation.add_subsystem(
+            "equality",
+            om.ExecComp(operation, units="kg"),
+            promotes=promotions,
+        )
+
+        return ramp_weight_computation
+
     @staticmethod
     def _get_block_fuel_component(mission_name: str) -> om.AddSubtractComp:
         """
 
         :param mission_name:
-        :return: component that computes initial block fuel from TOW and ZFW
+        :return: component that computes block fuel from ramp weight and ZFW
         """
         block_fuel_computation = om.AddSubtractComp()
         block_fuel_computation.add_equation(
-            f"data:mission:{mission_name}:block_fuel",
-            [
-                f"data:mission:{mission_name}:TOW",
-                f"data:mission:{mission_name}:taxi_out:fuel",
+            output_name=f"data:mission:{mission_name}:block_fuel",
+            input_names=[
+                f"data:mission:{mission_name}:ramp_weight",
                 f"data:mission:{mission_name}:ZFW",
             ],
             units="kg",
-            scaling_factors=[1, 1, -1],
-            desc=f'Loaded fuel before taxi-out for mission "{mission_name}"',
+            scaling_factors=[1, -1],
+            desc=f'Loaded fuel at beginning for mission "{mission_name}"',
         )
+
         return block_fuel_computation
 
 
@@ -334,7 +376,7 @@ class MissionComponent(om.ExplicitComponent):
             units="m/s",
             desc=f'Starting speed for mission "{mission_name}"',
         )
-        if self._mission_wrapper.need_start_mass:
+        if self._mission_wrapper.need_start_mass(mission_name):
             self.add_input(
                 self._mission_vars.RAMP_WEIGHT,
                 np.nan,
@@ -468,10 +510,14 @@ class MissionComponent(om.ExplicitComponent):
         outputs[self._mission_vars.NEEDED_BLOCK_FUEL] = (
             start_of_mission.mass - end_of_mission.mass + reserve
         )
-        outputs[self._mission_vars.NEEDED_FUEL_AT_TAKEOFF] = (
-            outputs[self._mission_vars.NEEDED_BLOCK_FUEL]
-            - outputs[self._mission_vars.TAXI_OUT_FUEL]
-        )
+        outputs[self._mission_vars.NEEDED_FUEL_AT_TAKEOFF] = outputs[
+            self._mission_vars.NEEDED_BLOCK_FUEL
+        ]
+        if self._mission_vars.TAXI_OUT_FUEL in outputs:
+            outputs[self._mission_vars.NEEDED_FUEL_AT_TAKEOFF] -= outputs[
+                self._mission_vars.TAXI_OUT_FUEL
+            ]
+
         if self.options["is_sizing"]:
             outputs["data:weight:aircraft:sizing_block_fuel"] = outputs[
                 self._mission_vars.NEEDED_BLOCK_FUEL
