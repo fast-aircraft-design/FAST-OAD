@@ -672,8 +672,9 @@ class MissionBuilder:
         :return: list of names of parts (phase or route) for specified mission.
         """
         return [
-            str(part.get(ROUTE_TAG, "")) + str(part.get(PHASE_TAG, ""))
+            part[NAME_TAG]
             for part in self._structure_builders[mission_name].structure[PARTS_TAG]
+            if part.get(TYPE_TAG) in [ROUTE_TAG, PHASE_TAG]
         ]
 
     def _build_mission(self, mission_structure: OrderedDict) -> FlightSequence:

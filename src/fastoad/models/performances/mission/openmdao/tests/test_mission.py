@@ -150,6 +150,7 @@ def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
     ivc = DataFile(input_file_path).to_ivc()
+    ivc.add_output("data:mission:operational:ramp_weight", 70100.0, units="kg")
 
     problem = run_system(
         MissionComponent(
@@ -190,7 +191,7 @@ def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
     )
 
 
-def test_mission_group_without_loop(cleanup, with_dummy_plugin_2):
+def test_mission_group_without_fuel_adjustment(cleanup, with_dummy_plugin_2):
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
     ivc = DataFile(input_file_path).to_ivc()
 
@@ -203,6 +204,7 @@ def test_mission_group_without_loop(cleanup, with_dummy_plugin_2):
                 mission_file_path=pth.join(DATA_FOLDER_PATH, "test_mission.yml"),
                 adjust_fuel=False,
                 reference_area_variable="data:geometry:aircraft:reference_area",
+                add_solver=True,
             ),
             ivc,
         )
@@ -216,6 +218,7 @@ def test_mission_group_without_loop(cleanup, with_dummy_plugin_2):
             mission_name="operational",
             adjust_fuel=False,
             reference_area_variable="data:geometry:aircraft:reference_area",
+            add_solver=True,
         ),
         ivc,
     )
@@ -223,7 +226,7 @@ def test_mission_group_without_loop(cleanup, with_dummy_plugin_2):
     assert_allclose(problem["data:mission:operational:block_fuel"], 15100.0, atol=1.0)
 
 
-def test_mission_group_breguet_without_loop(cleanup, with_dummy_plugin_2):
+def test_mission_group_breguet_without_fuel_adjustment(cleanup, with_dummy_plugin_2):
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_breguet.xml")
     ivc = DataFile(input_file_path).to_ivc()
 
@@ -242,7 +245,7 @@ def test_mission_group_breguet_without_loop(cleanup, with_dummy_plugin_2):
     assert_allclose(problem["data:mission:operational:block_fuel"], 15000.0, atol=1.0)
 
 
-def test_mission_group_with_loop(cleanup, with_dummy_plugin_2):
+def test_mission_group_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
     vars = DataFile(input_file_path)
@@ -275,16 +278,16 @@ def test_mission_group_with_loop(cleanup, with_dummy_plugin_2):
         problem["data:mission:operational:onboard_fuel_at_takeoff"],
         atol=1.0,
     )
-    # assert_allclose(
-    #     problem["data:mission:operational:needed_block_fuel"],
-    #     problem["data:mission:operational:needed_onboard_fuel_at_takeoff"]
-    #     + problem["data:mission:operational:taxi_out:fuel"],
-    #     atol=1.0,
-    # )
+    assert_allclose(
+        problem["data:mission:operational:needed_block_fuel"],
+        problem["data:mission:operational:needed_onboard_fuel_at_takeoff"]
+        + problem["data:mission:operational:taxi_out:fuel"],
+        atol=1.0,
+    )
     assert_allclose(problem["data:mission:operational:needed_block_fuel"], 5682.0, atol=1.0)
 
 
-def test_mission_group_breguet_with_loop(cleanup, with_dummy_plugin_2):
+def test_mission_group_breguet_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_breguet.xml")
     vars = DataFile(input_file_path)
