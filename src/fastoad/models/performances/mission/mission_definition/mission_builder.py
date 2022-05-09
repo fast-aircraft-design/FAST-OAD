@@ -18,6 +18,7 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 from copy import deepcopy
 from dataclasses import InitVar, dataclass, field
+from itertools import chain
 from numbers import Number
 from typing import Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
@@ -257,7 +258,8 @@ class AbstractStructureBuilder(ABC):
     name: str
     parent_name: str = None
 
-    _structure: dict = field(default=None, init=False)
+    _structure: OrderedDict = field(default=None, init=False)
+
     _input_definitions: List[InputDefinition] = field(default_factory=list, init=False)
     _builders: List[Tuple["AbstractStructureBuilder", dict]] = field(
         default_factory=list, init=False
@@ -270,34 +272,28 @@ class AbstractStructureBuilder(ABC):
         cls.type = structure_type
 
     def __post_init__(self, definition):
-        self._structure = self.build(definition)
+        self._structure = self._build(definition)
         self._structure[NAME_TAG] = self.qualified_name
         if self.__class__.type:
             self._structure[TYPE_TAG] = self.__class__.type
         self._parse_inputs(self._structure, self._input_definitions)
 
     @property
-    def structure(self) -> dict:
-        """
-        The resulting mission structure.
-
-        A dictionary that is ready to be translated to the matching implementation.
-        Inputs
-        """
+    def structure(self) -> OrderedDict:
+        """A dictionary that is ready to be translated to the matching implementation."""
         for builder, place_holder in self._builders:
-            place_holder.update(builder._structure)
-            self._input_definitions += builder.input_definitions
+            place_holder.update(builder.structure)
+            self._input_definitions += builder.get_input_definitions()
         self._builders = []  # Builders have been used and can be forgotten.
         return self._structure
 
-    @property
-    def input_definitions(self) -> List[InputDefinition]:
+    def get_input_definitions(self) -> List[InputDefinition]:
         """List of InputDefinition instances in the structure."""
-        if not self._input_definitions:
-            _ = self.structure  # -> it builds self._input_definitions
-        return self._input_definitions
+        return self._input_definitions + list(
+            chain(*[builder.get_input_definitions() for builder, _ in self._builders])
+        )
 
-    def insert_builder(self, builder: "AbstractStructureBuilder", place_holder: dict):
+    def _insert_builder(self, builder: "AbstractStructureBuilder", place_holder: dict):
         """
         Method to be used when another StructureBuilder object is needed in :meth:`build`.
 
@@ -309,15 +305,19 @@ class AbstractStructureBuilder(ABC):
         :param builder:
         :param place_holder:
         """
-        self._builders += builder._builders
         self._builders.append((builder, place_holder))
 
     @abstractmethod
-    def build(self, definition: dict) -> dict:
+    def _build(self, definition: dict) -> OrderedDict:
         """
         This method creates the needed structure dict.
 
         Keys "name" and "type" are not needed, as they will be written later on in the process.
+
+        .. Important::
+
+            Please use :meth:`_insert_builder` when another StructureBuilder object is needed in
+            the currently built structure.
 
         :param definition: the dict that will be converted.
         :return: the structure dict
@@ -387,8 +387,8 @@ class DefaultStructureBuilder(AbstractStructureBuilder):
     :param definition: the definition for the part only
     """
 
-    def build(self, definition: dict) -> dict:
-        return deepcopy(definition)
+    def _build(self, definition: dict) -> OrderedDict:
+        return OrderedDict(deepcopy(definition))
 
 
 class SegmentStructureBuilder(AbstractStructureBuilder, structure_type=SEGMENT_TAG):
@@ -398,8 +398,8 @@ class SegmentStructureBuilder(AbstractStructureBuilder, structure_type=SEGMENT_T
     :param definition: the definition for the segment only
     """
 
-    def build(self, definition: dict) -> dict:
-        segment_structure = deepcopy(definition)
+    def _build(self, definition: dict) -> OrderedDict:
+        segment_structure = OrderedDict(deepcopy(definition))
         del segment_structure[SEGMENT_TAG]
         segment_structure[SEGMENT_TYPE_TAG] = definition[SEGMENT_TAG]
 
@@ -413,7 +413,7 @@ class PhaseStructureBuilder(AbstractStructureBuilder, structure_type=PHASE_TAG):
     :param definition: the whole content of definition file
     """
 
-    def build(self, definition: dict) -> dict:
+    def _build(self, definition: dict) -> OrderedDict:
         phase_definition = definition[PHASE_DEFINITIONS_TAG][self.name]
         phase_structure = OrderedDict(deepcopy(phase_definition))
 
@@ -426,8 +426,7 @@ class PhaseStructureBuilder(AbstractStructureBuilder, structure_type=PHASE_TAG):
                 raise RuntimeError(f"Unexpected structure in definition of phase {self.name}")
 
             phase_structure[PARTS_TAG][i] = {}
-            self.insert_builder(builder, phase_structure[PARTS_TAG][i])
-            self._input_definitions += builder.input_definitions
+            self._insert_builder(builder, phase_structure[PARTS_TAG][i])
 
         return phase_structure
 
@@ -439,7 +438,7 @@ class RouteStructureBuilder(AbstractStructureBuilder, structure_type=ROUTE_TAG):
     :param definition: the whole content of definition file
     """
 
-    def build(self, definition: dict) -> dict:
+    def _build(self, definition: dict) -> OrderedDict:
         route_definition = definition[ROUTE_DEFINITIONS_TAG][self.name]
         route_structure = OrderedDict(deepcopy(route_definition))
 
@@ -451,7 +450,7 @@ class RouteStructureBuilder(AbstractStructureBuilder, structure_type=ROUTE_TAG):
             route_definition[CRUISE_PART_TAG], "cruise", self.qualified_name
         )
         route_structure[CRUISE_PART_TAG] = {}
-        self.insert_builder(builder, route_structure[CRUISE_PART_TAG])
+        self._insert_builder(builder, route_structure[CRUISE_PART_TAG])
 
         route_structure[DESCENT_PARTS_TAG] = self._get_route_climb_or_descent_structure(
             definition, route_definition[DESCENT_PARTS_TAG]
@@ -465,7 +464,7 @@ class RouteStructureBuilder(AbstractStructureBuilder, structure_type=ROUTE_TAG):
             phase_name = part_definition["phase"]
             builder = PhaseStructureBuilder(global_definition, phase_name, self.qualified_name)
             phase_structure = {}
-            self.insert_builder(builder, phase_structure)
+            self._insert_builder(builder, phase_structure)
             parts.append(phase_structure)
         return parts
 
@@ -477,7 +476,7 @@ class MissionStructureBuilder(AbstractStructureBuilder, structure_type="mission"
     :param definition: the whole content of definition file
     """
 
-    def build(self, definition: dict) -> dict:
+    def _build(self, definition: dict) -> OrderedDict:
         mission_definition = definition[MISSION_DEFINITION_TAG][self.name]
         mission_structure = OrderedDict(deepcopy(mission_definition))
 
@@ -495,7 +494,7 @@ class MissionStructureBuilder(AbstractStructureBuilder, structure_type="mission"
                 builder = DefaultStructureBuilder(part_definition, "", self.qualified_name)
 
             part_structure = {}
-            self.insert_builder(builder, part_structure)
+            self._insert_builder(builder, part_structure)
             mission_parts.append(part_structure)
 
         mission_structure[PARTS_TAG] = mission_parts
@@ -524,7 +523,7 @@ class MissionBuilder:
         :param reference_area: if not provided, the property :attr:`reference_area` must be
                                set before calling :meth:`build`
         """
-        self._input_definitions: Dict[str, List[InputDefinition]] = {}
+        self._structure_builders: Dict[str, AbstractStructureBuilder] = {}
         self.definition = mission_definition
         self._base_kwargs = {"reference_area": reference_area, "propulsion": propulsion}
 
@@ -544,11 +543,10 @@ class MissionBuilder:
         else:
             self._definition = mission_definition
 
-        self._structure = {}
         for mission_name in self._definition[MISSION_DEFINITION_TAG]:
-            builder = MissionStructureBuilder(self._definition, mission_name)
-            self._structure[mission_name] = builder.structure
-            self._input_definitions[mission_name] = builder.input_definitions
+            self._structure_builders[mission_name] = MissionStructureBuilder(
+                self._definition, mission_name
+            )
 
     @property
     def propulsion(self) -> IPropulsion:
@@ -577,12 +575,11 @@ class MissionBuilder:
         :param mission_name: mission name (can be omitted if only one mission is defined)
         :return:
         """
-        for mission_input_list in self._input_definitions.values():
-            for input_def in mission_input_list:
-                input_def.set_variable_value(inputs)
+        for input_def in self._structure_builders[mission_name].get_input_definitions():
+            input_def.set_variable_value(inputs)
         if mission_name is None:
             mission_name = self.get_unique_mission_name()
-        mission = self._build_mission(self._structure[mission_name])
+        mission = self._build_mission(self._structure_builders[mission_name].structure)
         return mission
 
     def get_route_ranges(
@@ -611,7 +608,7 @@ class MissionBuilder:
         if mission_name is None:
             mission_name = self.get_unique_mission_name()
 
-        last_part_spec = self._structure[mission_name][PARTS_TAG][-1]
+        last_part_spec = self._structure_builders[mission_name].structure[PARTS_TAG][-1]
         if RESERVE_TAG in last_part_spec:
             ref_name = last_part_spec[RESERVE_TAG]["ref"].value
             multiplier = last_part_spec[RESERVE_TAG]["multiplier"].value
@@ -635,7 +632,7 @@ class MissionBuilder:
             mission_name = self.get_unique_mission_name()
 
         input_definition = VariableList()
-        for input_def in self._input_definitions[mission_name]:
+        for input_def in self._structure_builders[mission_name].get_input_definitions():
             if input_def.variable_name and input_def.variable_name not in input_definition.names():
                 input_definition.append(input_def.get_input_definition())
 
@@ -649,8 +646,8 @@ class MissionBuilder:
         :raise FastMissionFileMissingMissionNameError: if several missions are defined in mission
                                                        file
         """
-        if len(self._structure) == 1:
-            return list(self._structure.keys())[0]
+        if len(self._structure_builders) == 1:
+            return list(self._structure_builders.keys())[0]
 
         raise FastMissionFileMissingMissionNameError(
             "Mission name must be specified if several missions are defined in mission file."
@@ -662,7 +659,7 @@ class MissionBuilder:
         :param mission_name:
         :return: Target mass variable of first segment, if any.
         """
-        part = self._structure[mission_name][PARTS_TAG][0]
+        part = self._structure_builders[mission_name].structure[PARTS_TAG][0]
         while PARTS_TAG in part:
             part = part[PARTS_TAG][0]
         if "mass" in part["target"]:
@@ -676,7 +673,7 @@ class MissionBuilder:
         """
         return [
             str(part.get(ROUTE_TAG, "")) + str(part.get(PHASE_TAG, ""))
-            for part in self._structure[mission_name][PARTS_TAG]
+            for part in self._structure_builders[mission_name].structure[PARTS_TAG]
         ]
 
     def _build_mission(self, mission_structure: OrderedDict) -> FlightSequence:
@@ -772,9 +769,7 @@ class MissionBuilder:
 
         return phase
 
-    def _build_segment(
-        self, segment_definition: dict, kwargs: dict, tag=SEGMENT_TAG
-    ) -> FlightSegment:
+    def _build_segment(self, segment_definition: dict, kwargs: dict) -> FlightSegment:
         """
         Builds a flight segment according to provided definition.
 

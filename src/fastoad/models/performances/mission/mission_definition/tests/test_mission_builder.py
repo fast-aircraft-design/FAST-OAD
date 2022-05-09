@@ -61,7 +61,14 @@ def test_initialization():
         reference_area=100.0,
     )
 
-    assert mission_builder._structure == _get_expected_structure()
+    assert (
+        mission_builder._structure_builders["sizing"].structure
+        == _get_expected_structure()["sizing"]
+    )
+    assert (
+        mission_builder._structure_builders["operational"].structure
+        == _get_expected_structure()["operational"]
+    )
 
 
 def test_inputs():

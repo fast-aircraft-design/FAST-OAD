@@ -87,7 +87,7 @@ class MissionWrapper(MissionBuilder):
         )
 
         # Mass is needed if there is no target mass in first segment.
-        struct = self._structure[mission_name]
+        struct = self._structure_builders[mission_name].structure
         while "parts" in struct:
             struct = struct["parts"][0]
 
