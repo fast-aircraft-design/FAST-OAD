@@ -30,6 +30,19 @@ COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 def available_power_diagram_plot(
     aircraft_file_path: str, name=None, fig=None, file_formatter=None
 ) -> go.FigureWidget:
+    """
+        Returns a figure plot of the available power and needed power as a function
+        of the altitude et height
+        Different designs can be superposed by providing an existing fig.
+        Each design can be provided a name.
+
+        :param aircraft_file_path: path of data file
+        :param name: name to give to the trace added to the figure
+        :param fig: existing figure to which add the plot
+        :param file_formatter: the formatter that defines the format of data file. If not provided,
+                               default format will be assumed.
+        :return: available power plot figure
+        """
 
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
