@@ -133,7 +133,9 @@ class Mission(om.Group):
             self.options["mission_name"] = self._mission_wrapper.get_unique_mission_name()
 
         mission_name = self.options["mission_name"]
-        self._name_provider = _get_variable_name_provider(mission_name)
+        self._name_provider = _get_variable_name_provider(
+            mission_name, self._mission_wrapper.get_taxi_out_phase_name(mission_name)
+        )
 
         self.add_subsystem("ZFW_computation", self._get_zfw_component(mission_name), promotes=["*"])
         self.add_subsystem(
@@ -235,7 +237,7 @@ class Mission(om.Group):
             ("a", self._name_provider.RAMP_WEIGHT.value),
             ("b", self._name_provider.TOW.value),
         ]
-        if self._mission_wrapper.has_taxi_out(mission_name):
+        if self._name_provider.TAXI_OUT_FUEL.value:  # will be None if no taxi-out phase
             operation += "+c"
             promotions.append(("c", self._name_provider.TAXI_OUT_FUEL.value))
 

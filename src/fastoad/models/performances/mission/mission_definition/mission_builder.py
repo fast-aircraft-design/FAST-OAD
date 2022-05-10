@@ -51,6 +51,7 @@ from ..routes import RangedRoute
 from ..segments.base import FlightSegment, SegmentDefinitions
 
 # FIXME: should be set in Route class
+
 NAME_TAG = "name"
 TYPE_TAG = "type"
 SEGMENT_TYPE_TAG = "segment_type"
@@ -608,7 +609,7 @@ class MissionBuilder:
         if mission_name is None:
             mission_name = self.get_unique_mission_name()
 
-        last_part_spec = self._structure_builders[mission_name].structure[PARTS_TAG][-1]
+        last_part_spec = self._get_mission_part_structures(mission_name)[-1]
         if RESERVE_TAG in last_part_spec:
             ref_name = last_part_spec[RESERVE_TAG]["ref"].value
             multiplier = last_part_spec[RESERVE_TAG]["multiplier"].value
@@ -659,11 +660,15 @@ class MissionBuilder:
         :param mission_name:
         :return: Target mass variable of first segment, if any.
         """
-        part = self._structure_builders[mission_name].structure[PARTS_TAG][0]
-        while PARTS_TAG in part:
-            part = part[PARTS_TAG][0]
+        part = self._get_first_segment_structure(mission_name)
         if "mass" in part["target"]:
             return part["target"]["mass"].variable_name
+
+    def _get_first_segment_structure(self, mission_name: str):
+        part = self._get_mission_part_structures(mission_name)[0]
+        while PARTS_TAG in part:
+            part = part[PARTS_TAG][0]
+        return part
 
     def get_mission_part_names(self, mission_name: str) -> List[str]:
         """
@@ -673,7 +678,7 @@ class MissionBuilder:
         """
         return [
             part[NAME_TAG]
-            for part in self._structure_builders[mission_name].structure[PARTS_TAG]
+            for part in self._get_mission_part_structures(mission_name)
             if part.get(TYPE_TAG) in [ROUTE_TAG, PHASE_TAG]
         ]
 
@@ -818,3 +823,6 @@ class MissionBuilder:
         for key, input_def in part_kwargs.items():
             if isinstance(input_def, InputDefinition):
                 part_kwargs[key] = input_def.value
+
+    def _get_mission_part_structures(self, mission_name: str):
+        return self._structure_builders[mission_name].structure[PARTS_TAG]
