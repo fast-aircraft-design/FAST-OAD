@@ -21,7 +21,8 @@ from scipy.constants import foot, knot, nautical_mile
 
 from fastoad._utils.testing import run_system
 from fastoad.io import DataFile
-from ..mission import Mission, MissionComponent
+from ..mission import Mission
+from ..mission_component import MissionComponent
 from ..mission_wrapper import MissionWrapper
 from ...mission_definition.exceptions import FastMissionFileMissingMissionNameError
 
