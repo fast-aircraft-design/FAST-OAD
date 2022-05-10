@@ -31,6 +31,8 @@ def available_power_diagram_plot(
     aircraft_file_path: str, name=None, fig=None, file_formatter=None
 ) -> go.FigureWidget:
 
+    variables = VariableIO(aircraft_file_path, file_formatter).read()
+
     if fig is None:
         fig = go.Figure()
 
