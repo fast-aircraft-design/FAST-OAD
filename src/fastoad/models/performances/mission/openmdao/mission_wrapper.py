@@ -14,7 +14,7 @@ Mission wrapper.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Dict, Tuple
+from typing import Dict, Optional, Tuple
 
 import numpy as np
 import openmdao.api as om
@@ -22,7 +22,7 @@ import pandas as pd
 from openmdao.vectors.vector import Vector
 
 from fastoad.model_base import FlightPoint
-from ..mission_definition.mission_builder import MissionBuilder
+from ..mission_definition.mission_builder import MissionBuilder, NAME_TAG, SEGMENT_TYPE_TAG
 from ..mission_definition.schema import (
     CLIMB_PARTS_TAG,
     DESCENT_PARTS_TAG,
@@ -33,6 +33,8 @@ from ..mission_definition.schema import (
     ROUTE_DEFINITIONS_TAG,
     ROUTE_TAG,
 )
+from ..segments.base import SegmentDefinitions
+from ..segments.taxi import TaxiSegment
 
 
 class MissionWrapper(MissionBuilder):
@@ -132,15 +134,14 @@ class MissionWrapper(MissionBuilder):
 
     def need_start_mass(self, mission_name):
         # Mass is needed if there is no target mass in first segment.
-        struct = self._structure_builders[mission_name].structure
-        while "parts" in struct:
-            struct = struct["parts"][0]
-
+        struct = self._get_first_segment_structure(mission_name)
         return "mass" not in struct["target"]
 
-    def has_taxi_out(self, mission_name):
-        """True if first phase is named "taxi_out"."""
-        return self.get_mission_part_names(mission_name)[0] == f"{mission_name}:taxi_out"
+    def get_taxi_out_phase_name(self, mission_name: str) -> Optional[str]:
+        first_part = self._get_mission_part_structures(mission_name)[0]
+        first_segment = self._get_first_segment_structure(mission_name)
+        if SegmentDefinitions.get_segment_class(first_segment[SEGMENT_TYPE_TAG]) is TaxiSegment:
+            return first_part[NAME_TAG].split(":")[-1]
 
     def _identify_outputs(self) -> Dict[str, Tuple[str, str]]:
         """

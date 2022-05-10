@@ -77,7 +77,9 @@ class MissionComponent(om.ExplicitComponent):
 
         mission_name = self.options["mission_name"]
 
-        self._name_provider = _get_variable_name_provider(mission_name)
+        self._name_provider = _get_variable_name_provider(
+            mission_name, self._mission_wrapper.get_taxi_out_phase_name(mission_name)
+        )
         try:
             self.add_input(
                 self._name_provider.TOW.value,
@@ -243,7 +245,10 @@ class MissionComponent(om.ExplicitComponent):
         outputs[self._name_provider.NEEDED_FUEL_AT_TAKEOFF.value] = outputs[
             self._name_provider.NEEDED_BLOCK_FUEL.value
         ]
-        if self._name_provider.TAXI_OUT_FUEL.value in outputs:
+        if (
+            self._name_provider.TAXI_OUT_FUEL.value
+            and self._name_provider.TAXI_OUT_FUEL.value in outputs
+        ):
             outputs[self._name_provider.NEEDED_FUEL_AT_TAKEOFF.value] -= outputs[
                 self._name_provider.TAXI_OUT_FUEL.value
             ]
@@ -284,7 +289,7 @@ class MissionComponent(om.ExplicitComponent):
         return RegisterPropulsion.get_provider(self.options["propulsion_id"])
 
 
-def _get_variable_name_provider(mission_name):
+def _get_variable_name_provider(mission_name, taxi_out_name):
     """Factory for enum class that provide mission variable names."""
 
     def get_variable_name(suffix):
@@ -297,7 +302,7 @@ def _get_variable_name_provider(mission_name):
         ZFW = get_variable_name("ZFW")
         TOW = get_variable_name("TOW")
         PAYLOAD = get_variable_name("payload")
-        TAXI_OUT_FUEL = get_variable_name("taxi_out:fuel")
+        TAXI_OUT_FUEL = get_variable_name(f"{taxi_out_name}:fuel") if taxi_out_name else None
         BLOCK_FUEL = get_variable_name("block_fuel")
         FUEL_AT_TAKEOFF = get_variable_name("onboard_fuel_at_takeoff")
         NEEDED_BLOCK_FUEL = get_variable_name("needed_block_fuel")
