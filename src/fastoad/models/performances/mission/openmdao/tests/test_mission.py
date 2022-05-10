@@ -224,7 +224,7 @@ def test_mission_group_without_loop(cleanup, with_dummy_plugin_2):
 
 
 def test_mission_group_breguet_without_loop(cleanup, with_dummy_plugin_2):
-    input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
+    input_file_path = pth.join(DATA_FOLDER_PATH, "test_breguet.xml")
     ivc = DataFile(input_file_path).to_ivc()
 
     problem = run_system(
@@ -238,8 +238,8 @@ def test_mission_group_breguet_without_loop(cleanup, with_dummy_plugin_2):
         ),
         ivc,
     )
-    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6346.0, atol=1.0)
-    assert_allclose(problem["data:mission:operational:block_fuel"], 15100.0, atol=1.0)
+    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6245.0, atol=1.0)
+    assert_allclose(problem["data:mission:operational:block_fuel"], 15000.0, atol=1.0)
 
 
 def test_mission_group_with_loop(cleanup, with_dummy_plugin_2):
@@ -286,7 +286,7 @@ def test_mission_group_with_loop(cleanup, with_dummy_plugin_2):
 
 def test_mission_group_breguet_with_loop(cleanup, with_dummy_plugin_2):
 
-    input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
+    input_file_path = pth.join(DATA_FOLDER_PATH, "test_breguet.xml")
     vars = DataFile(input_file_path)
     del vars["data:mission:operational:TOW"]
     ivc = vars.to_ivc()
@@ -318,11 +318,10 @@ def test_mission_group_breguet_with_loop(cleanup, with_dummy_plugin_2):
     )
     assert_allclose(
         problem["data:mission:operational:needed_block_fuel"],
-        problem["data:mission:operational:needed_onboard_fuel_at_takeoff"]
-        + problem["data:mission:operational:taxi_out:fuel"],
+        problem["data:mission:operational:needed_onboard_fuel_at_takeoff"],
         atol=1.0,
     )
-    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 5626.0, atol=1.0)
+    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 5525.0, atol=1.0)
     assert_allclose(
         problem["data:mission:operational:needed_onboard_fuel_at_takeoff"], 5525.0, atol=1.0
     )
