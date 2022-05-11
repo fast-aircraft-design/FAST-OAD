@@ -15,7 +15,7 @@ Mission generator.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from abc import ABC, abstractmethod
-from collections import OrderedDict
+from collections import ChainMap, OrderedDict
 from copy import deepcopy
 from dataclasses import InitVar, dataclass, field
 from itertools import chain
@@ -691,22 +691,24 @@ class MissionBuilder:
         """
         mission = FlightSequence()
 
+        part_kwargs = self._get_part_kwargs({}, mission_structure)
+
         mission.name = mission_structure[NAME_TAG]
         for part_spec in mission_structure[PARTS_TAG]:
             if TYPE_TAG in part_spec:
                 if part_spec[TYPE_TAG] == SEGMENT_TAG:
-                    part = self._build_segment(part_spec, {})
+                    part = self._build_segment(part_spec, part_kwargs)
                 if part_spec[TYPE_TAG] == ROUTE_TAG:
-                    part = self._build_route(part_spec)
+                    part = self._build_route(part_spec, part_kwargs)
                 elif part_spec[TYPE_TAG] == PHASE_TAG:
-                    part = self._build_phase(part_spec)
+                    part = self._build_phase(part_spec, part_kwargs)
                 mission.flight_sequence.append(part)
             else:  # reserve definition is used differently
                 continue
 
         return mission
 
-    def _build_route(self, route_structure: OrderedDict):
+    def _build_route(self, route_structure: OrderedDict, kwargs: Mapping = None):
         """
         Builds route instance.
 
@@ -716,17 +718,29 @@ class MissionBuilder:
         climb_phases = []
         descent_phases = []
 
+        part_kwargs = self._get_part_kwargs(
+            kwargs,
+            route_structure,
+            [
+                CLIMB_PARTS_TAG,
+                CRUISE_PART_TAG,
+                DESCENT_PARTS_TAG,
+                "range",
+                "distance_accuracy",
+            ],
+        )
+
         for part_structure in route_structure[CLIMB_PARTS_TAG]:
-            phase = self._build_phase(part_structure)
+            phase = self._build_phase(part_structure, part_kwargs)
             climb_phases.append(phase)
 
         cruise_phase = self._build_segment(
             route_structure[CRUISE_PART_TAG],
-            {"target": FlightPoint(ground_distance=0.0)},
+            ChainMap({"target": FlightPoint(ground_distance=0.0)}, part_kwargs),
         )
 
         for part_structure in route_structure[DESCENT_PARTS_TAG]:
-            phase = self._build_phase(part_structure)
+            phase = self._build_phase(part_structure, part_kwargs)
             descent_phases.append(phase)
 
         if "range" in route_structure:
@@ -747,7 +761,7 @@ class MissionBuilder:
         route.name = route_structure[NAME_TAG]
         return route
 
-    def _build_phase(self, phase_structure, kwargs=None):
+    def _build_phase(self, phase_structure: Mapping, kwargs: Mapping = None):
         """
         Builds phase instance
 
@@ -755,27 +769,18 @@ class MissionBuilder:
         :return: the phase instance
         """
         phase = FlightSequence(name=phase_structure[NAME_TAG])
-        if kwargs is None:
-            kwargs = {}
-        kwargs.update(
-            {
-                name: value
-                for name, value in phase_structure.items()
-                if name != PARTS_TAG and name != TYPE_TAG
-            }
-        )
-        self._replace_input_definitions_by_values(kwargs)
+        part_kwargs = self._get_part_kwargs(kwargs, phase_structure)
 
         for part_structure in phase_structure[PARTS_TAG]:
             if part_structure[TYPE_TAG] == PHASE_TAG:
-                flight_part = self._build_phase(part_structure, kwargs)
+                flight_part = self._build_phase(part_structure, part_kwargs)
             else:
-                flight_part = self._build_segment(part_structure, kwargs)
+                flight_part = self._build_segment(part_structure, part_kwargs)
             phase.flight_sequence.append(flight_part)
 
         return phase
 
-    def _build_segment(self, segment_definition: dict, kwargs: dict) -> FlightSegment:
+    def _build_segment(self, segment_definition: Mapping, kwargs: Mapping) -> FlightSegment:
         """
         Builds a flight segment according to provided definition.
 
@@ -826,3 +831,18 @@ class MissionBuilder:
 
     def _get_mission_part_structures(self, mission_name: str):
         return self._structure_builders[mission_name].structure[PARTS_TAG]
+
+    def _get_part_kwargs(
+        self, kwargs: Mapping, phase_structure: Mapping, specific_exclude: List[str] = None
+    ):
+        part_kwargs = {}
+        if kwargs is not None:
+            part_kwargs.update(kwargs)
+        if specific_exclude is None:
+            specific_exclude = []
+        exclude = [NAME_TAG, PARTS_TAG, TYPE_TAG] + specific_exclude
+        part_kwargs.update(
+            {name: value for name, value in phase_structure.items() if name not in exclude}
+        )
+        self._replace_input_definitions_by_values(part_kwargs)
+        return part_kwargs

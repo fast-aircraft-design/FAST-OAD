@@ -182,6 +182,10 @@ routes:
 
 missions:
   sizing:
+    isa_offset:
+      value: ~ISA_offset
+      unit: degK
+      default: 0.0
     parts:
       - phase: taxi_out
       - phase: takeoff
