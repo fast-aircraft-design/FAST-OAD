@@ -14,8 +14,9 @@ Defines the analysis and plotting functions for postprocessing
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .available_power_diagram.available_power_diagram_file import available_power_diagram_plot
+
 from typing import Dict
+from .available_power_diagram.available_power_diagram_file import available_power_diagram_plot
 
 import numpy as np
 import plotly

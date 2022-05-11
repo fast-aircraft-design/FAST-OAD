@@ -51,10 +51,12 @@ from fastoad.openmdao.validity_checker import ValidityDomainChecker
 from fastoad.gui.mission_viewer import MissionViewer
 from fastoad.gui.optimization_viewer import OptimizationViewer
 from fastoad.gui.variable_viewer import VariableViewer
+
 from fastoad.gui.analysis_and_plots import (
     aircraft_geometry_plot,
     drag_polar_plot,
     mass_breakdown_bar_plot,
     mass_breakdown_sun_plot,
     wing_geometry_plot,
+    available_power_diagram_plot
 )

@@ -49,4 +49,8 @@ def available_power_diagram_plot(
     if fig is None:
         fig = go.Figure()
 
+    scatter = go.Scatter(x=1, y=1, mode="markers", name="coucou")
+
+    fig.add_trace(scatter)
+
     return fig
