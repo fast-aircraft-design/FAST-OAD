@@ -64,6 +64,7 @@ routes:
       - phase: climb
     cruise_part:
       segment: breguet
+      isa_offset: 0.0
       engine_setting: cruise
       polar: data:aerodynamics:aircraft:cruise
     descent_parts:

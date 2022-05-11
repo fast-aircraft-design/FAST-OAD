@@ -2,6 +2,7 @@ phases:
   taxi_out:
     parts:
       - segment: taxi
+        isa_offset: 0.0
         thrust_rate: data:mission:operational:taxi_out:thrust_rate
         true_airspeed:
           value: data:mission:operational:taxi_out:true_airspeed
@@ -24,6 +25,7 @@ phases:
     polar: data:aerodynamics:aircraft:takeoff
     thrust_rate: 1.0
     time_step: 0.2
+    isa_offset: 0.0
     parts:
       - segment: altitude_change
         target:
