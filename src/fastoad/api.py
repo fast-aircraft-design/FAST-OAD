@@ -58,5 +58,5 @@ from fastoad.gui.analysis_and_plots import (
     mass_breakdown_bar_plot,
     mass_breakdown_sun_plot,
     wing_geometry_plot,
-    available_power_diagram_plot
+    available_power_diagram_plot,
 )
