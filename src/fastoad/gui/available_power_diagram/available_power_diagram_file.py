@@ -46,10 +46,19 @@ def available_power_diagram_plot(
 
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
-    x = np.arange(10)
+    x = np.linspace(-10, 20, 15)
     if fig is None:
         fig = go.Figure()
+
+    """
     fig = go.Figure(data=go.Scatter(x=x, y=x ** 2))
     fig.update_layout(title_text="Test available_power_diagram_plot", title_x=0.5, xaxis_title="x", yaxis_title="y=x**2")
+    """
+
+    scatter = go.Scatter(x=x, y=x**3, mode="lines+markers", name=name)
+    fig.add_trace(scatter)
+    #fig.layout = go.Layout(yaxis=dict(scaleanchor="x", scaleratio=1))
+    fig = go.FigureWidget(fig)
+    fig.update_layout(title_text="Test available_power_diagram_plot", title_x=0.5, xaxis_title="x", yaxis_title="y=x**3")
 
     return fig
