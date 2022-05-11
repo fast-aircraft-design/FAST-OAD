@@ -46,11 +46,10 @@ def available_power_diagram_plot(
 
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
+    x = np.arange(10)
     if fig is None:
         fig = go.Figure()
-
-    scatter = go.Scatter(x=1, y=1, mode="markers", name="coucou")
-
-    fig.add_trace(scatter)
+    fig = go.Figure(data=go.Scatter(x=x, y=x ** 2))
+    fig.update_layout(title_text="Test available_power_diagram_plot", title_x=0.5, xaxis_title="x", yaxis_title="y=x**2")
 
     return fig
