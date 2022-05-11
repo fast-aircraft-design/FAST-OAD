@@ -79,16 +79,28 @@ def test_climb_fixed_altitude_at_constant_EAS(polar):
         # Note: reference values are obtained by running the process with 0.01s as time step
         assert_allclose(last_point.altitude, 10000.0)
         assert_allclose(last_point.equivalent_airspeed, 100.0)
-        assert_allclose(last_point.time, 145.2, rtol=1e-2)
-        assert_allclose(first_point.true_airspeed, 129.0, atol=0.1)
-        assert_allclose(last_point.true_airspeed, 172.3, atol=0.1)
-        assert_allclose(last_point.mass, 69710.0, rtol=1e-4)
         assert_allclose(last_point.ground_distance, 20915.0, rtol=1e-3)
         assert last_point.engine_setting == EngineSetting.CRUISE
+
+        if segment.isa_offset == 0.0:
+            assert_allclose(last_point.time, 145.2, rtol=1e-2)
+            assert_allclose(first_point.true_airspeed, 129.0, atol=0.1)
+            assert_allclose(last_point.true_airspeed, 172.3, atol=0.1)
+            assert_allclose(last_point.mass, 69710.0, rtol=1e-4)
+
+        if segment.isa_offset == 15.0:
+            assert_allclose(last_point.time, 141.2, rtol=1e-2)
+            assert_allclose(first_point.true_airspeed, 132.7, atol=0.1)
+            assert_allclose(last_point.true_airspeed, 178.0, atol=0.1)
+            assert_allclose(last_point.mass, 69718.0, rtol=1e-4)
 
     run()
 
     # A second call is done to ensure first run did not modify anything (like target definition)
+    run()
+
+    # Test with non-zero dISA
+    segment.isa_offset = 15.0
     run()
 
 
