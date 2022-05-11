@@ -167,7 +167,7 @@ def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
         ivc,
     )
     # plot_flight(problem.model.component.flight_points, "test_mission.png")
-    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6346.0, atol=1.0)
+    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6256.0, atol=1.0)
 
     assert_allclose(problem["data:mission:operational:taxi_out:fuel"], 100.0, atol=1.0)
 
@@ -178,15 +178,15 @@ def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
     )
 
     assert_allclose(
-        problem["data:mission:operational:main_route:cruise:duration"], 11956.0, atol=1.0
+        problem["data:mission:operational:main_route:cruise:duration"], 11695.0, atol=1.0
     )
-    assert_allclose(problem["data:mission:operational:main_route:cruise:fuel"], 4288.0, atol=1.0)
+    assert_allclose(problem["data:mission:operational:main_route:cruise:fuel"], 4197.0, atol=1.0)
     assert_allclose(
         problem["data:mission:operational:main_route:cruise:distance"], 2778000.0, atol=1.0
     )
 
     assert_allclose(problem["data:mission:operational:main_route:descent:duration"], 0.0, atol=1.0)
-    assert_allclose(problem["data:mission:operational:main_route:descent:fuel"], 1023.0, atol=1.0)
+    assert_allclose(problem["data:mission:operational:main_route:descent:fuel"], 1025.0, atol=1.0)
     assert_allclose(
         problem["data:mission:operational:main_route:descent:distance"], 463000.0, atol=1.0
     )
