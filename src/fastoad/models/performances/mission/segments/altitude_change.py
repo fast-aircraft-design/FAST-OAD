@@ -1,6 +1,6 @@
 """Classes for climb/descent segments."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -19,7 +19,6 @@ from typing import List, Tuple
 
 import pandas as pd
 from scipy.constants import foot, g
-from stdatm import AtmosphereSI
 
 from fastoad.model_base import FlightPoint
 from .base import ManualThrustSegment
@@ -98,7 +97,7 @@ class AltitudeChangeSegment(ManualThrustSegment, mission_file_keyword="altitude_
                 self.target.CL = None
                 self.interrupt_if_getting_further_from_target = True
 
-        atm = AtmosphereSI(start.altitude)
+        atm = self._get_atmosphere_point(start.altitude)
         if self.target.equivalent_airspeed == self.CONSTANT_VALUE:
             atm.equivalent_airspeed = start.equivalent_airspeed
             start.true_airspeed = atm.true_airspeed
@@ -129,7 +128,7 @@ class AltitudeChangeSegment(ManualThrustSegment, mission_file_keyword="altitude_
                     setattr(target_speed, speed_param, getattr(flight_points[0], speed_param))
 
             # Now, let's compute target Mach number
-            atm = AtmosphereSI(max(self.target.altitude, current.altitude))
+            atm = self._get_atmosphere_point(max(self.target.altitude, current.altitude))
             if target_speed.equivalent_airspeed:
                 atm.equivalent_airspeed = target_speed.equivalent_airspeed
                 target_speed.true_airspeed = atm.true_airspeed

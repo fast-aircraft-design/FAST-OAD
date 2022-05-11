@@ -126,6 +126,9 @@ class FlightSegment(IFlightPart):
     #: The reference area, in m**2.
     reference_area: float = BaseDataClass.no_default
 
+    #: The temperature offset for ISA atmosphere model.
+    isa_offset: float = 0.0
+
     #: Used time step for computation (actual time step can be lower at some particular times of
     #: the flight path).
     time_step: float = DEFAULT_TIME_STEP
@@ -346,7 +349,7 @@ class FlightSegment(IFlightPart):
 
         self._complete_speed_values(flight_point)
 
-        atm = AtmosphereSI(flight_point.altitude)
+        atm = self._get_atmosphere_point(flight_point.altitude)
         reference_force = 0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_area
 
         if self.polar:
@@ -361,12 +364,20 @@ class FlightSegment(IFlightPart):
             flight_point
         )
 
-    @staticmethod
-    def _complete_speed_values(flight_point: FlightPoint):
+    def _get_atmosphere_point(self, altitude: float) -> AtmosphereSI:
+        """
+        Convenience method to ensure used atmosphere model is initiated with :attr:`delta_isa`.
+
+        :param altitude: in meters
+        :return: AtmosphereSI instantiated from provided altitude and :attr:`delta_isa`
+        """
+        return AtmosphereSI(altitude, self.isa_offset)
+
+    def _complete_speed_values(self, flight_point: FlightPoint):
         """
         Computes consistent values between TAS, EAS and Mach, assuming one of them is defined.
         """
-        atm = AtmosphereSI(flight_point.altitude)
+        atm = self._get_atmosphere_point(flight_point.altitude)
 
         if flight_point.true_airspeed is None:
             if flight_point.mach is not None:
@@ -408,7 +419,7 @@ class FlightSegment(IFlightPart):
             altitude_guess = 10000.0
 
         def distance_to_optimum(altitude):
-            atm = AtmosphereSI(altitude)
+            atm = self._get_atmosphere_point(altitude)
             true_airspeed = mach * atm.speed_of_sound
             optimal_air_density = (
                 2.0 * mass * g / (self.reference_area * true_airspeed ** 2 * self.polar.optimal_cl)
