@@ -2,7 +2,6 @@ phases:
   taxi_out:
     parts:
       - segment: taxi
-        isa_offset: 10.0
         thrust_rate: data:mission:operational:taxi_out:thrust_rate
         true_airspeed: 10.
         target:
@@ -10,7 +9,6 @@ phases:
   takeoff:
     parts:
       - segment: transition
-        isa_offset: 10.0
         target:
           delta_altitude:
             value: 35
@@ -42,14 +40,12 @@ phases:
             unit: NM
         mass_ratio: 1.0
   climb:
-    delta_isa: 10.0
     parts:
       - phase: climb1
       - phase: climb2
   descent:
     parts:
       - segment: transition
-        isa_offset: 10.0
         target:
           altitude: 0.
           mach: 0.
@@ -68,7 +64,6 @@ routes:
       - phase: climb
     cruise_part:
       segment: breguet
-      isa_offset: 10.0
       engine_setting: cruise
       polar: data:aerodynamics:aircraft:cruise
     descent_parts:
@@ -76,6 +71,7 @@ routes:
 
 missions:
   operational:
+    isa_offset: ~ISA_offset
     parts:
       - phase: taxi_out
       - phase: takeoff
