@@ -16,7 +16,6 @@ Defines the analysis and plotting functions for postprocessing
 
 
 from typing import Dict
-from .available_power_diagram.available_power_diagram_file import available_power_diagram_plot
 
 import numpy as np
 import plotly
@@ -29,10 +28,13 @@ from fastoad.openmdao.variables import VariableList
 
 COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 
+from .available_power_diagram.available_power_diagram_file import available_power_diagram_plot
 
+
+# from .flaps_and_slats.slats_and_flaps import slats_plot
 # pylint: disable-msg=too-many-locals
 def wing_geometry_plot(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+        aircraft_file_path: str, name=None, fig=None, file_formatter=None
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the top view of the wing.
@@ -102,9 +104,71 @@ def wing_geometry_plot(
     return fig
 
 
+def slats_plot(
+        aircraft_file_path: str, name=None, fig=None, file_formatter=None
+) -> go.FigureWidget:
+    """
+    Returns a figure plot of the top view of the wing with the slats added.
+    Different designs can be superposed by providing an existing fig.
+    Each design can be provided a name.
+
+    :param aircraft_file_path: path of data file
+    :param name: name to give to the trace added to the figure
+    :param fig: existing figure to which add the plot
+    :param file_formatter: the formatter that defines the format of data file. If not provided,
+                           default format will be assumed.
+    :return: plot figure of wing the wing with slats
+    """
+    variables = VariableIO(aircraft_file_path, file_formatter).read()
+
+    wing_tip_leading_edge_x = variables["data:geometry:wing:tip:leading_edge:x:local"].value[0]
+    wing_root_y = variables["data:geometry:wing:root:y"].value[0]
+    wing_tip_y = variables["data:geometry:wing:tip:y"].value[0]
+
+    mean_aerodynamic_chord = variables["data:geometry:wing:MAC:length"].value[0]# the chord of the slat is based on the MAC
+    mac25_x_position = variables["data:geometry:wing:MAC:at25percent:x"].value[0] #position of the max wrt x
+    distance_root_mac_chords = variables["data:geometry:wing:MAC:leading_edge:x:local"].value[0]
+    mean_y_position= variables["data:geometry:wing:MAC:y"].value[0]
+    print(mean_y_position)
+
+    # 2) slats
+    wing_span_no_fuselage = wing_tip_y - wing_root_y # wing span without fuselage
+
+    slat_chord_ratio = variables["data:geometry:slat:chord_ratio"].value[0]
+    slat_span_ratio = variables["data:geometry:slat:span_ratio"].value[0]
+
+    slat_y = (1 - slat_span_ratio) / 2.0 * wing_span_no_fuselage # example :  if the slat_span_ratio is 0.9 than the slats begin at 5% from  the root
+    slat_x_root = wing_tip_leading_edge_x * (1 - slat_span_ratio) / 2.0
+
+    y2 = np.array([slat_y + wing_root_y, slat_y + wing_root_y, wing_tip_y - slat_y, wing_tip_y - slat_y])
+    x2 = np.array([slat_x_root, slat_x_root + slat_chord_ratio * mean_aerodynamic_chord, wing_tip_leading_edge_x * (
+                1 - (1 - slat_span_ratio) / 2.0) + slat_chord_ratio * mean_aerodynamic_chord,
+                   wing_tip_leading_edge_x * (1 - (1 - slat_span_ratio) / 2.0)])
+    x2 += mac25_x_position - 0.25 * mean_aerodynamic_chord - distance_root_mac_chords
+
+
+    fig = wing_geometry_plot(aircraft_file_path, name, fig, file_formatter) # wing
+    scatter2 = go.Scatter(x=y2, y=x2, mode="lines+markers", name="slats")  # slats
+    fig.add_trace(scatter2)
+
+    #MAC
+
+    y_MAC = mean_y_position*np.ones(2)
+    x_MAC = np.array([distance_root_mac_chords,distance_root_mac_chords+mean_aerodynamic_chord])
+    x_MAC += mac25_x_position - 0.25 * mean_aerodynamic_chord - distance_root_mac_chords
+
+
+    scatter3= go.Scatter(x=y_MAC,y=x_MAC, mode="lines+markers", name="MAC") #MAC
+    fig.add_trace(scatter3)
+
+
+
+    return fig
+
+
 # pylint: disable-msg=too-many-locals
 def aircraft_geometry_plot(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+        aircraft_file_path: str, name=None, fig=None, file_formatter=None
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the top view of the wing.
@@ -229,7 +293,7 @@ def aircraft_geometry_plot(
 
 
 def drag_polar_plot(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+        aircraft_file_path: str, name=None, fig=None, file_formatter=None
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the aircraft drag polar.
@@ -269,7 +333,7 @@ def drag_polar_plot(
 
 
 def mass_breakdown_bar_plot(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+        aircraft_file_path: str, name=None, fig=None, file_formatter=None
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the aircraft mass breakdown using bar plots.
@@ -438,7 +502,7 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
 
 
 def _get_variable_values_with_new_units(
-    variables: VariableList, var_names_and_new_units: Dict[str, str]
+        variables: VariableList, var_names_and_new_units: Dict[str, str]
 ):
     """
     Returns the value of the requested variable names with respect to their new units in the order
@@ -473,7 +537,7 @@ def _data_weight_decomposition(variables: VariableList, owe=None):
         name_split = variable.split(":")
         if isinstance(name_split, list) and len(name_split) == 4:
             if name_split[0] + name_split[1] + name_split[3] == "dataweightmass" and not (
-                "aircraft" in name_split[2]
+                    "aircraft" in name_split[2]
             ):
                 category_values.append(
                     convert_units(variables[variable].value[0], variables[variable].units, "kg")
