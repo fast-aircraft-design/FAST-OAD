@@ -47,21 +47,34 @@ class DummyFormatter(IVariableIOFormatter):
 
 
 def test_DataFile(cleanup):
+    variables_ref = VariableList([Variable("data:foo", value=5), Variable("data:bar", value=10)])
+
     file_path = pth.join(RESULTS_FOLDER_PATH, "dummy_data_file.xml")
     with pytest.raises(FileNotFoundError) as exc_info:
         _ = DataFile(file_path)
     assert exc_info.value.args[0] == f'File "{file_path}" is unavailable for reading.'
 
-    variables_1 = DataFile(file_path, load_data=False)
-    assert len(variables_1) == 0
+    data_file_1 = DataFile(file_path, load_data=False)
+    assert len(data_file_1) == 0
 
-    variables_1.update(
-        VariableList([Variable("data:foo", value=5), Variable("data:bar", value=10)]),
+    data_file_1.update(
+        variables_ref,
         add_variables=True,
     )
-    variables_1.save()
+    data_file_1.save()
 
-    variables_2 = DataFile(file_path)
-    assert len(variables_2) == 2
+    data_file_2 = DataFile(file_path)
+    assert len(data_file_2) == 2
 
-    assert set(variables_2) == set(variables_1)
+    assert set(data_file_2) == set(variables_ref)
+
+    # Test from_* methods
+    ivc = variables_ref.to_ivc()
+    data_file_3 = DataFile.from_ivc(ivc)
+    assert isinstance(data_file_3, DataFile)
+    assert set(data_file_3) == set(variables_ref)
+
+    df = variables_ref.to_dataframe()
+    data_file_4 = DataFile.from_dataframe(df)
+    assert isinstance(data_file_4, DataFile)
+    assert set(data_file_4) == set(variables_ref)
