@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -46,9 +46,13 @@ class DummyFormatter(IVariableIOFormatter):
         self.variables.update(variables, add_variables=True)
 
 
-def test(cleanup):
+def test_DataFile(cleanup):
     file_path = pth.join(RESULTS_FOLDER_PATH, "dummy_data_file.xml")
-    variables_1 = DataFile(file_path)
+    with pytest.raises(FileNotFoundError) as exc_info:
+        _ = DataFile(file_path)
+    assert exc_info.value.args[0] == f'File "{file_path}" is unavailable for reading.'
+
+    variables_1 = DataFile(file_path, load_data=False)
     assert len(variables_1) == 0
 
     variables_1.update(

@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -11,8 +11,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
 from fnmatch import fnmatchcase
+from os.path import isfile
 from typing import IO, List, Sequence, Union
 
 from fastoad.openmdao.variables import VariableList
@@ -49,6 +49,8 @@ class VariableIO:
         :param ignore: List of variable names that should be ignored when reading.
         :return: an VariableList instance where outputs have been defined using provided source
         """
+        if isinstance(self.data_source, str) and not isfile(self.data_source):
+            raise FileNotFoundError(f'File "{self.data_source}" is unavailable for reading.')
         variables = self.formatter.read_variables(self.data_source)
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
         return used_variables
@@ -133,11 +135,12 @@ class DataFile(VariableList):
         :param file_path: the file path where data will be loaded and saved.
         :param formatter: a class that determines the file format to be used. Defaults to FAST-OAD
                           native format. See :class:`VariableIO` for more information.
-        :param load_data: if True and if file exists, its content will be loaded at instantiation.
+        :param load_data: if True, file is expected to exist and its content will be loaded at
+                          instantiation.
         """
         super().__init__()
         self._variable_io = VariableIO(file_path, formatter)
-        if pth.exists(file_path) and load_data:
+        if load_data:
             self.load()
 
     @property
