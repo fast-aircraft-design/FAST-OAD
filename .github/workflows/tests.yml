@@ -7,7 +7,6 @@ on:
     tags-ignore:
       - '**'
 
-
 jobs:
   tests:
     runs-on: ${{ matrix.os }}
@@ -18,33 +17,21 @@ jobs:
         os: [ ubuntu-latest, windows-latest, macos-latest ]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+
+      - name: Install poetry
+        run: pipx install poetry
+
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
-
-      - name: Install Poetry
-        run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
-        shell: bash
-
-      - name: Poetry path
-        run: echo "$HOME/.poetry/bin" >> $GITHUB_PATH
-        shell: bash
-
-      - name: Sets unique cache directory for Poetry
-        run: poetry config cache-dir ~/poetry_cache
-        shell: bash
-
-      - uses: actions/cache@v2
-        if: ${{ ! startsWith(runner.os, 'Windows') }} # With time, caching on Windows eventually ends crashing.
-        with:
-          path: ~/poetry_cache
-          key: ${{ runner.os }}-Py${{ matrix.python-version }}-pypoetry-${{ hashFiles('**/poetry.lock') }}
+          cache: 'poetry'
 
       - name: Activate environment and install dependencies
-        run: poetry install
-        shell: bash
+        run: |
+          poetry env use ${{ matrix.python-version }}
+          poetry install
 
       - name: Check with Black
         run: |
@@ -84,6 +71,6 @@ jobs:
         shell: bash
 
       - name: Notebook tests
-#        if: ${{ github.event_name == 'pull_request' || contains(github.event.head_commit.message, '[test nb]') || github.ref == 'refs/heads/master' }}
+        #        if: ${{ github.event_name == 'pull_request' || contains(github.event.head_commit.message, '[test nb]') || github.ref == 'refs/heads/master' }}
         run: poetry run pytest --no-cov --nbval-lax -p no:python src/fastoad/notebooks
         shell: bash
