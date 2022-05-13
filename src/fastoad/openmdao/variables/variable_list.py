@@ -30,30 +30,47 @@ from .variable import METADATA_TO_IGNORE, Variable
 
 class VariableList(list):
     """
-    Class for storing OpenMDAO variables
+    Class for storing OpenMDAO variables.
 
-    A list of Variable instances, but items can also be accessed through variable names.
+    A list of :class:`~fastoad.openmdao.variables.variable.Variable` instances, but items can
+    also be accessed through variable names. It also has utilities to be converted from/to some
+    other data structures (python dict, OpenMDAO IndepVarComp, pandas DataFrame)
 
-    There are 2 ways for adding a variable::
+    See documentation of :class:`~fastoad.openmdao.variables.variable.Variable` to see how to
+    manipulate each element.
 
-        # Assuming these Python variables are ready
+    There are several ways for adding variables::
+
+        # Assuming these Python variables are ready...
         var_1 = Variable('var/1', value=0.)
         metadata_2 = {'value': 1., 'units': 'm'}
 
-        # ... a VariableList instance can be populated like this
-        vars = VariableList()
-        vars.append(var_1)              # Adds directly a Variable instance
-        vars['var/2'] = metadata_2      # Adds the variable with given name and given metadata
+        # ... a VariableList instance can be populated like this:
+        vars_A = VariableList()
+        vars_A.append(var_1)              # Adds directly a Variable instance
+        vars_A['var/2'] = metadata_2      # Adds the variable with given name and given metadata
+
+    Note:
+        Adding a Variable instance with a name that is already in the VariableList instance
+        will replace the previous Variable instance instead of adding a new one.
+
+    .. code:: python
+
+        # It is also possible to instantiate a VariableList instance from another VariableList
+        # instance or a simple list of Variable instances
+        vars_B = VariableList(vars_A)
+        vars_C = VariableList([var_1])
+
+        # An existing VariableList instance can also receive the content of another VariableList
+        # instance.
+        vars_C.update(vars_A)             # variables in vars_A will overwrite variables with same
+                                          # name in vars_C
 
     After that, following equalities are True::
 
-        print( var_1 in vars )
-        print( 'var/1' in vars.names() )
-        print( 'var/2' in vars.names() )
-
-    Note:
-        Adding a Variable instance that has a name that is already in the VariableList instance
-        will replace the previous Variable instance instead of adding a new one.
+        print( var_1 in vars_A )
+        print( 'var/1' in vars_A.names() )
+        print( 'var/2' in vars_A.names() )
     """
 
     def names(self) -> List[str]:
