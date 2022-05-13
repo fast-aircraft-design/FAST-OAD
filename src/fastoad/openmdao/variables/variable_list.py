@@ -84,7 +84,7 @@ class VariableList(list):
         else:
             super().append(var)
 
-    def update(self, other_var_list: "VariableList", add_variables: bool = True):
+    def update(self, other_var_list: list, add_variables: bool = True):
         """
         Uses variables in other_var_list to update the current VariableList instance.
 
@@ -163,7 +163,7 @@ class VariableList(list):
         :param var_dict:
         :return: a VariableList instance
         """
-        variables = VariableList()
+        variables = cls()
 
         for var_name, metadata in dict(var_dict).items():
             variables.append(Variable(var_name, **metadata))
@@ -178,7 +178,7 @@ class VariableList(list):
         :param ivc: an IndepVarComp instance
         :return: a VariableList instance
         """
-        variables = VariableList()
+        variables = cls()
 
         ivc = deepcopy(ivc)
         om.Problem(ivc).setup()  # Need setup to have get_io_metadata working
@@ -230,7 +230,7 @@ class VariableList(list):
                     pass
             return Variable(**var_as_dict)
 
-        return VariableList([_get_variable(row) for row in df[column_names].values])
+        return cls([_get_variable(row) for row in df[column_names].values])
 
     @classmethod
     def from_problem(
@@ -346,8 +346,8 @@ class VariableList(list):
                             final[prom_name]["desc"] = metadata["desc"]
 
         # Conversion to VariableList instances
-        input_vars = VariableList.from_dict(final_inputs)
-        output_vars = VariableList.from_dict(final_outputs)
+        input_vars = cls.from_dict(final_inputs)
+        output_vars = cls.from_dict(final_outputs)
 
         # Use computed value instead of initial ones, if asked for, and if problem has been run.
         # Note: using problem.get_val() if problem has not been run may lead to unexpected
