@@ -130,18 +130,34 @@ class DataFile(VariableList):
     :meth:`save` methods.
     """
 
-    def __init__(self, file_path: str, formatter: IVariableIOFormatter = None, load_data=True):
+    def __init__(
+        self,
+        data_source: Union[str, IO, list] = None,
+        formatter: IVariableIOFormatter = None,
+        load_data=True,
+    ):
         """
-        :param file_path: the file path where data will be loaded and saved.
-        :param formatter: a class that determines the file format to be used. Defaults to FAST-OAD
+        If variable list is specified for data_source, :attr:`file_path` will have to be set before
+        using :method:`save`.
+
+        :param data_source: Can be the file path where data will be loaded and saved, or a list of
+                            :class:`~fastoad.openmdao.variables.Variable` instances that will
+                            be used for initialization (or a
+                            :class:`~fastoad.openmdao.variables.VariableList` instance).
+        :param formatter: (ignored if data_source is not an I/O stream nor a file path)
+                          a class that determines the file format to be used. Defaults to FAST-OAD
                           native format. See :class:`VariableIO` for more information.
-        :param load_data: if True, file is expected to exist and its content will be loaded at
+        :param load_data: (ignored if data_source is not an I/O stream nor a file path)
+                          if True, file is expected to exist and its content will be loaded at
                           instantiation.
         """
         super().__init__()
-        self._variable_io = VariableIO(file_path, formatter)
-        if load_data:
-            self.load()
+        if isinstance(data_source, (str, IO)):
+            self._variable_io = VariableIO(data_source, formatter)
+            if load_data:
+                self.load()
+        if isinstance(data_source, list):
+            self.update(data_source)
 
     @property
     def file_path(self) -> str:
