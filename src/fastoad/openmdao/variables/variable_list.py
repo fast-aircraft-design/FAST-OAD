@@ -357,10 +357,11 @@ class VariableList(list):
             # possible descriptions.
             for metadata in itertools.chain(inputs.values(), outputs.values()):
                 prom_name = metadata["prom_name"]
-                if metadata["desc"]:
-                    for final in final_inputs, final_outputs:
-                        if prom_name in final and not final[prom_name]["desc"]:
-                            final[prom_name]["desc"] = metadata["desc"]
+                if not metadata["desc"]:
+                    continue
+                for final in final_inputs, final_outputs:
+                    if prom_name in final and not final[prom_name]["desc"]:
+                        final[prom_name]["desc"] = metadata["desc"]
 
         # Conversion to VariableList instances
         input_vars = cls.from_dict(final_inputs)
