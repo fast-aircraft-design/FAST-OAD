@@ -54,14 +54,18 @@ def test_DataFile(cleanup):
         _ = DataFile(file_path)
     assert exc_info.value.args[0] == f'File "{file_path}" is unavailable for reading.'
 
-    data_file_1 = DataFile(file_path, load_data=False)
+    data_file_1 = DataFile()
     assert len(data_file_1) == 0
 
     data_file_1.update(
         variables_ref,
         add_variables=True,
     )
-    data_file_1.save()
+    assert data_file_1.file_path is None
+    with pytest.raises(FileNotFoundError):
+        _ = data_file_1.save()
+    data_file_1.save_as(file_path)
+    assert data_file_1.file_path == file_path
 
     data_file_2 = DataFile(file_path)
     assert len(data_file_2) == 2
