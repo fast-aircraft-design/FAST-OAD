@@ -17,6 +17,9 @@ available for the whole process.
 The list of variable names and descriptions for a given problem can be obtained from command line (see
 :ref:`get-variable-list`).
 
+.. contents::
+   :local:
+
 
 ***************
 Variable naming
@@ -42,28 +45,89 @@ The other path elements depend of the variable. The number of path elements is n
 Serialization
 ***************
 
+File format
+***********
+
 For writing input and output files, FAST-OAD relies on the path in the variable names.
 
-For example, for the three variables above, the matching part in XML file will be:
+For example, for the three variables above, the matching XML file will be:
 
 .. code-block:: xml
 
-    <data>
-        <geometry>
-            <wing>
-                <area units="m**2">150.0</area>
-            </wing>
-        </geometry>
-        <weight>
-            <fuselage>
-                <mass units="kg">10000.0</mass>
-                <CG>
-                    <x units="m">20.0</x>
-                </CG>
-            </fuselage>
-        </weight>
-    </data>
+    <FASTOAD_model>
+        <data>
+            <geometry>
+                <wing>
+                    <area units="m**2">150.0</area>
+                </wing>
+            </geometry>
+            <weight>
+                <fuselage>
+                    <mass units="kg">10000.0</mass>
+                    <CG>
+                        <x units="m">20.0</x>
+                    </CG>
+                </fuselage>
+            </weight>
+        </data>
+    </FASTOAD_model>
 
-**Note**: *Units are given as a string according to* `OpenMDAO units definitions <http://openmdao.org/twodocs/versions/latest/features/units.html>`_
+.. note::
+
+    Units are given as a string according to
+    `OpenMDAO units definitions <http://openmdao.org/twodocs/versions/latest/features/units.html>`_
+
+FAST-OAD API
+************
+
+FAST-OAD proposes a convenient way to read/write such files in Python, through the
+:class:`~fastoad.io.variable_io.DataFile` class.
+
+Provided that above file is named :code:`data.xml`, following commands apply:
+
+.. doctest::
+
+    >>> import fastoad.api as oad
+    >>> # ---------------------------------
+    >>> datafile = oad.DataFile("./data.xml")
+    >>> # Getting information
+    >>> datafile.names()
+    ['data:geometry:wing:area', 'data:weight:fuselage:mass', 'data:weight:fuselage:CG:x']
+    >>> len(datafile)
+    3
+    >>> datafile["data:geometry:wing:area"].value
+    [150.0]
+    >>> datafile["data:geometry:wing:area"].units
+    'm**2'
+    >>> # ---------------------------------
+    >>> # Writing data
+    >>> datafile.save()
+    >>> # ---------------------------------
+    >>> # Modifying data
+    >>> datafile["data:geometry:wing:area"].value = 120.0  # no need to provide list or numpy array for scalar values.
+    >>> datafile["data:geometry:wing:area"].value
+    120.0
+    >>> # ---------------------------------
+    >>> # Adding data
+    >>> fuselage_length = oad.Variable("data:geometry:fuselage:length", val=35.0, units="m")
+    >>> datafile.append(fuselage_length)
+    >>> # or ...
+    >>> datafile["data:geometry:wing:mass"] = dict(val=10500.0, units="kg") # will replace previous definition
+    >>> datafile.names()
+    ['data:geometry:wing:area', 'data:weight:fuselage:mass', 'data:weight:fuselage:CG:x', 'data:geometry:fuselage:length', 'data:geometry:wing:mass']
+    >>> # ---------------------------------
+    >>> # Removing data
+    >>> del datafile["data:weight:fuselage:CG:x"]
+    >>> datafile.names()
+    ['data:geometry:wing:area', 'data:weight:fuselage:mass', 'data:geometry:fuselage:length', 'data:geometry:wing:mass']
+    >>> # ---------------------------------
+    >>> # Writing to another file
+    >>> datafile.save_as("./new_data.xml", overwrite=True)
+    >>> datafile.file_path  # The object is now associated to the new path
+    './new_data.xml'
+
+
+
+
 
 .. [#] see :ref:`add-modules-register-systems`

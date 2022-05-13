@@ -1,0 +1,17 @@
+<FASTOAD_model>
+  <data>
+    <geometry>
+      <wing>
+        <area units="m**2">150.0</area>
+      </wing>
+    </geometry>
+    <weight>
+      <fuselage>
+        <mass units="kg">10000.0</mass>
+        <CG>
+          <x units="m">20.0</x>
+        </CG>
+      </fuselage>
+    </weight>
+  </data>
+</FASTOAD_model>
