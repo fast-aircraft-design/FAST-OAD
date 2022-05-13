@@ -4,6 +4,8 @@ name: Watchman Tests
 # It will warn developers if any update of a dependency broke something.
 
 on:
+  workflow_dispatch:
+  workflow_call:
   push:
     branches: [ master ]
   pull_request:
