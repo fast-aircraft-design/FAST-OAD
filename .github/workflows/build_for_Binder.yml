@@ -1,4 +1,4 @@
-name: Build Binder image for master branch
+name: Build Binder image
 on:
   workflow_dispatch:
   workflow_call:
