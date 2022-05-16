@@ -60,4 +60,5 @@ from fastoad.gui.analysis_and_plots import (
     wing_geometry_plot,
     flaps_and_slats_plot,
     payload_range_simple,
+    payload_range,
 )
