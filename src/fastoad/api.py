@@ -59,4 +59,5 @@ from fastoad.gui.analysis_and_plots import (
     mass_breakdown_sun_plot,
     wing_geometry_plot,
     flaps_and_slats_plot,
+    payload_range_simple,
 )
