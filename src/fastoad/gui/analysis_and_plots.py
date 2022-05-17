@@ -31,7 +31,10 @@ COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 # from .available_power_diagram.available_power_diagram_file import available_power_diagram_plot
 from .flaps_and_slats.flaps_and_slats import flaps_and_slats_plot
 from .payload_range.payload_range_file import payload_range_simple
-from .payload_range.payload_range_file import payload_range
+from .payload_range.payload_range_file import payload_range_full
+from .payload_range.payload_range_file import grid_generation
+
+
 
 # pylint: disable-msg=too-many-locals
 def wing_geometry_plot(
