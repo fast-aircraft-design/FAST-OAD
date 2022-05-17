@@ -173,32 +173,17 @@ def test_problem_definition_with_xml_ref_with_indep(cleanup):
         conf.write_needed_inputs(ref_input_data_path)
         input_data = DataFile(conf.input_file_path)
         assert len(input_data) == 2
-        assert "x" in input_data.names()
+        assert "system:x" in input_data.names()
         assert "z" in input_data.names()
 
         problem = conf.get_problem(read_inputs=True, auto_scaling=True)
         # runs evaluation without optimization loop to check that inputs are taken into account
         problem.setup()
+        # system:x is not in ref_inputs.xml
+        problem["system:x"] = 1.0
         problem.run_model()
         assert problem["f"] == pytest.approx(28.58830817, abs=1e-6)
         problem.write_outputs()
-
-        # Test with alternate submodel #########################################
-        alt_conf = FASTOADProblemConfigurator(
-            pth.join(DATA_FOLDER_PATH, "valid_sellar_alternate.%s" % extension)
-        )
-        alt_conf.input_file_path = pth.join(result_folder_path, "inputs.xml")
-        alt_conf.output_file_path = pth.join(result_folder_path, "outputs_alt.xml")
-        alt_problem = alt_conf.get_problem(read_inputs=True, auto_scaling=True)
-        # runs evaluation without optimization loop to check that inputs are taken into account
-        alt_problem.setup()
-        alt_problem.run_model()
-        alt_problem.write_outputs()
-
-        assert alt_problem["f"] == pytest.approx(0.58830817, abs=1e-6)
-        assert alt_problem["g2"] == pytest.approx(-11.94151185, abs=1e-6)
-        with pytest.raises(KeyError):
-            alt_problem["g1"]  # submodel for g1 computation has been deactivated.
 
 
 # FIXME: this test should be reworked and moved to test_problem
