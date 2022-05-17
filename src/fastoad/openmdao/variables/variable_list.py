@@ -285,7 +285,7 @@ class VariableList(list):
         indep_outputs = problem.model.get_io_metadata(
             "output", metadata_keys=metadata_keys, tags="indep_var"
         )
-
+        print("Indep : \n ", indep_outputs)
         # Move outputs from IndepVarComps into inputs
         for abs_name, metadata in indep_outputs.items():
             del outputs[abs_name]
@@ -308,10 +308,7 @@ class VariableList(list):
                 # Check connections
                 for name, metadata in inputs.copy().items():
                     source_name = problem.model.get_source(name)
-                    if (
-                        not (source_name in indep_outputs or source_name.startswith("_auto_ivc."))
-                        and source_name != name
-                    ):
+                    if not (source_name.startswith("_auto_ivc.")) and source_name != name:
                         # This variable is connected to another variable of the problem: it is
                         # not an actual problem input. Let's move it to outputs.
                         del inputs[name]
@@ -326,12 +323,18 @@ class VariableList(list):
         # Manage variable promotion
         if not get_promoted_names:
             final_inputs = inputs
+
             final_outputs = outputs
         else:
             final_inputs = {
                 metadata["prom_name"]: dict(metadata, is_input=True) for metadata in inputs.values()
             }
             final_outputs = cls._get_promoted_outputs(outputs)
+
+            # Remove possible duplicates due to Indeps
+            for input_name in final_inputs:
+                if input_name in final_outputs:
+                    del final_outputs[input_name]
 
             # When variables are promoted, we may have retained a definition of the variable
             # that does not have any description, whereas a description is available in
