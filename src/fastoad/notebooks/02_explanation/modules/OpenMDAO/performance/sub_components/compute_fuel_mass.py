@@ -1,9 +1,9 @@
 import numpy as np
 
-from openmdao.api import ExplicitComponent
+import openmdao.api as om
 
 
-class ComputeFuelMass(ExplicitComponent):
+class ComputeFuelMass(om.ExplicitComponent):
     """
     Computes the fuel consumed during the mission based on the Breguet's range equation
     """

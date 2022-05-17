@@ -1,10 +1,10 @@
-from openmdao.api import Group
+import openmdao.api as om
 
 from .sub_components.compute_fuel_mass import ComputeFuelMass
 from .sub_components.compute_new_mtow import ComputeNewMtow
 
 
-class ComputePerformance(Group):
+class ComputePerformance(om.Group):
     def setup(self):
 
         self.add_subsystem(name="compute_fuel_mass", subsys=ComputeFuelMass(), promotes=["*"])

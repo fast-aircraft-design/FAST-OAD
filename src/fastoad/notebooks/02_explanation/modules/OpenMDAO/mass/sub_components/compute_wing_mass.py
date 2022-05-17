@@ -1,9 +1,9 @@
 import numpy as np
 
-from openmdao.api import ExplicitComponent
+import openmdao.api as om
 
 
-class ComputeWingMass(ExplicitComponent):
+class ComputeWingMass(om.ExplicitComponent):
     """
     Computes the wing mass based on the MTOW, its area and aspect ratio
     """

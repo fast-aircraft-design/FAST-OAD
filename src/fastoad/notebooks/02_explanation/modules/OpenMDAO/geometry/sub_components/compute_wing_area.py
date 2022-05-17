@@ -1,9 +1,9 @@
 import numpy as np
 
-from openmdao.api import ExplicitComponent
+import openmdao.api as om
 
 
-class ComputeWingArea(ExplicitComponent):
+class ComputeWingArea(om.ExplicitComponent):
     """
     Computes the wing area based on the provided MTOW and wing loading
     """

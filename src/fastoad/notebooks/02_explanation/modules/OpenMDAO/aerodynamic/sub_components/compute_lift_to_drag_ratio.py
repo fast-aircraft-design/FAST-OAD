@@ -1,10 +1,10 @@
 import numpy as np
 
-from openmdao.api import ExplicitComponent
+import openmdao.api as om
 from fastoad.model_base import Atmosphere
 
 
-class ComputeLiftToDragRatio(ExplicitComponent):
+class ComputeLiftToDragRatio(om.ExplicitComponent):
     """
     Computes the lift to drag ratio considering a lift equilibrium in cruise and a simple quadratic model
     """

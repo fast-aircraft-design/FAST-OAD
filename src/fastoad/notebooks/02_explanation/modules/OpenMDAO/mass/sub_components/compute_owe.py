@@ -1,9 +1,9 @@
 import numpy as np
 
-from openmdao.api import ExplicitComponent
+import openmdao.api as om
 
 
-class ComputeOwe(ExplicitComponent):
+class ComputeOwe(om.ExplicitComponent):
     """
     Computes the aircraft structural mass based on its MTOW and wing mass
     """

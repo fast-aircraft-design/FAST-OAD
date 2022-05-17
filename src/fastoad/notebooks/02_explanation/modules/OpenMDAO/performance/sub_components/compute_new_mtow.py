@@ -1,9 +1,9 @@
 import numpy as np
 
-from openmdao.api import ExplicitComponent
+import openmdao.api as om
 
 
-class ComputeNewMtow(ExplicitComponent):
+class ComputeNewMtow(om.ExplicitComponent):
     """
     Computes the fuel new mtow based on the mission fuel and structural weight from previous iteration
     """

@@ -1,9 +1,9 @@
 import numpy as np
 
-from openmdao.api import ExplicitComponent
+import openmdao.api as om
 
 
-class ComputeInducedDragCoefficient(ExplicitComponent):
+class ComputeInducedDragCoefficient(om.ExplicitComponent):
     """
     Computes the induced drag coefficient based on the aspect ratio
     """

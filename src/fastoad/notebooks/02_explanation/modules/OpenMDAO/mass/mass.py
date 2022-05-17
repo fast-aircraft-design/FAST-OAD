@@ -1,10 +1,10 @@
-from openmdao.api import Group
+import openmdao.api as om
 
 from .sub_components.compute_wing_mass import ComputeWingMass
 from .sub_components.compute_owe import ComputeOwe
 
 
-class ComputeMass(Group):
+class ComputeMass(om.Group):
     def setup(self):
 
         self.add_subsystem(name="compute_wing_mass", subsys=ComputeWingMass(), promotes=["*"])

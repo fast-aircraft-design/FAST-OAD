@@ -1,9 +1,9 @@
 import numpy as np
 
-from openmdao.api import ExplicitComponent
+import openmdao.api as om
 
 
-class ComputeProfileDrag(ExplicitComponent):
+class ComputeProfileDrag(om.ExplicitComponent):
     """
     Computes the profile drag of the aircraft based on the wing area
     """
