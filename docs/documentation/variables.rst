@@ -50,7 +50,24 @@ File format
 
 For writing input and output files, FAST-OAD relies on the path in the variable names.
 
-For example, for the three variables above, the matching XML file will be:
+For instance, the variable name :code:`data:geometry:wing:area` will be split according
+to colons :code:`:` and each part of the name will become a level in the XML hierarchy:
+
+.. code-block:: xml
+
+        <data>
+            <geometry>
+                <wing>
+                    <area units="m**2">
+                        150.0
+                    </area>
+                </wing>
+            </geometry>
+        </data>
+
+
+A complete file that would contain the three above-mentioned variables will be as following:
+
 
 .. code-block:: xml
 
@@ -76,6 +93,12 @@ For example, for the three variables above, the matching XML file will be:
 
     Units are given as a string according to
     `OpenMDAO units definitions <http://openmdao.org/twodocs/versions/latest/features/units.html>`_
+
+.. note::
+
+    XML requires a unique root element for containing all other ones. Its name can be
+    freely chose, but it is `FASTOAD_model` in files written by FAST-OAD
+
 
 FAST-OAD API
 ************
@@ -126,6 +149,28 @@ Provided that above file is named :code:`data.xml`, following commands apply:
     >>> datafile.file_path  # The object is now associated to the new path
     './new_data.xml'
 
+After running these lines of code, the generated file :code:`new_data.xml` contains:
+
+.. code-block:: xml
+
+    <FASTOAD_model>
+        <data>
+            <geometry>
+                <fuselage>
+                    <length units="m">35.0</length>
+                </fuselage>
+                <wing>
+                    <area units="m**2">120.0</area>
+                    <mass units="kg">10500.0</mass>
+                </wing>
+            </geometry>
+            <weight>
+                <fuselage>
+                    <mass units="kg">10000.0</mass>
+                </fuselage>
+            </weight>
+        </data>
+    </FASTOAD_model>
 
 
 
