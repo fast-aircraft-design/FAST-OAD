@@ -152,10 +152,10 @@ def full_aircraft_drawing_plot(
     # Inboard flap
     # Part of the code dedicated to the inboard flap
 
-    y2 = np.array([wing_kink_y, wing_kink_y, wing_root_y, wing_root_y, wing_kink_y])
-    y2 = np.concatenate((-y2, y2))
+    y_flaps_inboard = np.array([wing_kink_y, wing_kink_y, wing_root_y, wing_root_y, wing_kink_y])
+    y_flaps_inboard = np.concatenate((-y_flaps_inboard, y_flaps_inboard))
 
-    x2 = np.array(
+    x_flaps_inboard = np.array(
         [
             wing_root_chord,
             wing_root_chord - flap_chord_kink,
@@ -165,15 +165,20 @@ def full_aircraft_drawing_plot(
         ]
     )
 
-    x2 = x2 + mac25_x_position - 0.25 * mean_aerodynamic_chord - distance_root_mac_chords
+    x_flaps_inboard = (
+        x_flaps_inboard
+        + mac25_x_position
+        - 0.25 * mean_aerodynamic_chord
+        - distance_root_mac_chords
+    )
     # pylint: disable=invalid-name # that's a common naming
-    x2 = np.concatenate((x2, x2))
+    x_flaps_inboard = np.concatenate((x_flaps_inboard, x_flaps_inboard))
 
     # Outboard flap
     # Part of the code dedicated to the outboard flap
 
-    # The points "_a" and "_b" are the ones placed on the trailing edge.
-    # The points "_c" and "_d" are the projection of "_a" and "_b" normal to the trailing edge, on the wing.
+    # The points "_te" are the ones placed on the trailing edge.
+    # The points "_ow" are the projection of "_te" on the wing (on wing)
     # This projection is made with a rotation matrix.
     # The points are place respecting the flaps span ratio compared to the total span of the aircraft.
 
@@ -190,44 +195,51 @@ def full_aircraft_drawing_plot(
         ]
     )
 
-    y_a = wing_kink_y
-    x_a = wing_root_chord
+    y_te_1 = wing_kink_y
+    x_te_1 = wing_root_chord
 
-    y_b = wing_root_y + (total_wing_span / 2) * flaps_span_ratio
-    x_b = (
+    y_te_2 = wing_root_y + (total_wing_span / 2) * flaps_span_ratio
+    x_te_2 = (
         wing_tip_leading_edge_x
         + wing_tip_chord
         - (wing_tip_y - (wing_root_y + (total_wing_span / 2) * flaps_span_ratio))
         * np.tan(trailing_edge_kink_sweep_100_outer * np.pi / 180)
     )
 
-    c_local = np.array([-flap_chord_tip, 0])
-    x_c, y_c = rotation_matrix @ c_local + np.array([x_b, y_b])
+    ow_local_1 = np.array([-flap_chord_tip, 0])
+    x_ow_1, y_ow_1 = rotation_matrix @ ow_local_1 + np.array([x_te_2, y_te_2])
 
-    d_local = np.array([-flap_chord_kink, 0])
-    x_d, y_d = rotation_matrix @ d_local + np.array([x_a, y_a])
+    ow_local_2 = np.array([-flap_chord_kink, 0])
+    x_ow_2, y_ow_2 = rotation_matrix @ ow_local_2 + np.array([x_te_1, y_te_1])
 
-    y3 = np.array([y_a, y_b, y_c, y_d, y_a])
-    y3 = np.concatenate((-y3, y3))
+    y_flaps_outboard = np.array([y_te_1, y_te_2, y_ow_1, y_ow_2, y_te_1])
+    y_flaps_outboard = np.concatenate((-y_flaps_outboard, y_flaps_outboard))
 
-    x3 = np.array([x_a, x_b, x_c, x_d, x_a])
+    x_flaps_outboard = np.array([x_te_1, x_te_2, x_ow_1, x_ow_2, x_te_1])
 
-    x3 = x3 + mac25_x_position - 0.25 * mean_aerodynamic_chord - distance_root_mac_chords
+    x_flaps_outboard = (
+        x_flaps_outboard
+        + mac25_x_position
+        - 0.25 * mean_aerodynamic_chord
+        - distance_root_mac_chords
+    )
     # pylint: disable=invalid-name # that's a common naming
-    x3 = np.concatenate((x3, x3))
+    x_flaps_outboard = np.concatenate((x_flaps_outboard, x_flaps_outboard))
 
     # Design line
     # Part of the code dedicated to a lign only used for an aesthetic reason.
     # This line joins the two inboard flaps
 
-    y4 = np.array([wing_root_y])
-    y4 = np.concatenate((-y4, y4))
+    y_design_line = np.array([wing_root_y])
+    y_design_line = np.concatenate((-y_design_line, y_design_line))
 
-    x4 = np.array([wing_root_chord])
+    x_design_line = np.array([wing_root_chord])
 
-    x4 = x4 + mac25_x_position - 0.25 * mean_aerodynamic_chord - distance_root_mac_chords
+    x_design_line = (
+        x_design_line + mac25_x_position - 0.25 * mean_aerodynamic_chord - distance_root_mac_chords
+    )
     # pylint: disable=invalid-name # that's a common naming
-    x4 = np.concatenate((x4, x4))
+    x_design_line = np.concatenate((x_design_line, x_design_line))
 
     # Slats
     # Part of the code dedicated to the slats
@@ -242,7 +254,7 @@ def full_aircraft_drawing_plot(
     )  # position in y of the beginning of the slats near the root
     slat_x_root = wing_tip_leading_edge_x * (1 - slat_span_ratio) / 2.0
 
-    y5 = np.array(
+    y_slats_left = np.array(
         [
             slat_y + wing_root_y,
             slat_y + wing_root_y,
@@ -252,9 +264,9 @@ def full_aircraft_drawing_plot(
         ]
     )
 
-    y6 = -y5  # slats on the other wing
+    y_slats_right = -y_slats_left  # slats on the other wing
 
-    x5 = np.array(
+    x_slats_left = np.array(
         [
             slat_x_root,
             slat_x_root + slat_chord_ratio * wing_kink_chord,
@@ -264,8 +276,8 @@ def full_aircraft_drawing_plot(
             slat_x_root,
         ]
     )
-    x5 += mac25_x_position - 0.25 * mean_aerodynamic_chord - distance_root_mac_chords
-    x6 = x5
+    x_slats_left += mac25_x_position - 0.25 * mean_aerodynamic_chord - distance_root_mac_chords
+    x_slats_right = x_slats_left
 
     # CGs
     wing_25mac_x = variables["data:geometry:wing:MAC:at25percent:x"].value[0]
@@ -355,41 +367,46 @@ def full_aircraft_drawing_plot(
     scatter_right = go.Scatter(
         x=-y_engine, y=x_engine, line=dict(color="blue"), mode="lines", name=name, showlegend=False
     )  # Right engine
-    scatter2 = go.Scatter(
-        x=y2,
-        y=x2,
+    scatter_flaps_inboard = go.Scatter(
+        x=y_flaps_inboard,
+        y=x_flaps_inboard,
         mode="lines",
         line=dict(color="blue", width=1),
         name=name,
         showlegend=False,
-    )  # first flap
-    scatter3 = go.Scatter(
-        x=y3,
-        y=x3,
+    )  # inboard flap
+    scatter_flaps_outboard = go.Scatter(
+        x=y_flaps_outboard,
+        y=x_flaps_outboard,
         mode="lines",
         line=dict(color="blue", width=1),
         name=name,
         showlegend=False,
-    )  # second flap
-    scatter4 = go.Scatter(
-        x=y4, y=x4, mode="lines", line=dict(color="blue", width=1), name=name, showlegend=False
+    )  # outboard flap
+    scatter_design_line = go.Scatter(
+        x=y_design_line,
+        y=x_design_line,
+        mode="lines",
+        line=dict(color="blue", width=1),
+        name=name,
+        showlegend=False,
     )  # design line
-    scatter5 = go.Scatter(
-        x=y5,
-        y=x5,
+    scatter_slats_left = go.Scatter(
+        x=y_slats_left,
+        y=x_slats_left,
         line=dict(color="blue", width=1),
         mode="lines",
         name=name,
         showlegend=False,
-    )  # slats
-    scatter6 = go.Scatter(
-        x=y6,
-        y=x6,
+    )  # left slats
+    scatter_slats_right = go.Scatter(
+        x=y_slats_right,
+        y=x_slats_right,
         line=dict(color="blue", width=1),
         mode="lines",
         name=name,
         showlegend=False,
-    )  # slats
+    )  # right slats
     scatter_elevator_right = go.Scatter(
         x=y_elevator,
         y=x_elevator,
@@ -397,7 +414,7 @@ def full_aircraft_drawing_plot(
         mode="lines",
         name=name,
         showlegend=False,
-    )
+    )  # elevator
     scatter_elevator_left = go.Scatter(
         x=-y_elevator,
         y=x_elevator,
@@ -408,13 +425,13 @@ def full_aircraft_drawing_plot(
     )  # elevator
 
     fig.add_trace(scatter_aircraft)
-    fig.add_trace(scatter_right)
-    fig.add_trace(scatter_left)
-    fig.add_trace(scatter3)
-    fig.add_trace(scatter2)
-    fig.add_trace(scatter4)
-    fig.add_trace(scatter5)
-    fig.add_trace(scatter6)
+    fig.add_trace(scatter_right)  # engine
+    fig.add_trace(scatter_left)  # engine
+    fig.add_trace(scatter_flaps_outboard)  # flaps
+    fig.add_trace(scatter_flaps_inboard)  # flaps
+    fig.add_trace(scatter_design_line)
+    fig.add_trace(scatter_slats_left)
+    fig.add_trace(scatter_slats_right)
     fig.add_trace(scatter_elevator_right)
     fig.add_trace(scatter_elevator_left)
 
@@ -425,6 +442,7 @@ def full_aircraft_drawing_plot(
     fig.update_layout(title_text="Aircraft Geometry", title_x=0.5, xaxis_title="y", yaxis_title="x")
 
     return fig
+
 
 def wing_drawing_plot(
     aircraft_file_path: str, name=None, fig=None, file_formatter=None
@@ -1072,6 +1090,7 @@ def wing_drawing_plot(
 
     return widgets.HBox([fig, out])
 
+
 def flaps_and_slats_plot(
     aircraft_file_path: str, name=None, fig=None, file_formatter=None
 ) -> go.FigureWidget:
@@ -1142,13 +1161,13 @@ def flaps_and_slats_plot(
     flap_chord_kink = wing_kink_chord * flaps_chord_ratio
     flap_chord_tip = wing_tip_chord * flaps_chord_ratio
 
-    # 2.1) Inboard flap
+    # Inboard flap
     # Part of the code dedicated to the inboard flap
 
-    y2 = np.array([wing_kink_y, wing_kink_y, wing_root_y, wing_root_y, wing_kink_y])
-    y2 = np.concatenate((-y2, y2))
+    y_inboard = np.array([wing_kink_y, wing_kink_y, wing_root_y, wing_root_y, wing_kink_y])
+    y_inboard = np.concatenate((-y_inboard, y_inboard))
 
-    x2 = np.array(
+    x_inboard = np.array(
         [
             wing_root_chord,
             wing_root_chord - flap_chord_kink,
@@ -1158,15 +1177,17 @@ def flaps_and_slats_plot(
         ]
     )
 
-    x2 = x2 + mac25_x_position - 0.25 * mean_aerodynamic_chord - distance_root_mac_chords
+    x_inboard = (
+        x_inboard + mac25_x_position - 0.25 * mean_aerodynamic_chord - distance_root_mac_chords
+    )
     # pylint: disable=invalid-name # that's a common naming
-    x2 = np.concatenate((x2, x2))
+    x_inboard = np.concatenate((x_inboard, x_inboard))
 
-    # 2.2) Outboard flap
+    # Outboard flap
     # Part of the code dedicated to the outboard flap
 
-    # The points "_a" and "_b" are the ones placed on the trailing edge.
-    # The points "_c" and "_d" are the projection of "_a" and "_b" normal to the trailing edge, on the wing.
+    # The points "_te" are the ones placed on the trailing edge.
+    # The points "_ow" are the projection of "_te" on the wing (on wing)
     # This projection is made with a rotation matrix.
     # The points are place respecting the flaps span ratio compared to the total span of the aircraft.
 
@@ -1183,46 +1204,50 @@ def flaps_and_slats_plot(
         ]
     )
 
-    y_a = wing_kink_y
-    x_a = wing_root_chord
+    y_te_1 = wing_kink_y
+    x_te_1 = wing_root_chord
 
-    y_b = wing_root_y + (total_wing_span / 2) * flaps_span_ratio
-    x_b = (
+    y_te_2 = wing_root_y + (total_wing_span / 2) * flaps_span_ratio
+    x_te_2 = (
         wing_tip_leading_edge_x
         + wing_tip_chord
         - (wing_tip_y - (wing_root_y + (total_wing_span / 2) * flaps_span_ratio))
         * np.tan(trailing_edge_kink_sweep_100_outer * np.pi / 180)
     )
 
-    c_local = np.array([-flap_chord_tip, 0])
-    x_c, y_c = rotation_matrix @ c_local + np.array([x_b, y_b])
+    ow_local_1 = np.array([-flap_chord_tip, 0])
+    x_ow_1, y_ow_1 = rotation_matrix @ ow_local_1 + np.array([x_te_2, y_te_2])
 
-    d_local = np.array([-flap_chord_kink, 0])
-    x_d, y_d = rotation_matrix @ d_local + np.array([x_a, y_a])
+    ow_local_2 = np.array([-flap_chord_kink, 0])
+    x_ow_2, y_ow_2 = rotation_matrix @ ow_local_2 + np.array([x_te_1, y_te_1])
 
-    y3 = np.array([y_a, y_b, y_c, y_d, y_a])
-    y3 = np.concatenate((-y3, y3))
+    y_outboard = np.array([y_te_1, y_te_2, y_ow_1, y_ow_2, y_te_1])
+    y_outboard = np.concatenate((-y_outboard, y_outboard))
 
-    x3 = np.array([x_a, x_b, x_c, x_d, x_a])
+    x_outboard = np.array([x_te_1, x_te_2, x_ow_1, x_ow_2, x_te_1])
 
-    x3 = x3 + mac25_x_position - 0.25 * mean_aerodynamic_chord - distance_root_mac_chords
+    x_outboard = (
+        x_outboard + mac25_x_position - 0.25 * mean_aerodynamic_chord - distance_root_mac_chords
+    )
     # pylint: disable=invalid-name # that's a common naming
-    x3 = np.concatenate((x3, x3))
+    x_outboard = np.concatenate((x_outboard, x_outboard))
 
-    # 2.3) Design line
+    # Design line
     # Part of the code dedicated to a lign only used for an aesthetic reason.
     # This line joins the two inboard flaps
 
-    y4 = np.array([wing_root_y])
-    y4 = np.concatenate((-y4, y4))
+    y_design_line = np.array([wing_root_y])
+    y_design_line = np.concatenate((-y_design_line, y_design_line))
 
-    x4 = np.array([wing_root_chord])
+    x_design_line = np.array([wing_root_chord])
 
-    x4 = x4 + mac25_x_position - 0.25 * mean_aerodynamic_chord - distance_root_mac_chords
+    x_design_line = (
+        x_design_line + mac25_x_position - 0.25 * mean_aerodynamic_chord - distance_root_mac_chords
+    )
     # pylint: disable=invalid-name # that's a common naming
-    x4 = np.concatenate((x4, x4))
+    x_design_line = np.concatenate((x_design_line, x_design_line))
 
-    # 3) slats
+    # Slats
     # Part of the code dedicated to the slats
     # The dimensions are given by two parameters : span_ratio and chord_ratio
     # Here the span_ratio is given by the span of the airplane minus the fuselage radius
@@ -1235,7 +1260,7 @@ def flaps_and_slats_plot(
     )  # position in y of the beginning of the slats near the root
     slat_x_root = wing_tip_leading_edge_x * (1 - slat_span_ratio) / 2.0
 
-    y5 = np.array(
+    y_slats_left = np.array(
         [
             slat_y + wing_root_y,
             slat_y + wing_root_y,
@@ -1245,9 +1270,9 @@ def flaps_and_slats_plot(
         ]
     )
 
-    y6 = -y5  # slats on the other wing
+    y_slats_right = -y_slats_left  # slats on the other wing
 
-    x5 = np.array(
+    x_slats_left = np.array(
         [
             slat_x_root,
             slat_x_root + slat_chord_ratio * wing_kink_chord,
@@ -1257,10 +1282,10 @@ def flaps_and_slats_plot(
             slat_x_root,
         ]
     )
-    x5 += mac25_x_position - 0.25 * mean_aerodynamic_chord - distance_root_mac_chords
-    x6 = x5
+    x_slats_left += mac25_x_position - 0.25 * mean_aerodynamic_chord - distance_root_mac_chords
+    x_slats_right = x_slats_left
 
-    # 4) Figure
+    # 3) Figure
     # Here  the different points are added on the same figure. The wing is in blue and the high lift devices in red
 
     if fig is None:
@@ -1269,30 +1294,55 @@ def flaps_and_slats_plot(
     scatter = go.Scatter(
         x=y, y=x, line=dict(color="blue"), mode="lines", name=name, showlegend=False
     )  # wing
-    scatter2 = go.Scatter(
-        x=y2, y=x2, mode="lines", line=dict(color="blue", width=1), name=name, showlegend=False
+    scatter_inboard = go.Scatter(
+        x=y_inboard,
+        y=x_inboard,
+        mode="lines",
+        line=dict(color="blue", width=1),
+        name=name,
+        showlegend=False,
     )  # first flap
-    scatter3 = go.Scatter(
-        x=y3, y=x3, mode="lines", line=dict(color="blue", width=1), name=name, showlegend=False
+    scatter_outboard = go.Scatter(
+        x=y_outboard,
+        y=x_outboard,
+        mode="lines",
+        line=dict(color="blue", width=1),
+        name=name,
+        showlegend=False,
     )  # second flap
-    scatter4 = go.Scatter(
-        x=y4, y=x4, mode="lines", line=dict(color="blue"), name=name, showlegend=False
+    scatter_design_line = go.Scatter(
+        x=y_design_line,
+        y=x_design_line,
+        mode="lines",
+        line=dict(color="blue"),
+        name=name,
+        showlegend=False,
     )  # design line
-    scatter5 = go.Scatter(
-        x=y5, y=x5, line=dict(color="blue", width=1), mode="lines", name=name, showlegend=False
+    scatter_slats_left = go.Scatter(
+        x=y_slats_left,
+        y=x_slats_left,
+        line=dict(color="blue", width=1),
+        mode="lines",
+        name=name,
+        showlegend=False,
     )  # slats
-    scatter6 = go.Scatter(
-        x=y6, y=x6, line=dict(color="blue", width=1), mode="lines", name=name, showlegend=False
+    scatter_slats_right = go.Scatter(
+        x=y_slats_right,
+        y=x_slats_right,
+        line=dict(color="blue", width=1),
+        mode="lines",
+        name=name,
+        showlegend=False,
     )  # slats
 
     fig.layout = go.Layout(yaxis=dict(scaleanchor="x", scaleratio=1))
 
     fig.add_trace(scatter)
-    fig.add_trace(scatter3)
-    fig.add_trace(scatter2)
-    fig.add_trace(scatter4)
-    fig.add_trace(scatter5)
-    fig.add_trace(scatter6)
+    fig.add_trace(scatter_outboard)
+    fig.add_trace(scatter_inboard)
+    fig.add_trace(scatter_design_line)
+    fig.add_trace(scatter_slats_left)
+    fig.add_trace(scatter_slats_right)
 
     fig = go.FigureWidget(fig)
     fig.update_xaxes(constrain="domain")
