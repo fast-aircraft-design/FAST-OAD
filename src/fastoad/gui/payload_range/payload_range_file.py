@@ -59,10 +59,10 @@ def breguet_leduc_formula(mass_in, mass_out, constant_coeff, x0):
 
 
 def breguet_leduc_points(
-    aircraft_file_path: str,
-    propulsion_id: str = "fastoad.wrapper.propulsion.rubber_engine",
-    sizing_name: str = "sizing",
-    file_formatter=None,
+        aircraft_file_path: str,
+        propulsion_id: str = "fastoad.wrapper.propulsion.rubber_engine",
+        sizing_name: str = "sizing",
+        file_formatter=None,
 ):
     from fastoad.module_management._plugins import FastoadLoader
 
@@ -160,12 +160,12 @@ def breguet_leduc_points(
 
 
 def payload_range_simple(
-    aircraft_file_path: str,
-    propulsion_id: str = "fastoad.wrapper.propulsion.rubber_engine",
-    sizing_name: str = "sizing",
-    name=None,
-    fig=None,
-    file_formatter=None,
+        aircraft_file_path: str,
+        propulsion_id: str = "fastoad.wrapper.propulsion.rubber_engine",
+        sizing_name: str = "sizing",
+        name=None,
+        fig=None,
+        file_formatter=None,
 ) -> go.FigureWidget:
     """
     Returns a figure of the payload range using the corrected leduc-breguet formula
@@ -204,14 +204,14 @@ def payload_range_simple(
 
 
 def grid_generation(
-    aircraft_file_path: str,
-    propulsion_id: str = "fastoad.wrapper.propulsion.rubber_engine",
-    sizing_name: str = "sizing",
-    name=None,
-    fig=None,
-    file_formatter=None,
-    n_intervals_payloads=8,
-    range_step=500,
+        aircraft_file_path: str,
+        propulsion_id: str = "fastoad.wrapper.propulsion.rubber_engine",
+        sizing_name: str = "sizing",
+        name=None,
+        fig=None,
+        file_formatter=None,
+        n_intervals_payloads=8,
+        range_step=500,
 ):
     BL_ranges, BL_payloads = breguet_leduc_points(
         aircraft_file_path, propulsion_id, sizing_name, file_formatter
@@ -237,7 +237,7 @@ def grid_generation(
     max_range = np.zeros(n_intervals_payloads)
     max_range[0:ra_c_id] = (ra_c - ra_d) / payload_c * (val_payloads[0:ra_c_id]) + ra_d
     max_range[ra_c_id:] = (ra_b - ra_c) / (max_payload - payload_c) * (
-        val_payloads[ra_c_id:] - payload_c
+            val_payloads[ra_c_id:] - payload_c
     ) + ra_c
     max_range *= 0.95  # safety margin
 
@@ -250,8 +250,10 @@ def grid_generation(
 
     grid_ranges = np.array([])  # to stock the ranges of the grid x
     grid_payloads = np.array([])  # to stock the payloads of the grid y
+    n_values_ranges = np.zeros(n_intervals_payloads)
     for i in range(n_intervals_payloads):
         range_add = np.arange(min_range, max_range[i], range_step)
+        n_values_ranges[i] = len(range_add)
         grid_ranges = np.append(grid_ranges, range_add)
         grid_payloads = np.append(grid_payloads, np.ones(len(range_add)) * val_payloads[i])
     grid = np.array(
@@ -275,18 +277,38 @@ def grid_generation(
     fig.update_layout(
         title_text="Payload range diagram", xaxis_title="range [NM]", yaxis_title="Payload [tonnes]"
     )
-    return fig, grid
+    return fig, grid, n_values_ranges.astype(int)
+
+
+def grid_plot(aircraft_file_path: str,
+              propulsion_id: str = "fastoad.wrapper.propulsion.rubber_engine",
+              sizing_name: str = "sizing",
+              name=None,
+              fig=None,
+              file_formatter=None,
+              n_intervals_payloads=8,
+              range_step=500, ):
+    return grid_generation(
+        aircraft_file_path,
+        propulsion_id,
+        sizing_name,
+        name,
+        fig,
+        file_formatter,
+        n_intervals_payloads,
+        range_step,
+    )[0]
 
 
 def payload_range_loop_computation(
-    aircraft_file_path: str,
-    propulsion_id: str = "fastoad.wrapper.propulsion.rubber_engine",
-    sizing_name: str = "sizing",
-    name=None,
-    fig=None,
-    file_formatter=None,
-    n_intervals_payloads=8,
-    range_step=500,
+        aircraft_file_path: str,
+        propulsion_id: str = "fastoad.wrapper.propulsion.rubber_engine",
+        sizing_name: str = "sizing",
+        name=None,
+        fig=None,
+        file_formatter=None,
+        n_intervals_payloads=8,
+        range_step=500,
 ):
     """
     Returns a figure of the payload range using the corrected leduc-breguet formula,
@@ -360,7 +382,7 @@ def payload_range_loop_computation(
         time_begin = time.perf_counter()
         input_file_mission["data:mission:op_mission:payload"].value = grid_payloads[i]
         input_file_mission["data:mission:op_mission:main_route:range"].value = (
-            grid_ranges[i] * 10 ** 3 * 1.852
+                grid_ranges[i] * 10 ** 3 * 1.852
         )
         input_file_mission.save()
 
@@ -396,16 +418,16 @@ def payload_range_loop_computation(
 
 
 def payload_range_full(
-    aircraft_file_path: str,
-    propulsion_id: str = "fastoad.wrapper.propulsion.rubber_engine",
-    sizing_name: str = "sizing",
-    name=None,
-    fig=None,
-    file_formatter=None,
-    n_intervals_payloads=8,
-    range_step=500,
+        aircraft_file_path: str,
+        propulsion_id: str = "fastoad.wrapper.propulsion.rubber_engine",
+        sizing_name: str = "sizing",
+        name=None,
+        fig=None,
+        file_formatter=None,
+        n_intervals_payloads=8,
+        range_step=500,
 ) -> go.FigureWidget:
-    fig, grid = grid_generation(
+    fig, grid, n_values_y = grid_generation(
         aircraft_file_path,
         propulsion_id,
         sizing_name,
@@ -416,15 +438,28 @@ def payload_range_full(
         range_step,
     )
 
-    rst = np.loadtxt(pth.join("data", "test_results_2.txt"))
-    rst = rst.T
 
-    if fig is None:
-        fig = go.Figure()
+    try :
+        rst = np.loadtxt(pth.join("data", "test_results_2.txt"))
+        rst = rst.T
+        n_points_x = int(max(rst[0]) / range_step)
+        x = np.linspace(min(rst[0]), max(rst[0]), n_points_x).tolist()
+        y = np.linspace(min(rst[1]), max(rst[1]), n_intervals_payloads)
+        y = y/10**3
+        y=y.tolist()
 
-    fig.add_trace(go.Contour(z=rst[2], x=rst[0], y=rst[1] / 10 ** 3))
+        z = [[None]*n_points_x for _ in range(n_intervals_payloads)]
 
-    fig = go.FigureWidget(fig)
+
+        for i in range(len(n_values_y)):
+            z[i][0:n_values_y[i]]= rst[2,sum(n_values_y[0:i]):sum(n_values_y[0:i])+n_values_y[i]]
+
+        fig.add_trace(go.Contour(z=z, x=x, y=y))
+    except:
+        print(
+                "No results were found in the data folder, you first need to run the function "
+                "payload_range_loop_computation")
+
     fig.update_layout(
         title_text="Payload range diagram with specific consumption",
         xaxis_title="range [NM]",
