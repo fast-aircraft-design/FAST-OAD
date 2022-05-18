@@ -17,8 +17,6 @@ import numpy as np
 import pandas as pd
 import plotly
 import plotly.graph_objects as go
-from openmdao.utils.units import convert_units
-from plotly.subplots import make_subplots
 from ipywidgets import widgets, HBox
 from IPython.display import display
 
