@@ -2,19 +2,20 @@
 Welcome to FAST-OAD
 ===================
 
+For a **quick overview** of the way FAST-OAD works, please go :ref:`here<overview>`.
 
-**For a quick overview of the way FAST-OAD works**, please go :ref:`here<overview>`.
+**Installation instructions** are :ref:`here <installation-procedure>`.
 
-For a detailed description of the input files and the command line interface,
+For a detailed description of the **input files and the Command Line Interface**,
 check out the :ref:`usage section<usage>`.
 
-If you prefer to work with Python notebooks, you may go directly to the section
-:ref:`python-usage`.
+If you prefer to discover the **Application Programming Interface with Python notebooks**,
+you may go directly to the section :ref:`python-usage`.
 
-For a description of models used in FAST-OAD, you may see the
+For a description of **models used in FAST-OAD**, you may see the
 :ref:`model documentations<fastoad.models package>`.
 
-If you want to add your own models, please check out :ref:`add-modules`.
+If you want to **add your own models**, please check out :ref:`add-modules`.
 
 .. note::
 
@@ -22,7 +23,7 @@ If you want to add your own models, please check out :ref:`add-modules`.
     `FAST-OAD-core <https://pypi.org/project/fast-oad-core/>`_ package, while the legacy
     models are in `FAST-OAD-CS25 <https://pypi.org/project/fast-oad-cs25/>`_ package.
 
-    Yet, installing FAST-OAD keeps installing both FAST-OAD-core and FAST-OAD-CS25.
+    Yet, installing FAST-OAD 1.x will keep installing both FAST-OAD-core and FAST-OAD-CS25.
 
     Models in FAST-OAD-CS25 are still a work in progress.
 
