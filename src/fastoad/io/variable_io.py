@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -11,13 +11,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
 from fnmatch import fnmatchcase
+from os.path import exists, isfile
 from typing import IO, List, Sequence, Union
 
 from fastoad.openmdao.variables import VariableList
 from . import IVariableIOFormatter
 from .xml import VariableXmlStandardFormatter
+from ..exceptions import FastError
 
 
 class VariableIO:
@@ -49,6 +50,10 @@ class VariableIO:
         :param ignore: List of variable names that should be ignored when reading.
         :return: an VariableList instance where outputs have been defined using provided source
         """
+        if isinstance(self.data_source, str) and not isfile(self.data_source):
+            raise FileNotFoundError(
+                f'File "{self.data_source}" is unavailable for reading.'
+            ) from FastError()
         variables = self.formatter.read_variables(self.data_source)
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
         return used_variables
@@ -128,17 +133,35 @@ class DataFile(VariableList):
     :meth:`save` methods.
     """
 
-    def __init__(self, file_path: str, formatter: IVariableIOFormatter = None, load_data=True):
+    def __init__(
+        self,
+        data_source: Union[str, IO, list] = None,
+        formatter: IVariableIOFormatter = None,
+        load_data=True,
+    ):
         """
-        :param file_path: the file path where data will be loaded and saved.
-        :param formatter: a class that determines the file format to be used. Defaults to FAST-OAD
+        If variable list is specified for data_source, :attr:`file_path` will have to be set before
+        using :method:`save`.
+
+        :param data_source: Can be the file path where data will be loaded and saved, or a list of
+                            :class:`~fastoad.openmdao.variables.Variable` instances that will
+                            be used for initialization (or a
+                            :class:`~fastoad.openmdao.variables.VariableList` instance).
+        :param formatter: (ignored if data_source is not an I/O stream nor a file path)
+                          a class that determines the file format to be used. Defaults to FAST-OAD
                           native format. See :class:`VariableIO` for more information.
-        :param load_data: if True and if file exists, its content will be loaded at instantiation.
+        :param load_data: (ignored if data_source is not an I/O stream nor a file path)
+                          if True, file is expected to exist and its content will be loaded at
+                          instantiation.
         """
         super().__init__()
-        self._variable_io = VariableIO(file_path, formatter)
-        if pth.exists(file_path) and load_data:
-            self.load()
+        self._variable_io = VariableIO(None, formatter)
+        if isinstance(data_source, (str, IO)):
+            self.file_path = data_source
+            if load_data:
+                self.load()
+        if isinstance(data_source, list):
+            self.update(data_source)
 
     @property
     def file_path(self) -> str:
@@ -165,4 +188,25 @@ class DataFile(VariableList):
 
     def save(self):
         """Saves current state of variables in file."""
+        if self.file_path is None:
+            raise FileNotFoundError(
+                "Destination file not set. Please use .save_as() instead."
+            ) from FastError()
         self._variable_io.write(self)
+
+    def save_as(self, file_path: str, overwrite=False, formatter: IVariableIOFormatter = None):
+        """
+        Sets the associated file path as specified and saves current state of variables.
+
+        :param file_path:
+        :param overwrite: if specified file already exists and overwrite is False, an error is
+                          triggered.
+        :param formatter: a class that determines the file format to be used. Defaults to FAST-OAD
+                          native format. See :class:`VariableIO` for more information.
+        """
+        if not overwrite and exists(file_path):
+            raise FileExistsError(f'File "{file_path}" already exists.') from FastError()
+        if formatter:
+            self.formatter = formatter
+        self.file_path = file_path
+        self.save()

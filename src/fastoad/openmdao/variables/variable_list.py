@@ -30,30 +30,47 @@ from .variable import METADATA_TO_IGNORE, Variable
 
 class VariableList(list):
     """
-    Class for storing OpenMDAO variables
+    Class for storing OpenMDAO variables.
 
-    A list of Variable instances, but items can also be accessed through variable names.
+    A list of :class:`~fastoad.openmdao.variables.variable.Variable` instances, but items can
+    also be accessed through variable names. It also has utilities to be converted from/to some
+    other data structures (python dict, OpenMDAO IndepVarComp, pandas DataFrame)
 
-    There are 2 ways for adding a variable::
+    See documentation of :class:`~fastoad.openmdao.variables.variable.Variable` to see how to
+    manipulate each element.
 
-        # Assuming these Python variables are ready
+    There are several ways for adding variables::
+
+        # Assuming these Python variables are ready...
         var_1 = Variable('var/1', value=0.)
         metadata_2 = {'value': 1., 'units': 'm'}
 
-        # ... a VariableList instance can be populated like this
-        vars = VariableList()
-        vars.append(var_1)              # Adds directly a Variable instance
-        vars['var/2'] = metadata_2      # Adds the variable with given name and given metadata
+        # ... a VariableList instance can be populated like this:
+        vars_A = VariableList()
+        vars_A.append(var_1)              # Adds directly a Variable instance
+        vars_A['var/2'] = metadata_2      # Adds the variable with given name and given metadata
+
+    Note:
+        Adding a Variable instance with a name that is already in the VariableList instance
+        will replace the previous Variable instance instead of adding a new one.
+
+    .. code:: python
+
+        # It is also possible to instantiate a VariableList instance from another VariableList
+        # instance or a simple list of Variable instances
+        vars_B = VariableList(vars_A)
+        vars_C = VariableList([var_1])
+
+        # An existing VariableList instance can also receive the content of another VariableList
+        # instance.
+        vars_C.update(vars_A)             # variables in vars_A will overwrite variables with same
+                                          # name in vars_C
 
     After that, following equalities are True::
 
-        print( var_1 in vars )
-        print( 'var/1' in vars.names() )
-        print( 'var/2' in vars.names() )
-
-    Note:
-        Adding a Variable instance that has a name that is already in the VariableList instance
-        will replace the previous Variable instance instead of adding a new one.
+        print( var_1 in vars_A )
+        print( 'var/1' in vars_A.names() )
+        print( 'var/2' in vars_A.names() )
     """
 
     def names(self) -> List[str]:
@@ -84,7 +101,7 @@ class VariableList(list):
         else:
             super().append(var)
 
-    def update(self, other_var_list: "VariableList", add_variables: bool = True):
+    def update(self, other_var_list: list, add_variables: bool = True):
         """
         Uses variables in other_var_list to update the current VariableList instance.
 
@@ -163,7 +180,7 @@ class VariableList(list):
         :param var_dict:
         :return: a VariableList instance
         """
-        variables = VariableList()
+        variables = cls()
 
         for var_name, metadata in dict(var_dict).items():
             variables.append(Variable(var_name, **metadata))
@@ -178,7 +195,7 @@ class VariableList(list):
         :param ivc: an IndepVarComp instance
         :return: a VariableList instance
         """
-        variables = VariableList()
+        variables = cls()
 
         ivc = deepcopy(ivc)
         om.Problem(ivc).setup()  # Need setup to have get_io_metadata working
@@ -230,7 +247,7 @@ class VariableList(list):
                     pass
             return Variable(**var_as_dict)
 
-        return VariableList([_get_variable(row) for row in df[column_names].values])
+        return cls([_get_variable(row) for row in df[column_names].values])
 
     @classmethod
     def from_problem(
@@ -340,14 +357,15 @@ class VariableList(list):
             # possible descriptions.
             for metadata in itertools.chain(inputs.values(), outputs.values()):
                 prom_name = metadata["prom_name"]
-                if metadata["desc"]:
-                    for final in final_inputs, final_outputs:
-                        if prom_name in final and not final[prom_name]["desc"]:
-                            final[prom_name]["desc"] = metadata["desc"]
+                if not metadata["desc"]:
+                    continue
+                for final in final_inputs, final_outputs:
+                    if prom_name in final and not final[prom_name]["desc"]:
+                        final[prom_name]["desc"] = metadata["desc"]
 
         # Conversion to VariableList instances
-        input_vars = VariableList.from_dict(final_inputs)
-        output_vars = VariableList.from_dict(final_outputs)
+        input_vars = cls.from_dict(final_inputs)
+        output_vars = cls.from_dict(final_outputs)
 
         # Use computed value instead of initial ones, if asked for, and if problem has been run.
         # Note: using problem.get_val() if problem has not been run may lead to unexpected
