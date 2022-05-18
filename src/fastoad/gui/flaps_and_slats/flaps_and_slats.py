@@ -14,15 +14,22 @@
 from typing import Dict
 
 import numpy as np
+import pandas as pd
 import plotly
 import plotly.graph_objects as go
 from openmdao.utils.units import convert_units
 from plotly.subplots import make_subplots
+from ipywidgets import widgets, HBox
+from IPython.display import display
+
 
 from fastoad.io import VariableIO
 from fastoad.openmdao.variables import VariableList
 
 COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
+NACELLE_POSITION = 0.6  # Nacelle position compared to the leading edge. 0 means that the back of the nacelle is aligned with the beginning of the root, 1 means that the beginning of the nacelle is aligned with the kink_x.
+HORIZONTAL_TAIL_ROOT = 0.3  # Percentage of the tail root concerned by the elevator
+HORIZONTAL_TAIL_TIP = 0.3  # Percentage of the tail tip, at 90 percent of the horizontal tail width, covered by the elevator
 
 
 def flaps_and_slats_plot(
@@ -40,7 +47,6 @@ def flaps_and_slats_plot(
                            default format will be assumed.
     :return: plot figure of wing the wing with flaps and slats
     """
-    print("hello")
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
     wing_kink_leading_edge_x = variables["data:geometry:wing:kink:leading_edge:x:local"].value[0]
@@ -221,22 +227,22 @@ def flaps_and_slats_plot(
         fig = go.Figure()
 
     scatter = go.Scatter(
-        x=y, y=x, line=dict(color="dodgerblue"), mode="lines", name=name, showlegend=False
+        x=y, y=x, line=dict(color="blue"), mode="lines", name=name, showlegend=False
     )  # wing
     scatter2 = go.Scatter(
-        x=y2, y=x2, mode="lines", line=dict(color="red"), name=name, showlegend=False
+        x=y2, y=x2, mode="lines", line=dict(color="blue", width=1), name=name, showlegend=False
     )  # first flap
     scatter3 = go.Scatter(
-        x=y3, y=x3, mode="lines", line=dict(color="red"), name=name, showlegend=False
+        x=y3, y=x3, mode="lines", line=dict(color="blue", width=1), name=name, showlegend=False
     )  # second flap
     scatter4 = go.Scatter(
-        x=y4, y=x4, mode="lines", line=dict(color="dodgerblue"), name=name, showlegend=False
+        x=y4, y=x4, mode="lines", line=dict(color="blue"), name=name, showlegend=False
     )  # design line
     scatter5 = go.Scatter(
-        x=y5, y=x5, line=dict(color="red"), mode="lines", name=name, showlegend=False
+        x=y5, y=x5, line=dict(color="blue", width=1), mode="lines", name=name, showlegend=False
     )  # slats
     scatter6 = go.Scatter(
-        x=y6, y=x6, line=dict(color="red"), mode="lines", name=name, showlegend=False
+        x=y6, y=x6, line=dict(color="blue", width=1), mode="lines", name=name, showlegend=False
     )  # slats
 
     fig.layout = go.Layout(yaxis=dict(scaleanchor="x", scaleratio=1))
@@ -249,7 +255,8 @@ def flaps_and_slats_plot(
     fig.add_trace(scatter6)
 
     fig = go.FigureWidget(fig)
-
-    fig.update_layout(title_text="Wing Geometry", title_x=0.5, xaxis_title="y", yaxis_title="x")
+    fig.update_xaxes(constrain="domain")
+    fig.update_yaxes(constrain="domain")
+    fig.update_layout(title_text="Wing Drawing", title_x=0.5, xaxis_title="y", yaxis_title="x")
 
     return fig

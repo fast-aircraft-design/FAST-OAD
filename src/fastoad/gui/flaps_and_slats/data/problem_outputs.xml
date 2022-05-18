@@ -134,7 +134,7 @@
         <sweep_0 units="deg" is_input="False">27.023969031387598<!--sweep angle at leading edge of wing--></sweep_0>
         <sweep_100_inner units="deg" is_input="False">-1.1211224045318514e-14<!--sweep angle at trailing edge of wing (inner side of the kink)--></sweep_100_inner>
         <sweep_100_outer units="deg" is_input="False">16.49513143971635<!--sweep angle at trailing edge of wing (outer side of the kink)--></sweep_100_outer>
-        <sweep_25 units="deg" is_input="True">24.54<!--sweep angle at 25%  df = VariableViewer()  # instantiation of dataframe
+        <sweep_25 units="deg" is_input="True">34.54<!--sweep angle at 25%  df = VariableViewer()  # instantiation of dataframe
         file = AbstractOMFileIO('problem_outputs.file') #  instantiation of file io
         df.load(file)  # load the file
         df.display()  # renders a ui for reading/modifying the filechord of wing--></sweep_25>
