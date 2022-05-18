@@ -87,8 +87,7 @@
           <diameter units="m" is_input="False">2.1722438645822235<!--nacelle diameter--></diameter>
           <length units="m" is_input="False">5.2114827064857465<!--nacelle length--></length>
           <wetted_area units="m**2" is_input="False">21.6092<!--wetted area of nacelle--></wetted_area>
-          <y units="m" is_input="False">5.892463567308887<!--Y-position of nacelle center--></y>
-        </nacelle>
+          <y units="m" is_input="False">5.892463567308887<!--Y-position of nacelle center--></y>        </nacelle>
         <pylon>
           <length units="m" is_input="False">5.732630977134321<!--pylon length--></length>
           <wetted_area units="m**2" is_input="False">7.56322<!--wetted area of pylon--></wetted_area>
