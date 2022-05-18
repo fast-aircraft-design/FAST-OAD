@@ -715,13 +715,14 @@ def test_variables_from_unconnected_inputs_with_sellar_problem(cleanup):
 def test_get_variables_from_problem_sellar_with_promotion_and_connect():
     group = om.Group()
     indeps = group.add_subsystem("indeps", om.IndepVarComp(), promotes=["*"])
-    indeps.add_output("x", 1.0)
+    indeps.add_output("indep:x", 1.0)
     indeps.add_output("z", [5.0, 2.0])
     group.add_subsystem("disc1", Disc1(), promotes=["x", "z"])
     group.add_subsystem("disc2", Disc2(), promotes=["z"])
     group.add_subsystem("functions", Functions(), promotes=["*"])
 
     # Connections
+    group.connect("indep:x", "x")
     group.connect("disc1.y1", "disc2.y1")
     group.connect("disc2.y2", "disc1.y2")
     group.connect("disc1.y1", "y1")
@@ -735,6 +736,8 @@ def test_get_variables_from_problem_sellar_with_promotion_and_connect():
     vars = VariableList.from_problem(problem, use_initial_values=False, get_promoted_names=True)
     assert vars_before_setup == vars
 
+    # x should be an output
+    assert not vars["x"].is_input
     # y1 and y2 should be outputs
     assert not vars["y1"].is_input
     assert not vars["y2"].is_input
@@ -742,8 +745,8 @@ def test_get_variables_from_problem_sellar_with_promotion_and_connect():
     assert not vars["f"].is_input
     assert not vars["g1"].is_input
     assert not vars["g2"].is_input
-    # x and z as indeps should be inputs
-    assert vars["x"].is_input
+    # indep:x and z as indeps should be inputs
+    assert vars["indep:x"].is_input
     assert vars["z"].is_input
 
     # Test for io_status
@@ -758,6 +761,7 @@ def test_get_variables_from_problem_sellar_with_promotion_and_connect():
     assert "g1" in vars.names()
     assert "g2" in vars.names()
     assert "x" in vars.names()
+    assert "indep:x" in vars.names()
     assert "z" in vars.names()
 
     # Check that only inputs are returned
@@ -770,7 +774,7 @@ def test_get_variables_from_problem_sellar_with_promotion_and_connect():
     assert "f" not in vars.names()
     assert "g1" not in vars.names()
     assert "g2" not in vars.names()
-    assert "x" in vars.names()
+    assert "indep:x" in vars.names()
     assert "z" in vars.names()
 
     # Check that only outputs are returned
@@ -783,5 +787,6 @@ def test_get_variables_from_problem_sellar_with_promotion_and_connect():
     assert "f" in vars.names()
     assert "g1" in vars.names()
     assert "g2" in vars.names()
-    assert "x" not in vars.names()
+    assert "x" in vars.names()
+    assert "indep:x" not in vars.names()
     assert "z" not in vars.names()

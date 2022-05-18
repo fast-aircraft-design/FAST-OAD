@@ -156,6 +156,36 @@ def test_problem_definition_with_xml_ref(cleanup):
             alt_problem["g1"]  # submodel for g1 computation has been deactivated.
 
 
+def test_problem_definition_with_xml_ref_with_indep(cleanup):
+    """Tests what happens when writing inputs of a problem with indeps using data from existing XML file"""
+    for extension in ["toml", "yml"]:
+        clear_openmdao_registry()
+        conf = FASTOADProblemConfigurator(
+            pth.join(DATA_FOLDER_PATH, "valid_sellar_with_indep.%s" % extension)
+        )
+
+        result_folder_path = pth.join(
+            RESULTS_FOLDER_PATH, "problem_definition_with_xml_ref_with_indep"
+        )
+        conf.input_file_path = pth.join(result_folder_path, "inputs.xml")
+        conf.output_file_path = pth.join(result_folder_path, "outputs.xml")
+        ref_input_data_path = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
+        conf.write_needed_inputs(ref_input_data_path)
+        input_data = DataFile(conf.input_file_path)
+        assert len(input_data) == 2
+        assert "system:x" in input_data.names()
+        assert "z" in input_data.names()
+
+        problem = conf.get_problem(read_inputs=True, auto_scaling=True)
+        # runs evaluation without optimization loop to check that inputs are taken into account
+        problem.setup()
+        # system:x is not in ref_inputs.xml
+        problem["system:x"] = 1.0
+        problem.run_model()
+        assert problem["f"] == pytest.approx(28.58830817, abs=1e-6)
+        problem.write_outputs()
+
+
 # FIXME: this test should be reworked and moved to test_problem
 def test_problem_definition_with_custom_xml(cleanup):
     """Tests what happens when writing inputs using existing XML with some unwanted var"""
