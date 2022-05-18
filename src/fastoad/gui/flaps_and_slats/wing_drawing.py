@@ -26,6 +26,7 @@ from fastoad.openmdao.variables import VariableList
 
 COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 
+
 def wing_drawing_plot(
     aircraft_file_path: str, name=None, fig=None, file_formatter=None
 ) -> go.FigureWidget:

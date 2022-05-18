@@ -32,9 +32,6 @@ HORIZONTAL_TAIL_ROOT = 0.3  # Percentage of the tail root concerned by the eleva
 HORIZONTAL_TAIL_TIP = 0.3  # Percentage of the tail tip, at 90 percent of the horizontal tail width, covered by the elevator
 
 
-
-
-
 def full_aircraft_drawing_plot(
     aircraft_file_path: str, name=None, fig=None, file_formatter=None
 ) -> go.FigureWidget:

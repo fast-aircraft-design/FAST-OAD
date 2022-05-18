@@ -33,7 +33,6 @@ from .flaps_and_slats.flaps_and_slats import flaps_and_slats_plot
 from .flaps_and_slats.wing_drawing import wing_drawing_plot
 from .flaps_and_slats.full_aircraft_drawing import full_aircraft_drawing_plot
 
-
 # pylint: disable-msg=too-many-locals
 def wing_geometry_plot(
     aircraft_file_path: str, name=None, fig=None, file_formatter=None
