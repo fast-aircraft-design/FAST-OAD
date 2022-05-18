@@ -285,7 +285,6 @@ class VariableList(list):
         indep_outputs = problem.model.get_io_metadata(
             "output", metadata_keys=metadata_keys, tags="indep_var"
         )
-        print("Indep : \n ", indep_outputs)
         # Move outputs from IndepVarComps into inputs
         for abs_name, metadata in indep_outputs.items():
             del outputs[abs_name]
