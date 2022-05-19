@@ -61,5 +61,6 @@ from fastoad.gui.analysis_and_plots import (
     flaps_and_slats_plot,
     payload_range_simple,
     payload_range_full,
-    grid_plot,
+    payload_range_grid_plot,
+    payload_range_loop_computation,
 )

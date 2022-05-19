@@ -166,6 +166,8 @@ def payload_range_simple(
         name=None,
         fig=None,
         file_formatter=None,
+        x_axis=None,
+        y_axis=None,
 ) -> go.FigureWidget:
     """
     Returns a figure of the payload range using the corrected leduc-breguet formula
@@ -179,6 +181,8 @@ def payload_range_simple(
     :param fig: existing figure to which add the plot
     :param file_formatter: the formatter that defines the format of data file. If not provided,
                            default format will be assumed.
+    :param x_axis: defines the x axis if the user wants to
+    :param y_axis: defines the y axis if the user wants to
     :return: wing plot figure
     """
     BL_ranges, BL_payloads = breguet_leduc_points(
@@ -200,6 +204,11 @@ def payload_range_simple(
     fig.update_layout(
         title_text="Payload range diagram", xaxis_title="range [NM]", yaxis_title="Payload [tonnes]"
     )
+    if x_axis is not None:
+        fig.update_xaxes(range=[x_axis[0],x_axis[1]])
+    if y_axis is not None:
+        fig.update_yaxes(range=[y_axis[0],y_axis[1]])
+
     return fig
 
 
@@ -212,7 +221,33 @@ def grid_generation(
         file_formatter=None,
         n_intervals_payloads=8,
         range_step=500,
+        show_grid: bool=True,
+        x_axis=None,
+        y_axis=None,
 ):
+    """
+           Returns a figure of the payload range using the corrected leduc-breguet formula,
+           generates a grid and then whith the values of the range and paylaod, genrates a mission
+           in order to retrieve the burnt fuel/ passenger/km
+           Different designs can be superposed by providing an existing fig.
+           Each design can be provided a name.
+
+           :param aircraft_file_path: path of data file
+           :param propulsion_id: name the model for the engine
+           :param sizing_name: name of the siizing mission : default sizing
+           :param name: name to give to the trace added to the figure
+           :param fig: existing figure to which add the plot
+           :param file_formatter: the formatter that defines the format of data file. If not provided,
+                                  default format will be assumed.
+           :param n_intervals_payloads : number of intervals between 0.45* max_payload and 0.95 max_payload for the grid
+                                          defaults is 8
+           :param range_step: defines the step between 2 grid points in the range axis. default is 500 [NM]
+           :param show_grid: states if the grid points are to be shown on the fig
+           :param x_axis: defines the x axis if the user wants to
+           :param y_axis: defines the y axis if the user wants to
+           :return: wing plot figure
+           """
+
     BL_ranges, BL_payloads = breguet_leduc_points(
         aircraft_file_path, propulsion_id, sizing_name, file_formatter
     )
@@ -228,7 +263,7 @@ def grid_generation(
         # step 0 : define the number of grid points
     """
 
-    val_payloads = np.linspace(0.45 * max_payload, 0.95 * max_payload, n_intervals_payloads)
+    val_payloads = np.linspace(0.4 * max_payload, 0.95 * max_payload, n_intervals_payloads)
     ra_c_id = np.where(val_payloads >= payload_c)[0][0]
     """
         # step 1 : compute the max range and the boundaries
@@ -241,7 +276,7 @@ def grid_generation(
     ) + ra_c
     max_range *= 0.95  # safety margin
 
-    min_range = 0.05 * ra_b  # safety margin
+    min_range = 0.1 * ra_b  # safety margin
     if min_range < range_step:
         min_range = range_step
     """
@@ -268,26 +303,37 @@ def grid_generation(
         x=BL_ranges, y=BL_payloads, mode="markers+lines", name=name, showlegend=False
     )
     scatter2 = go.Scatter(x=[2500], y=[17000 / 10 ** 3], mode="markers", name="Sizing point")
-    scatter3 = go.Scatter(x=grid[0], y=grid[1], mode="markers", name="Grid points")
+
     fig.add_trace(scatter1)
     fig.add_trace(scatter2)
-    fig.add_trace(scatter3)
+
+    if (show_grid==True):
+        scatter3 = go.Scatter(x=grid[0], y=grid[1], mode="markers", name="Grid points")
+        fig.add_trace(scatter3)
 
     fig = go.FigureWidget(fig)
     fig.update_layout(
         title_text="Payload range diagram", xaxis_title="range [NM]", yaxis_title="Payload [tonnes]"
     )
+
+    if x_axis is not None:
+        fig.update_xaxes(range=[x_axis[0], x_axis[1]])
+    if y_axis is not None:
+        fig.update_yaxes(range=[y_axis[0], y_axis[1]])
+
     return fig, grid, n_values_ranges.astype(int)
 
 
-def grid_plot(aircraft_file_path: str,
-              propulsion_id: str = "fastoad.wrapper.propulsion.rubber_engine",
-              sizing_name: str = "sizing",
-              name=None,
-              fig=None,
-              file_formatter=None,
-              n_intervals_payloads=8,
-              range_step=500, ):
+def payload_range_grid_plot(
+        aircraft_file_path: str,
+        propulsion_id: str = "fastoad.wrapper.propulsion.rubber_engine",
+        sizing_name: str = "sizing",
+        name=None,
+        fig=None,
+        file_formatter=None,
+        n_intervals_payloads=8,
+        range_step=500,
+):
     return grid_generation(
         aircraft_file_path,
         propulsion_id,
@@ -296,7 +342,7 @@ def grid_plot(aircraft_file_path: str,
         fig,
         file_formatter,
         n_intervals_payloads,
-        range_step,
+        range_step,show_grid=True
     )[0]
 
 
@@ -309,6 +355,7 @@ def payload_range_loop_computation(
         file_formatter=None,
         n_intervals_payloads=8,
         range_step=500,
+        file_save: str = "loop_results.txt",
 ):
     """
     Returns a figure of the payload range using the corrected leduc-breguet formula,
@@ -324,10 +371,15 @@ def payload_range_loop_computation(
     :param fig: existing figure to which add the plot
     :param file_formatter: the formatter that defines the format of data file. If not provided,
                            default format will be assumed.
+    :param n_intervals_payloads : number of intervals between 0.45* max_payload and 0.95 max_payload for the grid
+                                   defaults is 8
+    :param range_step: defines the step between 2 grid points in the range axis. default is 500 [NM]
+    :param file_save: sets the name where the results are saved
+
     :return: wing plot figure
     """
 
-    fig, grid = grid_generation(
+    fig, grid, dummy_variable = grid_generation(
         aircraft_file_path,
         propulsion_id,
         sizing_name,
@@ -413,8 +465,8 @@ def payload_range_loop_computation(
     """
     Consumption computation and saving
     """
-    grid[2] = grid[2] / (grid[1] * grid[0] * 1.852)  # kg_fuel/kg_payload/km
-    np.savetxt(pth.join("data", "missions_results.txt"), grid.T)
+    grid[2] = grid[2] / (grid[1] * grid[0] * 1.852 * 10 ** 3)  # kg_fuel/kg_payload/km
+    np.savetxt(pth.join("data", file_save), grid.T)
 
 
 def payload_range_full(
@@ -426,7 +478,35 @@ def payload_range_full(
         file_formatter=None,
         n_intervals_payloads=8,
         range_step=500,
+        file_save: str = "loop_results.txt",
+        show_grid: bool = True,
+        x_axis=None,
+        y_axis= None,
 ) -> go.FigureWidget:
+    """
+        Returns a figure of the payload range using the corrected leduc-breguet formula,
+        generates a grid and then whith the values of the range and paylaod, genrates a mission
+        in order to retrieve the burnt fuel/ passenger/km
+        Different designs can be superposed by providing an existing fig.
+        Each design can be provided a name.
+
+        :param aircraft_file_path: path of data file
+        :param propulsion_id: name the model for the engine
+        :param sizing_name: name of the siizing mission : default sizing
+        :param name: name to give to the trace added to the figure
+        :param fig: existing figure to which add the plot
+        :param file_formatter: the formatter that defines the format of data file. If not provided,
+                               default format will be assumed.
+        :param n_intervals_payloads : number of intervals between 0.45* max_payload and 0.95 max_payload for the grid
+                                       defaults is 8
+        :param range_step: defines the step between 2 grid points in the range axis. default is 500 [NM]
+        :param file_save: sets the name where the results are saved
+        :param show_grid: states if the grid points are to be shown on the fig
+        :param x_axis: defines the x axis if the user wants to
+        :param y_axis: defines the y axis if the user wants to
+        :return: wing plot figure
+        """
+
     fig, grid, n_values_y = grid_generation(
         aircraft_file_path,
         propulsion_id,
@@ -436,34 +516,44 @@ def payload_range_full(
         file_formatter,
         n_intervals_payloads,
         range_step,
+        show_grid,
+        x_axis,
+        y_axis,
     )
 
-
-    try :
-        rst = np.loadtxt(pth.join("data", "test_results_2.txt"))
+    try:
+        rst = np.loadtxt(pth.join("data", file_save))
         rst = rst.T
         n_points_x = int(max(rst[0]) / range_step)
         x = np.linspace(min(rst[0]), max(rst[0]), n_points_x).tolist()
         y = np.linspace(min(rst[1]), max(rst[1]), n_intervals_payloads)
-        y = y/10**3
-        y=y.tolist()
+        y = y
+        y = y.tolist()
 
-        z = [[None]*n_points_x for _ in range(n_intervals_payloads)]
-
+        z = [[None] * n_points_x for _ in range(n_intervals_payloads)]
 
         for i in range(len(n_values_y)):
-            z[i][0:n_values_y[i]]= rst[2,sum(n_values_y[0:i]):sum(n_values_y[0:i])+n_values_y[i]]
+            z[i][0: n_values_y[i]] = rst[
+                                     2, sum(n_values_y[0:i]): sum(n_values_y[0:i]) + n_values_y[i]
+                                     ]
 
         fig.add_trace(go.Contour(z=z, x=x, y=y))
+
     except:
         print(
-                "No results were found in the data folder, you first need to run the function "
-                "payload_range_loop_computation")
+            "No results were found in the data folder, you first need to run the function "
+            "payload_range_loop_computation"
+        )
 
     fig.update_layout(
         title_text="Payload range diagram with specific consumption",
         xaxis_title="range [NM]",
         yaxis_title="Payload [tonnes]",
     )
+
+    if x_axis is not None:
+        fig.update_xaxes(range=[x_axis[0], x_axis[1]])
+    if y_axis is not None:
+        fig.update_yaxes(range=[y_axis[0], y_axis[1]])
 
     return fig
