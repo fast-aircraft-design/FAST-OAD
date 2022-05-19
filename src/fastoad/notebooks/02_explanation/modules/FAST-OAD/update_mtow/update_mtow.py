@@ -2,10 +2,13 @@ import numpy as np
 
 import openmdao.api as om
 
+import fastoad.api as oad
 
-class ComputeNewMtow(om.ExplicitComponent):
+
+@oad.RegisterOpenMDAOSystem("tutorial.fast_oad.update_mtow")
+class UpdateMTOW(om.ExplicitComponent):
     """
-    Computes the fuel new mtow based on the mission fuel and structural weight from previous iteration
+    Computes new mtow based on the mission fuel and structural weight from previous iteration
     """
 
     def setup(self):
