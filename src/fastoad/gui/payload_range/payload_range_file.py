@@ -17,7 +17,6 @@ Defines the analysis and plotting functions for postprocessing
 from typing import Dict
 
 import numpy as np
-
 import pandas as pd
 import plotly
 import plotly.graph_objects as go
@@ -34,20 +33,22 @@ from fastoad.openmdao.variables import VariableList
 import openmdao.api as om
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.openmdao.problem import FASTOADProblem
+from fastoad.module_management._plugins import FastoadLoader
 
 import fastoad.api as oad
 import os.path as pth
 import time
 
 COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
-from fastoad.module_management._plugins import FastoadLoader
 
 
 def breguet_leduc_formula(mass_in, mass_out, constant_coeff, x0):
     """
     Function used internally
     Returns the range in "NM" using the breguet leduc modified formula
-    x0 : in NM
+    param mass_in:mass at the beginning of the mission
+    param mass_out: mass at the en of the mission
+    param x0 : first estimation of the range in NM
     """
     ratio = mass_in / mass_out
 
@@ -79,7 +80,6 @@ def breguet_leduc_points(
     sizing_range = variables["data:TLAR:range"].value[0]  # first approximation for the range
 
     max_payload = variables["data:weight:aircraft:max_payload"].value[0]
-    payload = variables["data:weight:aircraft:payload"].value[0]
     mtow = variables["data:weight:aircraft:MTOW"].value[0]
     owe = variables["data:weight:aircraft:OWE"].value[0]
     mfw = variables["data:weight:aircraft:MFW"].value[0]
@@ -90,11 +90,11 @@ def breguet_leduc_points(
     atm.mach = cruise_mach
     speed = atm.true_airspeed
 
-    thrust = 0.98 * mtow * g / glide_ratio
-    fp = FlightPoint(
+    thrust_begin = 0.98 * mtow * g / glide_ratio
+    fp_begin = FlightPoint(
         altitude=altitude,
         mach=cruise_mach,
-        thrust=thrust,
+        thrust=thrust_begin,
         thrust_rate=0.7,
         thrust_is_regulated=True,
         engine_setting=EngineSetting.convert("CRUISE"),
@@ -110,9 +110,9 @@ def breguet_leduc_points(
         thrust_is_regulated=True,
         engine_setting=EngineSetting.convert("CRUISE"),
     )
-    flight_points_list = pd.DataFrame([fp, fp_end])
+    flight_points_list = pd.DataFrame([fp_begin, fp_end])
 
-    # Create a rubber engine
+    # Create a propulsion model
     blank_comp = om.ExplicitComponent()
     loader = BundleLoader().instantiate_component(propulsion_id)
     loader.setup(blank_comp)
@@ -220,32 +220,40 @@ def grid_generation(
         file_formatter=None,
         n_intervals_payloads=8,
         range_step=500,
+        upper_limit_box_tolerance=0.95,
+        lower_limit_box_tolerance=0.4,
+        right_limit_box_tolerance=0.95,
+        left_limit_box_tolerance=0.1,
         show_grid: bool = True,
         x_axis=None,
         y_axis=None,
 ):
     """
-           Returns a figure of the payload range using the corrected leduc-breguet formula,
-           generates a grid and then whith the values of the range and paylaod, genrates a mission
-           in order to retrieve the burnt fuel/ passenger/km
-           Different designs can be superposed by providing an existing fig.
-           Each design can be provided a name.
+    Returns a figure of the payload range using the corrected leduc-breguet formula,
+    generates a grid and then whith the values of the range and paylaod, genrates a mission
+    in order to retrieve the burnt fuel/ passenger/km
+    Different designs can be superposed by providing an existing fig.
+    Each design can be provided a name.
 
-           :param aircraft_file_path: path of data file
-           :param propulsion_id: name the model for the engine
-           :param sizing_name: name of the siizing mission : default sizing
-           :param name: name to give to the trace added to the figure
-           :param fig: existing figure to which add the plot
-           :param file_formatter: the formatter that defines the format of data file. If not provided,
-                                  default format will be assumed.
-           :param n_intervals_payloads : number of intervals between 0.45* max_payload and 0.95 max_payload for the grid
-                                          defaults is 8
-           :param range_step: defines the step between 2 grid points in the range axis. default is 500 [NM]
-           :param show_grid: states if the grid points are to be shown on the fig
-           :param x_axis: defines the x axis if the user wants to
-           :param y_axis: defines the y axis if the user wants to
-           :return: wing plot figure
-           """
+    :param aircraft_file_path: path of data file
+    :param propulsion_id: name the model for the engine
+    :param sizing_name: name of the siizing mission : default sizing
+    :param name: name to give to the trace added to the figure
+    :param fig: existing figure to which add the plot
+    :param file_formatter: the formatter that defines the format of data file. If not provided,
+                           default format will be assumed.
+    :param n_intervals_payloads : number of intervals between 0.45* max_payload and 0.95 max_payload for the grid
+                                   defaults is 8
+    :param range_step: defines the step between 2 grid points in the range axis. default is 500 [NM]
+     :param upper_limit_box_tolerance : upper limit of the grid box, Default 0.95 means 0.95*max_payload
+     :param lower_limit_box_tolerance : lower limit of the grid box, default 0.4 means 0.4*max_payload
+     :param left_limit_box_tolerance : left limit of the grid box, default = 0.1 means 0.1*range(point B)
+     :param right_limit_box_tolerance : right limit of the grid box, default = 0.95 means 0.95* max_range, meaning there is 5% safety
+    :param show_grid: states if the grid points are to be shown on the fig
+    :param x_axis: defines the x axis if the user wants to
+    :param y_axis: defines the y axis if the user wants to
+    :return: wing plot figure
+    """
 
     BL_ranges, BL_payloads = breguet_leduc_points(
         aircraft_file_path, propulsion_id, sizing_name, file_formatter
@@ -261,8 +269,12 @@ def grid_generation(
     # Grid generation
         # step 0 : define the number of grid points
     """
-
-    val_payloads = np.linspace(0.4 * max_payload, 0.95 * max_payload, n_intervals_payloads)
+    print(lower_limit_box_tolerance)
+    val_payloads = np.linspace(
+        lower_limit_box_tolerance * max_payload,
+        upper_limit_box_tolerance * max_payload,
+        n_intervals_payloads
+    )
     ra_c_id = np.where(val_payloads >= payload_c)[0][0]
     """
         # step 1 : compute the max range and the boundaries
@@ -273,9 +285,9 @@ def grid_generation(
     max_range[ra_c_id:] = (ra_b - ra_c) / (max_payload - payload_c) * (
             val_payloads[ra_c_id:] - payload_c
     ) + ra_c
-    max_range *= 0.95  # safety margin
+    max_range *= right_limit_box_tolerance  # safety margin
 
-    min_range = 0.1 * ra_b  # safety margin
+    min_range = left_limit_box_tolerance * ra_b  # safety margin
     if min_range < range_step:
         min_range = range_step
     """
@@ -306,7 +318,7 @@ def grid_generation(
     fig.add_trace(scatter1)
     fig.add_trace(scatter2)
 
-    if (show_grid == True):
+    if show_grid == True:
         scatter3 = go.Scatter(x=grid[0], y=grid[1], mode="markers", name="Grid points")
         fig.add_trace(scatter3)
 
@@ -332,6 +344,13 @@ def payload_range_grid_plot(
         file_formatter=None,
         n_intervals_payloads=8,
         range_step=500,
+        upper_limit_box_tolerance=0.95,
+        lower_limit_box_tolerance=0.4,
+        right_limit_box_tolerance=0.95,
+        left_limit_box_tolerance=0.1,
+        show_grid: bool = True,
+        x_axis=None,
+        y_axis=None,
 ):
     return grid_generation(
         aircraft_file_path,
@@ -341,7 +360,14 @@ def payload_range_grid_plot(
         fig,
         file_formatter,
         n_intervals_payloads,
-        range_step, show_grid=True
+        range_step,
+        upper_limit_box_tolerance,
+        lower_limit_box_tolerance,
+        right_limit_box_tolerance,
+        left_limit_box_tolerance,
+        show_grid,
+        x_axis,
+        y_axis,
     )[0]
 
 
@@ -354,6 +380,10 @@ def payload_range_loop_computation(
         file_formatter=None,
         n_intervals_payloads=8,
         range_step=500,
+        upper_limit_box_tolerance=0.95,
+        lower_limit_box_tolerance=0.4,
+        right_limit_box_tolerance=0.95,
+        left_limit_box_tolerance=0.1,
         file_save: str = "loop_results.txt",
 ):
     """
@@ -373,6 +403,10 @@ def payload_range_loop_computation(
     :param n_intervals_payloads : number of intervals between 0.45* max_payload and 0.95 max_payload for the grid
                                    defaults is 8
     :param range_step: defines the step between 2 grid points in the range axis. default is 500 [NM]
+    :param upper_limit_box_tolerance : upper limit of the grid box, Default 0.95 means 0.95*max_payload
+    :param lower_limit_box_tolerance : lower limit of the grid box, default 0.4 means 0.4*max_payload
+    :param left_limit_box_tolerance : left limit of the grid box, default = 0.1 means 0.1*range(point B)
+    :param right_limit_box_tolerance : right limit of the grid box, default = 0.95 means 0.95* max_range, meaning there is 5% safety
     :param file_save: sets the name where the results are saved
 
     :return: wing plot figure
@@ -387,6 +421,10 @@ def payload_range_loop_computation(
         file_formatter,
         n_intervals_payloads,
         range_step,
+        upper_limit_box_tolerance,
+        lower_limit_box_tolerance,
+        right_limit_box_tolerance,
+        left_limit_box_tolerance,
     )
     """
     # File generation before launching a mission
@@ -477,34 +515,42 @@ def payload_range_full(
         file_formatter=None,
         n_intervals_payloads=8,
         range_step=500,
+        upper_limit_box_tolerance=0.95,
+        lower_limit_box_tolerance=0.4,
+        right_limit_box_tolerance=0.95,
+        left_limit_box_tolerance=0.1,
         file_save: str = "loop_results.txt",
         show_grid: bool = True,
         x_axis=None,
         y_axis=None,
 ) -> go.FigureWidget:
     """
-        Returns a figure of the payload range using the corrected leduc-breguet formula,
-        generates a grid and then whith the values of the range and paylaod, genrates a mission
-        in order to retrieve the burnt fuel/ passenger/km
-        Different designs can be superposed by providing an existing fig.
-        Each design can be provided a name.
+    Returns a figure of the payload range using the corrected leduc-breguet formula,
+    generates a grid and then whith the values of the range and paylaod, genrates a mission
+    in order to retrieve the burnt fuel/ passenger/km
+    Different designs can be superposed by providing an existing fig.
+    Each design can be provided a name.
 
-        :param aircraft_file_path: path of data file
-        :param propulsion_id: name the model for the engine
-        :param sizing_name: name of the siizing mission : default sizing
-        :param name: name to give to the trace added to the figure
-        :param fig: existing figure to which add the plot
-        :param file_formatter: the formatter that defines the format of data file. If not provided,
-                               default format will be assumed.
-        :param n_intervals_payloads : number of intervals between 0.45* max_payload and 0.95 max_payload for the grid
-                                       defaults is 8
-        :param range_step: defines the step between 2 grid points in the range axis. default is 500 [NM]
-        :param file_save: sets the name where the results are saved
-        :param show_grid: states if the grid points are to be shown on the fig
-        :param x_axis: defines the x axis if the user wants to
-        :param y_axis: defines the y axis if the user wants to
-        :return: wing plot figure
-        """
+    :param aircraft_file_path: path of data file
+    :param propulsion_id: name the model for the engine
+    :param sizing_name: name of the siizing mission : default sizing
+    :param name: name to give to the trace added to the figure
+    :param fig: existing figure to which add the plot
+    :param file_formatter: the formatter that defines the format of data file. If not provided,
+                           default format will be assumed.
+    :param n_intervals_payloads : number of intervals between 0.45* max_payload and 0.95 max_payload for the grid
+                                   defaults is 8
+    :param range_step: defines the step between 2 grid points in the range axis. default is 500 [NM]
+    :param upper_limit_box_tolerance : upper limit of the grid box, Default 0.95 means 0.95*max_payload
+    :param lower_limit_box_tolerance : lower limit of the grid box, default 0.4 means 0.4*max_payload
+    :param left_limit_box_tolerance : left limit of the grid box, default = 0.1 means 0.1*range(point B)
+    :param right_limit_box_tolerance : right limit of the grid box, default = 0.95 means 0.95* max_range, meaning there is 5% safety
+    :param file_save: sets the name where the results are saved
+    :param show_grid: states if the grid points are to be shown on the fig
+    :param x_axis: defines the x axis if the user wants to
+    :param y_axis: defines the y axis if the user wants to
+    :return: wing plot figure
+    """
 
     fig, grid, n_values_y = grid_generation(
         aircraft_file_path,
@@ -515,10 +561,16 @@ def payload_range_full(
         file_formatter,
         n_intervals_payloads,
         range_step,
+        upper_limit_box_tolerance,
+        lower_limit_box_tolerance,
+        right_limit_box_tolerance,
+        left_limit_box_tolerance,
         show_grid,
         x_axis,
         y_axis,
     )
+
+
 
     try:
         rst = np.loadtxt(pth.join("data", file_save))
