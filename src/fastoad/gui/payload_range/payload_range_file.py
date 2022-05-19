@@ -40,6 +40,7 @@ import os.path as pth
 import time
 
 COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
+from fastoad.module_management._plugins import FastoadLoader
 
 
 def breguet_leduc_formula(mass_in, mass_out, constant_coeff, x0):
@@ -64,8 +65,6 @@ def breguet_leduc_points(
         sizing_name: str = "sizing",
         file_formatter=None,
 ):
-    from fastoad.module_management._plugins import FastoadLoader
-
     FastoadLoader()
 
     variables = VariableIO(aircraft_file_path, file_formatter).read()
@@ -205,9 +204,9 @@ def payload_range_simple(
         title_text="Payload range diagram", xaxis_title="range [NM]", yaxis_title="Payload [tonnes]"
     )
     if x_axis is not None:
-        fig.update_xaxes(range=[x_axis[0],x_axis[1]])
+        fig.update_xaxes(range=[x_axis[0], x_axis[1]])
     if y_axis is not None:
-        fig.update_yaxes(range=[y_axis[0],y_axis[1]])
+        fig.update_yaxes(range=[y_axis[0], y_axis[1]])
 
     return fig
 
@@ -221,7 +220,7 @@ def grid_generation(
         file_formatter=None,
         n_intervals_payloads=8,
         range_step=500,
-        show_grid: bool=True,
+        show_grid: bool = True,
         x_axis=None,
         y_axis=None,
 ):
@@ -307,7 +306,7 @@ def grid_generation(
     fig.add_trace(scatter1)
     fig.add_trace(scatter2)
 
-    if (show_grid==True):
+    if (show_grid == True):
         scatter3 = go.Scatter(x=grid[0], y=grid[1], mode="markers", name="Grid points")
         fig.add_trace(scatter3)
 
@@ -342,7 +341,7 @@ def payload_range_grid_plot(
         fig,
         file_formatter,
         n_intervals_payloads,
-        range_step,show_grid=True
+        range_step, show_grid=True
     )[0]
 
 
@@ -481,7 +480,7 @@ def payload_range_full(
         file_save: str = "loop_results.txt",
         show_grid: bool = True,
         x_axis=None,
-        y_axis= None,
+        y_axis=None,
 ) -> go.FigureWidget:
     """
         Returns a figure of the payload range using the corrected leduc-breguet formula,
