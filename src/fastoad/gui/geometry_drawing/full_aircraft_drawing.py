@@ -27,6 +27,9 @@ COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 NACELLE_POSITION = 0.6  # Nacelle position compared to the leading edge. 0 means that the back of the nacelle is aligned with the beginning of the root, 1 means that the beginning of the nacelle is aligned with the kink_x.
 HORIZONTAL_TAIL_ROOT = 0.3  # Percentage of the tail root concerned by the elevator
 HORIZONTAL_TAIL_TIP = 0.3  # Percentage of the tail tip, at 90 percent of the horizontal tail width, covered by the elevator
+HORIZONTAL_WIDTH_ELEVATOR = (
+    0.85  # Percentage of the width of the horizontal tail concerned by the elevator
+)
 
 
 def full_aircraft_drawing_plot(
@@ -320,9 +323,11 @@ def full_aircraft_drawing_plot(
         x_fuselage[4] - x_fuselage[3]
     )  # constants used for the computation
 
-    ht_root_tip_90_percent = (x_ht[2] - 0.1 * y_ht[1] * np.tan(ht_sweep_100 * np.pi / 180)) - (
-        x_ht[1] - 0.1 * y_ht[1] * np.tan(ht_sweep_0 * np.pi / 180)
-    )  # constants used for the computation. Root chord at 90 percent of the horizontal tail width
+    ht_root_tip_x_percent = (
+        x_ht[2] - (1 - HORIZONTAL_WIDTH_ELEVATOR) * y_ht[1] * np.tan(ht_sweep_100 * np.pi / 180)
+    ) - (
+        x_ht[1] - (1 - HORIZONTAL_WIDTH_ELEVATOR) * y_ht[1] * np.tan(ht_sweep_0 * np.pi / 180)
+    )  # constants used for the computation. Root chord at X percent of the horizontal tail width (depending on the value of the parameter "HORIZONTAL_WIDTH_ELEVATOR"
 
     delta_l = (ht_root_chord - np.tan(ht_sweep_0 * np.pi / 180) * (B + A * tg_alpha)) / (
         1 + np.tan(ht_sweep_0 * np.pi / 180) * tg_alpha
@@ -339,9 +344,10 @@ def full_aircraft_drawing_plot(
             x_fuselage[4] - delta_x,
             x_ht[3] - delta_l * HORIZONTAL_TAIL_ROOT,
             x_ht[2]
-            - 0.1 * y_ht[1] * np.tan(ht_sweep_100 * np.pi / 180)
-            - HORIZONTAL_TAIL_TIP * ht_root_tip_90_percent,
-            x_ht[2] - 0.1 * y_ht[1] * np.tan(ht_sweep_100 * np.pi / 180),
+            - (1 - HORIZONTAL_WIDTH_ELEVATOR) * y_ht[1] * np.tan(ht_sweep_100 * np.pi / 180)
+            - HORIZONTAL_TAIL_TIP * ht_root_tip_x_percent,
+            x_ht[2]
+            - (1 - HORIZONTAL_WIDTH_ELEVATOR) * y_ht[1] * np.tan(ht_sweep_100 * np.pi / 180),
             x_fuselage[4] - delta_x,
         ]
     )
@@ -349,8 +355,8 @@ def full_aircraft_drawing_plot(
         [
             y_fuselage[4] + delta_y,
             y_fuselage[4] + HORIZONTAL_TAIL_ROOT * delta_y_tot,
-            y_ht[1] * 0.9,
-            y_ht[1] * 0.9,
+            y_ht[1] * HORIZONTAL_WIDTH_ELEVATOR,
+            y_ht[1] * HORIZONTAL_WIDTH_ELEVATOR,
             y_fuselage[4] + delta_y,
         ]
     )
