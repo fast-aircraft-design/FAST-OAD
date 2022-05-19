@@ -18,8 +18,9 @@ def compute_l_d(cruise_altitude, cruise_speed, cd0, k, mtow, wing_area):
     # Free-fall acceleration constant
     g = 9.81
 
-    # Air density at cruise level, to compute it, we will use the Atmosphere model available in FAST-OAD, so we will
-    # create an Atmosphere instance using the cruise altitude and extract its density attribute
+    # Air density at cruise level, to compute it, we will use the Atmosphere model available in
+    # FAST-OAD, so we will create an Atmosphere instance using the cruise altitude and extract
+    # its density attribute
     atm = Atmosphere(altitude=cruise_altitude, altitude_in_feet=False)
     rho = atm.density
 
