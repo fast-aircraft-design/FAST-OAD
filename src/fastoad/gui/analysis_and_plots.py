@@ -14,6 +14,7 @@ Defines the analysis and plotting functions for postprocessing
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+
 from typing import Dict
 
 import numpy as np
@@ -27,6 +28,9 @@ from fastoad.openmdao.variables import VariableList
 
 COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 
+from .geometry_drawing.full_aircraft_drawing import flaps_and_slats_plot
+from .geometry_drawing.full_aircraft_drawing import wing_drawing_plot
+from .geometry_drawing.full_aircraft_drawing import full_aircraft_drawing_plot
 
 # pylint: disable-msg=too-many-locals
 def wing_geometry_plot(
