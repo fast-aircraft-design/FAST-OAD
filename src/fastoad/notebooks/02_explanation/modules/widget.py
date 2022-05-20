@@ -4,23 +4,26 @@ import ipywidgets as widgets
 
 
 class ChoiceForOWE:
-
     def __init__(self):
 
         self.button_correct_component = widgets.Button(
-            description='Corrected component',
+            description="Corrected component",
             disabled=False,
-            button_style='info',
-            tooltips=['Toggle this button to use the correct component',],
-            icon='fa-check-square-o',
+            button_style="info",
+            tooltips=[
+                "Toggle this button to use the correct component",
+            ],
+            icon="fa-check-square-o",
             layout=widgets.Layout(width="50%", height="50px"),
         )
         self.button_exercise_component = widgets.Button(
-            description='Exercise component',
+            description="Exercise component",
             disabled=False,
-            button_style='info',
-            tooltips=['Toggle this button to use the component left as exercise',],
-            icon='fa-wrench',
+            button_style="info",
+            tooltips=[
+                "Toggle this button to use the component left as exercise",
+            ],
+            icon="fa-wrench",
             layout=widgets.Layout(width="50%", height="50px"),
         )
         self.choice = "correct"

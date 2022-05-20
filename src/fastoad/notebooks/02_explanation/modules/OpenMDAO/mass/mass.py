@@ -6,7 +6,6 @@ from .sub_components.compute_owe import ComputeOwe
 
 
 class ComputeMassCorrect(om.Group):
-
     def setup(self):
 
         self.add_subsystem(name="compute_wing_mass", subsys=ComputeWingMass(), promotes=["*"])
@@ -14,7 +13,6 @@ class ComputeMassCorrect(om.Group):
 
 
 class ComputeMassExercise(om.Group):
-
     def setup(self):
 
         self.add_subsystem(name="compute_wing_mass", subsys=ComputeWingMass(), promotes=["*"])
