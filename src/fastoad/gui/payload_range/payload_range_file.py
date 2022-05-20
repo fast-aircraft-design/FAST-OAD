@@ -335,7 +335,9 @@ def grid_generation(
     scatter_BL = go.Scatter(
         x=BL_ranges, y=BL_payloads, mode="markers+lines", name=name, showlegend=False
     )
-    scatter_CERAS = go.Scatter(x=[2500], y=[17000 / 10 ** 3], mode="markers", name="CERAS sizing/design point")
+    scatter_CERAS = go.Scatter(
+        x=[2500], y=[17000 / 10 ** 3], mode="markers", name="CERAS sizing/design point"
+    )
 
     fig.add_trace(scatter_BL)
     fig.add_trace(scatter_CERAS)
@@ -624,13 +626,18 @@ def payload_range_full(
                 2, sum(n_values_ranges[0:i]) : sum(n_values_ranges[0:i]) + n_values_ranges[i]
             ]
 
-        fig.add_trace(go.Contour(z=z, x=x, y=y , colorbar=dict(
-            title='Consumption [kg_fuel/km/kg_payload]', # title here
-            titleside='right',
-            titlefont=dict(
-                size=10,
-                family='Arial, sans-serif')
-        )))
+        fig.add_trace(
+            go.Contour(
+                z=z,
+                x=x,
+                y=y,
+                colorbar=dict(
+                    title="Consumption [kg_fuel/km/kg_payload]",  # title here
+                    titleside="right",
+                    titlefont=dict(size=10, family="Arial, sans-serif"),
+                ),
+            )
+        )
 
     except:
         print(
@@ -642,7 +649,7 @@ def payload_range_full(
         title_text="Payload range diagram with specific consumption",
         xaxis_title="range [NM]",
         yaxis_title="Payload [tonnes]",
-        showlegend= False,
+        showlegend=False,
     )
 
     if x_axis is not None:
