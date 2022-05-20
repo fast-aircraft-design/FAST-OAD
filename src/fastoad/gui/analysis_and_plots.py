@@ -36,7 +36,6 @@ from .payload_range.payload_range_file import payload_range_full
 from .payload_range.payload_range_file import payload_range_grid_plot
 from .payload_range.payload_range_file import payload_range_loop_computation
 
-
 # pylint: disable-msg=too-many-locals
 def wing_geometry_plot(
     aircraft_file_path: str, name=None, fig=None, file_formatter=None
