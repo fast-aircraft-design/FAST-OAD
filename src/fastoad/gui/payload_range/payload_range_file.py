@@ -95,6 +95,7 @@ def breguet_leduc_points(
     sizing_range = variables["data:TLAR:range"].value[0]  # first approximation for the range
 
     max_payload = variables["data:weight:aircraft:max_payload"].value[0]
+    sizing_payload = variables["data:weight:aircraft:payload"].value[0]
     mtow = variables["data:weight:aircraft:MTOW"].value[0]
     owe = variables["data:weight:aircraft:OWE"].value[0]
     mfw = variables["data:weight:aircraft:MFW"].value[0]
@@ -154,22 +155,27 @@ def breguet_leduc_points(
     a = [0, max_payload]
 
     # point B max_payload, MTOW ==> range :
-    mass_in = mtow
-    mass_out = owe + max_payload
-    ra_b = breguet_leduc_formula(mass_in, mass_out, coeff, sizing_range)
+    # mass_in = mtow
+    # mass_out = owe + max_payload
+    # ra_b = breguet_leduc_formula(mass_in, mass_out, coeff, sizing_range)
 
     # point C  MTOW, MFW ==> range:
+    mass_in = mtow
     mass_out = mtow - mfw
     payload_c = mtow - mfw - owe
-    ra_c = breguet_leduc_formula(mass_in, mass_out, coeff, sizing_range)
+    ra_c = breguet_leduc_formula(mass_in, mass_out, coeff, sizing_range)[0]
+
+    # design point and point B: max_payload,MTOW
+    payload_b = max_payload
+    ra_b = (sizing_range-ra_c)*(payload_b-payload_c)/(sizing_payload-payload_c)+ra_c
 
     # point D 0 payload, MFW ==> range
     mass_in = owe + mfw
     mass_out = owe
-    ra_d = breguet_leduc_formula(mass_in, mass_out, coeff, ra_c)
+    ra_d = breguet_leduc_formula(mass_in, mass_out, coeff, ra_c)[0]
 
-    BL_ranges = np.array([0, ra_b[0], ra_c[0], ra_d[0]])
-    BL_payloads = np.array([max_payload, max_payload, payload_c, 0]) / 10 ** 3
+    BL_ranges = np.array([0, ra_b, ra_c, ra_d, sizing_range])
+    BL_payloads = np.array([max_payload, payload_b,  payload_c, 0,sizing_payload]) / 10 ** 3
     return BL_ranges, BL_payloads
 
 
@@ -208,14 +214,14 @@ def payload_range_simple(
         fig = go.Figure()
 
     scatter_BL = go.Scatter(
-        x=BL_ranges, y=BL_payloads, mode="lines+markers", name=name, showlegend=False
+        x=BL_ranges[0:-1], y=BL_payloads[0:-1], mode="lines+markers", name=name, showlegend=False
     )
-    scatter_CERAS = go.Scatter(
-        x=[2500], y=[17000 / 10 ** 3], mode="markers", name="CERAS design point"
+    scatter_SIZING = go.Scatter(
+        x=[BL_ranges[-1]], y=[BL_payloads[-1]], mode="markers", name="Sizing point"
     )
 
     fig.add_trace(scatter_BL)
-    fig.add_trace(scatter_CERAS)
+    fig.add_trace(scatter_SIZING)
 
     fig = go.FigureWidget(fig)
     fig.update_layout(
@@ -333,14 +339,14 @@ def grid_generation(
         fig = go.Figure()
 
     scatter_BL = go.Scatter(
-        x=BL_ranges, y=BL_payloads, mode="markers+lines", name=name, showlegend=False
+        x=BL_ranges[0:-1], y=BL_payloads[0:-1], mode="lines+markers", name=name, showlegend=False
     )
-    scatter_CERAS = go.Scatter(
-        x=[2500], y=[17000 / 10 ** 3], mode="markers", name="CERAS sizing/design point"
+    scatter_SIZING = go.Scatter(
+        x=[BL_ranges[-1]], y=[BL_payloads[-1]], mode="markers", name="Sizing point"
     )
 
     fig.add_trace(scatter_BL)
-    fig.add_trace(scatter_CERAS)
+    fig.add_trace(scatter_SIZING)
 
     if show_grid == True:
         scatter_GRID = go.Scatter(x=grid[0], y=grid[1], mode="markers", name="Grid points")

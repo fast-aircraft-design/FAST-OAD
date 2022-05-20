@@ -4,7 +4,7 @@
       <NPAX is_input="True">150.0<!--top-level requirement: number of passengers, assuming a classic eco/business class repartition--></NPAX>
       <approach_speed units="m/s" is_input="True">67.90666666666667<!--top-level requirement: approach speed--></approach_speed>
       <cruise_mach is_input="True">0.78<!--Input defined by the mission.--></cruise_mach>
-      <range units="nmi" is_input="True">2750.0<!--Input defined by the mission.--></range>
+      <range units="nmi" is_input="True">2500.0<!--Input defined by the mission.--></range>
     </TLAR>
     <geometry>
       <has_T_tail is_input="True">0.0<!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail--></has_T_tail>
@@ -288,7 +288,7 @@
         <OWE units="kg" is_input="False">42118.46178067525<!--Mass of crew--></OWE>
         <additional_fuel_capacity units="kg" is_input="False">1.4740831829840317e-05<!--fuel mass capacity of wing that exceeds sizing mission requirement--></additional_fuel_capacity>
         <max_payload units="kg" is_input="False">19608.0<!--max payload weight--></max_payload>
-        <payload units="kg" is_input="False">13608.0<!--_inp_data:weight:aircraft:payload--></payload>
+        <payload units="kg" is_input="False">17000.0<!--_inp_data:weight:aircraft:payload--></payload>
         <sizing_block_fuel units="kg" is_input="False">19527.3467256785<!--block fuel quantity (i.e. loaded before taxi-out) used for sizing process--></sizing_block_fuel>
         <sizing_onboard_fuel_at_takeoff units="kg" is_input="False">19165.398542616225<!--_inp_data:weight:aircraft:sizing_onboard_fuel_at_takeoff--></sizing_onboard_fuel_at_takeoff>
         <CG>
