@@ -1,0 +1,26 @@
+title: Operational mission with performances as time step integration
+
+# List of folder paths where user added custom registered OpenMDAO components
+module_folders:
+
+# Input and output files
+input_file: ../workdir/mission_inputs.xml
+output_file: ../workdir/mission_outputs.xml
+
+# Definition of OpenMDAO model
+model:
+  #    nonlinear_solver : om.NonlinearBlockGS(maxiter=30)
+  #    linear_solver : om.DirectSolver()
+
+  aerodynamics_highspeed:
+    id: fastoad.aerodynamics.highspeed.legacy
+  SPP_study:
+    id: fastoad.performances.mission
+    propulsion_id: fastoad.wrapper.propulsion.rubber_engine
+    out_file: ../workdir/mission_study.csv
+    mission_file_path: ./mission_phases.yml
+    mission_name: op_mission
+    adjust_fuel: true
+    add_solver: true
+    is_sizing: false
+    use_initializer_iteration: true
