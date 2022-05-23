@@ -22,9 +22,12 @@ from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
 from scipy.optimize import fsolve
+import plotly
+import plotly.graph_objects as go
 
 
-SPEED_ALTITUDE_SHAPE = 100
+SPEED_ALTITUDE_SHAPE = 50 #Numbre of points computed
+ALTITUDE =20409 #altitude maximale jusqu'à laquelle les calculs sont réalisés
 
 
 class SpeedAltitudeDiagram(om.ExplicitComponent):
@@ -43,12 +46,12 @@ class SpeedAltitudeDiagram(om.ExplicitComponent):
         self.add_input("data:weight:aircraft:MTOW", units="kg", val=np.nan)
         self.add_input("data:aerodynamics:aircraft:cruise:CL", val=np.nan, shape=150)
         self.add_input("data:aerodynamics:aircraft:cruise:CD", val=np.nan, shape=150)
-        self.add_input("data:aerodynamics:aircraft:landing:CD", val=np.nan, shape=150)
+        self.add_input("data:aerodynamics:aircraft:landing:CL_max_clean", val=np.nan)
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
         self.add_output(
-            "data:performance:speed_altitude_diagram:v_stall",
+            "data:performance:speed_altitude_diagram:v_min",
             shape=SPEED_ALTITUDE_SHAPE,
             units="m/s",
         )
@@ -88,23 +91,41 @@ class SpeedAltitudeDiagram(om.ExplicitComponent):
         mtow = inputs["data:weight:aircraft:MTOW"]
         cl_vector_input = inputs["data:aerodynamics:aircraft:cruise:CL"]
         cd_vector_input = inputs["data:aerodynamics:aircraft:cruise:CD"]
+        cl_max_clean = inputs["data:aerodynamics:aircraft:landing:CL_max_clean"]
         g = 9.80665 #m/s^2
-        altitude_vector = np.arange(0, 20000, 100)
-        speed_final = np.zeros(altitude_vector.size)
+        altitude_vector = np.arange(0, ALTITUDE, ALTITUDE/SPEED_ALTITUDE_SHAPE)
 
-        #atm = Atmosphere(altitude=10000.0, altitude_in_feet=True)
-        #atm.true_airspeed = 250
-        #rho = atm.density
+        print("altitude vector  = ", altitude_vector)
+        v_max= np.zeros(altitude_vector.size)
+        v_min= np.zeros(altitude_vector.size)
+
+        compteur =0
 
         for i in range(len(altitude_vector)):
+            compteur += 1
+            print("coucou")
             atm = Atmosphere(altitude=altitude_vector[i], altitude_in_feet=True)
-            atm.true_airspeed = 250
             rho = atm.density
 
-            speed_final[i] = fsolve(self.func, 220, args=(altitude_vector[i], mtow, g, rho, wing_area, cl_vector_input, cd_vector_input, propulsion_model))
 
 
-        print(speed_final)
-        print(altitude_vector)
-        v_stall = np.ones(SPEED_ALTITUDE_SHAPE) / wing_area
-        outputs["data:performance:speed_altitude_diagram:v_stall"] = v_stall
+            v_min[i] = np.sqrt(2*mtow*g/(rho*wing_area*cl_max_clean))
+            v_max[i] = fsolve(self.func, 250, args=(altitude_vector[i], mtow, g, rho, wing_area, cl_vector_input, cd_vector_input, propulsion_model))
+
+
+        print("compteur = ", compteur)
+        print("v_max = ", v_max)
+        print("v_min = ", v_min)
+        outputs["data:performance:speed_altitude_diagram:v_min"] = v_min
+        outputs["data:performance:speed_altitude_diagram:v_max"] = v_max
+
+        fig = go.Figure()
+        scatter = go.Scatter(x=v_max, y=altitude_vector, mode="lines+markers", name="v_max")
+        scatter2 = go.Scatter(x=v_min, y=altitude_vector, mode="lines", name="v_min")
+        fig.add_trace(scatter)
+        fig.add_trace(scatter2)
+        fig.layout = go.Layout(yaxis=dict(scaleanchor="y", scaleratio=1))
+        fig = go.FigureWidget(fig)
+        fig.update_layout(title_text="V-a diagram", title_x=0.5, xaxis_title="Speed", yaxis_title="Altitude")
+        fig.show()
+
