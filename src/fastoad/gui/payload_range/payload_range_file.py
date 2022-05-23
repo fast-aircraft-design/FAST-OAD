@@ -27,7 +27,7 @@ from scipy.optimize import fsolve
 from fastoad.constants import EngineSetting
 from fastoad.io import VariableIO
 from fastoad.model_base import FlightPoint
-from fastoad.model_base import Atmosphere
+from stdatm import Atmosphere
 from fastoad.openmdao.variables import VariableList
 
 import openmdao.api as om
