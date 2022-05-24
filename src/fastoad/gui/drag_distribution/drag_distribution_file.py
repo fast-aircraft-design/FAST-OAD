@@ -82,13 +82,26 @@ def drag_distribution_plot(
             "CD" + "<br>" + str('% 12.3f'%CD),
             "CDp" + "<br>" + str('% 12.3f'%CDp),
             "CDi" + "<br>" + str('% 12.3f'%CDi_wing),
+            "fuselage" + "<br>" + str('% 12.3f'%CDp_fuselage),
+            "vertical tail" + "<br>" + str('% 12.3f'%CDp_vt),
+            "horizontal tail" + "<br>" + str('% 12.3f' % CDp_ht),
+            "wing" + "<br>" + str('% 12.3f'%CDp_wing),
+            "nacelles"+ "<br>" + str('% 12.3f'%CDp_nacelles),
+            "nacelles" + "<br>" + str('% 12.3f' % CDp_pylons),
         ],
         parents=[
             "",
             "CD" + "<br>" + str('% 12.3f'%CD),
             "CD" + "<br>" + str('% 12.3f'%CD),
+            "CDp" + "<br>" + str('% 12.3f' % CDp),
+            "CDp" + "<br>" + str('% 12.3f' % CDp),
+            "CDp" + "<br>" + str('% 12.3f' % CDp),
+            "CDp" + "<br>" + str('% 12.3f' % CDp),
+            "CDp" + "<br>" + str('% 12.3f' % CDp),
+            "CDp" + "<br>" + str('% 12.3f' % CDp),
+
         ],
-        values=[CD, CDp, CDi_wing],
+        values=[CD, CDp, CDi_wing,CDp_fuselage,CDp_vt,CDp_ht,CDp_wing,CDp_nacelles,CDp_pylons],
         branchvalues="total"
     )
 
