@@ -167,7 +167,7 @@ def breguet_leduc_points(
 
     # design point and point B: max_payload,MTOW
     payload_b = max_payload
-    ra_b = (sizing_range-ra_c)*(payload_b-payload_c)/(sizing_payload-payload_c)+ra_c
+    ra_b = (sizing_range - ra_c) * (payload_b - payload_c) / (sizing_payload - payload_c) + ra_c
 
     # point D 0 payload, MFW ==> range
     mass_in = owe + mfw
@@ -175,7 +175,7 @@ def breguet_leduc_points(
     ra_d = breguet_leduc_formula(mass_in, mass_out, coeff, ra_c)[0]
 
     BL_ranges = np.array([0, ra_b, ra_c, ra_d, sizing_range])
-    BL_payloads = np.array([max_payload, payload_b,  payload_c, 0,sizing_payload]) / 10 ** 3
+    BL_payloads = np.array([max_payload, payload_b, payload_c, 0, sizing_payload]) / 10 ** 3
     return BL_ranges, BL_payloads
 
 
@@ -498,12 +498,12 @@ def payload_range_loop_computation(
     # Set the parameters of the mission
 
     input_file_mission["data:mission:op_mission:diversion:distance"].value = 370400
-    input_file_mission["data:mission:op_mission:holding:duration"].value = 1800
-    input_file_mission["data:mission:op_mission:takeoff:V2"].value = 82.3
-    input_file_mission["data:mission:op_mission:takeoff:altitude"].value = 458.1
+    input_file_mission["data:mission:op_mission:holding:duration"].value = 2700
+    input_file_mission["data:mission:op_mission:takeoff:V2"].value = 79.3
+    input_file_mission["data:mission:op_mission:takeoff:altitude"].value = 0.0
     input_file_mission["data:mission:op_mission:takeoff:fuel"].value = 82.4
-    input_file_mission["data:mission:op_mission:taxi_in:duration"].value = 600
-    input_file_mission["data:mission:op_mission:taxi_out:duration"].value = 300
+    input_file_mission["data:mission:op_mission:taxi_in:duration"].value = 300
+    input_file_mission["data:mission:op_mission:taxi_out:duration"].value = 540
     input_file_mission["data:mission:op_mission:taxi_out:thrust_rate"].value = 0.3
 
     # Run a mission on each grid point and generate the fuel consumption/km/kg_payload

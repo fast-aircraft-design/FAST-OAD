@@ -20,10 +20,20 @@ import plotly.graph_objects as go
 from fastoad.io import VariableIO
 from fastoad.model_base import FlightPoint
 import os.path as pth
+from stdatm import Atmosphere
+
+g = 9.81
 
 
 def drag_distribution_plot(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+        aircraft_file_path: str,
+        aircraft_mass: float,
+        aircraft_mach: float,
+        aircraft_altitude: float,
+        name=None,
+        fig=None,
+        file_formatter=None,
+        low_speed_aero=False,
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the drag distribution at a certain flight point
@@ -39,29 +49,58 @@ def drag_distribution_plot(
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
+    # step 1 : Cl calculation :
+    wing_area = variables["data:geometry:wing:area"].value[0]
+    rho = Atmosphere(aircraft_altitude * 3.2744).density
+    T = Atmosphere(aircraft_altitude * 3.2744).temperature
+    CL = aircraft_mass * g / (0.5 * rho * aircraft_mach ** 2 * 1.4 * 287.1 * T * wing_area)
 
+    # step 2 : compute induced drag
+    k_induced = variables["data:aerodynamics:aircraft:cruise:induced_drag_coefficient"].value[0]
+    CDi_wing = k_induced * CL ** 2
+
+    # step 3 : retrieve the parasitic drag CDp
+    CDp_fuselage = variables["data:aerodynamics:fuselage:cruise:CD0"].value[0]
+    CDp_ht = variables["data:aerodynamics:horizontal_tail:cruise:CD0"].value[0]
+    CDp_nacelles = variables["data:aerodynamics:nacelles:cruise:CD0"].value[0]
+    CDp_pylons = variables["data:aerodynamics:pylons:cruise:CD0"].value[0]
+    CDp_vt = variables["data:aerodynamics:vertical_tail:cruise:CD0"].value[0]
+    CDp_wing = variables["data:aerodynamics:wing:cruise:CD0"].value[0]
+
+
+    CDp = CDp_fuselage + CDp_ht + CDp_nacelles + CDp_pylons + CDp_vt + CDp_wing
+    print(CDp)
+    print(CDi_wing)
+    print(CL)
+    CD = CDi_wing + CDp
 
     if fig is None:
         fig = go.Figure()
 
-    x = [1,2,3,4,5]
-    y = [1,2,3,4,5]
-
-    scatter = go.Scatter(
-        x=y, y=x, line=dict(color="blue"), mode="lines", name=name, showlegend=False
+    sunburst = go.Sunburst(
+        labels=[
+            "CD" + "<br>" + str('% 12.3f'%CD),
+            "CDp" + "<br>" + str('% 12.3f'%CDp),
+            "CDi" + "<br>" + str('% 12.3f'%CDi_wing),
+        ],
+        parents=[
+            "",
+            "CD" + "<br>" + str('% 12.3f'%CD),
+            "CD" + "<br>" + str('% 12.3f'%CD),
+        ],
+        values=[CD, CDp, CDi_wing],
+        branchvalues="total"
     )
 
-    fig.layout = go.Layout(yaxis=dict(scaleanchor="x", scaleratio=1))
+    # fig.layout = go.Layout(yaxis=dict(scaleanchor="x", scaleratio=1))
 
-    fig.add_trace(scatter)
+    fig.add_trace(sunburst)
 
     fig = go.FigureWidget(fig)
     fig.update_xaxes(constrain="domain")
     fig.update_yaxes(constrain="domain")
-    fig.update_layout(title_text="Drag coefficient distribution", title_x=0.5, xaxis_title="y", yaxis_title="x")
+    fig.update_layout(
+        title_text="Drag coefficient distribution", title_x=0.5, xaxis_title="y", yaxis_title="x"
+    )
 
     return fig
-
-
-
-
