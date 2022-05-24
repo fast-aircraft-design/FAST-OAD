@@ -88,9 +88,15 @@ def breguet_leduc_points(
     glide_ratio = variables["data:aerodynamics:aircraft:cruise:L_D_max"].value[
         0
     ]  # max glide ratio during cruise
-    altitude = variables["data:mission:" + sizing_name + ":main_route:cruise:altitude"].value[
-        0
-    ]  # cruise altitude
+    # altitude = variables["data:mission:" + sizing_name + ":main_route:cruise:altitude"].value[
+    #     0
+    # ]  # cruise altitude
+    altitude = convert_units(
+        variables["data:mission:sizing:main_route:cruise:altitude"].value[0],
+        variables["data:mission:sizing:main_route:cruise:altitude"].units,
+        "m",
+    )  # cruise altitude
+
     cruise_mach = variables["data:TLAR:cruise_mach"].value[0]
     sizing_range = variables["data:TLAR:range"].value[0]  # first approximation for the range
 
@@ -167,7 +173,7 @@ def breguet_leduc_points(
 
     # design point and point B: max_payload,MTOW
     payload_b = max_payload
-    ra_b = (sizing_range-ra_c)*(payload_b-payload_c)/(sizing_payload-payload_c)+ra_c
+    ra_b = (sizing_range - ra_c) * (payload_b - payload_c) / (sizing_payload - payload_c) + ra_c
 
     # point D 0 payload, MFW ==> range
     mass_in = owe + mfw
@@ -175,7 +181,7 @@ def breguet_leduc_points(
     ra_d = breguet_leduc_formula(mass_in, mass_out, coeff, ra_c)[0]
 
     BL_ranges = np.array([0, ra_b, ra_c, ra_d, sizing_range])
-    BL_payloads = np.array([max_payload, payload_b,  payload_c, 0,sizing_payload]) / 10 ** 3
+    BL_payloads = np.array([max_payload, payload_b, payload_c, 0, sizing_payload]) / 10 ** 3
     return BL_ranges, BL_payloads
 
 
@@ -488,23 +494,66 @@ def payload_range_loop_computation(
     input_file_mission = oad.generate_inputs(CONFIG_MISSION_FILE, SOURCE_FILE, overwrite=True)
     input_file_mission = oad.DataFile(input_file_mission)
 
+    input_file = oad.DataFile(aircraft_file_path)
+
     # Defined otherwise the mission would noot run
 
-    input_file_mission["data:propulsion:climb:thrust_rate"].value = 0.93
-    input_file_mission["data:propulsion:initial_climb:thrust_rate"].value = 1.00
-    input_file_mission["data:propulsion:descent:thrust_rate"].value = 0.18
-    input_file_mission["data:propulsion:taxi:thrust_rate"].value = 0.3
+    input_file_mission["data:propulsion:climb:thrust_rate"].value = input_file[
+        "data:propulsion:climb:thrust_rate"
+    ].value
+    input_file_mission["data:propulsion:initial_climb:thrust_rate"].value = input_file[
+        "data:propulsion:initial_climb:thrust_rate"
+    ].value
+    input_file_mission["data:propulsion:descent:thrust_rate"].value = input_file[
+        "data:propulsion:descent:thrust_rate"
+    ].value
+    input_file_mission["data:propulsion:taxi:thrust_rate"].value = input_file[
+        "data:propulsion:taxi:thrust_rate"
+    ].value
 
-    # Set the parameters of the mission
+    # Set the parameters of the mission with change of units
 
-    input_file_mission["data:mission:op_mission:diversion:distance"].value = 370400
-    input_file_mission["data:mission:op_mission:holding:duration"].value = 1800
-    input_file_mission["data:mission:op_mission:takeoff:V2"].value = 82.3
-    input_file_mission["data:mission:op_mission:takeoff:altitude"].value = 458.1
-    input_file_mission["data:mission:op_mission:takeoff:fuel"].value = 82.4
-    input_file_mission["data:mission:op_mission:taxi_in:duration"].value = 600
-    input_file_mission["data:mission:op_mission:taxi_out:duration"].value = 300
-    input_file_mission["data:mission:op_mission:taxi_out:thrust_rate"].value = 0.3
+    input_file_mission["data:mission:op_mission:diversion:distance"].value[0] = convert_units(
+        input_file["data:mission:" + sizing_name + ":diversion:distance"].value[0],
+        input_file["data:mission:" + sizing_name + ":diversion:distance"].units,
+        "m",
+    )  # in m
+
+    input_file_mission["data:mission:op_mission:holding:duration"].value[0] = convert_units(
+        input_file["data:mission:" + sizing_name + ":holding:duration"].value[0],
+        input_file["data:mission:" + sizing_name + ":holding:duration"].units,
+        "s",
+    )  # in s
+
+    input_file_mission["data:mission:op_mission:takeoff:V2"].value[0] = convert_units(
+        input_file["data:mission:" + sizing_name + ":takeoff:V2"].value[0],
+        input_file["data:mission:" + sizing_name + ":takeoff:V2"].units,
+        "m/s",
+    )
+
+    input_file_mission["data:mission:op_mission:takeoff:altitude"].value = convert_units(
+        input_file["data:mission:" + sizing_name + ":takeoff:altitude"].value[0],
+        input_file["data:mission:" + sizing_name + ":takeoff:altitude"].units,
+        "m",
+    )
+
+    input_file_mission["data:mission:op_mission:takeoff:fuel"].value = input_file[
+        "data:mission:" + sizing_name + ":takeoff:fuel"
+    ].value
+    input_file_mission["data:mission:op_mission:taxi_in:duration"].value[0] = convert_units(
+        input_file["data:mission:" + sizing_name + ":taxi_in:duration"].value[0],
+        input_file["data:mission:" + sizing_name + ":taxi_in:duration"].units,
+        "s",
+    )
+    input_file_mission["data:mission:op_mission:taxi_out:duration"].value[0] = convert_units(
+        input_file["data:mission:" + sizing_name + ":taxi_out:duration"].value[0],
+        input_file["data:mission:" + sizing_name + ":taxi_out:duration"].units,
+        "s",
+    )
+
+    input_file_mission["data:mission:op_mission:taxi_out:thrust_rate"].value = input_file[
+        "data:mission:" + sizing_name + ":taxi_out:thrust_rate"
+    ].value
 
     # Run a mission on each grid point and generate the fuel consumption/km/kg_payload
 
