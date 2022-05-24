@@ -2,6 +2,16 @@
 Changelog
 =========
 
+Version 1.3.3
+=============
+- Fixed:
+    - Fixed crash when using Newton solver or case recorders. (#434)
+    -  DataFile class enhancement (#435) :
+        - Instantiating DataFile with an non-existent file now triggers an error.
+        - DataClass.from_*() methods now return a DataClass instance instead of VariableList.
+        - A dedicated section has been added in Sphinx documentation (General Documentation > Process variables > Serialization > FAST-OAD API).
+    - A component input could be in FAST-OAD-generated input file though it was explicitly connected to an IndepVarComp output in configuration  file. (#437)
+
 Version 1.3.2
 =============
 - Fixed:
