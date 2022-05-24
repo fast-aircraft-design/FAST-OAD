@@ -69,10 +69,33 @@ def drag_distribution_plot(
 
 
     CDp = CDp_fuselage + CDp_ht + CDp_nacelles + CDp_pylons + CDp_vt + CDp_wing
-    print(CDp)
-    print(CDi_wing)
-    print(CL)
-    CD = CDi_wing + CDp
+
+    #step 4 : retriev drag from compressibility effects and triming of the aircraft
+    CL_table =  np.asarray(variables["data:aerodynamics:aircraft:cruise:CL"].value)
+    CD_table =   np.asarray(variables["data:aerodynamics:aircraft:cruise:CD"].value)
+    CD0_table = np.asarray(variables["data:aerodynamics:aircraft:cruise:CD0"].value)
+    CD_compressibility = np.asarray(variables["data:aerodynamics:aircraft:cruise:CD:compressibility"].value)
+    CD_table_trim =  np.asarray(variables["data:aerodynamics:aircraft:cruise:CD:trim"].value)
+    CDc_wing = np.interp(CL,CL_table,CD_compressibility)
+    CD_trim = np.interp(CL,CL_table,CD_table_trim)
+
+
+
+
+    CD = CDi_wing + CDp+ CDc_wing + CD_trim
+    CDp_estimate = np.interp(CL,CL_table,CD0_table)
+    print("CDp_estimate",CDp_estimate)
+    print("CDp",CDp)
+    print("error: ",CDp-CDp_estimate)
+
+    CD_estimate = np.interp(CL,CL_table,CD_table)
+    print("CD_estimate",CD_estimate)
+    print("CD",CD)
+    print("error: ",CD-CD_estimate)
+
+
+
+
 
     if fig is None:
         fig = go.Figure()
@@ -80,8 +103,12 @@ def drag_distribution_plot(
     sunburst = go.Sunburst(
         labels=[
             "CD" + "<br>" + str('% 12.3f'%CD),
-            "CDp" + "<br>" + str('% 12.3f'%CDp),
-            "CDi" + "<br>" + str('% 12.3f'%CDi_wing),
+
+            "CDi" + "<br>" + str('% 12.3f' % CDi_wing) + " (" + str(np.round(CDi_wing/CD*100,1)) + " %)",
+            "CDp" + "<br>" + str('% 12.3f'%CDp) + " (" + str(np.round(CDp/CD*100,1)) + " %)",
+            "CDc" + "<br>" + str('% 12.3f'%CDc_wing) + " (" + str(np.round(CDc_wing/CD*100,1)) + " %)",
+            "CD_trim" + "<br>" + str('% 12.3f'%CD_trim)+ " (" + str(np.round(CD_trim/CD*100,1)) + " %)",
+
             "fuselage" + "<br>" + str('% 12.3f'%CDp_fuselage),
             "vertical tail" + "<br>" + str('% 12.3f'%CDp_vt),
             "horizontal tail" + "<br>" + str('% 12.3f' % CDp_ht),
@@ -91,27 +118,29 @@ def drag_distribution_plot(
         ],
         parents=[
             "",
-            "CD" + "<br>" + str('% 12.3f'%CD),
-            "CD" + "<br>" + str('% 12.3f'%CD),
-            "CDp" + "<br>" + str('% 12.3f' % CDp),
-            "CDp" + "<br>" + str('% 12.3f' % CDp),
-            "CDp" + "<br>" + str('% 12.3f' % CDp),
-            "CDp" + "<br>" + str('% 12.3f' % CDp),
-            "CDp" + "<br>" + str('% 12.3f' % CDp),
-            "CDp" + "<br>" + str('% 12.3f' % CDp),
 
+            "CD" + "<br>" + str('% 12.3f'%CD),
+            "CD" + "<br>" + str('% 12.3f'%CD),
+            "CD" + "<br>" + str('% 12.3f' % CD),
+            "CD" + "<br>" + str('% 12.3f' % CD),
+
+            "CDp" + "<br>" + str('% 12.3f' % CDp) + " (" + str(np.round(CDp / CD * 100, 1)) + " %)",
+            "CDp" + "<br>" + str('% 12.3f' % CDp) + " (" + str(np.round(CDp / CD * 100, 1)) + " %)",
+            "CDp" + "<br>" + str('% 12.3f' % CDp) + " (" + str(np.round(CDp / CD * 100, 1)) + " %)",
+            "CDp" + "<br>" + str('% 12.3f' % CDp) + " (" + str(np.round(CDp / CD * 100, 1)) + " %)",
+            "CDp" + "<br>" + str('% 12.3f' % CDp) + " (" + str(np.round(CDp / CD * 100, 1)) + " %)",
+            "CDp" + "<br>" + str('% 12.3f' % CDp) + " (" + str(np.round(CDp / CD * 100, 1)) + " %)",
         ],
-        values=[CD, CDp, CDi_wing,CDp_fuselage,CDp_vt,CDp_ht,CDp_wing,CDp_nacelles,CDp_pylons],
+        values=[CD, CDi_wing, CDp,CDc_wing, CD_trim, CDp_fuselage,CDp_vt,CDp_ht,CDp_wing,CDp_nacelles,CDp_pylons],
         branchvalues="total"
     )
 
-    # fig.layout = go.Layout(yaxis=dict(scaleanchor="x", scaleratio=1))
+
+    fig.layout = go.Layout(yaxis=dict(scaleanchor="x", scaleratio=1))
 
     fig.add_trace(sunburst)
 
     fig = go.FigureWidget(fig)
-    fig.update_xaxes(constrain="domain")
-    fig.update_yaxes(constrain="domain")
     fig.update_layout(
         title_text="Drag coefficient distribution", title_x=0.5, xaxis_title="y", yaxis_title="x"
     )
