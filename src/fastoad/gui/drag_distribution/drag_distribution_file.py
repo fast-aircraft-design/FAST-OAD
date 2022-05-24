@@ -26,14 +26,12 @@ g = 9.81
 
 
 def drag_distribution_plot(
-        aircraft_file_path: str,
-        aircraft_mass: float,
-        aircraft_mach: float,
-        aircraft_altitude: float,
-        name=None,
-        fig=None,
-        file_formatter=None,
-        low_speed_aero=False,
+    aircraft_file_path: str,
+    aircraft_mass: float,
+    aircraft_altitude: float = 10000,
+    file_formatter=None,
+    fig=None,
+    low_speed_aero=False,
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the drag distribution at a certain flight point
@@ -51,98 +49,148 @@ def drag_distribution_plot(
 
     # step 1 : Cl calculation :
     wing_area = variables["data:geometry:wing:area"].value[0]
+    if not low_speed_aero:
+        mach = variables["data:TLAR:cruise_mach"].value[0]
+        case_string = "cruise"
+
+    else:
+        mach = variables["data:aerodynamics:aircraft:takeoff:mach"].value[0]
+        case_string = "low_speed"
+
     rho = Atmosphere(aircraft_altitude * 3.2744).density
     T = Atmosphere(aircraft_altitude * 3.2744).temperature
-    CL = aircraft_mass * g / (0.5 * rho * aircraft_mach ** 2 * 1.4 * 287.1 * T * wing_area)
+    CL = aircraft_mass * g / (0.5 * rho * mach ** 2 * 1.4 * 287.1 * T * wing_area)
 
     # step 2 : compute induced drag
-    k_induced = variables["data:aerodynamics:aircraft:cruise:induced_drag_coefficient"].value[0]
+    k_induced = variables[
+        "data:aerodynamics:aircraft:" + case_string + ":induced_drag_coefficient"
+    ].value[0]
+    print(k_induced)
     CDi_wing = k_induced * CL ** 2
 
-    # step 3 : retrieve the parasitic drag CDp
-    CDp_fuselage = variables["data:aerodynamics:fuselage:cruise:CD0"].value[0]
-    CDp_ht = variables["data:aerodynamics:horizontal_tail:cruise:CD0"].value[0]
-    CDp_nacelles = variables["data:aerodynamics:nacelles:cruise:CD0"].value[0]
-    CDp_pylons = variables["data:aerodynamics:pylons:cruise:CD0"].value[0]
-    CDp_vt = variables["data:aerodynamics:vertical_tail:cruise:CD0"].value[0]
-    CDp_wing = variables["data:aerodynamics:wing:cruise:CD0"].value[0]
+    CL_table = np.asarray(variables["data:aerodynamics:aircraft:cruise:CL"].value)
 
+    # step 3 : retrieve the parasitic drag CDp
+    CDp_fuselage = np.asarray(
+        variables["data:aerodynamics:fuselage:" + case_string + ":CD0"].value
+    )  # dep on CL
+    CDp_ht = variables["data:aerodynamics:horizontal_tail:" + case_string + ":CD0"].value[0]
+    CDp_nacelles = variables["data:aerodynamics:nacelles:" + case_string + ":CD0"].value[0]
+    CDp_pylons = variables["data:aerodynamics:pylons:" + case_string + ":CD0"].value[0]
+    CDp_vt = variables["data:aerodynamics:vertical_tail:" + case_string + ":CD0"].value[0]
+    CDp_wing = np.asarray(
+        variables["data:aerodynamics:wing:" + case_string + ":CD0"].value
+    )  # dep on cl
+
+    CDp_fuselage = np.interp(CL, CL_table, CDp_fuselage)
+    CDp_wing = np.interp(CL, CL_table, CDp_wing)
 
     CDp = CDp_fuselage + CDp_ht + CDp_nacelles + CDp_pylons + CDp_vt + CDp_wing
 
-    #step 4 : retriev drag from compressibility effects and triming of the aircraft
-    CL_table =  np.asarray(variables["data:aerodynamics:aircraft:cruise:CL"].value)
-    CD_table =   np.asarray(variables["data:aerodynamics:aircraft:cruise:CD"].value)
-    CD0_table = np.asarray(variables["data:aerodynamics:aircraft:cruise:CD0"].value)
-    CD_compressibility = np.asarray(variables["data:aerodynamics:aircraft:cruise:CD:compressibility"].value)
-    CD_table_trim =  np.asarray(variables["data:aerodynamics:aircraft:cruise:CD:trim"].value)
-    CDc_wing = np.interp(CL,CL_table,CD_compressibility)
-    CD_trim = np.interp(CL,CL_table,CD_table_trim)
+    # step 4 : retriev drag from compressibility effects and triming of the aircraft
+    CL_table = np.asarray(variables["data:aerodynamics:aircraft:" + case_string + ":CL"].value)
+    CD_table = np.asarray(variables["data:aerodynamics:aircraft:" + case_string + ":CD"].value)
+    CD0_table = np.asarray(variables["data:aerodynamics:aircraft:" + case_string + ":CD0"].value)
 
+    CD_table_trim = np.asarray(
+        variables["data:aerodynamics:aircraft:" + case_string + ":CD:trim"].value
+    )
 
+    CD_trim = np.interp(CL, CL_table, CD_table_trim)
 
+    CDc_wing = 0
 
-    CD = CDi_wing + CDp+ CDc_wing + CD_trim
-    CDp_estimate = np.interp(CL,CL_table,CD0_table)
-    print("CDp_estimate",CDp_estimate)
-    print("CDp",CDp)
-    print("error: ",CDp-CDp_estimate)
+    if not low_speed_aero:
+        CD_compressibility = np.asarray(
+            variables["data:aerodynamics:aircraft:" + case_string + ":CD:compressibility"].value
+        )
+        CDc_wing = np.interp(CL, CL_table, CD_compressibility)
+        CD = CDi_wing + CDp + CDc_wing + CD_trim
+    else:
+        CD = CDi_wing + CDp + CD_trim
 
-    CD_estimate = np.interp(CL,CL_table,CD_table)
-    print("CD_estimate",CD_estimate)
-    print("CD",CD)
-    print("error: ",CD-CD_estimate)
+    CDp_estimate = np.interp(CL, CL_table, CD0_table)
+    print("CDp_estimate", CDp_estimate)
+    print("CDp", CDp)
+    print("error: ", CDp - CDp_estimate)
 
-
-
-
+    CD_estimate = np.interp(CL, CL_table, CD_table)
+    print("CD_estimate", CD_estimate)
+    print("CD", CD)
+    print("error: ", CD - CD_estimate)
 
     if fig is None:
         fig = go.Figure()
 
-    sunburst = go.Sunburst(
-        labels=[
-            "CD" + "<br>" + str('% 12.3f'%CD),
+    labels = [
+        "CD" + "<br>" + str("% 12.3f" % CD),
+        "CDi"
+        + "<br>"
+        + str("% 12.3f" % CDi_wing)
+        + " ("
+        + str(np.round(CDi_wing / CD * 100, 1))
+        + " %)",
+        "CDp" + "<br>" + str("% 12.3f" % CDp) + " (" + str(np.round(CDp / CD * 100, 1)) + " %)",
+        "CD_trim"
+        + "<br>"
+        + str("% 12.3f" % CD_trim)
+        + " ("
+        + str(np.round(CD_trim / CD * 100, 1))
+        + " %)",
+        "fuselage" + "<br>" + str("% 12.3f" % CDp_fuselage),
+        "vertical tail" + "<br>" + str("% 12.3f" % CDp_vt),
+        "horizontal tail" + "<br>" + str("% 12.3f" % CDp_ht),
+        "wing" + "<br>" + str("% 12.3f" % CDp_wing),
+        "nacelles" + "<br>" + str("% 12.3f" % CDp_nacelles),
+        "nacelles" + "<br>" + str("% 12.3f" % CDp_pylons),
+    ]
 
-            "CDi" + "<br>" + str('% 12.3f' % CDi_wing) + " (" + str(np.round(CDi_wing/CD*100,1)) + " %)",
-            "CDp" + "<br>" + str('% 12.3f'%CDp) + " (" + str(np.round(CDp/CD*100,1)) + " %)",
-            "CDc" + "<br>" + str('% 12.3f'%CDc_wing) + " (" + str(np.round(CDc_wing/CD*100,1)) + " %)",
-            "CD_trim" + "<br>" + str('% 12.3f'%CD_trim)+ " (" + str(np.round(CD_trim/CD*100,1)) + " %)",
+    parents = [
+        "",
+        "CD" + "<br>" + str("% 12.3f" % CD),
+        "CD" + "<br>" + str("% 12.3f" % CD),
+        "CD" + "<br>" + str("% 12.3f" % CD),
+        "CDp" + "<br>" + str("% 12.3f" % CDp) + " (" + str(np.round(CDp / CD * 100, 1)) + " %)",
+        "CDp" + "<br>" + str("% 12.3f" % CDp) + " (" + str(np.round(CDp / CD * 100, 1)) + " %)",
+        "CDp" + "<br>" + str("% 12.3f" % CDp) + " (" + str(np.round(CDp / CD * 100, 1)) + " %)",
+        "CDp" + "<br>" + str("% 12.3f" % CDp) + " (" + str(np.round(CDp / CD * 100, 1)) + " %)",
+        "CDp" + "<br>" + str("% 12.3f" % CDp) + " (" + str(np.round(CDp / CD * 100, 1)) + " %)",
+        "CDp" + "<br>" + str("% 12.3f" % CDp) + " (" + str(np.round(CDp / CD * 100, 1)) + " %)",
+    ]
+    values = [
+        CD,
+        CDi_wing,
+        CDp,
+        CD_trim,
+        CDp_fuselage,
+        CDp_vt,
+        CDp_ht,
+        CDp_wing,
+        CDp_nacelles,
+        CDp_pylons,
+    ]
+    if not low_speed_aero:
+        labels.append(
+            "CDc"
+            + "<br>"
+            + str("% 12.3f" % CDc_wing)
+            + " ("
+            + str(np.round(CDc_wing / CD * 100, 1))
+            + " %)"
+        )
+        parents.append("CD" + "<br>" + str("% 12.3f" % CD))
+        values.append(CDc_wing)
+        print(parents)
 
-            "fuselage" + "<br>" + str('% 12.3f'%CDp_fuselage),
-            "vertical tail" + "<br>" + str('% 12.3f'%CDp_vt),
-            "horizontal tail" + "<br>" + str('% 12.3f' % CDp_ht),
-            "wing" + "<br>" + str('% 12.3f'%CDp_wing),
-            "nacelles"+ "<br>" + str('% 12.3f'%CDp_nacelles),
-            "nacelles" + "<br>" + str('% 12.3f' % CDp_pylons),
-        ],
-        parents=[
-            "",
-
-            "CD" + "<br>" + str('% 12.3f'%CD),
-            "CD" + "<br>" + str('% 12.3f'%CD),
-            "CD" + "<br>" + str('% 12.3f' % CD),
-            "CD" + "<br>" + str('% 12.3f' % CD),
-
-            "CDp" + "<br>" + str('% 12.3f' % CDp) + " (" + str(np.round(CDp / CD * 100, 1)) + " %)",
-            "CDp" + "<br>" + str('% 12.3f' % CDp) + " (" + str(np.round(CDp / CD * 100, 1)) + " %)",
-            "CDp" + "<br>" + str('% 12.3f' % CDp) + " (" + str(np.round(CDp / CD * 100, 1)) + " %)",
-            "CDp" + "<br>" + str('% 12.3f' % CDp) + " (" + str(np.round(CDp / CD * 100, 1)) + " %)",
-            "CDp" + "<br>" + str('% 12.3f' % CDp) + " (" + str(np.round(CDp / CD * 100, 1)) + " %)",
-            "CDp" + "<br>" + str('% 12.3f' % CDp) + " (" + str(np.round(CDp / CD * 100, 1)) + " %)",
-        ],
-        values=[CD, CDi_wing, CDp,CDc_wing, CD_trim, CDp_fuselage,CDp_vt,CDp_ht,CDp_wing,CDp_nacelles,CDp_pylons],
-        branchvalues="total"
-    )
-
-
-    fig.layout = go.Layout(yaxis=dict(scaleanchor="x", scaleratio=1))
+    sunburst = go.Sunburst(labels=labels, parents=parents, values=values, branchvalues="total")
 
     fig.add_trace(sunburst)
-
     fig = go.FigureWidget(fig)
     fig.update_layout(
-        title_text="Drag coefficient distribution", title_x=0.5, xaxis_title="y", yaxis_title="x"
+        title_text="Drag coefficient distribution at a cruise mach of " + str(mach),
+        title_x=0.5,
+        xaxis_title="y",
+        yaxis_title="x",
     )
 
     return fig
