@@ -37,20 +37,24 @@ class Polar:
         self._cd = interp1d(cl, cd, kind="quadratic", fill_value="extrapolate")
 
         #Add terms for ground effect if provided
-        if None not in [span, lg_height, induced_drag_coef, k_winglet, k_cd]:
+        if None not in [span, lg_height, induced_drag_coef, k_winglet, k_cd] and not isinstance(span, str):
             self._span = span
             self._lg_height = lg_height
             self._induced_drag_coef = induced_drag_coef
             self._k_winglet = k_winglet
             self._k_cd = k_cd
+            self._use_ground_effect = True
+        else:
+            self._use_ground_effect = False
 
         #Add CL vs alpha curve with provided CL (containing high lift terms if any)
         if None not in [CL_alpha0, CL_alpha, CL_high_lift]:
-            self._CL_alpha_0 = CL_alpha0
-            self._CL_alpha = CL_alpha
-            self._CL_high_lift = CL_high_lift
-            alpha_vector = (self._definition_CL - self._CL_alpha_0 - self._CL_high_lift)/self._CL_alpha
-            self._clvsalpha = interp1d( alpha_vector, self._definition_CL)
+            if not isinstance(CL_alpha0, str):
+                self._CL_alpha_0 = CL_alpha0
+                self._CL_alpha = CL_alpha
+                self._CL_high_lift = CL_high_lift
+                alpha_vector = (self._definition_CL - self._CL_alpha_0 - self._CL_high_lift)/self._CL_alpha
+                self._clvsalpha = interp1d( alpha_vector, self._definition_CL)
 
         def _negated_lift_drag_ratio(lift_coeff):
             """Returns -CL/CD."""
@@ -84,11 +88,13 @@ class Polar:
         # TO DO : document the model
         if cl is None:
             return self._cd(self._definition_CL)
-        else:
+        elif self._use_ground_effect:
             h_b = (self._span * 0.1 + self._lg_height + altitude) / self._span
             k_ground = 33. * h_b**1.5 / (1+ 33. * h_b**1.5)
             cd_ground = self._induced_drag_coef * cl**2 * self._k_winglet * self._k_cd * (k_ground-1) + self._cd(cl)
             return cd_ground
+        else:
+            return self._cd(cl)
 
     def cl(self, alpha):
         """
