@@ -24,7 +24,7 @@ import pandas as pd
 from deprecated import deprecated
 from openmdao.core.constants import _SetupStatus
 
-from fastoad.openmdao._utils import get_unconnected_input_names
+from fastoad.openmdao._utils import get_unconnected_input_names, problem_without_mpi
 from .variable import METADATA_TO_IGNORE, Variable
 
 
@@ -279,8 +279,9 @@ class VariableList(list):
         """
 
         if not problem._metadata or problem._metadata["setup_status"] < _SetupStatus.POST_SETUP:
-            problem = deepcopy(problem)
-            problem.setup()
+            with problem_without_mpi(problem) as problem_copy:
+                problem_copy.setup()
+                problem = problem_copy
 
         # Get inputs and outputs
         metadata_keys = (
