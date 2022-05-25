@@ -58,6 +58,7 @@ def breguet_leduc_formula(mass_in, mass_out, constant_coeff, x0):
         return ra - k_ra * constant_coeff * np.log(ratio)
 
     sol = fsolve(non_linear_function, x0)
+
     return sol
 
 
@@ -169,7 +170,7 @@ def breguet_leduc_points(
     mass_in = mtow
     mass_out = mtow - mfw
     payload_c = mtow - mfw - owe
-    ra_c = breguet_leduc_formula(mass_in, mass_out, coeff, sizing_range)[0]
+    ra_c = breguet_leduc_formula(mass_in, mass_out, coeff, sizing_range*10)[0]
 
     # design point and point B: max_payload,MTOW
     payload_b = max_payload
@@ -178,7 +179,7 @@ def breguet_leduc_points(
     # point D 0 payload, MFW ==> range
     mass_in = owe + mfw
     mass_out = owe
-    ra_d = breguet_leduc_formula(mass_in, mass_out, coeff, ra_c)[0]
+    ra_d = breguet_leduc_formula(mass_in, mass_out, coeff, sizing_range*10)[0]
 
     BL_ranges = np.array([0, ra_b, ra_c, ra_d, sizing_range])
     BL_payloads = np.array([max_payload, payload_b, payload_c, 0, sizing_payload]) / 10 ** 3
