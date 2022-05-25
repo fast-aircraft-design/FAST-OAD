@@ -656,6 +656,9 @@
         </low_speed>
       </wing>
     </aerodynamics>
+    <performance>
+      <ceiling units="ft" is_input="False">39000<!--ceiling level of the aircraft--></ceiling>
+    </performance>
   </data>
   <settings>
     <geometry>
