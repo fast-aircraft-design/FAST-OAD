@@ -6,39 +6,31 @@ import ipywidgets as widgets
 class ChoiceForOWE:
     def __init__(self):
 
-        self.button_correct_component = widgets.Button(
-            description="Corrected component",
+        box_layout = widgets.Layout(
+            display="flex", flex_flow="column", align_items="stretch", width="100%"
+        )
+
+        self.choice_button = widgets.ToggleButtons(
+            options=["Corrected component", "Exercise component"],
             disabled=False,
             button_style="info",
             tooltips=[
                 "Toggle this button to use the correct component",
-            ],
-            icon="fa-check-square-o",
-            layout=widgets.Layout(width="50%", height="50px"),
-        )
-        self.button_exercise_component = widgets.Button(
-            description="Exercise component",
-            disabled=False,
-            button_style="info",
-            tooltips=[
                 "Toggle this button to use the component left as exercise",
             ],
-            icon="fa-wrench",
-            layout=widgets.Layout(width="50%", height="50px"),
+            icon=["fa-check-square-o", "fa-wrench"],
+            style={"button_width": "48%"},
+            layout=box_layout,
         )
         self.choice = "correct"
 
-        self.button_correct_component.on_click(self.select_correct_component)
-        self.button_exercise_component.on_click(self.select_exercise_component)
+        self.choice_button.observe(self.select_component)
 
-        self.buttons = widgets.HBox([self.button_correct_component, self.button_exercise_component])
+        display(self.choice_button)
 
-        display(self.buttons)
+    def select_component(self, b):
 
-    def select_correct_component(self, b):
-
-        self.choice = "correct"
-
-    def select_exercise_component(self, b):
-
-        self.choice = "exercise"
+        if self.choice_button.value == "Corrected component":
+            self.choice = "correct"
+        else:
+            self.choice = "exercise"
