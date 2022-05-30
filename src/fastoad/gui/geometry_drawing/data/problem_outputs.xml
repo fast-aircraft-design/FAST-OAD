@@ -3,7 +3,7 @@
     <TLAR>
       <NPAX is_input="True">150.0<!--top-level requirement: number of passengers, assuming a classic eco/business class repartition--></NPAX>
       <approach_speed units="m/s" is_input="True">67.90666666666667<!--top-level requirement: approach speed--></approach_speed>
-      <cruise_mach is_input="True">0.78<!--Input defined by the mission.--></cruise_mach>
+      <cruise_mach is_input="True">0.7<!--Input defined by the mission.--></cruise_mach>
       <range units="nmi" is_input="True">2750.0<!--Input defined by the mission.--></range>
     </TLAR>
     <geometry>

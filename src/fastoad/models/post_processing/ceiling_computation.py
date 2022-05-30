@@ -44,7 +44,11 @@ class CeilingComputation(om.ExplicitComponent):
         self._engine_wrapper.setup(self)
 
         self.add_output(
-            "data:performance:ceiling",
+            "data:performance:ceiling:MTOW",
+            units="m",
+        )
+        self.add_output(
+            "data:performance:ceiling:MZFW",
             units="m",
         )
 
@@ -62,7 +66,7 @@ class CeilingComputation(om.ExplicitComponent):
         cruise_mac = inputs["data:TLAR:cruise_mach"]
 
         # Computation of the ceiling of the aircraft for a given mass
-        ceiling = get_ceiling(
+        ceiling_mzfw = get_ceiling(
             mzfw,
             propulsion_model,
             wing_area,
@@ -72,9 +76,21 @@ class CeilingComputation(om.ExplicitComponent):
             maximum_engine_mac,
             cruise_mac,
         )
+        ceiling_mtow = get_ceiling(
+            mtow,
+            propulsion_model,
+            wing_area,
+            cl_vector_input,
+            cd_vector_input,
+            cl_max_clean,
+            maximum_engine_mac,
+            cruise_mac,
+        )
 
-        outputs["data:performance:ceiling"] = ceiling
-        print(ceiling)
+        outputs["data:performance:ceiling:MTOW"] = ceiling_mtow
+        outputs["data:performance:ceiling:MZFW"] = ceiling_mzfw
+        print(ceiling_mtow)
+        print(ceiling_mzfw)
 
 
 def get_ceiling(
@@ -136,7 +152,7 @@ def get_ceiling(
 
 
 # Function which computes the difference between the thrust and the drag
-def thrust_minus_drag(v, alti, mtow, wing_area, cl_vector_input, cd_vector_input, propulsion_model):
+def thrust_minus_drag(v, alti, mass, wing_area, cl_vector_input, cd_vector_input, propulsion_model):
     atm = Atmosphere(altitude=alti, altitude_in_feet=True)
     atm.true_airspeed = v
     rho = atm.density
@@ -155,7 +171,7 @@ def thrust_minus_drag(v, alti, mtow, wing_area, cl_vector_input, cd_vector_input
     thrust = flight_point.thrust
 
     # Compute the aerodynamic coefficients
-    cl = 2 * mtow * g / (rho * wing_area * atm.true_airspeed * atm.true_airspeed)
+    cl = 2 * mass * g / (rho * wing_area * atm.true_airspeed * atm.true_airspeed)
     cd_interpolated = np.interp(cl, cl_vector_input, cd_vector_input)
 
     # Compute the drag

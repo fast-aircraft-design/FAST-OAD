@@ -657,7 +657,10 @@
       </wing>
     </aerodynamics>
     <performance>
-      <ceiling units="ft" is_input="False">39000<!--ceiling level of the aircraft--></ceiling>
+      <ceiling>
+        <MTOW units="ft" is_input="False">41000<!--ceiling level of the aircraft--></MTOW>
+        <MZFW units="ft" is_input="False">45000<!--ceiling level of the aircraft--></MZFW>
+      </ceiling>
     </performance>
   </data>
   <settings>
