@@ -1,3 +1,6 @@
+import scipy.constants as sc
+
+
 def compute_wing_mass(mtow, aspect_ratio, wing_area):
     """
     Computes the wing mass based on the MTOW, its area and aspect ratio
@@ -10,8 +13,8 @@ def compute_wing_mass(mtow, aspect_ratio, wing_area):
     """
 
     # Let's start by converting the quantities in imperial units
-    mtow_lbs = mtow * 2.20462
-    wing_area_ft2 = wing_area * 10.7639
+    mtow_lbs = mtow / sc.lb
+    wing_area_ft2 = wing_area / sc.foot ** 2.0
 
     # Let's now apply the formula
     wing_mass_lbs = (
@@ -26,6 +29,6 @@ def compute_wing_mass(mtow, aspect_ratio, wing_area):
     )
 
     # Converting wing mass in kg
-    wing_mass = wing_mass_lbs / 2.20462
+    wing_mass = wing_mass_lbs * sc.lb
 
     return wing_mass
