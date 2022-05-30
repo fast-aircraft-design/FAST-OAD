@@ -5,7 +5,7 @@ from .performance.performance import compute_performance
 from .update_mtow.update_mtow import update_mtow
 
 
-def mtow_loop_and_fuel(
+def mtow_and_fuel_loop(
     mtow, aspect_ratio, wing_loading, cruise_altitude, cruise_speed, mission_range, payload, tsfc
 ):
     """
