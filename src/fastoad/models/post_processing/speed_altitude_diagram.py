@@ -24,7 +24,7 @@ from scipy.optimize import fsolve
 import plotly.graph_objects as go
 
 
-SPEED_ALTITUDE_SHAPE = 45 # Numbre of points used for the computation of the graph between the sea-level and the ceiling level
+SPEED_ALTITUDE_SHAPE = 50  # Numbre of points used for the computation of the graph between the sea-level and the ceiling level
 
 
 class SpeedAltitudeDiagram(om.ExplicitComponent):
@@ -53,22 +53,22 @@ class SpeedAltitudeDiagram(om.ExplicitComponent):
 
         self.add_output(
             "data:performance:speed_altitude_diagram:v_min_mtow",
-            shape=40,
+            shape=SPEED_ALTITUDE_SHAPE,
             units="m/s",
         )
         self.add_output(
             "data:performance:speed_altitude_diagram:v_max_mtow",
-            shape=40,
+            shape=SPEED_ALTITUDE_SHAPE,
             units="m/s",
         )
         self.add_output(
             "data:performance:speed_altitude_diagram:v_min_mzfw",
-            shape=46,
+            shape=SPEED_ALTITUDE_SHAPE,
             units="m/s",
         )
         self.add_output(
             "data:performance:speed_altitude_diagram:v_max_mzfw",
-            shape=46,
+            shape=SPEED_ALTITUDE_SHAPE,
             units="m/s",
         )
 
@@ -84,25 +84,25 @@ class SpeedAltitudeDiagram(om.ExplicitComponent):
         cl_max_clean = inputs["data:aerodynamics:aircraft:landing:CL_max_clean"]
         cruise_mach = inputs["data:TLAR:cruise_mach"]
         maximum_engine_mach = inputs["data:propulsion:rubber_engine:maximum_mach"]
-        ceiling = inputs["data:performance:ceiling"]
-        ceiling_mtow = 39000
+        ceiling_mtow = inputs["data:performance:ceiling:MTOW"]
+        ceiling_mzfw = inputs["data:performance:ceiling:MZFW"]
+        ceiling_mtow = 41000
         ceiling_mzfw = 45000
 
         g = 9.80665  # m/s^2
-        altitude_vector_mtow = np.linspace(0, ceiling_mtow, 40)  # feet
-        altitude_vector_mzfw = np.linspace(0, ceiling_mzfw, 46)  # feet
+        altitude_vector_mtow = np.linspace(0, ceiling_mtow, SPEED_ALTITUDE_SHAPE)  # feet
+        altitude_vector_mzfw = np.linspace(0, ceiling_mzfw, SPEED_ALTITUDE_SHAPE)  # feet
 
         v_max_mtow = np.zeros(altitude_vector_mtow.size)
         v_min_mtow = np.zeros(altitude_vector_mtow.size)
+        v_computed_vector_mtow = np.zeros(altitude_vector_mtow.size)
 
         v_max_mzfw = np.zeros(altitude_vector_mzfw.size)
         v_min_mzfw = np.zeros(altitude_vector_mzfw.size)
+        v_computed_vector_mzfw = np.zeros(altitude_vector_mzfw.size)
 
         v_dive_vector = np.zeros(altitude_vector_mzfw.size)
         v_engine_vector = np.zeros(altitude_vector_mzfw.size)
-        v_computed_vector_mzfw = np.zeros(altitude_vector_mzfw.size)
-
-        v_computed_vector_mtow = np.zeros(altitude_vector_mtow.size)
 
         # Compute the diagram for MTOW
         for i in range(len(altitude_vector_mtow)):
@@ -130,11 +130,12 @@ class SpeedAltitudeDiagram(om.ExplicitComponent):
             # Compute the maximum speed of the engine
             v_max_engine_mtow = maximum_engine_mach * atm_mtow.speed_of_sound
 
-            # The maximum speed will be the most restrictive one between the computed and the maximum speed of the aircraft (diving speed)
-            v_max_mtow[i] = np.minimum(np.minimum(v_dive_mtow, v_max_engine_mtow), v_max_computed_mtow)
+            # The maximum speed will be the most restrictive one between the three speeds computed before
+            v_max_mtow[i] = np.minimum(
+                np.minimum(v_dive_mtow, v_max_engine_mtow), v_max_computed_mtow
+            )
 
             v_computed_vector_mtow[i] = v_max_computed_mtow
-
 
         # Compute the diagram for MZFW
         for j in range(len(altitude_vector_mzfw)):
@@ -155,37 +156,40 @@ class SpeedAltitudeDiagram(om.ExplicitComponent):
                     propulsion_model,
                 ),
             )[0]
+            v_computed_vector_mzfw[j] = v_max_computed_mzfw
 
             # Compute the maximum speed of the aircraft (diving speed)
             v_dive_mzfw = (0.07 + cruise_mach) * atm_mzfw.speed_of_sound
+            v_dive_vector[j] = v_dive_mzfw[0]
 
             # Compute the maximum speed of the engine
-            v_max_engine_mzfw = maximum_engine_mach * atm_mzfw.speed_of_sound
+            v_engine_mzfw = maximum_engine_mach * atm_mzfw.speed_of_sound
+            v_engine_vector[j] = v_engine_mzfw[0]
 
-            # The maximum speed will be the most restrictive one between the computed and the maximum speed of the aircraft (diving speed)
-            v_max_mzfw[j] = np.minimum(np.minimum(v_dive_mzfw, v_max_engine_mzfw), v_max_computed_mzfw)
-
-            v_dive_vector[j] = v_dive_mzfw[0]
-            v_engine_vector[j] = v_max_engine_mzfw[0]
-            v_computed_vector_mzfw[j] = v_max_computed_mzfw
+            # The maximum speed will be the most restrictive one between the three speeds computed before
+            v_max_mzfw[j] = np.minimum(np.minimum(v_dive_mzfw, v_engine_mzfw), v_max_computed_mzfw)
 
         # Compute the ceiling line used in the graphical representation
-        x_ceiling_mtow = np.array([v_min_mtow[-1], v_max_mtow[-1]])
-        y_ceiling_mtow = np.array([ceiling_mtow, ceiling_mtow])
+        v_ceiling_mtow = np.array([v_min_mtow[-1], v_max_mtow[-1]])
+        alti_ceiling_mtow = np.array([ceiling_mtow, ceiling_mtow])
 
-        x_ceiling_mzfw = np.array([v_min_mzfw[-1], v_max_mzfw[-1]])
-        y_ceiling_mzfw = np.array([ceiling_mzfw, ceiling_mzfw])
+        v_ceiling_mzfw = np.array([v_min_mzfw[-1], v_max_mzfw[-1]])
+        alti_ceiling_mzfw = np.array([ceiling_mzfw, ceiling_mzfw])
 
-        v_final_mtow = np.append(np.append(v_min_mtow, x_ceiling_mtow), v_max_mtow[::-1])
-        altitude_final_mtow = np.append(np.append(altitude_vector_mtow, y_ceiling_mtow), altitude_vector_mtow[::-1])
+        # Assemble the three speed vectors (v_min, v_ceiling, v_max)
+        v_final_mtow = np.append(np.append(v_min_mtow, v_ceiling_mtow), v_max_mtow[::-1])
+        altitude_final_mtow = np.append(
+            np.append(altitude_vector_mtow, alti_ceiling_mtow), altitude_vector_mtow[::-1]
+        )
 
-        v_final_mzfw = np.append(np.append(v_min_mzfw, x_ceiling_mzfw), v_max_mzfw[::-1])
-        altitude_final_mzfw = np.append(np.append(altitude_vector_mzfw, y_ceiling_mzfw), altitude_vector_mzfw[::-1])
+        v_final_mzfw = np.append(np.append(v_min_mzfw, v_ceiling_mzfw), v_max_mzfw[::-1])
+        altitude_final_mzfw = np.append(
+            np.append(altitude_vector_mzfw, alti_ceiling_mzfw), altitude_vector_mzfw[::-1]
+        )
 
         # Put the resultst in the output file
         outputs["data:performance:speed_altitude_diagram:v_min_mtow"] = v_min_mtow
         outputs["data:performance:speed_altitude_diagram:v_max_mtow"] = v_max_mtow
-
         outputs["data:performance:speed_altitude_diagram:v_min_mzfw"] = v_min_mzfw
         outputs["data:performance:speed_altitude_diagram:v_max_mzfw"] = v_max_mzfw
 
@@ -198,37 +202,54 @@ class SpeedAltitudeDiagram(om.ExplicitComponent):
             line=dict(color="royalblue", width=4),
             mode="lines",
             name="MTOW : Ceiling at %i" % ceiling_mtow,
-        )
+        )  # Altitude-Speed line for MTOW
         scatter_final_mzfw = go.Scatter(
             x=v_final_mzfw,
             y=altitude_final_mzfw,
             line=dict(color="dodgerblue", width=4),
             mode="lines",
             name="MZFW : Ceiling at %i" % ceiling_mzfw,
-        )
-
-        scatter_v_dive_vector = go.Scatter(x=v_dive_vector, y=altitude_vector_mzfw, mode="markers",
-                                                marker_symbol="circle", marker_color="indianred", marker_size=7,
-                                                name="v_dive")
-        scatter_v_engine_vector = go.Scatter(x=v_engine_vector, y=altitude_vector_mzfw, mode="markers",
-                                                marker_symbol="circle", marker_color="black", marker_size=5,
-                                                name="v_engine")
-
-        scatter_v_computed_vector_mzfw = go.Scatter(x=v_computed_vector_mzfw, y=altitude_vector_mzfw, mode="markers",
-                                                marker_symbol="circle", marker_color="dodgerblue", marker_size=4.6,
-                                                name="v_computed_mzfw")
-        scatter_v_computed_vector_mtow = go.Scatter(x=v_computed_vector_mtow, y=altitude_vector_mtow,
-                                                line=dict(color="royalblue", dash="dot", width=4),
-                                                name="v_computed_mtow")
+        )  # Altitude-Speed line for MZFW
+        scatter_v_dive_vector = go.Scatter(
+            x=v_dive_vector,
+            y=altitude_vector_mzfw,
+            mode="markers",
+            marker_symbol="circle",
+            marker_color="indianred",
+            marker_size=7,
+            name="v_dive",
+        ) # Altitude-Speed line for v_dive
+        scatter_v_engine_vector = go.Scatter(
+            x=v_engine_vector,
+            y=altitude_vector_mzfw,
+            mode="markers",
+            marker_symbol="circle",
+            marker_color="black",
+            marker_size=5,
+            name="v_engine",
+        ) # Altitude-Speed line for v_engine
+        scatter_v_computed_vector_mzfw = go.Scatter(
+            x=v_computed_vector_mzfw,
+            y=altitude_vector_mzfw,
+            mode="markers",
+            marker_symbol="circle",
+            marker_color="dodgerblue",
+            marker_size=4.6,
+            name="v_computed_mzfw",
+        ) # Altitude-Speed line for v_computed_mzfw
+        scatter_v_computed_vector_mtow = go.Scatter(
+            x=v_computed_vector_mtow,
+            y=altitude_vector_mtow,
+            line=dict(color="royalblue", dash="dot", width=4),
+            name="v_computed_mtow",
+        ) # Altitude-Speed line for v_computed_mtow
 
         fig.add_trace(scatter_final_mzfw)
         fig.add_trace(scatter_final_mtow)
         fig.add_trace(scatter_v_dive_vector)
         fig.add_trace(scatter_v_engine_vector)
-
         fig.add_trace(scatter_v_computed_vector_mzfw)
         fig.add_trace(scatter_v_computed_vector_mtow)
-
 
         fig = go.FigureWidget(fig)
         fig.update_layout(
