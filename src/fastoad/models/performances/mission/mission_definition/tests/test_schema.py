@@ -76,6 +76,12 @@ def _get_expected_dict():
                                         ),
                                     ),
                                     (
+                                        "time_step",
+                                        OrderedDict(
+                                            [("value", "settings:mission:~"), ("unit", "s")]
+                                        ),
+                                    ),
+                                    (
                                         "parts",
                                         [
                                             OrderedDict(
@@ -203,6 +209,7 @@ def _get_expected_dict():
                                         ),
                                     ),
                                     ("thrust_rate", "data:propulsion:climb:thrust_rate"),
+                                    ("time_step", OrderedDict([("value", "~"), ("unit", "s")])),
                                     (
                                         "parts",
                                         [
@@ -307,7 +314,12 @@ def _get_expected_dict():
                                         ),
                                     ),
                                     ("thrust_rate", 0.93),
-                                    ("time_step", OrderedDict([("value", 5.0), ("unit", "s")])),
+                                    (
+                                        "time_step",
+                                        OrderedDict(
+                                            [("value", "settings:mission~t_step"), ("unit", "s")]
+                                        ),
+                                    ),
                                     (
                                         "parts",
                                         [
@@ -487,7 +499,7 @@ def _get_expected_dict():
                                                                         [("value", "constant")]
                                                                     ),
                                                                 ),
-                                                                ("altitude", "~final_altitude"),
+                                                                ("altitude", "~:final_altitude"),
                                                             ]
                                                         ),
                                                     ),
@@ -548,7 +560,7 @@ def _get_expected_dict():
                                                     ("true_airspeed", 0.0),
                                                     (
                                                         "target",
-                                                        OrderedDict([("delta_time", "~duration")]),
+                                                        OrderedDict([("delta_time", "~:duration")]),
                                                     ),
                                                 ]
                                             )

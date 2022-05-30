@@ -87,7 +87,7 @@ class InputDefinition:
     is_relative: bool = False
 
     #: Prefix used when generating variable name because "~" was used in variable name input.
-    prefix: str = ""
+    part_identifier: str = ""
 
     #: Unit used for self.value. Automatically determined from self.parameter_name,
     #: mainly from unit definition for FlightPoint class.
@@ -149,7 +149,7 @@ class InputDefinition:
             return self.input_value
 
     @classmethod
-    def from_dict(cls, parameter_name, definition_dict: dict, prefix=None):
+    def from_dict(cls, parameter_name, definition_dict: dict, part_identifier=None):
         """
         Instantiates InputDefinition from definition_dict.
 
@@ -159,7 +159,7 @@ class InputDefinition:
         :param parameter_name: used if definition_dict["value"] == "~" (or "-~")
         :param definition_dict: dict with keys ("value", "unit", "default"). "unit" and "default"
                                 are optional.
-        :param prefix: used if "~" is in definition_dict["value"]
+        :param part_identifier: used if "~" is in definition_dict["value"]
         """
         if "value" not in definition_dict:
             return None
@@ -169,7 +169,7 @@ class InputDefinition:
             definition_dict["value"],
             input_unit=definition_dict.get("unit"),
             default_value=definition_dict.get("default", np.nan),
-            prefix=prefix,
+            part_identifier=part_identifier,
         )
         return input_def
 
@@ -219,15 +219,18 @@ class InputDefinition:
             self._use_opposite = var_name.startswith("-")
             var_name = var_name.strip("- ")
 
-            if var_name.startswith("~"):
-                # If value is "~", the parameter name in the mission file is used as suffix.
-                # Otherwise, the string after the "~" is used as suffix.
-                suffix = var_name.strip("~")
-                replacement = self.prefix + ":"
-                if suffix == "":
-                    replacement += self.parameter_name
+            if "~" in var_name:
+                # We authorize colons next to "~", but we do as they were not present.
+                var_name = var_name.replace(":~", "~").replace("~:", "~")
+                prefix, suffix = var_name.replace(":~", "~").split("~")
+                if not prefix:
+                    # If nothing before "~", a default value is used
+                    prefix = "data:mission"
+                if not suffix:
+                    # If nothing after "~", the parameter name is used
+                    suffix = self.parameter_name
 
-                var_name = var_name.replace("~", replacement)
+                var_name = ":".join([prefix, self.part_identifier, suffix])
 
             self._variable_name = var_name
         else:
@@ -336,7 +339,7 @@ class AbstractStructureBuilder(ABC):
             name += f":{self.name}"
         return name
 
-    def _parse_inputs(self, structure, input_definitions, parent=None, prefix=None):
+    def _parse_inputs(self, structure, input_definitions, parent=None, part_identifier=""):
         """
         Returns the `definition` structure where all inputs (string/numeric values, numeric lists,
         dicts with a "value key"), have been converted to an InputDefinition instance.
@@ -345,21 +348,21 @@ class AbstractStructureBuilder(ABC):
 
         :param structure:
         :param parent:
-        :param prefix:
+        :param part_identifier:
         :return: amended definition
         """
-        if prefix is None:
-            prefix = "data:mission"
 
         if isinstance(structure, dict):
             if "value" in structure.keys():
-                input_definition = InputDefinition.from_dict(parent, structure, prefix=prefix)
+                input_definition = InputDefinition.from_dict(
+                    parent, structure, part_identifier=part_identifier
+                )
                 input_definitions.append(input_definition)
                 return input_definition
 
             name = structure.get(NAME_TAG, "")
             if name:
-                prefix = f"data:mission:{name}"
+                part_identifier = name
 
             for key, value in structure.items():
                 if key not in [
@@ -372,11 +375,11 @@ class AbstractStructureBuilder(ABC):
                     CRUISE_PART_TAG,
                 ]:
                     structure[key] = self._parse_inputs(
-                        value, input_definitions, parent=key, prefix=prefix
+                        value, input_definitions, parent=key, part_identifier=part_identifier
                     )
             return structure
         else:
-            input_definition = InputDefinition(parent, structure, prefix=prefix)
+            input_definition = InputDefinition(parent, structure, part_identifier=part_identifier)
             input_definitions.append(input_definition)
             return input_definition
 
