@@ -170,7 +170,7 @@ def breguet_leduc_points(
     mass_in = mtow
     mass_out = mtow - mfw
     payload_c = mtow - mfw - owe
-    ra_c = breguet_leduc_formula(mass_in, mass_out, coeff, sizing_range*10)[0]
+    ra_c = breguet_leduc_formula(mass_in, mass_out, coeff, sizing_range * 10)[0]
 
     # design point and point B: max_payload,MTOW
     payload_b = max_payload
@@ -179,7 +179,7 @@ def breguet_leduc_points(
     # point D 0 payload, MFW ==> range
     mass_in = owe + mfw
     mass_out = owe
-    ra_d = breguet_leduc_formula(mass_in, mass_out, coeff, sizing_range*10)[0]
+    ra_d = breguet_leduc_formula(mass_in, mass_out, coeff, sizing_range * 10)[0]
 
     BL_ranges = np.array([0, ra_b, ra_c, ra_d, sizing_range])
     BL_payloads = np.array([max_payload, payload_b, payload_c, 0, sizing_payload]) / 10 ** 3
@@ -316,7 +316,8 @@ def grid_generation(
     max_range[ra_c_id:] = (ra_b - ra_c) / (max_payload - payload_c) * (
         val_payloads[ra_c_id:] - payload_c
     ) + ra_c
-    max_range *= right_limit_box_tolerance  # safety margin
+
+    max_range = max_range - right_limit_box_tolerance  # safety margin
 
     min_range = left_limit_box_tolerance * ra_b  # safety margin
     if min_range < range_step:
@@ -330,11 +331,33 @@ def grid_generation(
         n_intervals_payloads
     )  # number of ranges(x) in th grid for a specific payload (y) # used further
 
+    # The grid is divided in two parts the first is a rectangle on the left side of the payload-range diagram
+    # The second is the one near MTOW and MFW
+
+    # 1) Base rectangle
+
+    grid_x = [
+        np.flip(np.arange(max_range[-1], min_range, -range_step)).tolist()
+    ] * n_intervals_payloads
+
+    # 2) Zone near MTOW and MFW
+    for i in range(1, n_intervals_payloads):
+        add = np.append(np.asarray(grid_x[i - 1]), max_range[-1 - i]).tolist()
+        grid_x[i] = add
+    grid_x.reverse()
+
     for i in range(n_intervals_payloads):
-        range_add = np.arange(min_range, max_range[i], range_step)
-        n_values_ranges[i] = len(range_add)
-        grid_ranges = np.append(grid_ranges, range_add)
-        grid_payloads = np.append(grid_payloads, np.ones(len(range_add)) * val_payloads[i])
+        grid_payloads = np.append(grid_payloads, np.ones(len(grid_x[i])) * val_payloads[i])
+        n_values_ranges[i] = len(grid_x[i])
+        grid_ranges = np.append(grid_ranges, grid_x[i])
+
+    # for i in range(n_intervals_payloads):
+    #     range_add = np.arange(max_range[i], min_range, -range_step)
+    #     range_add = np.append(range_add, min_range)
+    #     range_add = np.flip(range_add)
+    #     n_values_ranges[i] = len(range_add)
+    #     grid_ranges = np.append(grid_ranges, range_add)
+    #     grid_payloads = np.append(grid_payloads, np.ones(len(range_add)) * val_payloads[i])
 
     grid = np.array(
         [grid_ranges, grid_payloads, np.zeros(len(grid_ranges))]
@@ -499,32 +522,46 @@ def payload_range_loop_computation(
 
     # Defined otherwise the mission would noot run
 
-    input_file_mission["data:propulsion:climb:thrust_rate"].value = input_file[
-        "data:propulsion:climb:thrust_rate"
-    ].value
-    input_file_mission["data:propulsion:initial_climb:thrust_rate"].value = input_file[
-        "data:propulsion:initial_climb:thrust_rate"
-    ].value
-    input_file_mission["data:propulsion:descent:thrust_rate"].value = input_file[
-        "data:propulsion:descent:thrust_rate"
-    ].value
-    input_file_mission["data:propulsion:taxi:thrust_rate"].value = input_file[
-        "data:propulsion:taxi:thrust_rate"
-    ].value
+    try:
 
-    # Set the parameters of the mission with change of units
+        input_file_mission["data:propulsion:climb:thrust_rate"].value = input_file[
+            "data:propulsion:climb:thrust_rate"
+        ].value
+        input_file_mission["data:propulsion:initial_climb:thrust_rate"].value = input_file[
+            "data:propulsion:initial_climb:thrust_rate"
+        ].value
+        input_file_mission["data:propulsion:descent:thrust_rate"].value = input_file[
+            "data:propulsion:descent:thrust_rate"
+        ].value
+        input_file_mission["data:propulsion:taxi:thrust_rate"].value = input_file[
+            "data:propulsion:taxi:thrust_rate"
+        ].value
+    except:
+        input_file_mission["data:propulsion:climb:thrust_rate"].value[0] = 0.93
+        input_file_mission["data:propulsion:initial_climb:thrust_rate"].value[0] = 1.0
+        input_file_mission["data:propulsion:descent:thrust_rate"].value[0] = 0.18
+        input_file_mission["data:propulsion:taxi:thrust_rate"].value[0] = 0.3
 
-    input_file_mission["data:mission:op_mission:diversion:distance"].value[0] = convert_units(
-        input_file["data:mission:" + sizing_name + ":diversion:distance"].value[0],
-        input_file["data:mission:" + sizing_name + ":diversion:distance"].units,
-        "m",
-    )  # in m
+        # Set the parameters of the mission with change of units
+    try:
 
-    input_file_mission["data:mission:op_mission:holding:duration"].value[0] = convert_units(
-        input_file["data:mission:" + sizing_name + ":holding:duration"].value[0],
-        input_file["data:mission:" + sizing_name + ":holding:duration"].units,
-        "s",
-    )  # in s
+        input_file_mission["data:mission:op_mission:diversion:distance"].value[0] = convert_units(
+            input_file["data:mission:" + sizing_name + ":diversion:distance"].value[0],
+            input_file["data:mission:" + sizing_name + ":diversion:distance"].units,
+            "m",
+        )  # in m
+
+        input_file_mission["data:mission:op_mission:holding:duration"].value[0] = convert_units(
+            input_file["data:mission:" + sizing_name + ":holding:duration"].value[0],
+            input_file["data:mission:" + sizing_name + ":holding:duration"].units,
+            "s",
+        )  # in s
+    except:
+        input_file_mission["data:mission:op_mission:diversion:distance"].value[0] = 370400
+        input_file_mission["data:mission:op_mission:diversion:distance"].units = "m"
+
+        input_file_mission["data:mission:op_mission:holding:duration"].value[0] = 2700
+        input_file_mission["data:mission:op_mission:holding:duration"].units = "s"
 
     input_file_mission["data:mission:op_mission:takeoff:V2"].value[0] = convert_units(
         input_file["data:mission:" + sizing_name + ":takeoff:V2"].value[0],
@@ -541,11 +578,18 @@ def payload_range_loop_computation(
     input_file_mission["data:mission:op_mission:takeoff:fuel"].value = input_file[
         "data:mission:" + sizing_name + ":takeoff:fuel"
     ].value
-    input_file_mission["data:mission:op_mission:taxi_in:duration"].value[0] = convert_units(
-        input_file["data:mission:" + sizing_name + ":taxi_in:duration"].value[0],
-        input_file["data:mission:" + sizing_name + ":taxi_in:duration"].units,
-        "s",
-    )
+
+    try:
+
+        input_file_mission["data:mission:op_mission:taxi_in:duration"].value[0] = convert_units(
+            input_file["data:mission:" + sizing_name + ":taxi_in:duration"].value[0],
+            input_file["data:mission:" + sizing_name + ":taxi_in:duration"].units,
+            "s",
+        )
+    except:
+        input_file_mission["data:mission:op_mission:taxi_in:duration"].value[0] = 300
+        input_file_mission["data:mission:op_mission:taxi_in:duration"].units = "s"
+
     input_file_mission["data:mission:op_mission:taxi_out:duration"].value[0] = convert_units(
         input_file["data:mission:" + sizing_name + ":taxi_out:duration"].value[0],
         input_file["data:mission:" + sizing_name + ":taxi_out:duration"].units,
@@ -563,7 +607,6 @@ def payload_range_loop_computation(
     time_begin_loop = time.perf_counter()  # Timer
 
     for i in range(len(grid_ranges)):
-
         # Update the data
 
         time_begin = time.perf_counter()
@@ -670,23 +713,22 @@ def payload_range_full(
         results = np.loadtxt(pth.join("data", file_save))
         results = results.T
         n_points_x = int(max(results[0]) / range_step)
-        x = np.linspace(min(results[0]), max(results[0]), n_points_x).tolist()
+        x = results[0, 0 : n_values_ranges[0]]
         y = np.linspace(min(results[1]), max(results[1]), n_intervals_payloads)
-        y = y
         y = y.tolist()
 
         z = [[None] * n_points_x for _ in range(n_intervals_payloads)]
 
-        for i in range(len(n_values_ranges)):
+        for i in range(n_intervals_payloads):
             z[i][0 : n_values_ranges[i]] = results[
                 2, sum(n_values_ranges[0:i]) : sum(n_values_ranges[0:i]) + n_values_ranges[i]
             ]
 
         fig.add_trace(
             go.Contour(
-                z=z,
                 x=x,
                 y=y,
+                z=z,
                 colorbar=dict(
                     title="Consumption [kg_fuel/km/kg_payload]",  # title here
                     titleside="right",
@@ -695,7 +737,7 @@ def payload_range_full(
             )
         )
 
-    except:
+    except OSError:
         print(
             "No results were found in the data folder, you first need to run the function "
             "payload_range_loop_computation(...) \n attention: takes time"
