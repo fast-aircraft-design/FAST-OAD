@@ -26,6 +26,7 @@ from fastoad.io import DataFile, VariableIO
 from fastoad.module_management.service_registry import RegisterSubmodel
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 from fastoad.openmdao.variables import VariableList
+from ._utils import problem_without_mpi
 from .exceptions import FASTOpenMDAONanInInputFile
 
 # Name of IVC that will contain input values
@@ -73,20 +74,21 @@ class FASTOADProblem(om.Problem):
         """
         Set up the problem before run.
         """
-        problem_copy = deepcopy(self)
-        try:
-            super(FASTOADProblem, problem_copy).setup(*args, **kwargs)
-        except RuntimeError:
-            vars_metadata = self._get_undetermined_dynamic_vars_metadata(problem_copy)
-            if vars_metadata:
-                # If vars_metadata is empty, it means the RuntimeError was not because
-                # of dynamic shapes, and the incoming self.setup() will raise it.
-                ivc = om.IndepVarComp()
-                for name, meta in vars_metadata.items():
-                    # We use a (2,)-shaped array as value here. This way, it will be easier to
-                    # identify dynamic-shaped data in an input file generated from current problem.
-                    ivc.add_output(name, [np.nan, np.nan], units=meta["units"])
-                self.model.add_subsystem(SHAPER_SYSTEM_NAME, ivc, promotes=["*"])
+        with problem_without_mpi(self) as problem_copy:
+            try:
+                super(FASTOADProblem, problem_copy).setup(*args, **kwargs)
+            except RuntimeError:
+                vars_metadata = self._get_undetermined_dynamic_vars_metadata(problem_copy)
+                if vars_metadata:
+                    # If vars_metadata is empty, it means the RuntimeError was not because
+                    # of dynamic shapes, and the incoming self.setup() will raise it.
+                    ivc = om.IndepVarComp()
+                    for name, meta in vars_metadata.items():
+                        # We use a (2,)-shaped array as value here. This way, it will be easier
+                        # to identify dynamic-shaped data in an input file generated from current
+                        # problem.
+                        ivc.add_output(name, [np.nan, np.nan], units=meta["units"])
+                    self.model.add_subsystem(SHAPER_SYSTEM_NAME, ivc, promotes=["*"])
 
         super().setup(*args, **kwargs)
 
@@ -170,14 +172,15 @@ class FASTOADProblem(om.Problem):
         """
         input_variables, unused_variables = self._get_problem_inputs()
         self.additional_variables = unused_variables
-        tmp_prob = deepcopy(self)
-        tmp_prob.setup()
-        # At this point, there may be non-fed dynamically shaped inputs, so the setup may
-        # create the "shaper" IVC, but we ignore it because we need to redefine these variables
-        # in input file.
-        ivc_vars = tmp_prob.model.get_io_metadata(
-            "output", tags="indep_var", excludes=f"{SHAPER_SYSTEM_NAME}.*"
-        )
+        with problem_without_mpi(self):
+            tmp_prob = deepcopy(self)
+            tmp_prob.setup()
+            # At this point, there may be non-fed dynamically shaped inputs, so the setup may
+            # create the "shaper" IVC, but we ignore it because we need to redefine these variables
+            # in input file.
+            ivc_vars = tmp_prob.model.get_io_metadata(
+                "output", tags="indep_var", excludes=f"{SHAPER_SYSTEM_NAME}.*"
+            )
         for meta in ivc_vars.values():
             try:
                 del input_variables[meta["prom_name"]]
@@ -187,15 +190,16 @@ class FASTOADProblem(om.Problem):
             self._insert_input_ivc(input_variables.to_ivc())
 
     def _insert_input_ivc(self, ivc: om.IndepVarComp, subsystem_name=INPUT_SYSTEM_NAME):
-        tmp_prob = deepcopy(self)
-        tmp_prob.setup()
+        with problem_without_mpi(self) as tmp_prob:
+            tmp_prob.setup()
 
-        # We get order from copied problem, but we have to ignore the "shaper" and the auto IVCs.
-        previous_order = [
-            system.name
-            for system in tmp_prob.model.system_iter(recurse=False)
-            if system.name != "_auto_ivc" and system.name != SHAPER_SYSTEM_NAME
-        ]
+            # We get order from copied problem, but we have to ignore the "shaper"
+            # and the auto IVCs.
+            previous_order = [
+                system.name
+                for system in tmp_prob.model.system_iter(recurse=False)
+                if system.name != "_auto_ivc" and system.name != SHAPER_SYSTEM_NAME
+            ]
 
         self.model.add_subsystem(subsystem_name, ivc, promotes=["*"])
         self.model.set_order([subsystem_name] + previous_order)

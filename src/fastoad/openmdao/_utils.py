@@ -2,7 +2,7 @@
 Utility functions for OpenMDAO classes/instances
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,11 +14,45 @@ Utility functions for OpenMDAO classes/instances
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from contextlib import contextmanager
+from copy import deepcopy
 from typing import List, Tuple
-from deprecated import deprecated
 
 import numpy as np
 import openmdao.api as om
+from deprecated import deprecated
+from openmdao.utils.mpi import FakeComm
+
+
+@contextmanager
+def problem_without_mpi(problem: om.Problem) -> om.Problem:
+    """
+    Context manager that delivers a copy of the given OpenMDAO problem.
+
+    A deepcopy operation may crash if problem.comm is not pickle-able, like a
+    mpi4py.MPI.Intracomm object.
+
+    This context manager temporarily sets a FakeComm object as problem.comm and
+    does the copy.
+
+    It ensures the original problem gets back its original communicator after
+    the `with` block is ended.
+
+    :param problem: any openMDAO problem
+    :return: A copy of the given problem with a FakeComm object as problem.comm
+    """
+    # An actual MPI communicator will make the deepcopy crash if an MPI
+    # library is installed.
+
+    actual_comm = problem.comm
+    problem.comm = FakeComm()
+
+    try:
+        problem_copy = deepcopy(problem)
+        problem_copy.comm = problem.comm
+        yield problem_copy
+    finally:
+        problem.comm = actual_comm
 
 
 @deprecated(
