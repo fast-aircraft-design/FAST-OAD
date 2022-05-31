@@ -18,12 +18,16 @@ from typing import List
 
 import pandas as pd
 
+from fastoad._utils.datacls import BaseDataClass
 from fastoad.model_base import FlightPoint
-from fastoad.utils.datacls import BaseDataClass
 
 
 @dataclass
 class IFlightPart(ABC, BaseDataClass):
+    """
+    Base class for all flight parts.
+    """
+
     name: str = ""
 
     @abstractmethod

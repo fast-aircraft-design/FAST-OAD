@@ -208,6 +208,7 @@ class InputDefinition:
             )
         return None
 
+    # pylint: disable=function-redefined  # the variable_name field is an InitVar.
     @property
     def variable_name(self):
         """Associated variable name."""
@@ -326,7 +327,6 @@ class AbstractStructureBuilder(ABC):
         :param definition: the dict that will be converted.
         :return: the structure dict
         """
-        pass
 
     @property
     def qualified_name(self):
@@ -378,10 +378,10 @@ class AbstractStructureBuilder(ABC):
                         value, input_definitions, parent=key, part_identifier=part_identifier
                     )
             return structure
-        else:
-            input_definition = InputDefinition(parent, structure, part_identifier=part_identifier)
-            input_definitions.append(input_definition)
-            return input_definition
+
+        input_definition = InputDefinition(parent, structure, part_identifier=part_identifier)
+        input_definitions.append(input_definition)
+        return input_definition
 
 
 class DefaultStructureBuilder(AbstractStructureBuilder):
@@ -667,6 +667,8 @@ class MissionBuilder:
         if "mass" in part["target"]:
             return part["target"]["mass"].variable_name
 
+        return None
+
     def _get_first_segment_structure(self, mission_name: str):
         part = self._get_mission_part_structures(mission_name)[0]
         while PARTS_TAG in part:
@@ -798,7 +800,7 @@ class MissionBuilder:
             {
                 name: value
                 for name, value in segment_definition.items()
-                if name != SEGMENT_TYPE_TAG and name != TYPE_TAG
+                if name not in [SEGMENT_TYPE_TAG, TYPE_TAG]
             }
         )
         part_kwargs.update(self._base_kwargs)

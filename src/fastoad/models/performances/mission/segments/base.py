@@ -14,8 +14,8 @@
 
 import logging
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import Dict, List, Tuple, Type
+from dataclasses import dataclass, field
+from typing import Dict, List, Optional, Tuple, Type
 
 import numpy as np
 import pandas as pd
@@ -24,11 +24,11 @@ from scipy.constants import g
 from scipy.optimize import root_scalar
 from stdatm import AtmosphereSI
 
+from fastoad._utils.datacls import BaseDataClass
 from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IPropulsion
 from fastoad.models.performances.mission.polar import Polar
-from fastoad.utils.datacls import BaseDataClass
 from ..base import IFlightPart
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
 
@@ -59,20 +59,20 @@ class SegmentDefinitions(Enum):
             )
 
     @classmethod
-    def get_segment_class(cls, segment_name) -> Type["FlightSegment"]:
+    def get_segment_class(cls, segment_name) -> Optional[Type["FlightSegment"]]:
         """
         Provides the segment implementation for provided name.
 
         :param segment_name:
-        :return: the segment implementation (derived of :class:`~FlightSegment`)
+        :return: the segment implementation (derived of :class:`~FlightSegment`),
+                 or None if segment_name is not known
         """
         try:
             enum = cls[segment_name]
         except KeyError:
             enum = None
 
-        if enum:
-            return enum.value
+        return enum.value if enum else None
 
 
 @dataclass
@@ -117,6 +117,9 @@ class FlightSegment(IFlightPart):
     #: to tell that initial value should be kept during all segment.
     target: FlightPoint = BaseDataClass.no_default
 
+    # the `target` field above will be overloaded by a property, using the hidden value below:
+    _target: FlightPoint = field(default=BaseDataClass.no_default, init=False)
+
     #: A IPropulsion instance that will be called at each time step.
     propulsion: IPropulsion = BaseDataClass.no_default
 
@@ -155,6 +158,7 @@ class FlightSegment(IFlightPart):
     #: Using this value will tell to keep the associated parameter constant.
     CONSTANT_VALUE = "constant"  # pylint: disable=invalid-name # used as constant
 
+    # To be noted: this one is not a dataclass field, but an actual class attribute
     _attribute_units = dict(reference_area="m**2", time_step="s")
 
     @classmethod

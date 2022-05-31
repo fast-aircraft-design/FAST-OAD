@@ -32,26 +32,27 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 class MissionComponent(om.ExplicitComponent):
-    def __init__(self, **kwargs):
-        """
-        Computes a mission as specified in mission input file
+    """
+    Computes a mission as specified in mission input file
 
-        Options:
-          - propulsion_id: (mandatory) the identifier of the propulsion wrapper.
-          - out_file: if provided, a csv file will be written at provided path with all computed
-                      flight points.
-          - mission_wrapper: the MissionWrapper instance that defines the mission.
-          - use_initializer_iteration: During first solver loop, a complete mission computation can
-                                       fail or consume useless CPU-time. When activated, this option
-                                       ensures the first iteration is done using a simple, dummy,
-                                       formula instead of the specified mission.
-                                       Set this option to False if you do expect this model to be
-                                       computed only once.
-          - is_sizing: if True, TOW will be considered equal to MTOW and mission payload will be
-                       considered equal to design payload.
-          - reference_area_variable: Defines the name of the variable for providing aircraft
-                                     reference surface area.
-        """
+    Options:
+      - propulsion_id: (mandatory) the identifier of the propulsion wrapper.
+      - out_file: if provided, a csv file will be written at provided path with all computed
+                  flight points.
+      - mission_wrapper: the MissionWrapper instance that defines the mission.
+      - use_initializer_iteration: During first solver loop, a complete mission computation can
+                                   fail or consume useless CPU-time. When activated, this option
+                                   ensures the first iteration is done using a simple, dummy,
+                                   formula instead of the specified mission.
+                                   Set this option to False if you do expect this model to be
+                                   computed only once.
+      - is_sizing: if True, TOW will be considered equal to MTOW and mission payload will be
+                   considered equal to design payload.
+      - reference_area_variable: Defines the name of the variable for providing aircraft
+                                 reference surface area.
+    """
+
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.flight_points = None
         self._engine_wrapper = None
@@ -139,10 +140,12 @@ class MissionComponent(om.ExplicitComponent):
         iter_count = self.iter_count_without_approx
         message_prefix = f"Mission computation - iteration {iter_count:d} : "
         if iter_count == 0 and self.options["use_initializer_iteration"]:
-            _LOGGER.info(message_prefix + "Using initializer computation. OTHER ITERATIONS NEEDED.")
+            _LOGGER.info(
+                "%sUsing initializer computation. OTHER ITERATIONS NEEDED.", message_prefix
+            )
             self._compute_breguet(inputs, outputs)
         else:
-            _LOGGER.info(message_prefix + "Using mission definition.")
+            _LOGGER.info("%sUsing mission definition.", message_prefix)
             self._compute_mission(inputs, outputs)
 
     def _compute_breguet(self, inputs, outputs):
@@ -296,6 +299,8 @@ def _get_variable_name_provider(mission_name, taxi_out_name):
         return f"data:mission:{mission_name}:{suffix}"
 
     class VariableNames(Enum):
+        """Enum with mission-related variable names."""
+
         START_ALTITUDE = get_variable_name("start:altitude")
         START_TAS = get_variable_name("start:true_airspeed")
         RAMP_WEIGHT = get_variable_name("ramp_weight")

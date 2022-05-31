@@ -133,15 +133,30 @@ class MissionWrapper(MissionBuilder):
         return f"{self._variable_prefix}:reserve:fuel"
 
     def need_start_mass(self, mission_name):
+        """
+        Start mass will not be needed if the first segment has a target mass.
+        It will be needed in other cases.
+
+        :param mission_name:
+        :return: True if the start mass is needed.
+        """
         # Mass is needed if there is no target mass in first segment.
         struct = self._get_first_segment_structure(mission_name)
         return "mass" not in struct["target"]
 
     def get_taxi_out_phase_name(self, mission_name: str) -> Optional[str]:
+        """
+
+        :param mission_name:
+        :return: the name of the first phase if its first segment is a taxi segment.
+                 Returns None otherwise.
+        """
         first_part = self._get_mission_part_structures(mission_name)[0]
         first_segment = self._get_first_segment_structure(mission_name)
         if SegmentDefinitions.get_segment_class(first_segment[SEGMENT_TYPE_TAG]) is TaxiSegment:
             return first_part[NAME_TAG].split(":")[-1]
+
+        return None
 
     def _identify_outputs(self) -> Dict[str, Tuple[str, str]]:
         """

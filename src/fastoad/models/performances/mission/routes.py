@@ -21,11 +21,11 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import root_scalar
 
+from fastoad._utils.datacls import BaseDataClass
 from fastoad.model_base import FlightPoint
 from fastoad.models.performances.mission.base import FlightSequence, IFlightPart
 from fastoad.models.performances.mission.segments.base import FlightSegment
 from fastoad.models.performances.mission.segments.cruise import CruiseSegment
-from fastoad.utils.datacls import BaseDataClass
 
 
 @dataclass

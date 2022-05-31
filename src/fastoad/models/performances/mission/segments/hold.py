@@ -24,5 +24,3 @@ class HoldSegment(RegulatedThrustSegment, FixedDurationSegment, mission_file_key
     Target is a specified time. The target definition indicates
     the time duration of the segment, independently of the initial time value.
     """
-
-    pass

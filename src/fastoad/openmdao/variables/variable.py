@@ -277,7 +277,15 @@ class Variable(Hashable):
     def is_input(self, value):
         self.metadata["is_input"] = value
 
-    def get_openmdao_kwargs(self, keys: Iterable = None):
+    def get_openmdao_kwargs(self, keys: Iterable = None) -> dict:
+        """
+        Provides a dict usable as keyword args by OpenMDAO add_input()/add_output().
+
+        The dict keys will be the ones provided, or a default set if no keys are provided.
+
+        :param keys:
+        :return: the kwargs dict
+        """
         if not keys:
             keys = {
                 "name",

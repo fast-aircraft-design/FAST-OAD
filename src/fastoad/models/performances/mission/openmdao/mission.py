@@ -244,7 +244,11 @@ class Mission(om.Group):
         ramp_weight_computation = om.Group()
         ramp_weight_computation.add_subsystem(
             "equality",
-            om.ExecComp(operation, units="kg"),
+            om.ExecComp(
+                operation,
+                units="kg",
+                a={"units": "kg", "desc": f'Ramp Weight for mission "{mission_name}"'},
+            ),
             promotes=promotions,
         )
 
