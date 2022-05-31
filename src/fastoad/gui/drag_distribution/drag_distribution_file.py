@@ -14,12 +14,8 @@
 from typing import Dict
 
 import numpy as np
-
-import plotly
 import plotly.graph_objects as go
 from fastoad.io import VariableIO
-from fastoad.model_base import FlightPoint
-import os.path as pth
 from stdatm import Atmosphere
 
 g = 9.81
@@ -28,19 +24,22 @@ g = 9.81
 def drag_distribution_plot(
     aircraft_file_path: str,
     aircraft_mass: float,
-    aircraft_altitude: float = 10000,
-    file_formatter=None,
-    fig=None,
+    aircraft_altitude: float = 10668,
     low_speed_aero=False,
+    name=None,
+    file_formatter=None,
 ) -> go.FigureWidget:
     """
-    Returns a figure plot of the drag distribution at a certain flight point
-    Different designs can be superposed by providing an existing fig.
+    Returns a figure plot of the drag distribution in two situations :
+        - 1) in cruise at a fixed mach number
+        - 2) in low speed conditions also at a fixed mach number
     Each design can be provided a name.
 
     :param aircraft_file_path: path of data file
+    :param aircraft_mass : mass of the aircraft, used to calucate Cl
+    :param aircraft_altitude : altitude of the aircraft, used to calculate Cl
+    :param low_speed_aero : boolean which when True computes the low speed drag
     :param name: name to give to the trace added to the figure
-    :param fig: existing figure to which add the plot
     :param file_formatter: the formatter that defines the format of data file. If not provided,
                            default format will be assumed.
     :return: sun distribution of the drag
@@ -69,54 +68,67 @@ def drag_distribution_plot(
     CDi_wing = k_induced * CL ** 2
 
     CL_table = np.asarray(variables["data:aerodynamics:aircraft:" + case_string + ":CL"].value)
+
+    if CL > CL_table[-1]:
+        print(
+            CL,
+            " > ",
+            CL_table[-1],
+            " CL bigger than CL_table, might be a problem for the precision",
+        )
     CD_table = np.asarray(variables["data:aerodynamics:aircraft:" + case_string + ":CD"].value)
     CD_trim_table = np.asarray(
         variables["data:aerodynamics:aircraft:" + case_string + ":CD:trim"].value
     )
-    CD_trim = np.interp(CL, CL_table, CD_trim_table)
+
+    CD_trim = np.interp(CL, CL_table, CD_trim_table)  # drag due to the horizontal surface
 
     # step 3 : retrieve the parasitic drag CDp
     CD0_fuselage_table = np.asarray(
         variables["data:aerodynamics:fuselage:" + case_string + ":CD0"].value
-    )  # dep on CL
+    )  # depend on CL
+    CD0_fuselage = np.interp(CL, CL_table, CD0_fuselage_table)
+
     CD0_ht = variables["data:aerodynamics:horizontal_tail:" + case_string + ":CD0"].value[0]
     CD0_nacelles = variables["data:aerodynamics:nacelles:" + case_string + ":CD0"].value[0]
     CD0_pylons = variables["data:aerodynamics:pylons:" + case_string + ":CD0"].value[0]
     CD0_vt = variables["data:aerodynamics:vertical_tail:" + case_string + ":CD0"].value[0]
+
     CD0_wing_table = np.asarray(
         variables["data:aerodynamics:wing:" + case_string + ":CD0"].value
-    )  # dep on cl
-    CD0_fuselage = np.interp(CL, CL_table, CD0_fuselage_table)
+    )  # depend on cl
     CD0_wing = np.interp(CL, CL_table, CD0_wing_table)
 
     CD0 = CD0_fuselage + CD0_ht + CD0_nacelles + CD0_pylons + CD0_vt + CD0_wing
 
-    # step 4 : retriev drag from compressibility effects and triming of the aircraft
+    # step 4 : retrieve drag from compressibility effects and triming of the aircraft
 
     CDc_wing = 0
 
     if not low_speed_aero:
-        CD_compressibility = np.asarray(
+        CDc_table = np.asarray(
             variables["data:aerodynamics:aircraft:cruise:CD:compressibility"].value
         )
-        CDc_wing = np.interp(CL, CL_table, CD_compressibility)
+        CDc_wing = np.interp(CL, CL_table, CDc_table)
 
     CD = CDi_wing + CD0 + CDc_wing + CD_trim
 
-
-
-
+    # error calculation
     CD_estimate = np.interp(CL, CL_table, CD_table)
+    print("Error calculation : ")
     print("CD from table", CD_estimate)
     print("CD calculated", CD)
-    print("error: ", CD_estimate - CD)
-
-    if fig is None:
-        fig = go.Figure()
+    print("Error: ", CD_estimate - CD)
+    print("Error percentage : ", (CD_estimate - CD) / CD * 100, "%")
 
     labels = [
         "CD" + "<br>" + str("% 12.3f" % CD),
-        "CDi"+ "<br>"+ str("% 12.3f" % CDi_wing)+ " ("+ str(np.round(CDi_wing / CD * 100, 1))+ " %)",
+        "CDi"
+        + "<br>"
+        + str("% 12.3f" % CDi_wing)
+        + " ("
+        + str(np.round(CDi_wing / CD * 100, 1))
+        + " %)",
         "CDp" + "<br>" + str("% 12.3f" % CD0) + " (" + str(np.round(CD0 / CD * 100, 1)) + " %)",
         "CD_trim"
         + "<br>"
@@ -169,15 +181,18 @@ def drag_distribution_plot(
         values.append(CDc_wing)
 
     sunburst = go.Sunburst(labels=labels, parents=parents, values=values, branchvalues="total")
-
+    fig = go.FigureWidget()
     fig.add_trace(sunburst)
-    fig = go.FigureWidget(fig)
+
     fig.update_layout(
-        title_text="Drag coefficient distribution at a cruise mach of " + str(mach),
+        title_text="Drag coefficient distribution at a cruise mach of "
+        + str(mach)
+        + " : "
+        + str(name),
         title_x=0.5,
         xaxis_title="y",
         yaxis_title="x",
-        margin = dict(t=30, l=0, r=0, b=0)
+        margin=dict(t=30, l=0, r=0, b=0),
     )
 
     return fig
