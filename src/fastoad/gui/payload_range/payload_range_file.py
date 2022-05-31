@@ -195,6 +195,7 @@ def payload_range_simple(
     file_formatter=None,
     x_axis=None,
     y_axis=None,
+    color="black",
 ) -> go.FigureWidget:
     """
     Returns a figure of the payload range using the corrected leduc-breguet formula
@@ -210,6 +211,7 @@ def payload_range_simple(
                            default format will be assumed.
     :param x_axis: defines the x axis if the user wants to
     :param y_axis: defines the y axis if the user wants to
+    :param color : defines the color of the graph
     :return: plot of the payload-range diagram with the points calculated using breguet-leduc formula
     """
     BL_ranges, BL_payloads = breguet_leduc_points(
@@ -221,10 +223,19 @@ def payload_range_simple(
         fig = go.Figure()
 
     scatter_BL = go.Scatter(
-        x=BL_ranges[0:-1], y=BL_payloads[0:-1], mode="lines+markers", name=name, showlegend=False
+        x=BL_ranges[0:-1],
+        y=BL_payloads[0:-1],
+        mode="lines+markers",
+        line=dict(color=color, width=3),
+        name=name,
+        showlegend=False,
     )
     scatter_SIZING = go.Scatter(
-        x=[BL_ranges[-1]], y=[BL_payloads[-1]], mode="markers", name="Sizing point"
+        x=[BL_ranges[-1]],
+        y=[BL_payloads[-1]],
+        mode="markers",
+        name="Sizing point " + str(name),
+        marker_color=color,
     )
 
     fig.add_trace(scatter_BL)
@@ -259,6 +270,7 @@ def grid_generation(
     show_grid: bool = True,
     x_axis=None,
     y_axis=None,
+    color="black",
 ):
     """
     Returns a figure of the payload range using the corrected leduc-breguet formula,
@@ -283,6 +295,7 @@ def grid_generation(
     :param show_grid: states if the grid points are to be shown on the fig
     :param x_axis: defines the x axis if the user wants to
     :param y_axis: defines the y axis if the user wants to
+    :param color : defines the color of the graph
     :returns:  fig :  figure of the BL points and the grid points
                grid : ndarray with 3 lines containing : ranges, payloads, conumption (kg_fuel/km/kg_payload)
                n_values_ranges : ndarray, for each payload in the grid saves the number of ranges for the specific payload
@@ -369,16 +382,25 @@ def grid_generation(
         fig = go.Figure()
 
     scatter_BL = go.Scatter(
-        x=BL_ranges[0:-1], y=BL_payloads[0:-1], mode="lines+markers", name=name, showlegend=False
+        x=BL_ranges[0:-1],
+        y=BL_payloads[0:-1],
+        mode="lines+markers",
+        line=dict(color=color, width=5),
+        name=name,
+        showlegend=False,
     )
     scatter_SIZING = go.Scatter(
-        x=[BL_ranges[-1]], y=[BL_payloads[-1]], mode="markers", name="Sizing point"
+        x=[BL_ranges[-1]],
+        y=[BL_payloads[-1]],
+        mode="markers",
+        name="Sizing point " + str(name),
+        marker_color=color,
     )
 
     fig.add_trace(scatter_BL)
     fig.add_trace(scatter_SIZING)
 
-    if show_grid == True:
+    if show_grid:
         scatter_GRID = go.Scatter(x=grid[0], y=grid[1], mode="markers", name="Grid points")
         fig.add_trace(scatter_GRID)
 
@@ -411,6 +433,7 @@ def payload_range_grid_plot(
     show_grid: bool = True,
     x_axis=None,
     y_axis=None,
+    color="black",
 ):
     """
     Returns a figure of the payload range using the corrected leduc-breguet formula +
@@ -435,6 +458,7 @@ def payload_range_grid_plot(
     :param show_grid: states if the grid points are to be shown on the fig
     :param x_axis: defines the x axis if the user wants to
     :param y_axis: defines the y axis if the user wants to
+    :param color : defines the color of the graph
     :returns:  fig :  figure of the BL points and the grid point
     """
     return grid_generation(
@@ -453,6 +477,7 @@ def payload_range_grid_plot(
         show_grid,
         x_axis,
         y_axis,
+        color,
     )[0]
 
 
@@ -663,6 +688,7 @@ def payload_range_full(
     show_grid: bool = True,
     x_axis=None,
     y_axis=None,
+    color="black",
 ) -> go.FigureWidget:
     """
     Returns a figure of the payload range using the corrected leduc-breguet formula,
@@ -687,6 +713,7 @@ def payload_range_full(
     :param show_grid: states if the grid points are to be shown on the fig
     :param x_axis: defines the x axis if the user wants to
     :param y_axis: defines the y axis if the user wants to
+    :param color : defines the color of the graph
     :return: fig with payload range diagram + specific consumptions
     """
 
@@ -707,6 +734,7 @@ def payload_range_full(
         show_grid,
         x_axis,
         y_axis,
+        color,
     )
     # load the results from payload_range_loop_computation(...)
     try:
