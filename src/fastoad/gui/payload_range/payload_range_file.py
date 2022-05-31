@@ -58,6 +58,7 @@ def breguet_leduc_formula(mass_in, mass_out, constant_coeff, x0):
         return ra - k_ra * constant_coeff * np.log(ratio)
 
     sol = fsolve(non_linear_function, x0)
+
     return sol
 
 
@@ -88,9 +89,15 @@ def breguet_leduc_points(
     glide_ratio = variables["data:aerodynamics:aircraft:cruise:L_D_max"].value[
         0
     ]  # max glide ratio during cruise
-    altitude = variables["data:mission:" + sizing_name + ":main_route:cruise:altitude"].value[
-        0
-    ]  # cruise altitude
+    # altitude = variables["data:mission:" + sizing_name + ":main_route:cruise:altitude"].value[
+    #     0
+    # ]  # cruise altitude
+    altitude = convert_units(
+        variables["data:mission:sizing:main_route:cruise:altitude"].value[0],
+        variables["data:mission:sizing:main_route:cruise:altitude"].units,
+        "m",
+    )  # cruise altitude
+
     cruise_mach = variables["data:TLAR:cruise_mach"].value[0]
     sizing_range = variables["data:TLAR:range"].value[0]  # first approximation for the range
 
@@ -163,7 +170,7 @@ def breguet_leduc_points(
     mass_in = mtow
     mass_out = mtow - mfw
     payload_c = mtow - mfw - owe
-    ra_c = breguet_leduc_formula(mass_in, mass_out, coeff, sizing_range)[0]
+    ra_c = breguet_leduc_formula(mass_in, mass_out, coeff, sizing_range * 10)[0]
 
     # design point and point B: max_payload,MTOW
     payload_b = max_payload
@@ -172,7 +179,7 @@ def breguet_leduc_points(
     # point D 0 payload, MFW ==> range
     mass_in = owe + mfw
     mass_out = owe
-    ra_d = breguet_leduc_formula(mass_in, mass_out, coeff, ra_c)[0]
+    ra_d = breguet_leduc_formula(mass_in, mass_out, coeff, sizing_range * 10)[0]
 
     BL_ranges = np.array([0, ra_b, ra_c, ra_d, sizing_range])
     BL_payloads = np.array([max_payload, payload_b, payload_c, 0, sizing_payload]) / 10 ** 3
@@ -188,6 +195,7 @@ def payload_range_simple(
     file_formatter=None,
     x_axis=None,
     y_axis=None,
+    color="black",
 ) -> go.FigureWidget:
     """
     Returns a figure of the payload range using the corrected leduc-breguet formula
@@ -203,6 +211,7 @@ def payload_range_simple(
                            default format will be assumed.
     :param x_axis: defines the x axis if the user wants to
     :param y_axis: defines the y axis if the user wants to
+    :param color : defines the color of the graph
     :return: plot of the payload-range diagram with the points calculated using breguet-leduc formula
     """
     BL_ranges, BL_payloads = breguet_leduc_points(
@@ -214,10 +223,19 @@ def payload_range_simple(
         fig = go.Figure()
 
     scatter_BL = go.Scatter(
-        x=BL_ranges[0:-1], y=BL_payloads[0:-1], mode="lines+markers", name=name, showlegend=False
+        x=BL_ranges[0:-1],
+        y=BL_payloads[0:-1],
+        mode="lines+markers",
+        line=dict(color=color, width=3),
+        name=name,
+        showlegend=False,
     )
     scatter_SIZING = go.Scatter(
-        x=[BL_ranges[-1]], y=[BL_payloads[-1]], mode="markers", name="Sizing point"
+        x=[BL_ranges[-1]],
+        y=[BL_payloads[-1]],
+        mode="markers",
+        name="Sizing point " + str(name),
+        marker_color=color,
     )
 
     fig.add_trace(scatter_BL)
@@ -252,6 +270,7 @@ def grid_generation(
     show_grid: bool = True,
     x_axis=None,
     y_axis=None,
+    color="black",
 ):
     """
     Returns a figure of the payload range using the corrected leduc-breguet formula,
@@ -276,6 +295,7 @@ def grid_generation(
     :param show_grid: states if the grid points are to be shown on the fig
     :param x_axis: defines the x axis if the user wants to
     :param y_axis: defines the y axis if the user wants to
+    :param color : defines the color of the graph
     :returns:  fig :  figure of the BL points and the grid points
                grid : ndarray with 3 lines containing : ranges, payloads, conumption (kg_fuel/km/kg_payload)
                n_values_ranges : ndarray, for each payload in the grid saves the number of ranges for the specific payload
@@ -309,7 +329,8 @@ def grid_generation(
     max_range[ra_c_id:] = (ra_b - ra_c) / (max_payload - payload_c) * (
         val_payloads[ra_c_id:] - payload_c
     ) + ra_c
-    max_range *= right_limit_box_tolerance  # safety margin
+
+    max_range = max_range - right_limit_box_tolerance  # safety margin
 
     min_range = left_limit_box_tolerance * ra_b  # safety margin
     if min_range < range_step:
@@ -323,11 +344,33 @@ def grid_generation(
         n_intervals_payloads
     )  # number of ranges(x) in th grid for a specific payload (y) # used further
 
+    # The grid is divided in two parts the first is a rectangle on the left side of the payload-range diagram
+    # The second is the one near MTOW and MFW
+
+    # 1) Base rectangle
+
+    grid_x = [
+        np.flip(np.arange(max_range[-1], min_range, -range_step)).tolist()
+    ] * n_intervals_payloads
+
+    # 2) Zone near MTOW and MFW
+    for i in range(1, n_intervals_payloads):
+        add = np.append(np.asarray(grid_x[i - 1]), max_range[-1 - i]).tolist()
+        grid_x[i] = add
+    grid_x.reverse()
+
     for i in range(n_intervals_payloads):
-        range_add = np.arange(min_range, max_range[i], range_step)
-        n_values_ranges[i] = len(range_add)
-        grid_ranges = np.append(grid_ranges, range_add)
-        grid_payloads = np.append(grid_payloads, np.ones(len(range_add)) * val_payloads[i])
+        grid_payloads = np.append(grid_payloads, np.ones(len(grid_x[i])) * val_payloads[i])
+        n_values_ranges[i] = len(grid_x[i])
+        grid_ranges = np.append(grid_ranges, grid_x[i])
+
+    # for i in range(n_intervals_payloads):
+    #     range_add = np.arange(max_range[i], min_range, -range_step)
+    #     range_add = np.append(range_add, min_range)
+    #     range_add = np.flip(range_add)
+    #     n_values_ranges[i] = len(range_add)
+    #     grid_ranges = np.append(grid_ranges, range_add)
+    #     grid_payloads = np.append(grid_payloads, np.ones(len(range_add)) * val_payloads[i])
 
     grid = np.array(
         [grid_ranges, grid_payloads, np.zeros(len(grid_ranges))]
@@ -339,16 +382,25 @@ def grid_generation(
         fig = go.Figure()
 
     scatter_BL = go.Scatter(
-        x=BL_ranges[0:-1], y=BL_payloads[0:-1], mode="lines+markers", name=name, showlegend=False
+        x=BL_ranges[0:-1],
+        y=BL_payloads[0:-1],
+        mode="lines+markers",
+        line=dict(color=color, width=5),
+        name=name,
+        showlegend=False,
     )
     scatter_SIZING = go.Scatter(
-        x=[BL_ranges[-1]], y=[BL_payloads[-1]], mode="markers", name="Sizing point"
+        x=[BL_ranges[-1]],
+        y=[BL_payloads[-1]],
+        mode="markers",
+        name="Sizing point " + str(name),
+        marker_color=color,
     )
 
     fig.add_trace(scatter_BL)
     fig.add_trace(scatter_SIZING)
 
-    if show_grid == True:
+    if show_grid:
         scatter_GRID = go.Scatter(x=grid[0], y=grid[1], mode="markers", name="Grid points")
         fig.add_trace(scatter_GRID)
 
@@ -381,6 +433,7 @@ def payload_range_grid_plot(
     show_grid: bool = True,
     x_axis=None,
     y_axis=None,
+    color="black",
 ):
     """
     Returns a figure of the payload range using the corrected leduc-breguet formula +
@@ -405,6 +458,7 @@ def payload_range_grid_plot(
     :param show_grid: states if the grid points are to be shown on the fig
     :param x_axis: defines the x axis if the user wants to
     :param y_axis: defines the y axis if the user wants to
+    :param color : defines the color of the graph
     :returns:  fig :  figure of the BL points and the grid point
     """
     return grid_generation(
@@ -423,6 +477,7 @@ def payload_range_grid_plot(
         show_grid,
         x_axis,
         y_axis,
+        color,
     )[0]
 
 
@@ -488,23 +543,87 @@ def payload_range_loop_computation(
     input_file_mission = oad.generate_inputs(CONFIG_MISSION_FILE, SOURCE_FILE, overwrite=True)
     input_file_mission = oad.DataFile(input_file_mission)
 
+    input_file = oad.DataFile(aircraft_file_path)
+
     # Defined otherwise the mission would noot run
 
-    input_file_mission["data:propulsion:climb:thrust_rate"].value = 0.93
-    input_file_mission["data:propulsion:initial_climb:thrust_rate"].value = 1.00
-    input_file_mission["data:propulsion:descent:thrust_rate"].value = 0.18
-    input_file_mission["data:propulsion:taxi:thrust_rate"].value = 0.3
+    try:
 
-    # Set the parameters of the mission
+        input_file_mission["data:propulsion:climb:thrust_rate"].value = input_file[
+            "data:propulsion:climb:thrust_rate"
+        ].value
+        input_file_mission["data:propulsion:initial_climb:thrust_rate"].value = input_file[
+            "data:propulsion:initial_climb:thrust_rate"
+        ].value
+        input_file_mission["data:propulsion:descent:thrust_rate"].value = input_file[
+            "data:propulsion:descent:thrust_rate"
+        ].value
+        input_file_mission["data:propulsion:taxi:thrust_rate"].value = input_file[
+            "data:propulsion:taxi:thrust_rate"
+        ].value
+    except:
+        input_file_mission["data:propulsion:climb:thrust_rate"].value[0] = 0.93
+        input_file_mission["data:propulsion:initial_climb:thrust_rate"].value[0] = 1.0
+        input_file_mission["data:propulsion:descent:thrust_rate"].value[0] = 0.18
+        input_file_mission["data:propulsion:taxi:thrust_rate"].value[0] = 0.3
 
-    input_file_mission["data:mission:op_mission:diversion:distance"].value = 370400
-    input_file_mission["data:mission:op_mission:holding:duration"].value = 2700
-    input_file_mission["data:mission:op_mission:takeoff:V2"].value = 79.3
-    input_file_mission["data:mission:op_mission:takeoff:altitude"].value = 0.0
-    input_file_mission["data:mission:op_mission:takeoff:fuel"].value = 82.4
-    input_file_mission["data:mission:op_mission:taxi_in:duration"].value = 300
-    input_file_mission["data:mission:op_mission:taxi_out:duration"].value = 540
-    input_file_mission["data:mission:op_mission:taxi_out:thrust_rate"].value = 0.3
+        # Set the parameters of the mission with change of units
+    try:
+
+        input_file_mission["data:mission:op_mission:diversion:distance"].value[0] = convert_units(
+            input_file["data:mission:" + sizing_name + ":diversion:distance"].value[0],
+            input_file["data:mission:" + sizing_name + ":diversion:distance"].units,
+            "m",
+        )  # in m
+
+        input_file_mission["data:mission:op_mission:holding:duration"].value[0] = convert_units(
+            input_file["data:mission:" + sizing_name + ":holding:duration"].value[0],
+            input_file["data:mission:" + sizing_name + ":holding:duration"].units,
+            "s",
+        )  # in s
+    except:
+        input_file_mission["data:mission:op_mission:diversion:distance"].value[0] = 370400
+        input_file_mission["data:mission:op_mission:diversion:distance"].units = "m"
+
+        input_file_mission["data:mission:op_mission:holding:duration"].value[0] = 2700
+        input_file_mission["data:mission:op_mission:holding:duration"].units = "s"
+
+    input_file_mission["data:mission:op_mission:takeoff:V2"].value[0] = convert_units(
+        input_file["data:mission:" + sizing_name + ":takeoff:V2"].value[0],
+        input_file["data:mission:" + sizing_name + ":takeoff:V2"].units,
+        "m/s",
+    )
+
+    input_file_mission["data:mission:op_mission:takeoff:altitude"].value = convert_units(
+        input_file["data:mission:" + sizing_name + ":takeoff:altitude"].value[0],
+        input_file["data:mission:" + sizing_name + ":takeoff:altitude"].units,
+        "m",
+    )
+
+    input_file_mission["data:mission:op_mission:takeoff:fuel"].value = input_file[
+        "data:mission:" + sizing_name + ":takeoff:fuel"
+    ].value
+
+    try:
+
+        input_file_mission["data:mission:op_mission:taxi_in:duration"].value[0] = convert_units(
+            input_file["data:mission:" + sizing_name + ":taxi_in:duration"].value[0],
+            input_file["data:mission:" + sizing_name + ":taxi_in:duration"].units,
+            "s",
+        )
+    except:
+        input_file_mission["data:mission:op_mission:taxi_in:duration"].value[0] = 300
+        input_file_mission["data:mission:op_mission:taxi_in:duration"].units = "s"
+
+    input_file_mission["data:mission:op_mission:taxi_out:duration"].value[0] = convert_units(
+        input_file["data:mission:" + sizing_name + ":taxi_out:duration"].value[0],
+        input_file["data:mission:" + sizing_name + ":taxi_out:duration"].units,
+        "s",
+    )
+
+    input_file_mission["data:mission:op_mission:taxi_out:thrust_rate"].value = input_file[
+        "data:mission:" + sizing_name + ":taxi_out:thrust_rate"
+    ].value
 
     # Run a mission on each grid point and generate the fuel consumption/km/kg_payload
 
@@ -513,7 +632,6 @@ def payload_range_loop_computation(
     time_begin_loop = time.perf_counter()  # Timer
 
     for i in range(len(grid_ranges)):
-
         # Update the data
 
         time_begin = time.perf_counter()
@@ -570,6 +688,7 @@ def payload_range_full(
     show_grid: bool = True,
     x_axis=None,
     y_axis=None,
+    color="black",
 ) -> go.FigureWidget:
     """
     Returns a figure of the payload range using the corrected leduc-breguet formula,
@@ -594,6 +713,7 @@ def payload_range_full(
     :param show_grid: states if the grid points are to be shown on the fig
     :param x_axis: defines the x axis if the user wants to
     :param y_axis: defines the y axis if the user wants to
+    :param color : defines the color of the graph
     :return: fig with payload range diagram + specific consumptions
     """
 
@@ -614,29 +734,29 @@ def payload_range_full(
         show_grid,
         x_axis,
         y_axis,
+        color,
     )
     # load the results from payload_range_loop_computation(...)
     try:
         results = np.loadtxt(pth.join("data", file_save))
         results = results.T
         n_points_x = int(max(results[0]) / range_step)
-        x = np.linspace(min(results[0]), max(results[0]), n_points_x).tolist()
+        x = results[0, 0 : n_values_ranges[0]]
         y = np.linspace(min(results[1]), max(results[1]), n_intervals_payloads)
-        y = y
         y = y.tolist()
 
         z = [[None] * n_points_x for _ in range(n_intervals_payloads)]
 
-        for i in range(len(n_values_ranges)):
+        for i in range(n_intervals_payloads):
             z[i][0 : n_values_ranges[i]] = results[
                 2, sum(n_values_ranges[0:i]) : sum(n_values_ranges[0:i]) + n_values_ranges[i]
             ]
 
         fig.add_trace(
             go.Contour(
-                z=z,
                 x=x,
                 y=y,
+                z=z,
                 colorbar=dict(
                     title="Consumption [kg_fuel/km/kg_payload]",  # title here
                     titleside="right",
@@ -645,7 +765,7 @@ def payload_range_full(
             )
         )
 
-    except:
+    except OSError:
         print(
             "No results were found in the data folder, you first need to run the function "
             "payload_range_loop_computation(...) \n attention: takes time"
