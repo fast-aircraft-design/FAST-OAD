@@ -26,6 +26,7 @@ def drag_distribution_plot(
     aircraft_mass: float,
     aircraft_altitude: float = 10668,
     low_speed_aero=False,
+    CL=None,
     name=None,
     file_formatter=None,
 ) -> go.FigureWidget:
@@ -39,6 +40,7 @@ def drag_distribution_plot(
     :param aircraft_mass : mass of the aircraft, used to calucate Cl
     :param aircraft_altitude : altitude of the aircraft, used to calculate Cl
     :param low_speed_aero : boolean which when True computes the low speed drag
+    :param CL :  value of the lift coefficient. If set to None, then CL is calulated via mass and altitude
     :param name: name to give to the trace added to the figure
     :param file_formatter: the formatter that defines the format of data file. If not provided,
                            default format will be assumed.
@@ -56,9 +58,10 @@ def drag_distribution_plot(
         mach = variables["data:aerodynamics:aircraft:takeoff:mach"].value[0]
         case_string = "low_speed"
 
-    rho = Atmosphere(aircraft_altitude * 3.2744).density
-    T = Atmosphere(aircraft_altitude * 3.2744).temperature
-    CL = aircraft_mass * g / (0.5 * rho * mach ** 2 * 1.4 * 287.1 * T * wing_area)
+    if CL is None:  # CL via mass and altitude
+        rho = Atmosphere(aircraft_altitude * 3.2744).density
+        T = Atmosphere(aircraft_altitude * 3.2744).temperature
+        CL = aircraft_mass * g / (0.5 * rho * mach ** 2 * 1.4 * 287.1 * T * wing_area)
 
     # step 2 : compute induced drag
     k_induced = variables[
