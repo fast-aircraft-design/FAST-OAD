@@ -243,7 +243,8 @@ def payload_range_simple(
 
     fig = go.FigureWidget(fig)
     fig.update_layout(
-        title_text="Payload range diagram", xaxis_title="range [NM]", yaxis_title="Payload [tonnes]"
+        #title_text="Payload range diagram",
+        xaxis_title="range [NM]", yaxis_title="Payload [tonnes]"
     )
 
     if x_axis is not None:
@@ -271,6 +272,7 @@ def grid_generation(
     x_axis=None,
     y_axis=None,
     color="black",
+    short = False,
 ):
     """
     Returns a figure of the payload range using the corrected leduc-breguet formula,
@@ -307,10 +309,14 @@ def grid_generation(
     )
     max_payload = BL_payloads[0]
     payload_c = BL_payloads[2]
+    payload_b = max_payload
 
     ra_b = BL_ranges[1]
     ra_c = BL_ranges[2]
     ra_d = BL_ranges[3]
+
+    pente = (payload_c-payload_b)/(ra_c-ra_b)
+
 
     # Grid generation
     # step 1 : define the number of payloads for the grid
@@ -320,6 +326,10 @@ def grid_generation(
         upper_limit_box_tolerance * max_payload,
         n_intervals_payloads,
     )
+    delta_y = val_payloads[1]-val_payloads[0]
+    delta_x = -delta_y/pente
+    print(delta_x)
+
     ra_c_id = np.where(val_payloads >= payload_c)[0][0]  # Find for which range the breakpoint c is
 
     # step 2 : compute the max range and the boundaries using the breakdown point
@@ -347,30 +357,35 @@ def grid_generation(
     # The grid is divided in two parts the first is a rectangle on the left side of the payload-range diagram
     # The second is the one near MTOW and MFW
 
-    # 1) Base rectangle
+    if not short:
 
-    grid_x = [
-        np.flip(np.arange(max_range[-1], min_range, -range_step)).tolist()
-    ] * n_intervals_payloads
+        # 1) Base rectangle
 
-    # 2) Zone near MTOW and MFW
-    for i in range(1, n_intervals_payloads):
-        add = np.append(np.asarray(grid_x[i - 1]), max_range[-1 - i]).tolist()
-        grid_x[i] = add
-    grid_x.reverse()
+        grid_x = [
+            np.flip(np.arange(max_range[-1], min_range, -range_step)).tolist()
+        ] * n_intervals_payloads
 
-    for i in range(n_intervals_payloads):
-        grid_payloads = np.append(grid_payloads, np.ones(len(grid_x[i])) * val_payloads[i])
-        n_values_ranges[i] = len(grid_x[i])
-        grid_ranges = np.append(grid_ranges, grid_x[i])
+        # 2) Zone near MTOW and MFW
+        for i in range(1, n_intervals_payloads):
+            add = np.append(np.asarray(grid_x[i - 1]), max_range[-1 - i]).tolist()
+            grid_x[i] = add
+        grid_x.reverse()
 
-    # for i in range(n_intervals_payloads):
-    #     range_add = np.arange(max_range[i], min_range, -range_step)
-    #     range_add = np.append(range_add, min_range)
-    #     range_add = np.flip(range_add)
-    #     n_values_ranges[i] = len(range_add)
-    #     grid_ranges = np.append(grid_ranges, range_add)
-    #     grid_payloads = np.append(grid_payloads, np.ones(len(range_add)) * val_payloads[i])
+        for i in range(n_intervals_payloads):
+            grid_payloads = np.append(grid_payloads, np.ones(len(grid_x[i])) * val_payloads[i])
+            n_values_ranges[i] = len(grid_x[i])
+            grid_ranges = np.append(grid_ranges, grid_x[i])
+
+    else:
+        print("min_range",min_range)
+
+        for i in range(n_intervals_payloads):
+            range_add = np.arange(min_range, max_range[i]+1, delta_x)
+            #range_add = np.append(range_add, min_range)
+            #range_add = np.flip(range_add)
+            n_values_ranges[i] = len(range_add)
+            grid_ranges = np.append(grid_ranges, range_add)
+            grid_payloads = np.append(grid_payloads, np.ones(len(range_add)) * val_payloads[i])
 
     grid = np.array(
         [grid_ranges, grid_payloads, np.zeros(len(grid_ranges))]
@@ -384,21 +399,21 @@ def grid_generation(
     scatter_BL = go.Scatter(
         x=BL_ranges[0:-1],
         y=BL_payloads[0:-1],
-        mode="lines+markers",
-        line=dict(color=color, width=5),
+        mode="lines",
+        line=dict(color=color, width=4),
         name=name,
         showlegend=False,
     )
-    scatter_SIZING = go.Scatter(
-        x=[BL_ranges[-1]],
-        y=[BL_payloads[-1]],
-        mode="markers",
-        name="Sizing point " + str(name),
-        marker_color=color,
-    )
+    # scatter_SIZING = go.Scatter(
+    #     x=[BL_ranges[-1]],
+    #     y=[BL_payloads[-1]],
+    #     mode="markers",
+    #     name="Sizing point " + str(name),
+    #     marker_color=color,
+    # )
 
     fig.add_trace(scatter_BL)
-    fig.add_trace(scatter_SIZING)
+    #fig.add_trace(scatter_SIZING)
 
     if show_grid:
         scatter_GRID = go.Scatter(x=grid[0], y=grid[1], mode="markers", name="Grid points")
@@ -406,7 +421,8 @@ def grid_generation(
 
     fig = go.FigureWidget(fig)
     fig.update_layout(
-        title_text="Payload range diagram", xaxis_title="range [NM]", yaxis_title="Payload [tonnes]"
+        #title_text="Payload range diagram",
+        xaxis_title="range [NM]", yaxis_title="Payload [tonnes]"
     )
 
     if x_axis is not None:
@@ -434,6 +450,7 @@ def payload_range_grid_plot(
     x_axis=None,
     y_axis=None,
     color="black",
+    short = False,
 ):
     """
     Returns a figure of the payload range using the corrected leduc-breguet formula +
@@ -478,6 +495,7 @@ def payload_range_grid_plot(
         x_axis,
         y_axis,
         color,
+        short,
     )[0]
 
 
@@ -495,6 +513,7 @@ def payload_range_loop_computation(
     right_limit_box_tolerance=0.95,
     left_limit_box_tolerance=0.1,
     file_save: str = "loop_results.txt",
+    short = False,
 ):
     """
     Returns nothing but saves the results of the loop in the specified file
@@ -531,6 +550,7 @@ def payload_range_loop_computation(
         lower_limit_box_tolerance,
         right_limit_box_tolerance,
         left_limit_box_tolerance,
+        short= short,
     )
 
     # Configuration file generation before launching a mission
@@ -689,6 +709,7 @@ def payload_range_full(
     x_axis=None,
     y_axis=None,
     color="black",
+    short = False,
 ) -> go.FigureWidget:
     """
     Returns a figure of the payload range using the corrected leduc-breguet formula,
@@ -735,12 +756,26 @@ def payload_range_full(
         x_axis,
         y_axis,
         color,
+        short = short,
     )
+    #print(n_values_ranges)
+    #print(n_intervals_payloads)
+    if short:
+        n_values_ranges = n_values_ranges[:-5]
+        n_intervals_payloads -= 5
+    # Figure:
+    if fig is None:
+        fig = go.Figure()
     # load the results from payload_range_loop_computation(...)
     try:
         results = np.loadtxt(pth.join("data", file_save))
         results = results.T
         n_points_x = int(max(results[0]) / range_step)
+        #print(n_points_x)
+        if short:
+            n_points_x = 10
+
+
         x = results[0, 0 : n_values_ranges[0]]
         y = np.linspace(min(results[1]), max(results[1]), n_intervals_payloads)
         y = y.tolist()
@@ -757,13 +792,29 @@ def payload_range_full(
                 x=x,
                 y=y,
                 z=z,
-                colorbar=dict(
-                    title="Consumption [kg_fuel/km/kg_payload]",  # title here
-                    titleside="right",
-                    titlefont=dict(size=10, family="Arial, sans-serif"),
+                contours = dict(
+                  start = 1e-4,end = 5e-4,size =2.5e-5
                 ),
+
+
+                colorbar=dict(
+
+                    title="Consumption per payload and per range",  # title here
+                    titleside="right",
+                    titlefont=dict(size=15, family="Arial, sans-serif"),
+                    tickvals = [1e-4,2e-4,3e-4,4e-4,5e-4],
+
+
+                    tickformat ='.1e',
+
+                ),
+                colorscale='RdBu_r'
             )
         )
+
+        #fig.update_coloraxes(cauto = True, cmin = 1e-4,cmax = 5e-4)
+
+
 
     except OSError:
         print(
@@ -771,11 +822,33 @@ def payload_range_full(
             "payload_range_loop_computation(...) \n attention: takes time"
         )
 
+
+    # fig = payload_range_grid_plot(
+    #     aircraft_file_path,
+    #     propulsion_id,
+    #     sizing_name,
+    #     name,
+    #     fig,
+    #     file_formatter,
+    #     n_intervals_payloads,
+    #     range_step,
+    #     upper_limit_box_tolerance,
+    #     lower_limit_box_tolerance,
+    #     right_limit_box_tolerance,
+    #     left_limit_box_tolerance,
+    #     show_grid,
+    #     x_axis,
+    #     y_axis,
+    #     color,
+    # )
+
     fig.update_layout(
-        title_text="Payload range diagram with specific consumption",
-        xaxis_title="range [NM]",
-        yaxis_title="Payload [tonnes]",
+        #title_text="",
+        xaxis_title="Range [NM]",
+        yaxis_title="Payload [tons]",
         showlegend=False,
+        height = 500,
+        width = 900,
     )
 
     if x_axis is not None:
