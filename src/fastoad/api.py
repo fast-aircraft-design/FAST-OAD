@@ -61,4 +61,5 @@ from fastoad.gui.analysis_and_plots import (
     flaps_and_slats_plot,
     wing_drawing_plot,
     full_aircraft_drawing_plot,
+    speed_altitude_diagram_drawing_plot,
 )

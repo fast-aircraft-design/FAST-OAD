@@ -89,10 +89,9 @@ class CeilingComputation(om.ExplicitComponent):
 
         outputs["data:performance:ceiling:MTOW"] = ceiling_mtow
         outputs["data:performance:ceiling:MZFW"] = ceiling_mzfw
-        print(ceiling_mtow)
-        print(ceiling_mzfw)
 
 
+# This function the ceiling value of the aircraft for a given mass
 def get_ceiling(
     mass,
     propulsion_model,
@@ -100,28 +99,39 @@ def get_ceiling(
     cl_vector_input,
     cd_vector_input,
     cl_max_clean,
-    maximum_engine_mac,
-    cruise_mac,
+    maximum_engine_mach,
+    cruise_mach,
 ):
 
     g = 9.80665  # m/s^2
-    ceiling = 20000  # starting value of the ceiling
-    iter_again = True  # variable used to decide if the iteration needs to continue or not. "True" means that the iteration needs to continue because the ceiling value is not found yet. "False" means that the ceiling value is found and the iteration can stop.
+    ceiling = 20000  # starting value of the ceiling in ft
 
+    # variable used to decide if the iteration needs to continue or not.
+    # "True" means that the iteration needs to continue because the ceiling value is not found yet
+    # "False" means that the ceiling value is found and the iteration can stop
+    iter_again = True
+
+    # Iteration loop
     while iter_again:
         atm = Atmosphere(altitude=ceiling, altitude_in_feet=True)
         rho = atm.density
+
         v_min = np.sqrt(
             2 * mass * g / (rho * wing_area * cl_max_clean)
         )  # the minimum speed is the stall speed
+
         v_max_engine = (
-            maximum_engine_mac * atm.speed_of_sound
-        )  # the maximum speed is given by the maximum mac number
-        v_dive = (cruise_mac + 0.07) * atm.speed_of_sound
+            maximum_engine_mach * atm.speed_of_sound
+        )  # the maximum engine supportable-speed
+        v_dive = (cruise_mach + 0.07) * atm.speed_of_sound  # the diving speed
+
+        # The maximum speed will be the most restrictive one between the two speeds computed before
         v_max = np.minimum(v_dive, v_max_engine)
+
         speed_vector = np.linspace(
             v_min, v_max, 25
-        )  # the 25 speeds tested start at stall speed until the maximum speed given by the
+        )  # the 25 speeds tested start at stall speed until the maximum speed
+
         count = 0  # variable used to know, at each altitude, how many speed give a thrust bigger than the drag
 
         for speed in speed_vector:  # iteration on each speed
@@ -135,13 +145,14 @@ def get_ceiling(
                 cd_vector_input,
                 propulsion_model,
             )  # variable which gives the difference between the thrust and the drag
+
             if difference > 0:
                 count += 1
 
         # Decides if an extra iteration is needed or not
-        if (
-            count > 0
-        ):  # if at least one speed in the speed vector gives a thrust bigger than the drag, it means that the ceiling is not reached and an extra iteration is needed
+        # If at least one speed in the speed vector gives a thrust bigger than the drag,
+        # it means that the ceiling is not reached and an extra iteration is needed
+        if count > 0:
             iter_again = True
             ceiling += 1000  # the next ceiling value tested is 1000 ft bigger than the previous one
         else:
@@ -164,7 +175,6 @@ def thrust_minus_drag(v, alti, mass, wing_area, cl_vector_input, cd_vector_input
         altitude=atm.get_altitude(altitude_in_feet=False),
         engine_setting=EngineSetting.CLIMB,
         thrust_is_regulated=False,
-        # Si je mets false, cela veut dire que je fixe la manette des gaz sans connaitre la poussée en N. Si je mets True, je pose la poussée en N et je demande qu'il calcule la position de la manette des gaz.
         thrust_rate=1.0,
     )
     propulsion_model.compute_flight_points(flight_point)

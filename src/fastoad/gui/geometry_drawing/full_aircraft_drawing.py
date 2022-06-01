@@ -377,7 +377,7 @@ def full_aircraft_drawing_plot(
         x=y_flaps_inboard,
         y=x_flaps_inboard,
         mode="lines",
-        line=dict(color="blue", width=1),
+        line=dict(color="#636efa", width=1),
         name=name,
         showlegend=False,
     )  # inboard flap
@@ -385,7 +385,7 @@ def full_aircraft_drawing_plot(
         x=y_flaps_outboard,
         y=x_flaps_outboard,
         mode="lines",
-        line=dict(color="blue", width=1),
+        line=dict(color="#636efa", width=1),
         name=name,
         showlegend=False,
     )  # outboard flap
@@ -393,14 +393,14 @@ def full_aircraft_drawing_plot(
         x=y_design_line,
         y=x_design_line,
         mode="lines",
-        line=dict(color="blue", width=1),
+        line=dict(color="#636efa", width=1),
         name=name,
         showlegend=False,
     )  # design line
     scatter_slats_left = go.Scatter(
         x=y_slats_left,
         y=x_slats_left,
-        line=dict(color="blue", width=1),
+        line=dict(color="#636efa", width=1),
         mode="lines",
         name=name,
         showlegend=False,
@@ -408,7 +408,7 @@ def full_aircraft_drawing_plot(
     scatter_slats_right = go.Scatter(
         x=y_slats_right,
         y=x_slats_right,
-        line=dict(color="blue", width=1),
+        line=dict(color="#636efa", width=1),
         mode="lines",
         name=name,
         showlegend=False,
@@ -416,7 +416,7 @@ def full_aircraft_drawing_plot(
     scatter_elevator_right = go.Scatter(
         x=y_elevator,
         y=x_elevator,
-        line=dict(color="blue", width=1),
+        line=dict(color="#636efa", width=1),
         mode="lines",
         name=name,
         showlegend=False,
@@ -424,7 +424,7 @@ def full_aircraft_drawing_plot(
     scatter_elevator_left = go.Scatter(
         x=-y_elevator,
         y=x_elevator,
-        line=dict(color="blue", width=1),
+        line=dict(color="#636efa", width=1),
         mode="lines",
         name=name,
         showlegend=False,
@@ -445,7 +445,14 @@ def full_aircraft_drawing_plot(
 
     fig = go.FigureWidget(fig)
 
-    fig.update_layout(title_text="Aircraft Geometry", title_x=0.5, xaxis_title="y", yaxis_title="x")
+    fig.update_layout(
+        width=600,
+        height=600,
+        title_text="Aircraft Geometry",
+        title_x=0.5,
+        xaxis_title="y",
+        yaxis_title="x",
+    )
 
     return fig
 
@@ -692,7 +699,7 @@ def wing_drawing_plot(
         fig = go.Figure()
 
     scatter = go.Scatter(
-        x=y, y=x, line=dict(color="blue", width=3), mode="lines", name=name, showlegend=False
+        x=y, y=x, line=dict(color="#636efa", width=3), mode="lines", name=name, showlegend=False
     )  # wing
 
     scatter_fuselage = go.Scatter(
@@ -1304,7 +1311,7 @@ def flaps_and_slats_plot(
         x=y_inboard,
         y=x_inboard,
         mode="lines",
-        line=dict(color="blue", width=1),
+        line=dict(color="#636efa", width=1),
         name=name,
         showlegend=False,
     )  # first flap
@@ -1312,7 +1319,7 @@ def flaps_and_slats_plot(
         x=y_outboard,
         y=x_outboard,
         mode="lines",
-        line=dict(color="blue", width=1),
+        line=dict(color="#636efa", width=1),
         name=name,
         showlegend=False,
     )  # second flap
@@ -1320,14 +1327,14 @@ def flaps_and_slats_plot(
         x=y_design_line,
         y=x_design_line,
         mode="lines",
-        line=dict(color="blue"),
+        line=dict(color="#636efa"),
         name=name,
         showlegend=False,
     )  # design line
     scatter_slats_left = go.Scatter(
         x=y_slats_left,
         y=x_slats_left,
-        line=dict(color="blue", width=1),
+        line=dict(color="#636efa", width=1),
         mode="lines",
         name=name,
         showlegend=False,
@@ -1335,7 +1342,7 @@ def flaps_and_slats_plot(
     scatter_slats_right = go.Scatter(
         x=y_slats_right,
         y=x_slats_right,
-        line=dict(color="blue", width=1),
+        line=dict(color="#636efa", width=1),
         mode="lines",
         name=name,
         showlegend=False,

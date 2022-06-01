@@ -26,25 +26,7 @@ from plotly.subplots import make_subplots
 from fastoad.io import VariableIO
 from fastoad.openmdao.variables import VariableList
 
-# COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
-COLS = np.array(
-    [
-        "#636EFA",
-        "#636EFA",
-        "#EF553B",
-        "#EF553B",
-        "#00CC96",
-        "#00CC96",
-        "#AB63FA",
-        "#AB63FA",
-        "#FFA15A",
-        "#FFA15A",
-        "#19D3F3",
-        "#19D3F3",
-        "#FF6692",
-        "#FF6692",
-    ]
-)
+COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 
 from .geometry_drawing.full_aircraft_drawing import flaps_and_slats_plot
 from .geometry_drawing.full_aircraft_drawing import wing_drawing_plot
@@ -327,7 +309,6 @@ def mass_breakdown_bar_plot(
 
     # Same color for each aircraft configuration
     i = len(fig.data)
-    print("len(fig.data) = ", len(fig.data))
 
     weight_labels = ["MTOW", "OWE", "Fuel - Mission", "Payload"]
     weight_values = [mtow, owe, fuel_mission, payload]
