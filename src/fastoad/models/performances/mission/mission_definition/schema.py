@@ -20,11 +20,14 @@ from importlib.resources import open_text
 from os import PathLike
 from typing import Union
 
+import numpy as np
 from ensure import Ensure
 from jsonschema import validate
 from ruamel.yaml import YAML
 
 from . import resources
+from ..polar import Polar
+
 
 JSON_SCHEMA_NAME = "mission_schema.json"
 
@@ -41,6 +44,7 @@ MISSION_DEFINITION_TAG = "missions"
 ROUTE_DEFINITIONS_TAG = "routes"
 PHASE_DEFINITIONS_TAG = "phases"
 POLAR_TAG = "polar"
+GROUND_EFFECT_TAG = "ground_effect"
 
 
 class MissionDefinition(OrderedDict):
@@ -138,6 +142,19 @@ class MissionDefinition(OrderedDict):
             polar_def = struct[POLAR_TAG]
             if isinstance(polar_def, str) and ":" in polar_def:
                 struct[POLAR_TAG] = OrderedDict({"CL": polar_def + ":CL", "CD": polar_def + ":CD"})
+
+            # Now work on the ground effect for phases close to ground
+            if GROUND_EFFECT_TAG in struct:
+                gnd_effect = struct[GROUND_EFFECT_TAG]
+                if isinstance(polar_def, str):
+                    polar = Polar()
+                    if gnd_effect == "Raymer":
+                        for val, name in polar.get_gnd_effect_model(gnd_effect).items():
+                            struct[POLAR_TAG][val] = name
+                # delete the field
+                del struct[GROUND_EFFECT_TAG]
+
+
 
     @classmethod
     def _convert_none_values(cls, struct: Union[dict, list]):

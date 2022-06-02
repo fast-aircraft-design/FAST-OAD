@@ -17,11 +17,24 @@ from scipy.interpolate import interp1d
 from scipy.optimize import fmin
 
 
-class Polar:
-    def __init__(self, cl: ndarray, cd: ndarray, span: float = None, lg_height: float = None,
-                 induced_drag_coef: float = None, k_winglet: float = None, k_cd: float = None,
-                 CL_alpha: float = None, CL_alpha0: float = None, CL_high_lift: float = None):
 
+class Polar:
+    gnd_effect_variables_raymer = {
+        "span": "data:geometry:wing:span",
+        "lg_height": "data:geometry:landing_gear:height",
+        "induced_drag_coef": "data:aerodynamics:aircraft:low_speed:induced_drag_coefficient",
+        "k_winglet": "tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k",
+        "k_cd": "tuning:aerodynamics:aircraft:cruise:CD:k",
+        "CL_alpha0": "data:aerodynamics:aircraft:takeoff:CL0_clean",
+        "CL_alpha": "data:aerodynamics:aircraft:takeoff:CL_alpha",
+        "CL_high_lift": "data:aerodynamics:high_lift_devices:takeoff:CL"
+    }
+
+    # def __init__(self, CL: ndarray, CD: ndarray, span: float = None, lg_height: float = None,
+    #              induced_drag_coef: float = None, k_winglet: float = None, k_cd: float = None,
+    #              CL_alpha: float = None, CL_alpha0: float = None, CL_high_lift: float = None):
+
+    def __init__(self, input_dic = None ):
         """
         Class for managing aerodynamic polar data.
 
@@ -33,34 +46,44 @@ class Polar:
         :param cl: a N-elements array with CL values
         :param cd: a N-elements array with CD values that match CL
         """
-        self._definition_CL = cl
-        self._cd = interp1d(cl, cd, kind="quadratic", fill_value="extrapolate")
+        if input_dic is not None:
+            self._definition_CL = input_dic['CL'].value
+            self._cd = interp1d(input_dic['CL'].value, input_dic['CD'].value, kind="quadratic", fill_value="extrapolate")
 
-        #Add terms for ground effect if provided
-        if None not in [span, lg_height, induced_drag_coef, k_winglet, k_cd] and not isinstance(span, str):
-            self._span = span
-            self._lg_height = lg_height
-            self._induced_drag_coef = induced_drag_coef
-            self._k_winglet = k_winglet
-            self._k_cd = k_cd
+            self.init_ground_effect(input_dic)
+
+
+            def _negated_lift_drag_ratio(lift_coeff):
+                """Returns -CL/CD."""
+                return -lift_coeff / self.cd(lift_coeff)
+
+            self._optimal_CL = fmin(_negated_lift_drag_ratio, self._definition_CL[0], disp=0)
+
+    def init_ground_effect(self, input_dic):
+        """
+        Initialise the ground effect calculation
+
+        Assumes only Raymer model
+        """
+        try:
+            self._span = input_dic['span'].value
+            self._lg_height = input_dic['lg_height'].value
+            self._induced_drag_coef = input_dic['induced_drag_coef'].value
+            self._k_winglet = input_dic['k_winglet'].value
+            self._k_cd = input_dic['k_cd'].value
+            self._CL_alpha_0 = input_dic['CL_alpha0'].value
+            self._CL_alpha = input_dic['CL_alpha'].value
+            self._CL_high_lift = input_dic['CL_high_lift'].value
+            alpha_vector = (self._definition_CL - self._CL_alpha_0 - self._CL_high_lift)/self._CL_alpha
+            self._clvsalpha = interp1d(alpha_vector, self._definition_CL)
             self._use_ground_effect = True
-        else:
+        except:
             self._use_ground_effect = False
 
-        #Add CL vs alpha curve with provided CL (containing high lift terms if any)
-        if None not in [CL_alpha0, CL_alpha, CL_high_lift]:
-            if not isinstance(CL_alpha0, str):
-                self._CL_alpha_0 = CL_alpha0
-                self._CL_alpha = CL_alpha
-                self._CL_high_lift = CL_high_lift
-                alpha_vector = (self._definition_CL - self._CL_alpha_0 - self._CL_high_lift)/self._CL_alpha
-                self._clvsalpha = interp1d( alpha_vector, self._definition_CL)
-
-        def _negated_lift_drag_ratio(lift_coeff):
-            """Returns -CL/CD."""
-            return -lift_coeff / self.cd(lift_coeff)
-
-        self._optimal_CL = fmin(_negated_lift_drag_ratio, cl[0], disp=0)
+    def get_gnd_effect_model(self, model_name):
+        """ Returns the input variables need to evaluated gnd effect using Raymer model"""
+        if model_name == 'Raymer':
+            return self.gnd_effect_variables_raymer
 
     @property
     def definition_cl(self):
@@ -85,7 +108,9 @@ class Polar:
         return self._cd(cl)
 
     def cd_ground(self, cl=None, altitude: float = 0):
-        # TO DO : document the model
+
+        """ Evaluates the drag in ground effect, using Raymer's model: 'Aircraft Design A conceptual approach', D. Raymer p304"""
+
         if cl is None:
             return self._cd(self._definition_CL)
         elif self._use_ground_effect:

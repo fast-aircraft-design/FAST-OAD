@@ -1,7 +1,19 @@
 phases:
+  taxi_out:
+    parts:
+      - segment: taxi
+        isa_offset: 0.0
+        thrust_rate: data:mission:operational:taxi_out:thrust_rate
+        true_airspeed:
+          value: data:mission:operational:taxi_out:true_airspeed
+          default: 0.
+        target:
+          time: data:mission:operational:taxi_out:duration
+          mass: data:mission:operational:TOW
   takeoff:
     engine_setting: takeoff
     polar: data:aerodynamics:aircraft:takeoff
+    ground_effect: Raymer
     thrust_rate: 1.0
     parts:
       - segment: takeoff_speed_change
@@ -124,6 +136,7 @@ missions:
       - route: main_route
   operational:
     parts:
+      - phase: taxi_out
       - route: main_route
       - reserve:
           ref: main_route
