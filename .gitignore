@@ -62,3 +62,4 @@ venv*/
 # External tools
 /XFOIL
 /src/fastoad/gui/geometry_drawing/.ipynb_checkpoints/
+/src/fastoad/models/post_processing/.ipynb_checkpoints/
