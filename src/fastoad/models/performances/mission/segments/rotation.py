@@ -35,14 +35,12 @@ class RotationSegment(ManualThrustSegment, mission_file_keyword="rotation"):
     # TO DO : leave the possibility to modify for CS23
     rotation_rate: float = 3/180*pi #CS-25 rotation rate
 
-    time_step: float = 0.1
+    # time_step: float = 0.1
 
     dynamic_var = {'alpha': {'name': 'alpha', 'unit': 'rad'},
                    'alpha_dot': {'name': 'alpha_dot', 'unit': 'rad/s'},
                    'gamma_dot': {'name': 'gamma_dot', 'unit': 'rad/s'},
                    }
-
-    # friction_nobrake: float = 0.03
 
     alpha_limit = 13.5/180*pi
 
@@ -58,7 +56,13 @@ class RotationSegment(ManualThrustSegment, mission_file_keyword="rotation"):
         """
         previous = flight_points[-1]
         next_point = super().compute_next_flight_point(flight_points, time_step)
-        self.compute_next_alpha(next_point, previous )
+
+        col_name = next_point.__annotations__
+        for key in self.dynamic_var.keys():
+            if self.dynamic_var[key]['name'] not in col_name:
+                next_point.add_field(name=self.dynamic_var[key]['name'], unit=self.dynamic_var[key]['unit'])
+
+        self.compute_next_alpha(next_point, previous)
         return next_point
 
     def complete_flight_point(self, flight_point: FlightPoint):
@@ -85,6 +89,7 @@ class RotationSegment(ManualThrustSegment, mission_file_keyword="rotation"):
             flight_point.CD = CD
         else:
             flight_point.CL = flight_point.CD = 0.0
+
         flight_point.drag = flight_point.CD * reference_force
         flight_point.lift = flight_point.CL * reference_force
 
@@ -98,7 +103,7 @@ class RotationSegment(ManualThrustSegment, mission_file_keyword="rotation"):
         #compute lift, including thrust projection, compare with weight
         current = flight_points[-1]
 
-        atm = AtmosphereSI(current.altitude)
+        atm = self._get_atmosphere_point(current.altitude)
         airspeed = current.true_airspeed
         mass = current.mass
         alpha = current.alpha

@@ -43,7 +43,12 @@ class EndOfTakoffSegment(ManualThrustSegment, mission_file_keyword="end_of_takeo
 
     """
 
-    time_step: float = 0.05
+    dynamic_var = {'alpha': {'name': 'alpha', 'unit': 'rad'},
+                   'alpha_dot': {'name': 'alpha_dot', 'unit': 'rad/s'},
+                   'gamma_dot': {'name': 'gamma_dot', 'unit': 'rad/s'},
+                   }
+
+    # time_step: float = 0.05
 
     def compute_next_flight_point(
         self, flight_points: List[FlightPoint], time_step: float
@@ -57,6 +62,12 @@ class EndOfTakoffSegment(ManualThrustSegment, mission_file_keyword="end_of_takeo
         """
         previous = flight_points[-1]
         next_point = super().compute_next_flight_point(flight_points, time_step)
+
+        col_name = next_point.__annotations__
+        for key in self.dynamic_var.keys():
+            if self.dynamic_var[key]['name'] not in col_name:
+                next_point.add_field(name=self.dynamic_var[key]['name'], unit=self.dynamic_var[key]['unit'])
+
         self.compute_next_alpha(next_point, previous)
         self.compute_next_gamma(next_point, previous)
         return next_point
@@ -73,16 +84,6 @@ class EndOfTakoffSegment(ManualThrustSegment, mission_file_keyword="end_of_takeo
         flight_point.engine_setting = self.engine_setting
 
         self._complete_speed_values(flight_point)
-
-        atm = AtmosphereSI(flight_point.altitude)
-        reference_force = 0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_area
-
-        if self.polar:
-            flight_point.CL = flight_point.mass * g / reference_force
-            flight_point.CD = self.polar.cd(flight_point.CL)
-        else:
-            flight_point.CL = flight_point.CD = 0.0
-        flight_point.drag = flight_point.CD * reference_force
 
         self.compute_propulsion(flight_point)
 
@@ -141,14 +142,13 @@ class EndOfTakoffSegment(ManualThrustSegment, mission_file_keyword="end_of_takeo
         :return: slope angle in radians and acceleration in m**2/s
         """
         thrust = flight_point.thrust
-        drag = flight_point.drag
         mass = flight_point.mass
         airspeed = flight_point.true_airspeed
         alpha = flight_point.alpha
         gamma = flight_point.slope_angle
         altitude = flight_point.altitude
 
-        atm = AtmosphereSI(flight_point.altitude)
+        atm = self._get_atmosphere_point(flight_point.altitude)
 
         CL = self.polar.cl(alpha)
         CD = self.polar.cd_ground(cl=CL, altitude=altitude)
@@ -157,6 +157,11 @@ class EndOfTakoffSegment(ManualThrustSegment, mission_file_keyword="end_of_takeo
         
         gamma_dot = (thrust*sin(alpha) + lift - mass*g*cos(gamma)) / mass / airspeed
         acceleration = (thrust*cos(alpha) - drag_aero - mass*g*sin(gamma))/mass
+
         flight_point.acceleration = acceleration
         flight_point.gamma_dot = gamma_dot
+        flight_point.drag = drag_aero
+        flight_point.lift = lift
+        flight_point.CL = CL
+        flight_point.CD = CD
 

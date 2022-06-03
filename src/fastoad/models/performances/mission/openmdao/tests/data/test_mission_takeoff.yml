@@ -15,6 +15,32 @@ phases:
     polar: data:aerodynamics:aircraft:takeoff
     ground_effect: Raymer
     thrust_rate: 1.0
+    isa_offset: data:mission:operational:ISA_offset
+    parts:
+      - segment: takeoff_speed_change
+        time_step: 0.2
+        friction_nobrake: 0.03
+        target:
+          true_airspeed:
+            value: data:mission:operational:takeoff:Vr
+      - segment: rotation
+        time_step: 0.1
+        friction_nobrake: 0.03
+        target:
+          altitude:
+            value: 35
+            unit: ft
+      - segment: end_of_takeoff
+        time_step: 0.05
+        target:
+          altitude:
+            value: 35
+            unit: ft
+  takeoff_wo_gnd_effect:
+    engine_setting: takeoff
+    polar: data:aerodynamics:aircraft:takeoff
+    thrust_rate: 1.0
+    isa_offset: data:mission:operational:ISA_offset
     parts:
       - segment: takeoff_speed_change
         time_step: 0.2
@@ -120,7 +146,6 @@ routes:
       value: 2000.
       unit: NM
     climb_parts:
-      - phase: takeoff
       - phase: initial_climb
       - phase: climb
     cruise_part:
@@ -137,6 +162,15 @@ missions:
   operational:
     parts:
       - phase: taxi_out
+      - phase: takeoff
+      - route: main_route
+      - reserve:
+          ref: main_route
+          multiplier: 0.03
+  operational_wo_gnd_effect:
+    parts:
+      - phase: taxi_out
+      - phase: takeoff_wo_gnd_effect
       - route: main_route
       - reserve:
           ref: main_route

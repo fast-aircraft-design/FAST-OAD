@@ -140,7 +140,9 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
     ivc = DataFile(input_file_path).to_ivc()
 
-    ivc.add_output("data:geometry:wing:area", 100.0, units="m**2")
+    ivc.add_output("data:geometry:wing:area", 130.0, units="m**2")
+    ivc.add_output("data:mission:operational_wo_gnd_effect:TOW", 70000, units="kg")
+    ivc.add_output("data:mission:operational_wo_gnd_effect:OWE", 40000, units="kg")
 
     problem = run_system(
         MissionComponent(
@@ -148,22 +150,22 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
             out_file=pth.join(RESULTS_FOLDER_PATH, "test_mission.csv"),
             use_initializer_iteration=False,
             mission_wrapper=MissionWrapper(pth.join(DATA_FOLDER_PATH, "test_mission_takeoff.yml")),
-            mission_name="operational",
+            mission_name="operational_wo_gnd_effect",
         ),
         ivc,
     )
     # plot_flight(problem.model.component.flight_points, "test_mission.png")
-    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6579.6, atol=1.0)
-    take_off_distance = problem["data:mission:operational:main_route:takeoff:distance"]
+    take_off_distance = problem["data:mission:operational_wo_gnd_effect:takeoff_wo_gnd_effect:distance"]
     assert_allclose(take_off_distance, 1580, atol=1.0)
-    assert_allclose(problem["data:mission:operational:main_route:takeoff:fuel"], 115.8, atol=1e-1)
+    assert_allclose(problem["data:mission:operational_wo_gnd_effect:needed_block_fuel"], 6579.6, atol=1.0)
+    assert_allclose(problem["data:mission:operational_wo_gnd_effect:main_route:takeoff:fuel"], 115.8, atol=1e-1)
 
 def test_ground_effect(cleanup, with_dummy_plugin_2):
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
     ivc = DataFile(input_file_path).to_ivc()
 
-    ivc.add_output("data:geometry:wing:area", 100.0, units="m**2")
+    ivc.add_output("data:geometry:wing:area", 130.33, units="m**2")
 
     problem = run_system(
         MissionComponent(
@@ -175,11 +177,11 @@ def test_ground_effect(cleanup, with_dummy_plugin_2):
         ),
         ivc,
     )
-    # plot_flight(problem.model.component.flight_points, "test_mission.png")
-    take_off_distance = problem["data:mission:operational:main_route:takeoff:distance"]
+    plot_flight(problem.model.component.flight_points, "test_mission.png")
+    take_off_distance = problem["data:mission:operational:takeoff:distance"]
     assert_allclose(take_off_distance, 1589, atol=1.0)
-    assert_allclose(problem["data:mission:operational:main_route:takeoff:fuel"], 116.3, atol=1e-1)
-    assert_allclose(problem["data:mission:operational:main_route:takeoff:duration"], 32.3, atol=1e-1)
+    assert_allclose(problem["data:mission:operational:takeoff:fuel"], 116.3, atol=1e-1)
+    assert_allclose(problem["data:mission:operational:takeoff:duration"], 32.3, atol=1e-1)
 
 
 def test_mission_group_without_loop(cleanup, with_dummy_plugin_2):

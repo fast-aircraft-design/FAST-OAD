@@ -36,9 +36,7 @@ class TakeoffSpeedChangeSegment(ManualThrustSegment, mission_file_keyword="takeo
                    'gamma_dot': {'name': 'gamma_dot', 'unit': 'rad/s'},
                    }
 
-    time_step: float = 0.2
-
-    # friction_nobrake: float = 0.03 # This doesn't work herewith or without default, the definition must go in parent class
+    # time_step: float = 0.2
 
     def complete_flight_point(self, flight_point: FlightPoint):
         """
@@ -62,11 +60,12 @@ class TakeoffSpeedChangeSegment(ManualThrustSegment, mission_file_keyword="takeo
         for key in self.dynamic_var.keys():
             if self.dynamic_var[key]['name'] not in col_name:
                 flight_point.add_field(name=self.dynamic_var[key]['name'], unit=self.dynamic_var[key]['unit'])
+
         flight_point.alpha = alpha
         flight_point.alpha_dot = alpha_dot
         flight_point.gamma_dot = gamma_dot
 
-        atm = AtmosphereSI(flight_point.altitude)
+        atm = self._get_atmosphere_point(flight_point.altitude)
         reference_force = 0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_area
 
         if self.polar:

@@ -15,26 +15,27 @@ import numpy as np
 from numpy import ndarray
 from scipy.interpolate import interp1d
 from scipy.optimize import fmin
-
+from dataclasses import is_dataclass
 
 
 class Polar:
+
+    _use_ground_effect = False
+
+    takeoff_variables = {
+        "CL_alpha0": "data:aerodynamics:aircraft:takeoff:CL0_clean",
+        "CL_alpha": "data:aerodynamics:aircraft:takeoff:CL_alpha",
+        "CL_high_lift": "data:aerodynamics:high_lift_devices:takeoff:CL"
+    }
     gnd_effect_variables_raymer = {
         "span": "data:geometry:wing:span",
         "lg_height": "data:geometry:landing_gear:height",
         "induced_drag_coef": "data:aerodynamics:aircraft:low_speed:induced_drag_coefficient",
         "k_winglet": "tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k",
         "k_cd": "tuning:aerodynamics:aircraft:cruise:CD:k",
-        "CL_alpha0": "data:aerodynamics:aircraft:takeoff:CL0_clean",
-        "CL_alpha": "data:aerodynamics:aircraft:takeoff:CL_alpha",
-        "CL_high_lift": "data:aerodynamics:high_lift_devices:takeoff:CL"
     }
 
-    # def __init__(self, CL: ndarray, CD: ndarray, span: float = None, lg_height: float = None,
-    #              induced_drag_coef: float = None, k_winglet: float = None, k_cd: float = None,
-    #              CL_alpha: float = None, CL_alpha0: float = None, CL_high_lift: float = None):
-
-    def __init__(self, input_dic = None ):
+    def __init__(self, input_dic=None):
         """
         Class for managing aerodynamic polar data.
 
@@ -46,12 +47,27 @@ class Polar:
         :param cl: a N-elements array with CL values
         :param cd: a N-elements array with CD values that match CL
         """
-        if input_dic is not None:
-            self._definition_CL = input_dic['CL'].value
-            self._cd = interp1d(input_dic['CL'].value, input_dic['CD'].value, kind="quadratic", fill_value="extrapolate")
+        if input_dic is not None: # try to test for dataclass and dictionary to fix mission_component breguet test
+            key = list(input_dic.keys())
+            if is_dataclass(input_dic[key[0]]):
+                self._definition_CL = input_dic['CL'].value
+                self._cd = interp1d(input_dic['CL'].value, input_dic['CD'].value, kind="quadratic", fill_value="extrapolate")
+                if isinstance(input_dic['CL']._variable_name, str) and 'takeoff' in input_dic['CL']._variable_name:
+                    self.init_takeoff_polar(input_dic)
+                    self.init_ground_effect(input_dic)
+            else:
+                for name, val in input_dic.items():
+                    if name=='CL':
+                        self._definition_CL = val
+                    elif name == 'CD':
+                        self._definition_CD = val
+                    else:
+                        # default initialise
+                        self._definition_CL = np.array([0.2,0.5,1.0])
+                        self._definition_CD = np.array([0.01,0.02,0.1])
 
-            self.init_ground_effect(input_dic)
-
+                self._cd = interp1d(self._definition_CL, self._definition_CD, kind="quadratic",
+                                            fill_value="extrapolate")
 
             def _negated_lift_drag_ratio(lift_coeff):
                 """Returns -CL/CD."""
@@ -71,14 +87,16 @@ class Polar:
             self._induced_drag_coef = input_dic['induced_drag_coef'].value
             self._k_winglet = input_dic['k_winglet'].value
             self._k_cd = input_dic['k_cd'].value
-            self._CL_alpha_0 = input_dic['CL_alpha0'].value
-            self._CL_alpha = input_dic['CL_alpha'].value
-            self._CL_high_lift = input_dic['CL_high_lift'].value
-            alpha_vector = (self._definition_CL - self._CL_alpha_0 - self._CL_high_lift)/self._CL_alpha
-            self._clvsalpha = interp1d(alpha_vector, self._definition_CL)
             self._use_ground_effect = True
         except:
             self._use_ground_effect = False
+
+    def init_takeoff_polar(self, input_dic):
+        self._CL_alpha_0 = input_dic['CL_alpha0'].value
+        self._CL_alpha = input_dic['CL_alpha'].value
+        self._CL_high_lift = input_dic['CL_high_lift'].value
+        alpha_vector = (self._definition_CL - self._CL_alpha_0 - self._CL_high_lift) / self._CL_alpha
+        self._clvsalpha = interp1d(alpha_vector, self._definition_CL)
 
     def get_gnd_effect_model(self, model_name):
         """ Returns the input variables need to evaluated gnd effect using Raymer model"""
