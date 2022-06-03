@@ -17,7 +17,7 @@ driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
 model:
 
   #  Solvers are defined assuming the OpenMDAO convention "import openmdao.api as om"
-  nonlinear_solver: om.NonlinearBlockGS(maxiter=50, atol=1e-1)
+  nonlinear_solver: om.NonlinearBlockGS(maxiter=50, atol=1e-4)
   linear_solver: om.DirectSolver()
 
   # A group can be set with its own solvers.
