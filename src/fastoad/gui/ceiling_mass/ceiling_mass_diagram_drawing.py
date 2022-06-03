@@ -17,6 +17,7 @@ import plotly.graph_objects as go
 
 
 from fastoad.io import VariableIO
+from scipy.interpolate import interp1d
 
 
 def ceiling_mass_diagram_drawing_plot(
@@ -41,8 +42,21 @@ def ceiling_mass_diagram_drawing_plot(
     alti_buffeting = variables["data:performance:ceiling_mass_diagram:altitude:buffeting"].value
     alti_climb = variables["data:performance:ceiling_mass_diagram:altitude:climb"].value
     alti_cruise = variables["data:performance:ceiling_mass_diagram:altitude:cruise"].value
+    mtow = float(variables["data:weight:aircraft:MTOW"].value[0])
 
-    ceiling_mtow = float(variables["data:performance:ceiling:MTOW"].value[0])
+
+    # Compute the ceiling values
+    alti_ceiling = []
+    mass_ceiling = []
+    alti_minimum = np.minimum(np.minimum(alti_cruise, alti_climb), alti_buffeting)
+    alti_mtow = float(interp1d(mass_vector, alti_minimum)(mtow))
+    alti_ceiling.append(alti_mtow)
+    mass_ceiling.append(mtow)
+    alti_iter = alti_mtow + 2000
+    while alti_iter <= alti_minimum[0]:
+        alti_ceiling.append(alti_iter)
+        mass_ceiling.append(float(interp1d(alti_minimum, mass_vector)(alti_iter)))
+        alti_iter = alti_iter + 2000
 
     # Plot the results
     fig = go.Figure()
@@ -74,11 +88,35 @@ def ceiling_mass_diagram_drawing_plot(
         mode="lines",
         name="Cruise",
     )  # Ceiling mass Line for cruise
+    scatter_ceiling = go.Scatter(
+        x=mass_ceiling,
+        y=alti_ceiling,
+        line=dict(
+            color="black",
+        ),
+        mode="markers",
+        name="Flight level",
+    )  # Ceiling mass Line for ceiling level
 
     fig.add_trace(scatter_buffeting)
     fig.add_trace(scatter_climb)
     fig.add_trace(scatter_cruise)
-
+    fig.add_trace(scatter_ceiling)
+    fig.add_vline(x=mass_ceiling[0], y1=alti_ceiling[0], line_width=1, line_dash="dash", line_color="black")
+    fig.add_vline(x=mass_ceiling[1], y1=alti_ceiling[1], line_width=1, line_dash="dash", line_color="black")
+    fig.add_vline(x=mass_ceiling[2], y1=alti_ceiling[2], line_width=1, line_dash="dash", line_color="black")
+    fig.add_hline(y=alti_ceiling[0], line_width=1, line_dash="dash", line_color="black", name="Ceiling level")
+    fig.add_hline(y=alti_ceiling[1], line_width=1, line_dash="dash", line_color="black")
+    fig.add_hline(y=alti_ceiling[2], line_width=1, line_dash="dash", line_color="black")
+    #fig.add_shape(type="line",
+    #              x0=mass_ceiling[0], y0=0, x1=mass_ceiling[0], y1=alti_ceiling[0],
+    #              line=dict(
+    #                  color="black",
+    #                  width=1,
+    #                  dash="dashdot",
+    #              )
+    #              )
+    fig.update_xaxes(layout.xaxis.rangebreaks[])
     fig = go.FigureWidget(fig)
     fig.update_layout(
         height=700,

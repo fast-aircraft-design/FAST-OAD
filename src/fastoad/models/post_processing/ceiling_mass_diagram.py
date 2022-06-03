@@ -88,21 +88,18 @@ class CeilingMassDiagram(om.ExplicitComponent):
         mzfw = inputs["data:weight:aircraft:MZFW"]
         cl_vector_input = inputs["data:aerodynamics:aircraft:cruise:CL"]
         cd_vector_input = inputs["data:aerodynamics:aircraft:cruise:CD"]
-        cl_max_clean = inputs["data:aerodynamics:aircraft:landing:CL_max_clean"]
         cruise_mach = float(inputs["data:TLAR:cruise_mach"])
-        maximum_engine_mach = inputs["data:propulsion:rubber_engine:maximum_mach"]
-        ceiling_mtow = float(inputs["data:performance:ceiling:MTOW"])
-        ceiling_mzfw = float(inputs["data:performance:ceiling:MZFW"])
 
         g = 9.80665  # m/s^2
 
         # Mass vectors
-        mass_vector = np.linspace(float(mzfw), float(mtow), CEILING_MASS_SHAPE)
+        mass_vector = np.linspace(float(mzfw), float(mtow + 500), CEILING_MASS_SHAPE)
 
         # Altitude vectors
         alti_cruise = np.zeros_like(mass_vector)
         alti_climb = np.zeros_like(mass_vector)
         alti_buffeting = np.zeros_like(mass_vector)
+        alti_minimum = np.zeros_like(mass_vector)
 
         alti_interpol = np.linspace(0, 60000, 121)  # ft
         pressure_interpol = Atmosphere(altitude=alti_interpol, altitude_in_feet=True).pressure
@@ -149,22 +146,24 @@ class CeilingMassDiagram(om.ExplicitComponent):
         else:
             v_z = 300  # ft/min
 
-        # Compute buffeting limit
         cz_buffeting = float(np.interp(cruise_mach, mach_interpol, cz_buffeting_vector))
-        min_pressure = (
-            mass_vector * g * 1.3 / (0.7 * cruise_mach * cruise_mach * wing_area * cz_buffeting)
-        )
-        alti_buffeting = interp1d(pressure_interpol, alti_interpol)(min_pressure)
-
 
         for i in range(len(mass_vector)):
+
+            mass = mass_vector[i]
+
+            # Compute the buffeting limit
+            min_pressure = (
+                    mass * g * 1.3 / (0.7 * cruise_mach * cruise_mach * wing_area * cz_buffeting)
+            )
+            alti_buffeting[i] = interp1d(pressure_interpol, alti_interpol)(min_pressure)
 
             # Compute the climb limit
             alti_climb[i] = fsolve(
                 roc_minus_v_z,
                 30000,
                 args=(
-                    mass_vector[i],
+                    mass,
                     v_z,
                     cruise_mach,
                     wing_area,
@@ -174,11 +173,12 @@ class CeilingMassDiagram(om.ExplicitComponent):
                 ),
             )[0]
 
-            alti_cruise = fsolve(
+            # Compute the cruise limit
+            alti_cruise[i] = fsolve(
                 roc_minus_v_z,
                 30000,
                 args=(
-                    mass_vector[i],
+                    mass,
                     0,
                     cruise_mach,
                     wing_area,
@@ -188,8 +188,11 @@ class CeilingMassDiagram(om.ExplicitComponent):
                 ),
             )[0]
 
+            # Compute the minimum altitude for each mass
+            alti_minimum[i] = np.minimum(np.minimum(alti_cruise[i], alti_climb[i]),alti_buffeting[i])
 
-        # alti_cruise[j] = 1
+
+
 
         # Put the resultst in the output file
         outputs["data:performance:ceiling_mass_diagram:altitude:cruise"] = alti_cruise
@@ -205,6 +208,7 @@ def roc_minus_v_z(
     atm = Atmosphere(altitude=alti, altitude_in_feet=True)
     rho = atm.density
 
+    # Convert the ft/min into m/s
     v_z = vz * 0.3054 / 60
 
     flight_point = FlightPoint(
@@ -221,10 +225,9 @@ def roc_minus_v_z(
     g = 9.80665  # m/s^2
     cl = mass * g / (0.5 * rho * v * v * wing_area)
     cd = np.interp(cl, cl_vector_input, cd_vector_input)
-
     drag = 0.5 * rho * v * v * wing_area * cd
-
 
     difference = (v * (thrust - drag) / (mass * g)) - v_z
 
     return difference
+
