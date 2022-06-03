@@ -37,49 +37,54 @@ def ceiling_mass_diagram_drawing_plot(
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
     # Diagram parameters
-    v_min_mtow = variables["data:performance:speed_altitude_diagram:MTOW:v_min"].value
-    v_max_mtow = variables["data:performance:speed_altitude_diagram:MTOW:v_max"].value
-    v_computed_vector_mtow = variables[
-        "data:performance:speed_altitude_diagram:MTOW:v_computed"
-    ].value
-    v_dive_mtow = variables["data:performance:speed_altitude_diagram:MTOW:v_dive"].value
-    v_engine_mtow = variables["data:performance:speed_altitude_diagram:MTOW:v_engine"].value
-
-    v_min_mzfw = variables["data:performance:speed_altitude_diagram:MZFW:v_min"].value
-    v_max_mzfw = variables["data:performance:speed_altitude_diagram:MZFW:v_max"].value
-    v_computed_vector_mzfw = variables[
-        "data:performance:speed_altitude_diagram:MZFW:v_computed"
-    ].value
-    v_dive_mzfw = variables["data:performance:speed_altitude_diagram:MZFW:v_dive"].value
-    v_engine_mzfw = variables["data:performance:speed_altitude_diagram:MZFW:v_engine"].value
+    mass_vector = variables["data:performance:ceiling_mass_diagram:mass"].value
+    alti_buffeting = variables["data:performance:ceiling_mass_diagram:altitude:buffeting"].value
+    alti_climb = variables["data:performance:ceiling_mass_diagram:altitude:climb"].value
+    alti_cruise = variables["data:performance:ceiling_mass_diagram:altitude:cruise"].value
 
     ceiling_mtow = float(variables["data:performance:ceiling:MTOW"].value[0])
-    ceiling_mzfw = float(variables["data:performance:ceiling:MZFW"].value[0])
-
 
     # Plot the results
     fig = go.Figure()
 
-    scatter_final_mtow = go.Scatter(
-        x=v_final_mtow,
-        y=altitude_final_mtow,
-        legendgroup="group",
-        legendgrouptitle_text="MTOW",
-        line=dict(color="royalblue", width=4),
+    scatter_buffeting = go.Scatter(
+        x=mass_vector,
+        y=alti_buffeting,
+        line=dict(
+            color="#636efa",
+        ),
         mode="lines",
-        name="MTOW : Ceiling at %i ft" % ceiling_mtow,
-        visible="legendonly",
-    )  # Altitude-Speed line for MTOW
+        name="Buffeting",
+    )  # Ceiling mass Line for buffeting
+    scatter_climb = go.Scatter(
+        x=mass_vector,
+        y=alti_climb,
+        line=dict(
+            color="#ef553b",
+        ),
+        mode="lines",
+        name="Climb",
+    )  # Ceiling mass Line for climb
+    scatter_cruise = go.Scatter(
+        x=mass_vector,
+        y=alti_cruise,
+        line=dict(
+            color="#00cc96",
+        ),
+        mode="lines",
+        name="Cruise",
+    )  # Ceiling mass Line for cruise
 
-
-    fig.add_trace(scatter_final_mzfw)
+    fig.add_trace(scatter_buffeting)
+    fig.add_trace(scatter_climb)
+    fig.add_trace(scatter_cruise)
 
     fig = go.FigureWidget(fig)
     fig.update_layout(
         height=700,
-        title_text="Altitude-Speed diagram",
+        title_text="Ceiling-Mass diagram",
         title_x=0.5,
-        xaxis_title="Speed [m/s]",
+        xaxis_title="Mass [kg]",
         yaxis_title="Altitude [ft]",
     )
     return fig

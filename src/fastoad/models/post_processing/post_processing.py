@@ -13,6 +13,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .speed_altitude_diagram import SpeedAltitudeDiagram
+from .ceiling_mass_diagram import CeilingMassDiagram
 
 import openmdao.api as om
 import fastoad.api as oad
@@ -29,5 +30,10 @@ class PostProcessing(om.Group):
         self.add_subsystem(
             "speed_altitude",
             SpeedAltitudeDiagram(propulsion_id=self.options["propulsion_id"]),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "ceiling_mass",
+            CeilingMassDiagram(propulsion_id=self.options["propulsion_id"]),
             promotes=["*"],
         )

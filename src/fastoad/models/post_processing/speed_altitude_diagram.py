@@ -128,20 +128,20 @@ class SpeedAltitudeDiagram(om.ExplicitComponent):
         altitude_vector_mzfw = np.append(altitude_vector_mtow, altitude_extra)  # feet
 
         # Speed vectors for MTOW
-        v_max_mtow = np.zeros(altitude_vector_mtow.size)
-        v_min_mtow = np.zeros(altitude_vector_mtow.size)
-        v_computed_vector_mtow = np.zeros(altitude_vector_mtow.size)
-        v_dive_vector_mtow = np.zeros(altitude_vector_mtow.size)
-        v_engine_vector_mtow = np.zeros(altitude_vector_mtow.size)
+        v_max_mtow = np.zeros_like(altitude_vector_mtow)
+        v_min_mtow = np.zeros_like(altitude_vector_mtow)
+        v_computed_vector_mtow = np.zeros_like(altitude_vector_mtow)
+        v_dive_vector_mtow = np.zeros_like(altitude_vector_mtow)
+        v_engine_vector_mtow = np.zeros_like(altitude_vector_mtow)
 
         # Speed vectors for MZFW
-        v_max_mzfw = np.zeros(altitude_vector_mzfw.size)
-        v_min_mzfw = np.zeros(altitude_vector_mzfw.size)
-        v_computed_vector_mzfw = np.zeros(altitude_vector_mzfw.size)
+        v_max_mzfw = np.zeros_like(altitude_vector_mzfw)
+        v_min_mzfw = np.zeros_like(altitude_vector_mzfw)
+        v_computed_vector_mzfw = np.zeros_like(altitude_vector_mzfw)
 
         # Diving speed vector and engine speed vector for the curves between the "MTOW ceiling" and the "MZFW ceiling"
-        v_dive_extra = np.zeros(altitude_extra.size)
-        v_engine_extra = np.zeros(altitude_extra.size)
+        v_dive_extra = np.zeros_like(altitude_extra)
+        v_engine_extra = np.zeros_like(altitude_extra)
 
         # Compute the diagram for MTOW
         for i in range(len(altitude_vector_mtow)):
@@ -216,14 +216,13 @@ class SpeedAltitudeDiagram(om.ExplicitComponent):
             v_max_mzfw[j] = np.minimum(np.minimum(v_dive_mzfw, v_engine_mzfw), v_max_computed_mzfw)
 
         # Compute the diagram for the extra vector v_dive and v_engine between "MTOW ceiling" and "MZFW ceiling"
-        for k in range(len(altitude_extra)):
-            atm_extra = Atmosphere(altitude=altitude_extra[k], altitude_in_feet=True)
+        atm_extra = Atmosphere(altitude=altitude_extra, altitude_in_feet=True)
 
-            # Compute the maximum speed of the aircraft (diving speed)
-            v_dive_extra[k] = (0.07 + cruise_mach) * atm_extra.speed_of_sound
+        # Compute the maximum speed of the aircraft (diving speed)
+        v_dive_extra = (0.07 + cruise_mach) * atm_extra.speed_of_sound
 
-            # Compute the maximum engine supportable-speed
-            v_engine_extra[k] = maximum_engine_mach * atm_extra.speed_of_sound
+        # Compute the maximum engine supportable-speed
+        v_engine_extra = maximum_engine_mach * atm_extra.speed_of_sound
 
         # Compute the vector v_dive and v_engine for the MZFW
         v_dive_vector_mzfw = np.append(v_dive_vector_mtow, v_dive_extra)

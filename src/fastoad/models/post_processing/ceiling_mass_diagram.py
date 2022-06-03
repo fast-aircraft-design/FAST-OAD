@@ -24,10 +24,12 @@ from fastoad.model_base import FlightPoint
 from scipy.optimize import fsolve
 import plotly.graph_objects as go
 from fastoad.module_management._plugins import FastoadLoader
+import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
 
 FastoadLoader()
 
-CEILING_MASS_SHAPE = 100 # Number of points used for the computation of the graph
+CEILING_MASS_SHAPE = 100  # Number of points used for the computation of the graph
 
 
 class CeilingMassDiagram(om.ExplicitComponent):
@@ -50,24 +52,30 @@ class CeilingMassDiagram(om.ExplicitComponent):
         self.add_input("data:performance:ceiling:MTOW", val=np.nan)
         self.add_input("data:performance:ceiling:MZFW", val=np.nan)
         self.add_input("data:TLAR:cruise_mach", val=np.nan)
+        self.add_input("data:TLAR:range", val=np.nan)
 
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
         self.add_output(
-            "data:performance:ceiling_mass_diagram:cruise:altitude",
+            "data:performance:ceiling_mass_diagram:altitude:cruise",
             shape=CEILING_MASS_SHAPE,
             units="ft",
         )
         self.add_output(
-            "data:performance:ceiling_mass_diagram:climb:altitude",
+            "data:performance:ceiling_mass_diagram:altitude:climb",
             shape=CEILING_MASS_SHAPE,
             units="ft",
         )
         self.add_output(
-            "data:performance:ceiling_mass_diagram:buffeting:altitude",
+            "data:performance:ceiling_mass_diagram:altitude:buffeting",
             shape=CEILING_MASS_SHAPE,
             units="ft",
+        )
+        self.add_output(
+            "data:performance:ceiling_mass_diagram:mass",
+            shape=CEILING_MASS_SHAPE,
+            units="kg",
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -75,13 +83,13 @@ class CeilingMassDiagram(om.ExplicitComponent):
         propulsion_model = self._engine_wrapper.get_model(inputs)
 
         tlar_range = inputs["data:TLAR:range"]
-        wing_area = inputs["data:geometry:wing:area"]
+        wing_area = float(inputs["data:geometry:wing:area"])
         mtow = inputs["data:weight:aircraft:MTOW"]
         mzfw = inputs["data:weight:aircraft:MZFW"]
         cl_vector_input = inputs["data:aerodynamics:aircraft:cruise:CL"]
         cd_vector_input = inputs["data:aerodynamics:aircraft:cruise:CD"]
         cl_max_clean = inputs["data:aerodynamics:aircraft:landing:CL_max_clean"]
-        cruise_mach = inputs["data:TLAR:cruise_mach"]
+        cruise_mach = float(inputs["data:TLAR:cruise_mach"])
         maximum_engine_mach = inputs["data:propulsion:rubber_engine:maximum_mach"]
         ceiling_mtow = float(inputs["data:performance:ceiling:MTOW"])
         ceiling_mzfw = float(inputs["data:performance:ceiling:MZFW"])
@@ -89,46 +97,134 @@ class CeilingMassDiagram(om.ExplicitComponent):
         g = 9.80665  # m/s^2
 
         # Mass vectors
-        mass_vector = np.linspace(mzfw, mtow, CEILING_MASS_SHAPE)
+        mass_vector = np.linspace(float(mzfw), float(mtow), CEILING_MASS_SHAPE)
 
         # Altitude vectors
-        alti_cruise = np.zeros(mass_vector.size)
-        alti_climb = np.zeros(mass_vector.size)
-        alti_buffeting = np.zeros(mass_vector.size)
+        alti_cruise = np.zeros_like(mass_vector)
+        alti_climb = np.zeros_like(mass_vector)
+        alti_buffeting = np.zeros_like(mass_vector)
 
-        alti_interpol = np.linspace(0, 60000, 121) # ft
-        pressure_interpol = np.zeros(alti_interpol.size)
-        for i in (len(alti_interpol)):
-            pressure_interpol[i] = Atmosphere(altitude=alti_interpol[i], altitude_in_feet=True).pressure
-
-        mach_interpol = np.linspace(0.59,0.86, 28) # mach used for the curve Cz_buffeting - Mach
-        cz_buffeting_vector = np.array([0.741, 0.73,0.722,0.712,0.704,0.698,0.692,0.689,0.687,0.682,0.681,0.68,0.679,0.679,0.679,0.679,0.68,0.6790,0.677,0.67,0.662,0.65,0.634,0.619,0.591,0.56,0.51,0.45])
+        alti_interpol = np.linspace(0, 60000, 121)  # ft
+        pressure_interpol = Atmosphere(altitude=alti_interpol, altitude_in_feet=True).pressure
+        mach_interpol = np.linspace(0.59, 0.86, 28)  # mach used for the curve Cz_buffeting - Mach
+        cz_buffeting_vector = np.array(
+            [
+                0.741,
+                0.73,
+                0.722,
+                0.712,
+                0.704,
+                0.698,
+                0.692,
+                0.689,
+                0.687,
+                0.682,
+                0.681,
+                0.68,
+                0.679,
+                0.679,
+                0.679,
+                0.679,
+                0.68,
+                0.6790,
+                0.677,
+                0.67,
+                0.662,
+                0.65,
+                0.634,
+                0.619,
+                0.591,
+                0.56,
+                0.51,
+                0.45,
+            ]
+        )
 
         if tlar_range in RangeCategory.SHORT:
-            v_z = 500 #ft/min
+            v_z = 500  # ft/min
         elif tlar_range in RangeCategory.SHORT_MEDIUM:
-            v_z = 500 #ft/min
+            v_z = 500  # ft/min
         elif tlar_range in RangeCategory.MEDIUM:
-            v_z = 500 #ft/min
+            v_z = 500  # ft/min
         else:
-            v_z = 300 #ft/min
+            v_z = 300  # ft/min
 
-        # Compute the diagram for cruise, climb and buffeting case
-        for j in range(len(mass_vector)):
-
-            cz_buffeting = np.interp([cruise_mach, mach_interpol, cz_buffeting_vector])
-            min_pressure = mass_vector[j]*g*1.3/(0.7*cruise_mach*cruise_mach*wing_area*cz_buffeting)
-            alti_buffeting[j] = np.interp(min_pressure, pressure_interpol, alti_interpol)
-
-            alti_climb[j] = 1
-            alti_cruise[j] = 1
+        # Compute buffeting limit
+        cz_buffeting = float(np.interp(cruise_mach, mach_interpol, cz_buffeting_vector))
+        min_pressure = (
+            mass_vector * g * 1.3 / (0.7 * cruise_mach * cruise_mach * wing_area * cz_buffeting)
+        )
+        alti_buffeting = interp1d(pressure_interpol, alti_interpol)(min_pressure)
 
 
+        for i in range(len(mass_vector)):
+
+            # Compute the climb limit
+            alti_climb[i] = fsolve(
+                roc_minus_v_z,
+                30000,
+                args=(
+                    mass_vector[i],
+                    v_z,
+                    cruise_mach,
+                    wing_area,
+                    cl_vector_input,
+                    cd_vector_input,
+                    propulsion_model,
+                ),
+            )[0]
+
+            alti_cruise = fsolve(
+                roc_minus_v_z,
+                30000,
+                args=(
+                    mass_vector[i],
+                    0,
+                    cruise_mach,
+                    wing_area,
+                    cl_vector_input,
+                    cd_vector_input,
+                    propulsion_model,
+                ),
+            )[0]
 
 
-
+        # alti_cruise[j] = 1
 
         # Put the resultst in the output file
-        outputs["data:performance:ceiling_mass_diagram:cruise:altitude"] = alti_cruise
-        outputs["data:performance:ceiling_mass_diagram:climb:altitude"] = alti_climb
-        outputs["data:performance:ceiling_mass_diagram:buffeting:altitude"] = alti_buffeting
+        outputs["data:performance:ceiling_mass_diagram:altitude:cruise"] = alti_cruise
+        outputs["data:performance:ceiling_mass_diagram:altitude:climb"] = alti_climb
+        outputs["data:performance:ceiling_mass_diagram:altitude:buffeting"] = alti_buffeting
+        outputs["data:performance:ceiling_mass_diagram:mass"] = mass_vector
+
+
+def roc_minus_v_z(
+    alti, mass, vz, mach, wing_area, cl_vector_input, cd_vector_input, propulsion_model
+):
+
+    atm = Atmosphere(altitude=alti, altitude_in_feet=True)
+    rho = atm.density
+
+    v_z = vz * 0.3054 / 60
+
+    flight_point = FlightPoint(
+        mach=mach,
+        altitude=atm.get_altitude(altitude_in_feet=False),
+        engine_setting=EngineSetting.CLIMB,
+        thrust_is_regulated=False,
+        thrust_rate=1.0,
+    )
+    propulsion_model.compute_flight_points(flight_point)
+    thrust = flight_point.thrust
+
+    v = mach * atm.speed_of_sound
+    g = 9.80665  # m/s^2
+    cl = mass * g / (0.5 * rho * v * v * wing_area)
+    cd = np.interp(cl, cl_vector_input, cd_vector_input)
+
+    drag = 0.5 * rho * v * v * wing_area * cd
+
+
+    difference = (v * (thrust - drag) / (mass * g)) - v_z
+
+    return difference
