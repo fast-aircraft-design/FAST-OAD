@@ -799,13 +799,22 @@ class MissionBuilder:
             }
         )
         part_kwargs.update(self._base_kwargs)
+        keys = list(part_kwargs.keys())
+        if "polar" in keys:
+            polar_dict = {}
+            if "ground_effect" in keys:
+                polar_dict["ground_effect"] = part_kwargs["ground_effect"]
+                #remove field
+                del part_kwargs["ground_effect"]
+            value = part_kwargs["polar"]
+            for kkey, vval in value.items():
+                polar_dict[kkey] = vval.value
+            value = Polar(polar_dict)
+            part_kwargs['polar'] = value
+
         for key, value in part_kwargs.items():
             if key == "polar":
-                polar = {}
-                for coeff in ["CL", "CD"]:
-                    polar[coeff] = value[coeff]
-                self._replace_by_inputs(polar, inputs)
-                value = Polar(polar["CL"], polar["CD"])
+                value = Polar(value)
             elif key == "target":
                 if not isinstance(value, FlightPoint):
                     target_parameters = {

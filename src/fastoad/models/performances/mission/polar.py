@@ -49,22 +49,16 @@ class Polar:
         """
         if input_dic is not None: # try to test for dataclass and dictionary to fix mission_component breguet test
             key = list(input_dic.keys())
-            if is_dataclass(input_dic[key[0]]):
-                self._definition_CL = input_dic['CL'].value
-                self._cd = interp1d(input_dic['CL'].value, input_dic['CD'].value, kind="quadratic", fill_value="extrapolate")
-                if isinstance(input_dic['CL']._variable_name, str) and 'takeoff' in input_dic['CL']._variable_name:
+            if 'CL' and 'CD' in key:
+                self._definition_CL = input_dic['CL']
+                self._cd = interp1d(input_dic['CL'], input_dic['CD'], kind="quadratic", fill_value="extrapolate")
+                if "ground_effect" in key:
                     self.init_takeoff_polar(input_dic)
                     self.init_ground_effect(input_dic)
             else:
-                for name, val in input_dic.items():
-                    if name=='CL':
-                        self._definition_CL = val
-                    elif name == 'CD':
-                        self._definition_CD = val
-                    else:
-                        # default initialise
-                        self._definition_CL = np.array([0.2,0.5,1.0])
-                        self._definition_CD = np.array([0.01,0.02,0.1])
+                # default initialisation for instanciation without argument
+                self._definition_CL = np.array([0.2,0.5,1.0])
+                self._definition_CD = np.array([0.01,0.02,0.1])
 
                 self._cd = interp1d(self._definition_CL, self._definition_CD, kind="quadratic",
                                             fill_value="extrapolate")
@@ -81,22 +75,27 @@ class Polar:
 
         Assumes only Raymer model
         """
-        try:
-            self._span = input_dic['span'].value
-            self._lg_height = input_dic['lg_height'].value
-            self._induced_drag_coef = input_dic['induced_drag_coef'].value
-            self._k_winglet = input_dic['k_winglet'].value
-            self._k_cd = input_dic['k_cd'].value
+        if input_dic["ground_effect"] == "Raymer":
+            # TO DO : replace condition by keywords designating the ground effect model
+            self._span = input_dic['span']
+            self._lg_height = input_dic['lg_height']
+            self._induced_drag_coef = input_dic['induced_drag_coef']
+            self._k_winglet = input_dic['k_winglet']
+            self._k_cd = input_dic['k_cd']
             self._use_ground_effect = True
-        except:
+        else:
             self._use_ground_effect = False
 
     def init_takeoff_polar(self, input_dic):
-        self._CL_alpha_0 = input_dic['CL_alpha0'].value
-        self._CL_alpha = input_dic['CL_alpha'].value
-        self._CL_high_lift = input_dic['CL_high_lift'].value
+        """
+        Builds the CL vs alpha vector for ground manoeuvres.
+        """
+        self._CL_alpha_0 = input_dic['CL_alpha0']
+        self._CL_alpha = input_dic['CL_alpha']
+        self._CL_high_lift = input_dic['CL_high_lift']
         alpha_vector = (self._definition_CL - self._CL_alpha_0 - self._CL_high_lift) / self._CL_alpha
         self._clvsalpha = interp1d(alpha_vector, self._definition_CL)
+
 
     def get_gnd_effect_model(self, model_name):
         """ Returns the input variables need to evaluated gnd effect using Raymer model"""

@@ -144,20 +144,15 @@ class MissionDefinition(OrderedDict):
                 struct[POLAR_TAG] = OrderedDict({"CL": polar_def + ":CL", "CD": polar_def + ":CD"})
 
             # Now work on the takeoff and ground effect for phases close to ground
-            if isinstance(polar_def, str) and 'takeoff' in polar_def:
+            if GROUND_EFFECT_TAG in struct:
+                gnd_effect = struct[GROUND_EFFECT_TAG]
                 polar = Polar()
                 for val, name in polar.takeoff_variables.items():
                     struct[POLAR_TAG][val] = name
+                if gnd_effect == "Raymer":
+                    for val, name in polar.get_gnd_effect_model(gnd_effect).items():
+                        struct[POLAR_TAG][val] = name
 
-            if GROUND_EFFECT_TAG in struct:
-                gnd_effect = struct[GROUND_EFFECT_TAG]
-                if isinstance(polar_def, str):
-                    polar = Polar()
-                    if gnd_effect == "Raymer":
-                        for val, name in polar.get_gnd_effect_model(gnd_effect).items():
-                            struct[POLAR_TAG][val] = name
-                # delete the field
-                del struct[GROUND_EFFECT_TAG]
 
 
 

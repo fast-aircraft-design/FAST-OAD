@@ -39,6 +39,7 @@ phases:
   takeoff_wo_gnd_effect:
     engine_setting: takeoff
     polar: data:aerodynamics:aircraft:takeoff
+    ground_effect: None
     thrust_rate: 1.0
     isa_offset: data:mission:operational:ISA_offset
     parts:
