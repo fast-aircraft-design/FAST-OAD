@@ -144,6 +144,9 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "options": {
+          "type": "array"
+        },
         "design_variables": {
           "type": "array",
           "items": {

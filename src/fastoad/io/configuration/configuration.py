@@ -48,6 +48,7 @@ KEY_MODEL = "model"
 KEY_SUBMODELS = "submodels"
 KEY_DRIVER = "driver"
 KEY_OPTIMIZATION = "optimization"
+KEY_OPTIMIZATION_OPTIONS = "options"
 KEY_DESIGN_VARIABLES = "design_variables"
 KEY_CONSTRAINTS = "constraints"
 KEY_OBJECTIVE = "objective"
@@ -237,6 +238,7 @@ class FASTOADProblemConfigurator:
     def get_optimization_definition(self) -> Dict:
         """
         Returns information related to the optimization problem:
+            - Options
             - Design Variables
             - Constraints
             - Objectives
@@ -248,7 +250,10 @@ class FASTOADProblemConfigurator:
         conf_dict = self._serializer.data.get(KEY_OPTIMIZATION)
         if conf_dict:
             for sec, elements in conf_dict.items():
-                optimization_definition[sec] = {elem["name"]: elem for elem in elements}
+                if sec != KEY_OPTIMIZATION_OPTIONS:
+                    optimization_definition[sec] = {elem["name"]: elem for elem in elements}
+                else:
+                    optimization_definition[sec] = elements
         return optimization_definition
 
     def set_optimization_definition(self, optimization_definition: Dict):
@@ -256,7 +261,7 @@ class FASTOADProblemConfigurator:
         Updates configuration with the list of design variables, constraints, objectives
         contained in the optimization_definition dictionary.
 
-        Keys of the dictionary are: "design_var", "constraint", "objective".
+        Keys of the dictionary are: "options", "design_variables", "constraint", "objective".
 
         Configuration file will not be modified until :meth:`save` is used.
 
@@ -356,7 +361,6 @@ class FASTOADProblemConfigurator:
 
         :param model:
         :param auto_scaling:
-        :return:
         """
         optimization_definition = self.get_optimization_definition()
         # Constraints
@@ -374,17 +378,34 @@ class FASTOADProblemConfigurator:
                 constraint_table["ref"] = constraint_table["upper"]
             model.add_constraint(**constraint_table)
 
+    def _get_constraints(self) -> dict:
+        """
+        Get the objectives defined in the configuration file
+        :return: the table with the design variables
+        """
+        optimization_definition = self.get_optimization_definition()
+        constraint_tables = optimization_definition.get(KEY_CONSTRAINTS, {})
+        return constraint_tables
+
     def _add_objectives(self, model):
         """
         Adds objectives to provided model as instructed in current configuration
 
         :param model:
-        :return:
         """
         optimization_definition = self.get_optimization_definition()
         objective_tables = optimization_definition.get(KEY_OBJECTIVE, {})
         for objective_table in objective_tables.values():
             model.add_objective(**objective_table)
+
+    def _get_objectives(self) -> dict:
+        """
+        Get the objectives defined in the configuration file
+        :return: the table with the design variables
+        """
+        optimization_definition = self.get_optimization_definition()
+        objective_tables = optimization_definition.get(KEY_OBJECTIVE, {})
+        return objective_tables
 
     def _add_design_vars(self, model, auto_scaling):
         """
@@ -392,7 +413,6 @@ class FASTOADProblemConfigurator:
 
         :param model:
         :param auto_scaling:
-        :return:
         """
         optimization_definition = self.get_optimization_definition()
         design_var_tables = optimization_definition.get(KEY_DESIGN_VARIABLES, {})
@@ -408,6 +428,25 @@ class FASTOADProblemConfigurator:
                 design_var_table["ref0"] = design_var_table["lower"]
                 design_var_table["ref"] = design_var_table["upper"]
             model.add_design_var(**design_var_table)
+
+    def _get_design_vars(self) -> dict:
+        """
+        Get the design variables defined in the configuration file
+        :return: the table with the design variables
+        """
+        optimization_definition = self.get_optimization_definition()
+        design_var_tables = optimization_definition.get(KEY_DESIGN_VARIABLES, {})
+        return design_var_tables
+
+    def _get_optimization_options(self) -> dict:
+        """
+        Adds design variables to provided model as instructed in current configuration
+
+        :return: dict with optimization options
+        """
+        optimization_definition = self.get_optimization_definition()
+        options_tables = optimization_definition.get(KEY_OPTIMIZATION_OPTIONS, {})
+        return options_tables
 
     def _set_configuration_modifier(self, modifier: "_IConfigurationModifier"):
         self._configuration_modifier = modifier
