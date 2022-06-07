@@ -44,7 +44,6 @@ def ceiling_mass_diagram_drawing_plot(
     alti_cruise = variables["data:performance:ceiling_mass_diagram:altitude:cruise"].value
     mtow = float(variables["data:weight:aircraft:MTOW"].value[0])
 
-
     # Compute the ceiling values
     alti_ceiling = []
     mass_ceiling = []
@@ -64,12 +63,12 @@ def ceiling_mass_diagram_drawing_plot(
         mass_ceiling.append(float(interp1d(alti_minimum, mass_vector)(alti_iter)))
 
         alti_link_ceiling.append(alti_ceiling[i])
-        alti_link_ceiling.append(alti_ceiling[i+1])
+        alti_link_ceiling.append(alti_ceiling[i + 1])
 
-        mass_link_ceiling.append(mass_ceiling[i+1])
-        mass_link_ceiling.append(mass_ceiling[i+1])
+        mass_link_ceiling.append(mass_ceiling[i + 1])
+        mass_link_ceiling.append(mass_ceiling[i + 1])
 
-        i+=1
+        i += 1
         alti_iter = alti_iter + 2000
 
     # Plot the results
@@ -111,7 +110,7 @@ def ceiling_mass_diagram_drawing_plot(
         mode="markers",
         name="Flight level",
     )  # Ceiling mass Line for ceiling level
-    #scatter_link_ceiling = go.Scatter(
+    # scatter_link_ceiling = go.Scatter(
     #    x=[mass_ceiling[0], mass_ceiling[1], mass_ceiling[1], mass_ceiling[2], mass_ceiling[2]],
     #    y=[alti_ceiling[0], alti_ceiling[0], alti_ceiling[1], alti_ceiling[1], alti_ceiling[2]],
     #    line=dict(
@@ -119,17 +118,18 @@ def ceiling_mass_diagram_drawing_plot(
     #    ),
     #    mode="lines",
     #    name="Flight path",
-    #)  # Ceiling mass Line for ceiling level
+    # )  # Ceiling mass Line for ceiling level
     scatter_link_ceiling = go.Scatter(
-       x=mass_link_ceiling,
-       y=alti_link_ceiling,
-       line=dict(
-           color="black", dash="dash", width=1,
-       ),
-       mode="lines",
-       name="Flight path",
+        x=mass_link_ceiling,
+        y=alti_link_ceiling,
+        line=dict(
+            color="black",
+            dash="dash",
+            width=1,
+        ),
+        mode="lines",
+        name="Flight path",
     )  # Ceiling mass Line for ceiling level
-
 
     fig.add_trace(scatter_buffeting)
     fig.add_trace(scatter_climb)

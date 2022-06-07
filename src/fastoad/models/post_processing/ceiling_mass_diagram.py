@@ -1,4 +1,4 @@
-"""Computation of the Altitude-Speed diagram."""
+"""Computation of the Ceiling-altitude diagram."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -17,14 +17,10 @@ import openmdao.api as om
 from stdatm import Atmosphere
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.constants import RangeCategory
-from .ceiling_computation import CeilingComputation
-from .ceiling_computation import thrust_minus_drag
 from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
 from scipy.optimize import fsolve
-import plotly.graph_objects as go
 from fastoad.module_management._plugins import FastoadLoader
-import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 
 FastoadLoader()
@@ -101,9 +97,12 @@ class CeilingMassDiagram(om.ExplicitComponent):
         alti_buffeting = np.zeros_like(mass_vector)
         alti_minimum = np.zeros_like(mass_vector)
 
+        # Compute the pressure vector corresponding to the altitude vector
         alti_interpol = np.linspace(0, 60000, 121)  # ft
         pressure_interpol = Atmosphere(altitude=alti_interpol, altitude_in_feet=True).pressure
-        mach_interpol = np.linspace(0.59, 0.86, 28)  # mach used for the curve Cz_buffeting - Mach
+
+        # Mach used for the curve Cz_buffeting - Mach
+        mach_interpol = np.linspace(0.59, 0.86, 28)
         cz_buffeting_vector = np.array(
             [
                 0.741,
@@ -154,7 +153,7 @@ class CeilingMassDiagram(om.ExplicitComponent):
 
             # Compute the buffeting limit
             min_pressure = (
-                    mass * g * 1.3 / (0.7 * cruise_mach * cruise_mach * wing_area * cz_buffeting)
+                mass * g * 1.3 / (0.7 * cruise_mach * cruise_mach * wing_area * cz_buffeting)
             )
             alti_buffeting[i] = interp1d(pressure_interpol, alti_interpol)(min_pressure)
 
@@ -188,12 +187,6 @@ class CeilingMassDiagram(om.ExplicitComponent):
                 ),
             )[0]
 
-            # Compute the minimum altitude for each mass
-            alti_minimum[i] = np.minimum(np.minimum(alti_cruise[i], alti_climb[i]),alti_buffeting[i])
-
-
-
-
         # Put the resultst in the output file
         outputs["data:performance:ceiling_mass_diagram:altitude:cruise"] = alti_cruise
         outputs["data:performance:ceiling_mass_diagram:altitude:climb"] = alti_climb
@@ -201,10 +194,10 @@ class CeilingMassDiagram(om.ExplicitComponent):
         outputs["data:performance:ceiling_mass_diagram:mass"] = mass_vector
 
 
+# This function computes the difference between the Rate of Climbing (roc) and the ascending speed
 def roc_minus_v_z(
     alti, mass, vz, mach, wing_area, cl_vector_input, cd_vector_input, propulsion_model
 ):
-
     atm = Atmosphere(altitude=alti, altitude_in_feet=True)
     rho = atm.density
 
@@ -230,4 +223,3 @@ def roc_minus_v_z(
     difference = (v * (thrust - drag) / (mass * g)) - v_z
 
     return difference
-
