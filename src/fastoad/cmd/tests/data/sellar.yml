@@ -18,11 +18,6 @@ model:
     id: cmd_test.sellar.functions
 
 optimization:
-  options:
-    - multistart: true
-      samples: 10
-      criterion: maximin
-      num_proc: 4
   design_variables:
     - name: x
       lower: 0
