@@ -809,9 +809,7 @@ class MissionBuilder:
             part_kwargs['polar'] = value
 
         for key, value in part_kwargs.items():
-            if key == "polar":
-                value = Polar(value)
-            elif key == "target":
+            if key == "target":
                 if not isinstance(value, FlightPoint):
                     target_parameters = {
                         param.parameter_name: param.value for param in value.values()

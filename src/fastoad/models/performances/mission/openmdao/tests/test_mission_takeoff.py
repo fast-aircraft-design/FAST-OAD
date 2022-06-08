@@ -33,42 +33,6 @@ from ...mission_definition.exceptions import FastMissionFileMissingMissionNameEr
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
 
-
-# Propulsion definition --------------------------------------------------------
-# class DummyEngine(AbstractFuelPropulsion):
-#     def __init__(self, max_thrust, max_sfc):
-#         """
-#         Dummy engine model.
-#
-#         Max thrust does not depend on flight conditions.
-#         SFC varies linearly with thrust_rate, from max_sfc/2. when thrust rate is 0.,
-#         to max_sfc when thrust_rate is 1.0
-#
-#         :param max_thrust: thrust when thrust rate = 1.0
-#         :param max_sfc: SFC when thrust rate = 1.0
-#         """
-#         self.max_thrust = max_thrust
-#         self.max_sfc = max_sfc
-#
-#     def compute_flight_points(self, flight_point: FlightPoint):
-#
-#         if flight_point.thrust_is_regulated or flight_point.thrust_rate is None:
-#             flight_point.thrust_rate = flight_point.thrust / self.max_thrust
-#         else:
-#             flight_point.thrust = self.max_thrust * flight_point.thrust_rate
-#
-#         flight_point.sfc = self.max_sfc * (1.0 + flight_point.thrust_rate) / 2.0
-#
-#
-# class DummyEngineWrapper(IOMPropulsionWrapper):
-#     def setup(self, component: Component):
-#         pass
-#
-#     @staticmethod
-#     def get_model(inputs) -> IPropulsion:
-#         return DummyEngine(1.2e5, 1.5e-5)
-
-
 # Using the decorator directly on the class would prevent it from being available
 # in this file.
 # RegisterPropulsion("test.wrapper.propulsion.dummy_engine")(DummyEngineWrapper)
@@ -156,9 +120,10 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
     )
     # plot_flight(problem.model.component.flight_points, "test_mission.png")
     take_off_distance = problem["data:mission:operational_wo_gnd_effect:takeoff_wo_gnd_effect:distance"]
-    assert_allclose(take_off_distance, 1580, atol=1.0)
-    assert_allclose(problem["data:mission:operational_wo_gnd_effect:needed_block_fuel"], 6579.6, atol=1.0)
-    assert_allclose(problem["data:mission:operational_wo_gnd_effect:main_route:takeoff:fuel"], 115.8, atol=1e-1)
+    assert_allclose(take_off_distance, 1594, atol=1.0)
+    assert_allclose(problem["data:mission:operational_wo_gnd_effect:needed_block_fuel"], 6577, atol=1.0)
+    assert_allclose(problem["data:mission:operational_wo_gnd_effect:takeoff_wo_gnd_effect:fuel"], 116.4, atol=1e-1)
+    assert_allclose(problem["data:mission:operational_wo_gnd_effect:takeoff_wo_gnd_effect:duration"], 32.4, atol=1e-1)
 
 def test_ground_effect(cleanup, with_dummy_plugin_2):
 
@@ -179,10 +144,32 @@ def test_ground_effect(cleanup, with_dummy_plugin_2):
     )
     plot_flight(problem.model.component.flight_points, "test_mission.png")
     take_off_distance = problem["data:mission:operational:takeoff:distance"]
-    assert_allclose(take_off_distance, 1589, atol=1.0)
-    assert_allclose(problem["data:mission:operational:takeoff:fuel"], 116.3, atol=1e-1)
-    assert_allclose(problem["data:mission:operational:takeoff:duration"], 32.3, atol=1e-1)
+    assert_allclose(take_off_distance, 1584, atol=1.0)
+    assert_allclose(problem["data:mission:operational:takeoff:fuel"], 115.8, atol=1e-1)
+    assert_allclose(problem["data:mission:operational:takeoff:duration"], 32.2, atol=1e-1)
 
+def test_start_stop(cleanup, with_dummy_plugin_2):
+    input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
+    ivc = DataFile(input_file_path).to_ivc()
+
+    ivc.add_output("data:geometry:wing:area", 130.0, units="m**2")
+    ivc.add_output("data:mission:start_stop_mission:TOW", 79000, units="kg")
+    ivc.add_output("data:mission:start_stop_mission:OWE", 40000, units="kg")
+
+    problem = run_system(
+        MissionComponent(
+            propulsion_id="test.wrapper.propulsion.dummy_engine",
+            out_file=pth.join(RESULTS_FOLDER_PATH, "test_mission_start_stop.csv"),
+            use_initializer_iteration=False,
+            mission_wrapper=MissionWrapper(pth.join(DATA_FOLDER_PATH, "test_mission_takeoff.yml")),
+            mission_name="start_stop_mission",
+        ),
+        ivc,
+    )
+    plot_flight(problem.model.component.flight_points, "test_mission.png")
+    take_off_distance = problem["data:mission:start_stop_mission:start_stop:distance"]
+    assert_allclose(take_off_distance, 1453, atol=1.0)
+    assert_allclose(problem["data:mission:start_stop_mission:start_stop:duration"], 40, atol=1e-1)
 
 def test_mission_group_without_loop(cleanup, with_dummy_plugin_2):
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
@@ -213,8 +200,8 @@ def test_mission_group_without_loop(cleanup, with_dummy_plugin_2):
         ),
         ivc,
     )
-    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6579.6, atol=1.0)
-    assert_allclose(problem["data:mission:operational:block_fuel"], 15100.0, atol=1.0)
+    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6376.2, atol=1.0)
+    assert_allclose(problem["data:mission:operational:block_fuel"], 15000.0, atol=1.0)
 
 
 def test_mission_group_with_loop(cleanup, with_dummy_plugin_2):
@@ -258,6 +245,6 @@ def test_mission_group_with_loop(cleanup, with_dummy_plugin_2):
         # + problem["data:mission:operational:takeoff:fuel"],
         atol=1.0,
     )
-    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 5667.5, atol=1.0)
+    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 5522.5, atol=1.0)
 
 

@@ -65,9 +65,10 @@ class DummyEngine(AbstractFuelPropulsion):
 @pytest.fixture
 def polar() -> Polar:
     """Returns a dummy polar where max L/D ratio is around 16."""
+    cl = np.arange(0.0, 1.5, 0.01) + 0.5
     polar_dict = {
-        'CL' : np.arange(0.0, 1.5, 0.01) + 0.5,
-        'CD' : 0.5e-1 * np.arange(0.0, 1.5, 0.01) ** 2 + 0.01,
+        'CL' : cl,
+        'CD' : 0.5e-1 * cl ** 2 + 0.01,
         'ground_effect' : 'Raymer',
         'span' : 34.5,
         'lg_height' : 2.5,
@@ -145,6 +146,7 @@ def test_end_of_takeoff(polar):
         engine_setting=EngineSetting.CLIMB,
     )
     segment.thrust_rate = 1.0
+    segment.time_step = 0.05
     flight_points = segment.compute_from(
         FlightPoint(time = 35.0, altitude=0.0, mass=70000.0, true_airspeed=85.0, alpha = 10.0/180*3.14, slope_angle =0.0)
     )  # Test with dict
