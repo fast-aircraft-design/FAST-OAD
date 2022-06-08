@@ -1,0 +1,39 @@
+title: Sellar
+
+module_folders:
+  - ./cmd_sellar_example
+
+input_file: ../results/inputs.xml
+output_file: ../results/outputs.xml
+
+driver: om.ScipyOptimizeDriver(optimizer='SLSQP', tol=1e-8)
+model:
+  group:
+    nonlinear_solver: om.NewtonSolver(maxiter=20, solve_subsystems=False)
+    disc1:
+      id: cmd_test.sellar.disc1
+    disc2:
+      id: cmd_test.sellar.disc2
+  functions:
+    id: cmd_test.sellar.functions
+
+optimization:
+  options:
+    - multistart: true
+      samples: 10
+      criterion: maximin
+      num_proc: 4
+  design_variables:
+    - name: x
+      lower: 0
+      upper: 10
+    - name: z
+      lower: 0
+      upper: 10
+  constraints:
+    - name: g1
+      upper: 0
+    - name: g2
+      upper: 0
+  objective:
+    - name: f
