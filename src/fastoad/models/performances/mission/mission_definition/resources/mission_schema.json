@@ -170,6 +170,18 @@
         },
         "CD": {
           "$ref": "#/definitions/CL_CD"
+        },
+        "CL0_clean": {
+          "$ref": "#/definitions/parameter_value_without_unit"
+        },
+        "CL_alpha": {
+          "$ref": "#/definitions/parameter_value_without_unit"
+        },
+        "CL_high_lift": {
+          "$ref": "#/definitions/parameter_value_without_unit"
+        },
+        "ground_effect": {
+          "$ref": "#/definitions/string_parameter_value"
         }
       }
     },

@@ -20,7 +20,7 @@ from scipy.constants import foot
 from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import AbstractFuelPropulsion, FuelEngineSet
-from ..takeoff_speed_change import TakeoffSpeedChangeSegment
+from ..ground_speed_change import GroundSpeedChangeSegment
 from ..rotation import RotationSegment
 from ..end_of_takeoff import EndOfTakoffSegment
 
@@ -65,26 +65,27 @@ class DummyEngine(AbstractFuelPropulsion):
 @pytest.fixture
 def polar() -> Polar:
     """Returns a dummy polar where max L/D ratio is around 16."""
-    cl = np.arange(0.0, 1.5, 0.01) + 0.5
-    cd = 0.5e-1 * cl ** 2 + 0.01
-    span = 34.5
-    lg_height = 2.5
-    induced_drag = 0.034
-    k_cd = 1.0
-    k_winglet = 1.0
-    cl_alpha = 5.0
-    cl_alpha0 = 0.2
-    cl_high_lift = 0.5
-    return Polar(cl, cd, span = span, lg_height = lg_height,
-                 induced_drag_coef=induced_drag, k_winglet = k_winglet, k_cd = k_cd,
-                 CL_alpha = cl_alpha, CL_alpha0 = cl_alpha0, CL_high_lift = cl_high_lift)
+    polar_dict = {
+        'CL' : np.arange(0.0, 1.5, 0.01) + 0.5,
+        'CD' : 0.5e-1 * np.arange(0.0, 1.5, 0.01) ** 2 + 0.01,
+        'ground_effect' : 'Raymer',
+        'span' : 34.5,
+        'lg_height' : 2.5,
+        'induced_drag_coef' : 0.034,
+        'k_cd' : 1.0,
+        'k_winglet' : 1.0,
+        'CL_alpha' : 5.0,
+        'CL0_clean' : 0.2,
+        'CL_high_lift' : 0.5,
+    }
+    return Polar(polar_dict)
 
 
 def test_takeoff_speed_change(polar):
     propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     # initialisation then change instance attributes
-    segment = TakeoffSpeedChangeSegment(
+    segment = GroundSpeedChangeSegment(
         target=FlightPoint(true_airspeed=75.0),
         propulsion=propulsion,
         reference_area=120.0,
@@ -92,6 +93,7 @@ def test_takeoff_speed_change(polar):
         engine_setting=EngineSetting.CLIMB,
     )
     segment.thrust_rate = 1.0
+    segment.time_step = 0.2
     flight_points = segment.compute_from(
         FlightPoint(altitude=0.0, mass=70000.0, true_airspeed=0.0)
     )  # Test with dict

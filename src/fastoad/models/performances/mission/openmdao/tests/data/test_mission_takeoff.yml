@@ -12,20 +12,24 @@ phases:
           mass: data:mission:operational:TOW
   takeoff:
     engine_setting: takeoff
-    polar: data:aerodynamics:aircraft:takeoff
-    ground_effect: Raymer
+    polar:
+      CL: data:aerodynamics:aircraft:takeoff:CL
+      CD: data:aerodynamics:aircraft:takeoff:CD
+      ground_effect: Raymer
+      CL0_clean: data:aerodynamics:aircraft:takeoff:CL0_clean
+      CL_alpha: data:aerodynamics:aircraft:takeoff:CL_alpha
+      CL_high_lift: data:aerodynamics:high_lift_devices:takeoff:CL
+    friction_nobrake: 0.03
     thrust_rate: 1.0
     isa_offset: data:mission:operational:ISA_offset
     parts:
-      - segment: takeoff_speed_change
-        time_step: 0.2
-        friction_nobrake: 0.03
+      - segment: ground_speed_change
+        time_step: 0.1
         target:
-          true_airspeed:
+          equivalent_airspeed:
             value: data:mission:operational:takeoff:Vr
       - segment: rotation
         time_step: 0.1
-        friction_nobrake: 0.03
         target:
           altitude:
             value: 35
@@ -38,20 +42,23 @@ phases:
             unit: ft
   takeoff_wo_gnd_effect:
     engine_setting: takeoff
-    polar: data:aerodynamics:aircraft:takeoff
-    ground_effect: None
+    polar:
+      CL: data:aerodynamics:aircraft:takeoff:CL
+      CD: data:aerodynamics:aircraft:takeoff:CD
+      ground_effect: none
+      CL0_clean: data:aerodynamics:aircraft:takeoff:CL0_clean
+      CL_alpha: data:aerodynamics:aircraft:takeoff:CL_alpha
+      CL_high_lift: data:aerodynamics:high_lift_devices:takeoff:CL
     thrust_rate: 1.0
     isa_offset: data:mission:operational:ISA_offset
     parts:
-      - segment: takeoff_speed_change
-        time_step: 0.2
-        friction_nobrake: 0.03
+      - segment: ground_speed_change
+        time_step: 0.1
         target:
           true_airspeed:
             value: data:mission:operational:takeoff:Vr
       - segment: rotation
         time_step: 0.1
-        friction_nobrake: 0.03
         target:
           altitude:
             value: 35

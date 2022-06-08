@@ -13,7 +13,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from typing import List, Tuple
+from typing import List, Union
 from numpy import pi, sin, cos
 from stdatm import AtmosphereSI
 
@@ -32,17 +32,19 @@ class RotationSegment(ManualThrustSegment, mission_file_keyword="rotation"):
     The target must define an alpha limit value.
     """
 
-    # TO DO : leave the possibility to modify for CS23
+    # TO DO : leave the possibility to modify for CS23, needs modification of base.py as of now
     rotation_rate: float = 3/180*pi #CS-25 rotation rate
+    alpha_limit: float = 13.5/180*pi
 
     # time_step: float = 0.1
 
-    dynamic_var = {'alpha': {'name': 'alpha', 'unit': 'rad'},
-                   'alpha_dot': {'name': 'alpha_dot', 'unit': 'rad/s'},
-                   'gamma_dot': {'name': 'gamma_dot', 'unit': 'rad/s'},
-                   }
+    #: Friction coefficient considered for acceleration at take-off. The default value is representative of dry concrete/asphalte
+    # friction_nobrake: float = 0.03
 
-    alpha_limit = 13.5/180*pi
+    #: Ground effect model considered for the aerodynamics close to ground
+    # ground_effect: Union[bool, str] = False
+
+
 
     def compute_next_flight_point(
         self, flight_points: List[FlightPoint], time_step: float
@@ -57,10 +59,10 @@ class RotationSegment(ManualThrustSegment, mission_file_keyword="rotation"):
         previous = flight_points[-1]
         next_point = super().compute_next_flight_point(flight_points, time_step)
 
-        col_name = next_point.__annotations__
-        for key in self.dynamic_var.keys():
-            if self.dynamic_var[key]['name'] not in col_name:
-                next_point.add_field(name=self.dynamic_var[key]['name'], unit=self.dynamic_var[key]['unit'])
+        # col_name = next_point.__annotations__
+        # for key in self.dynamic_var.keys():
+        #     if self.dynamic_var[key]['name'] not in col_name:
+        #         next_point.add_field(name=self.dynamic_var[key]['name'], unit=self.dynamic_var[key]['unit'])
 
         self.compute_next_alpha(next_point, previous)
         return next_point

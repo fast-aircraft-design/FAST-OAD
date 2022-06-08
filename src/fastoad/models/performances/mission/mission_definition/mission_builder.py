@@ -802,10 +802,6 @@ class MissionBuilder:
         keys = list(part_kwargs.keys())
         if "polar" in keys:
             polar_dict = {}
-            if "ground_effect" in keys:
-                polar_dict["ground_effect"] = part_kwargs["ground_effect"]
-                #remove field
-                del part_kwargs["ground_effect"]
             value = part_kwargs["polar"]
             for kkey, vval in value.items():
                 polar_dict[kkey] = vval.value

@@ -13,8 +13,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from typing import List, Tuple
-from stdatm import AtmosphereSI
+from typing import List, Union
 
 from fastoad.model_base import FlightPoint
 from .base import ManualThrustSegment
@@ -24,19 +23,18 @@ from scipy.constants import g
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
-class TakeoffSpeedChangeSegment(ManualThrustSegment, mission_file_keyword="takeoff_speed_change"):
+class GroundSpeedChangeSegment(ManualThrustSegment, mission_file_keyword="ground_speed_change"):
     """
-    Computes a flight path segment where aircraft is accelerated on the ground
+    Computes a flight path segment where aircraft is accelerated or de-accelerated on the ground
 
-    The target must define a true_airspeed value.
+    The target must define an equivalent_airspeed value.
     """
 
-    dynamic_var = {'alpha': {'name': 'alpha', 'unit': 'rad'},
-                   'alpha_dot': {'name': 'alpha_dot', 'unit': 'rad/s'},
-                   'gamma_dot': {'name': 'gamma_dot', 'unit': 'rad/s'},
-                   }
+    #: Friction coefficient considered for acceleration at take-off. The default value is representative of dry concrete/asphalte
+    # friction_nobrake: float = 0.03
 
-    # time_step: float = 0.2
+    #: Ground effect model considered for the aerodynamics close to ground
+    # ground_effect: Union[bool, str] = False
 
     def complete_flight_point(self, flight_point: FlightPoint):
         """
@@ -56,14 +54,14 @@ class TakeoffSpeedChangeSegment(ManualThrustSegment, mission_file_keyword="takeo
         alpha_dot=0
         gamma_dot=0
 
-        col_name = flight_point.__annotations__
-        for key in self.dynamic_var.keys():
-            if self.dynamic_var[key]['name'] not in col_name:
-                flight_point.add_field(name=self.dynamic_var[key]['name'], unit=self.dynamic_var[key]['unit'])
+        # col_name = flight_point.__annotations__
+        # for key in self.dynamic_var.keys():
+        #     if self.dynamic_var[key]['name'] not in col_name:
+        #         flight_point.add_field(name=self.dynamic_var[key]['name'], unit=self.dynamic_var[key]['unit'])
 
         flight_point.alpha = alpha
         flight_point.alpha_dot = alpha_dot
-        flight_point.gamma_dot = gamma_dot
+        flight_point.slope_angle_derivative = gamma_dot
 
         atm = self._get_atmosphere_point(flight_point.altitude)
         reference_force = 0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_area
@@ -87,6 +85,10 @@ class TakeoffSpeedChangeSegment(ManualThrustSegment, mission_file_keyword="takeo
     def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
         if self.target.true_airspeed is not None:
             return self.target.true_airspeed - flight_points[-1].true_airspeed
+        if self.target.equivalent_airspeed is not None:
+            return self.target.equivalent_airspeed - flight_points[-1].equivalent_airspeed
+        if self.target.mach is not None:
+            return self.target.mach - flight_points[-1].mach
 
         raise FastFlightSegmentIncompleteFlightPoint(
             "No valid target definition for airspeed change at takeoff."

@@ -12,21 +12,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import numpy as np
-from numpy import ndarray
 from scipy.interpolate import interp1d
 from scipy.optimize import fmin
-from dataclasses import is_dataclass
+
 
 
 class Polar:
 
     _use_ground_effect = False
+    _use_CL_alpha = False
 
-    takeoff_variables = {
-        "CL_alpha0": "data:aerodynamics:aircraft:takeoff:CL0_clean",
-        "CL_alpha": "data:aerodynamics:aircraft:takeoff:CL_alpha",
-        "CL_high_lift": "data:aerodynamics:high_lift_devices:takeoff:CL"
-    }
     gnd_effect_variables_raymer = {
         "span": "data:geometry:wing:span",
         "lg_height": "data:geometry:landing_gear:height",
@@ -44,21 +39,26 @@ class Polar:
 
         Once defined, for any CL value, CD can be obtained using :meth:`cd`.
 
-        :param cl: a N-elements array with CL values
-        :param cd: a N-elements array with CD values that match CL
+        :param input_dic: a dictionary containing the CL and CD N-elements array and additional variables for
+        ground effect calculation.
+        For ground segments the 'CL vs alpha curve' is required and the dictionary
+        must contain 'CL0_clean', 'CL_alpha' and 'CL_high_lift'
+
         """
         if input_dic is not None: # try to test for dataclass and dictionary to fix mission_component breguet test
             key = list(input_dic.keys())
             if 'CL' and 'CD' in key:
                 self._definition_CL = input_dic['CL']
                 self._cd = interp1d(input_dic['CL'], input_dic['CD'], kind="quadratic", fill_value="extrapolate")
-                if "ground_effect" in key:
+                if "CL0_clean" and "CL_alpha" and "CL_high_lift" in key:
                     self.init_takeoff_polar(input_dic)
+                    self._use_CL_alpha = True
+                if "ground_effect" in key:
                     self.init_ground_effect(input_dic)
             else:
                 # default initialisation for instanciation without argument
-                self._definition_CL = np.array([0.2,0.5,1.0])
-                self._definition_CD = np.array([0.01,0.02,0.1])
+                self._definition_CL = np.array([0.2, 0.5, 1.0])
+                self._definition_CD = np.array([0.01, 0.02, 0.1])
 
                 self._cd = interp1d(self._definition_CL, self._definition_CD, kind="quadratic",
                                             fill_value="extrapolate")
@@ -73,7 +73,7 @@ class Polar:
         """
         Initialise the ground effect calculation
 
-        Assumes only Raymer model
+        Only Raymer model available
         """
         if input_dic["ground_effect"] == "Raymer":
             # TO DO : replace condition by keywords designating the ground effect model
@@ -90,7 +90,7 @@ class Polar:
         """
         Builds the CL vs alpha vector for ground manoeuvres.
         """
-        self._CL_alpha_0 = input_dic['CL_alpha0']
+        self._CL_alpha_0 = input_dic['CL0_clean']
         self._CL_alpha = input_dic['CL_alpha']
         self._CL_high_lift = input_dic['CL_high_lift']
         alpha_vector = (self._definition_CL - self._CL_alpha_0 - self._CL_high_lift) / self._CL_alpha
@@ -98,9 +98,12 @@ class Polar:
 
 
     def get_gnd_effect_model(self, model_name):
-        """ Returns the input variables need to evaluated gnd effect using Raymer model"""
+        """ Returns the input variables need to evaluate the gnd effect model"""
         if model_name == 'Raymer':
             return self.gnd_effect_variables_raymer
+        else:
+            # return empty dictionnary
+            return {}
 
     @property
     def definition_cl(self):
@@ -142,4 +145,8 @@ class Polar:
         """
         The lift coefficient corresponding to alpha (rad)
         """
-        return self._clvsalpha(alpha)
+        if self._use_CL_alpha:
+            return self._clvsalpha(alpha)
+        else:
+            raise ValueError("CL vs alpha curve not available, provide 'CL0_clean', 'CL_alpha' and 'CL_high_lift'"
+                             "to polar in mission definition.")

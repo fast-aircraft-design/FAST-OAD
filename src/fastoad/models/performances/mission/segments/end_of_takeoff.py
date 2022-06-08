@@ -15,7 +15,7 @@
 import logging
 from copy import copy
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List, Union
 
 import pandas as pd
 from numpy import cos, sin
@@ -43,12 +43,11 @@ class EndOfTakoffSegment(ManualThrustSegment, mission_file_keyword="end_of_takeo
 
     """
 
-    dynamic_var = {'alpha': {'name': 'alpha', 'unit': 'rad'},
-                   'alpha_dot': {'name': 'alpha_dot', 'unit': 'rad/s'},
-                   'gamma_dot': {'name': 'gamma_dot', 'unit': 'rad/s'},
-                   }
+    #: Friction coefficient considered for acceleration at take-off. The default value is representative of dry concrete/asphalte
+    # friction_nobrake: float = 0.03
 
-    # time_step: float = 0.05
+    #: Ground effect model considered for the aerodynamics close to ground
+    # ground_effect: Union[bool, str] = False
 
     def compute_next_flight_point(
         self, flight_points: List[FlightPoint], time_step: float
@@ -63,10 +62,10 @@ class EndOfTakoffSegment(ManualThrustSegment, mission_file_keyword="end_of_takeo
         previous = flight_points[-1]
         next_point = super().compute_next_flight_point(flight_points, time_step)
 
-        col_name = next_point.__annotations__
-        for key in self.dynamic_var.keys():
-            if self.dynamic_var[key]['name'] not in col_name:
-                next_point.add_field(name=self.dynamic_var[key]['name'], unit=self.dynamic_var[key]['unit'])
+        # col_name = next_point.__annotations__
+        # for key in self.dynamic_var.keys():
+        #     if self.dynamic_var[key]['name'] not in col_name:
+        #         next_point.add_field(name=self.dynamic_var[key]['name'], unit=self.dynamic_var[key]['unit'])
 
         self.compute_next_alpha(next_point, previous)
         self.compute_next_gamma(next_point, previous)
@@ -115,7 +114,7 @@ class EndOfTakoffSegment(ManualThrustSegment, mission_file_keyword="end_of_takeo
         #Constant pitch angle hypothesis
         next_point.alpha = (
                 previous_point.alpha
-                - time_step * previous_point.gamma_dot
+                - time_step * previous_point.slope_angle_derivative
         )
 
 
@@ -130,7 +129,7 @@ class EndOfTakoffSegment(ManualThrustSegment, mission_file_keyword="end_of_takeo
         time_step = next_point.time - previous_point.time
         next_point.slope_angle = (
                 previous_point.slope_angle
-                + time_step * previous_point.gamma_dot
+                + time_step * previous_point.slope_angle_derivative
         )
 
     def get_gamma_and_acceleration(self, flight_point: FlightPoint):
@@ -159,7 +158,7 @@ class EndOfTakoffSegment(ManualThrustSegment, mission_file_keyword="end_of_takeo
         acceleration = (thrust*cos(alpha) - drag_aero - mass*g*sin(gamma))/mass
 
         flight_point.acceleration = acceleration
-        flight_point.gamma_dot = gamma_dot
+        flight_point.slope_angle_derivative = gamma_dot
         flight_point.drag = drag_aero
         flight_point.lift = lift
         flight_point.CL = CL
