@@ -28,6 +28,7 @@ from fastoad.openmdao.validity_checker import ValidityDomainChecker
 from fastoad.openmdao.variables import VariableList
 from ._utils import problem_without_mpi
 from .exceptions import FASTOpenMDAONanInInputFile
+from ..module_management._bundle_loader import BundleLoader
 
 # Name of IVC that will contain input values
 INPUT_SYSTEM_NAME = "fastoad_inputs"
@@ -63,11 +64,13 @@ class FASTOADProblem(om.Problem):
     def run_model(self, case_prefix=None, reset_iter_counts=True):
         status = super().run_model(case_prefix, reset_iter_counts)
         ValidityDomainChecker.check_problem_variables(self)
+        BundleLoader().clean_memory()
         return status
 
     def run_driver(self, case_prefix=None, reset_iter_counts=True):
         status = super().run_driver(case_prefix, reset_iter_counts)
         ValidityDomainChecker.check_problem_variables(self)
+        BundleLoader().clean_memory()
         return status
 
     def setup(self, *args, **kwargs):
@@ -94,6 +97,7 @@ class FASTOADProblem(om.Problem):
 
         if self._read_inputs_after_setup:
             self._read_inputs_with_setup_done()
+        BundleLoader().clean_memory()
 
     def write_outputs(self):
         """

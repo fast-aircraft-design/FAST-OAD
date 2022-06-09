@@ -92,3 +92,4 @@ def test_runs(cleanup):
         print(stat)
 
     assert final_memory < 5
+    tracemalloc.stop()
