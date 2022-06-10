@@ -63,13 +63,9 @@ class FlightSequence(IFlightPart):
                 last_flight_points = parts[-1]
                 last_index = last_flight_points.index[-1]
                 for name in flight_points.columns:
-                    try:
-                        value = last_flight_points.loc[last_index, name]
-                    except KeyError:
+                    value = last_flight_points.loc[last_index, name]
+                    if not value:
                         last_flight_points.loc[last_index, name] = flight_points.loc[0, name]
-                    # legacy code:
-                    # if not value:
-                    #     last_flight_points.loc[last_index, name] = flight_points.loc[0, name]
 
                 parts.append(flight_points.iloc[1:])
 

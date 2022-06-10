@@ -13,19 +13,17 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from copy import copy
 from dataclasses import dataclass
-from typing import List, Union
+from typing import List
 
-import pandas as pd
+
 from numpy import cos, sin
-from scipy.constants import foot, g
-from stdatm import AtmosphereSI
+from scipy.constants import g
 
 from fastoad.model_base import FlightPoint
 from .base import ManualThrustSegment
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
-from ..util import get_closest_flight_level
+
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -39,15 +37,9 @@ class EndOfTakoffSegment(ManualThrustSegment, mission_file_keyword="end_of_takeo
 
     .. note:: **Setting target**
 
-        Target is the safety altitude, or a speed:
+        Target is an altitude and should be set to the safety altitude.
 
     """
-
-    #: Friction coefficient considered for acceleration at take-off. The default value is representative of dry concrete/asphalte
-    # friction_nobrake: float = 0.03
-
-    #: Ground effect model considered for the aerodynamics close to ground
-    # ground_effect: Union[bool, str] = False
 
     def compute_next_flight_point(
         self, flight_points: List[FlightPoint], time_step: float
@@ -61,11 +53,6 @@ class EndOfTakoffSegment(ManualThrustSegment, mission_file_keyword="end_of_takeo
         """
         previous = flight_points[-1]
         next_point = super().compute_next_flight_point(flight_points, time_step)
-
-        # col_name = next_point.__annotations__
-        # for key in self.dynamic_var.keys():
-        #     if self.dynamic_var[key]['name'] not in col_name:
-        #         next_point.add_field(name=self.dynamic_var[key]['name'], unit=self.dynamic_var[key]['unit'])
 
         self.compute_next_alpha(next_point, previous)
         self.compute_next_gamma(next_point, previous)
@@ -102,7 +89,7 @@ class EndOfTakoffSegment(ManualThrustSegment, mission_file_keyword="end_of_takeo
 
     def compute_next_alpha(self, next_point: FlightPoint, previous_point: FlightPoint):
         """
-        Computes angle of attacke (alpha) based on gamma_dot, using constant pitch angle assumption
+        Computes angle of attack (alpha) based on gamma_dot, using constant pitch angle assumption
 
         :param flight_point: parameters before propulsion model has been called
 
@@ -135,10 +122,10 @@ class EndOfTakoffSegment(ManualThrustSegment, mission_file_keyword="end_of_takeo
     def get_gamma_and_acceleration(self, flight_point: FlightPoint):
         """
         Redefinition : computes slope angle derivative (gamma_dot) and x-acceleration.
+        Replaces CL, CD, lift dan drag values (for ground effect and accelerated flight)
 
         :param flight_point: parameters after propulsion model has been called
                              (i.e. mass, thrust and drag are available)
-        :return: slope angle in radians and acceleration in m**2/s
         """
         thrust = flight_point.thrust
         mass = flight_point.mass

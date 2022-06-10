@@ -27,24 +27,15 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 class RotationSegment(ManualThrustSegment, mission_file_keyword="rotation"):
     """
-    Computes a flight path segment with constant rotation rate while on ground and accelerating
+    Computes a flight path segment with constant rotation rate while on ground and accelerating.
 
-    The target must define an alpha limit value.
+    The target is the lift-off. A protection is included is the aicraft reaches alpha_limit (tail-strike).
     """
 
-    # TO DO : leave the possibility to modify for CS23, needs modification of base.py as of now
+    # This is good for SMR type of aircraft. But users may be willing to test takeoff by changing these values.
+    # TO DO : put these into the mission definition.
     rotation_rate: float = 3/180*pi #CS-25 rotation rate
     alpha_limit: float = 13.5/180*pi
-
-    # time_step: float = 0.1
-
-    #: Friction coefficient considered for acceleration at take-off. The default value is representative of dry concrete/asphalte
-    # friction_nobrake: float = 0.03
-
-    #: Ground effect model considered for the aerodynamics close to ground
-    # ground_effect: Union[bool, str] = False
-
-
 
     def compute_next_flight_point(
         self, flight_points: List[FlightPoint], time_step: float
@@ -59,10 +50,6 @@ class RotationSegment(ManualThrustSegment, mission_file_keyword="rotation"):
         previous = flight_points[-1]
         next_point = super().compute_next_flight_point(flight_points, time_step)
 
-        # col_name = next_point.__annotations__
-        # for key in self.dynamic_var.keys():
-        #     if self.dynamic_var[key]['name'] not in col_name:
-        #         next_point.add_field(name=self.dynamic_var[key]['name'], unit=self.dynamic_var[key]['unit'])
 
         self.compute_next_alpha(next_point, previous)
         return next_point
@@ -80,7 +67,7 @@ class RotationSegment(ManualThrustSegment, mission_file_keyword="rotation"):
 
         self._complete_speed_values(flight_point)
 
-        atm = AtmosphereSI(flight_point.altitude)
+        atm = self._get_atmosphere_point(flight_point.altitude)
         reference_force = 0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_area
 
         if self.polar:
@@ -135,7 +122,7 @@ class RotationSegment(ManualThrustSegment, mission_file_keyword="rotation"):
         lift = flight_point.lift
         thrust = flight_point.thrust
 
-        drag = drag_aero + (mass*g-lift)*self.friction_nobrake
+        drag = drag_aero + (mass*g-lift)*self.wheels_friction
 
         # edit flight_point fields
         flight_point.drag = drag

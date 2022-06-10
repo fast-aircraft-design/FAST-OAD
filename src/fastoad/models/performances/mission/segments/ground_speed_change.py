@@ -27,14 +27,11 @@ class GroundSpeedChangeSegment(ManualThrustSegment, mission_file_keyword="ground
     """
     Computes a flight path segment where aircraft is accelerated or de-accelerated on the ground
 
-    The target must define an equivalent_airspeed value.
+    The target must define an airspeed (equivalent, true or Mach) value.
     """
 
     #: Friction coefficient considered for acceleration at take-off. The default value is representative of dry concrete/asphalte
-    # friction_nobrake: float = 0.03
-
-    #: Ground effect model considered for the aerodynamics close to ground
-    # ground_effect: Union[bool, str] = False
+    # wheels_friction: float = 0.03
 
     def complete_flight_point(self, flight_point: FlightPoint):
         """
@@ -49,18 +46,11 @@ class GroundSpeedChangeSegment(ManualThrustSegment, mission_file_keyword="ground
 
         self._complete_speed_values(flight_point)
 
-        #initialize alpha, alpha dot and gamma_dot
+        #initialize alpha, and gamma_dot
         alpha = 0
-        alpha_dot=0
         gamma_dot=0
 
-        # col_name = flight_point.__annotations__
-        # for key in self.dynamic_var.keys():
-        #     if self.dynamic_var[key]['name'] not in col_name:
-        #         flight_point.add_field(name=self.dynamic_var[key]['name'], unit=self.dynamic_var[key]['unit'])
-
         flight_point.alpha = alpha
-        flight_point.alpha_dot = alpha_dot
         flight_point.slope_angle_derivative = gamma_dot
 
         atm = self._get_atmosphere_point(flight_point.altitude)
@@ -83,6 +73,9 @@ class GroundSpeedChangeSegment(ManualThrustSegment, mission_file_keyword="ground
         )
 
     def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
+        """
+        It is interesting to set equivalent speed or Mach target for non isa conditions
+        """
         if self.target.true_airspeed is not None:
             return self.target.true_airspeed - flight_points[-1].true_airspeed
         if self.target.equivalent_airspeed is not None:
@@ -95,13 +88,15 @@ class GroundSpeedChangeSegment(ManualThrustSegment, mission_file_keyword="ground
         )
 
     def get_gamma_and_acceleration(self, flight_point: FlightPoint):
-
+        """
+        For ground segment, gamma is assumed always 0 and wheel friction is considered (with or without brake)
+        """
         mass = flight_point.mass
         drag_aero = flight_point.drag
         lift = flight_point.lift
         thrust = flight_point.thrust
 
-        drag = drag_aero + (mass*g-lift)*self.friction_nobrake
+        drag = drag_aero + (mass*g-lift)*self.wheels_friction
 
         # edit flight_point fields
         flight_point.drag = drag

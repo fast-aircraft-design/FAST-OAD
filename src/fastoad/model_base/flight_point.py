@@ -90,6 +90,7 @@ class FlightPoint:
     CL: float = None  # pylint: disable=invalid-name
     #: Drag coefficient.
     CD: float = None  # pylint: disable=invalid-name
+    lift : float = None #: Aircraft lift in Newtons
     drag: float = None  #: Aircraft drag in Newtons.
     thrust: float = None  #: Thrust in Newtons.
     thrust_rate: float = None  #: Thrust rate (between 0. and 1.)
