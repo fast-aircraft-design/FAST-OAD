@@ -68,6 +68,7 @@
           <Vr units="m/s" is_input="True">75.0<!--speed at which rotation starts in sizing mission--></Vr>
           <altitude units="m" is_input="True">0.0<!--altitude at takeoff in sizing mission--></altitude>
           <VEF units="m/s" is_input="True">65.0<!--speed at which one engine if failing--></VEF>
+          <fuel units="kg">95.0<!--mass of consumed fuel during takeoff phase in sizing mission--></fuel>
         </takeoff>
         <taxi_out>
           <thrust_rate>0.3</thrust_rate>
