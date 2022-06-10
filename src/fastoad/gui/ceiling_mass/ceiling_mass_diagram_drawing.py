@@ -110,15 +110,6 @@ def ceiling_mass_diagram_drawing_plot(
         mode="markers",
         name="Flight level",
     )  # Ceiling mass Line for ceiling level
-    # scatter_link_ceiling = go.Scatter(
-    #    x=[mass_ceiling[0], mass_ceiling[1], mass_ceiling[1], mass_ceiling[2], mass_ceiling[2]],
-    #    y=[alti_ceiling[0], alti_ceiling[0], alti_ceiling[1], alti_ceiling[1], alti_ceiling[2]],
-    #    line=dict(
-    #        color="black", dash="dash", width=1,
-    #    ),
-    #    mode="lines",
-    #    name="Flight path",
-    # )  # Ceiling mass Line for ceiling level
     scatter_link_ceiling = go.Scatter(
         x=mass_link_ceiling,
         y=alti_link_ceiling,
@@ -129,7 +120,7 @@ def ceiling_mass_diagram_drawing_plot(
         ),
         mode="lines",
         name="Flight path",
-    )  # Ceiling mass Line for ceiling level
+    )  # Ceiling mass Line for linking ceiling level
 
     fig.add_trace(scatter_buffeting)
     fig.add_trace(scatter_climb)

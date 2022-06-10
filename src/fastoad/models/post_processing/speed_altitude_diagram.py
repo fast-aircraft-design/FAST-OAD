@@ -16,12 +16,8 @@ import numpy as np
 import openmdao.api as om
 from stdatm import Atmosphere
 from fastoad.module_management._bundle_loader import BundleLoader
-from .ceiling_computation import CeilingComputation
 from .ceiling_computation import thrust_minus_drag
-from fastoad.constants import EngineSetting
-from fastoad.model_base import FlightPoint
 from scipy.optimize import fsolve
-import plotly.graph_objects as go
 from fastoad.module_management._plugins import FastoadLoader
 
 FastoadLoader()
@@ -138,10 +134,6 @@ class SpeedAltitudeDiagram(om.ExplicitComponent):
         v_max_mzfw = np.zeros_like(altitude_vector_mzfw)
         v_min_mzfw = np.zeros_like(altitude_vector_mzfw)
         v_computed_vector_mzfw = np.zeros_like(altitude_vector_mzfw)
-
-        # Diving speed vector and engine speed vector for the curves between the "MTOW ceiling" and the "MZFW ceiling"
-        v_dive_extra = np.zeros_like(altitude_extra)
-        v_engine_extra = np.zeros_like(altitude_extra)
 
         # Compute the diagram for MTOW
         for i in range(len(altitude_vector_mtow)):

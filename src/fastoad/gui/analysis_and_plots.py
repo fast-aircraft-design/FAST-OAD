@@ -51,6 +51,7 @@ from .geometry_drawing.full_aircraft_drawing import wing_drawing_plot
 from .geometry_drawing.full_aircraft_drawing import full_aircraft_drawing_plot
 from .speed_altitude.speed_altitude_diagram_drawing import speed_altitude_diagram_drawing_plot
 from .ceiling_mass.ceiling_mass_diagram_drawing import ceiling_mass_diagram_drawing_plot
+from .available_power.available_power_diagram_drawing import available_power_diagram_drawing_plot
 
 # pylint: disable-msg=too-many-locals
 def wing_geometry_plot(
