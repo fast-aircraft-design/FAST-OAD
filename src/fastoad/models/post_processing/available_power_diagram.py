@@ -23,6 +23,8 @@ from scipy.optimize import fsolve
 from fastoad.module_management._plugins import FastoadLoader
 from scipy.interpolate import interp1d
 
+import matplotlib.pyplot as plt
+
 FastoadLoader()
 
 AVAILABLE_POWER_SHAPE = 150  # Number of points used for the computation of the graph
@@ -52,7 +54,6 @@ class AvailablepowerDiagram(om.ExplicitComponent):
         self.add_input("data:TLAR:cruise_mach", val=np.nan)
         self.add_input("data:TLAR:range", val=np.nan)
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan)
-
 
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
@@ -101,27 +102,33 @@ class AvailablepowerDiagram(om.ExplicitComponent):
         cd_vector_input = inputs["data:aerodynamics:aircraft:cruise:CD"]
         oswald_coefficient = inputs["data:aerodynamics:aircraft:cruise:oswald_coefficient"]
         cl_max_clean = inputs["data:aerodynamics:aircraft:landing:CL_max_clean"]
+        cl_max_clean = max(cl_vector_input)
         cruise_mach = float(inputs["data:TLAR:cruise_mach"])
         maximum_engine_mach = inputs["data:propulsion:rubber_engine:maximum_mach"]
-        thrust_max = 2*inputs["data:propulsion:MTO_thrust"]
+        thrust_max = 2 * inputs["data:propulsion:MTO_thrust"]
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
 
-        k = 1/(np.pi*aspect_ratio*oswald_coefficient)
+        k = 1 / (np.pi * aspect_ratio * oswald_coefficient)
         g = 9.80665  # m/s^2
-
 
         # Compute the thrusts at sea level
         atm = Atmosphere(altitude=0, altitude_in_feet=False)
         rho = atm.density
+
         v_min = np.sqrt(
             2 * mtow * g / (rho * wing_area * cl_max_clean)
         )  # Minimal speed of the aircraft m/s
-        v_vector_sea = np.linspace(v_min, maximum_engine_mach*atm.speed_of_sound, AVAILABLE_POWER_SHAPE) # m/s
+        v_vector_sea = np.linspace(
+            v_min, maximum_engine_mach * atm.speed_of_sound, AVAILABLE_POWER_SHAPE
+        )  # m/s
         atm.true_airspeed = v_vector_sea
 
-        cl_vector = mtow*g/(0.5*rho*v_vector_sea*v_vector_sea*wing_area)
-        cd_vector = cd_vector =np.interp(cl_vector, cl_vector_input, cd_vector_input)
-        power_available_sea = 0.5*rho*v_vector_sea*v_vector_sea*v_vector_sea*wing_area*cd_vector
+        cl_vector = mtow * g / (0.5 * rho * v_vector_sea * v_vector_sea * wing_area)
+
+        cd_vector = interp1d(cl_vector_input, cd_vector_input, fill_value="extrapolate")(cl_vector)
+        power_available_sea = (
+            0.5 * rho * v_vector_sea * v_vector_sea * v_vector_sea * wing_area * cd_vector
+        )
 
         flight_point = FlightPoint(
             mach=atm.mach,
@@ -131,8 +138,7 @@ class AvailablepowerDiagram(om.ExplicitComponent):
             thrust_rate=1.0,
         )
         propulsion_model.compute_flight_points(flight_point)
-        power_max_sea = flight_point.thrust*v_vector_sea
-
+        power_max_sea = flight_point.thrust * v_vector_sea
 
         # Compute the thrusts at cruise altitude
         atm = Atmosphere(altitude=cruise_altitude, altitude_in_feet=False)
@@ -140,12 +146,16 @@ class AvailablepowerDiagram(om.ExplicitComponent):
         v_min = np.sqrt(
             2 * mtow * g / (rho * wing_area * cl_max_clean)
         )  # Minimal speed of the aircraft m/s
-        v_vector_cruise = np.linspace(v_min, maximum_engine_mach * atm.speed_of_sound, AVAILABLE_POWER_SHAPE)  # m/s
+        v_vector_cruise = np.linspace(
+            v_min, maximum_engine_mach * atm.speed_of_sound, AVAILABLE_POWER_SHAPE
+        )  # m/s
         atm.true_airspeed = v_vector_cruise
 
         cl_vector = mtow * g / (0.5 * rho * v_vector_cruise * v_vector_cruise * wing_area)
-        cd_vector =np.interp(cl_vector, cl_vector_input, cd_vector_input)
-        power_available_cruise = 0.5 * rho * v_vector_cruise * v_vector_cruise * v_vector_cruise * wing_area * cd_vector
+        cd_vector = interp1d(cl_vector_input, cd_vector_input, fill_value="extrapolate")(cl_vector)
+        power_available_cruise = (
+            0.5 * rho * v_vector_cruise * v_vector_cruise * v_vector_cruise * wing_area * cd_vector
+        )
 
         flight_point = FlightPoint(
             mach=atm.mach,
@@ -155,12 +165,20 @@ class AvailablepowerDiagram(om.ExplicitComponent):
             thrust_rate=1.0,
         )
         propulsion_model.compute_flight_points(flight_point)
-        power_max_cruise = flight_point.thrust*v_vector_cruise
+        power_max_cruise = flight_point.thrust * v_vector_cruise
 
         # Put the resultst in the output file
-        outputs["data:performance:available_power_diagram:sea_level:power_available"] = power_available_sea/1000000
-        outputs["data:performance:available_power_diagram:sea_level:power_max"] = power_max_sea/1000000
-        outputs["data:performance:available_power_diagram:cruise_altitude:power_available"] = power_available_cruise/1000000
-        outputs["data:performance:available_power_diagram:cruise_altitude:power_max"] = power_max_cruise/1000000
+        outputs[
+            "data:performance:available_power_diagram:sea_level:power_available"
+        ] = power_available_sea
+        outputs["data:performance:available_power_diagram:sea_level:power_max"] = power_max_sea
+        outputs[
+            "data:performance:available_power_diagram:cruise_altitude:power_available"
+        ] = power_available_cruise
+        outputs[
+            "data:performance:available_power_diagram:cruise_altitude:power_max"
+        ] = power_max_cruise
         outputs["data:performance:available_power_diagram:sea_level:speed_vector"] = v_vector_sea
-        outputs["data:performance:available_power_diagram:cruise_altitude:speed_vector"] = v_vector_cruise
+        outputs[
+            "data:performance:available_power_diagram:cruise_altitude:speed_vector"
+        ] = v_vector_cruise

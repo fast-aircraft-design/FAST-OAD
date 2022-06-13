@@ -41,18 +41,53 @@ def available_power_diagram_drawing_plot(
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
     # Diagram parameters
-    v_vector_sea = variables["data:performance:available_power_diagram:sea_level:speed_vector"].value
-    v_vector_cruise_altitude = variables["data:performance:available_power_diagram:cruise_altitude:speed_vector"].value
-    power_available_sea = variables["data:performance:available_power_diagram:sea_level:power_available"].value
+    v_vector_sea = variables[
+        "data:performance:available_power_diagram:sea_level:speed_vector"
+    ].value
+    v_vector_cruise = variables[
+        "data:performance:available_power_diagram:cruise_altitude:speed_vector"
+    ].value
+    power_available_sea = variables[
+        "data:performance:available_power_diagram:sea_level:power_available"
+    ].value
     power_max_sea = variables["data:performance:available_power_diagram:sea_level:power_max"].value
-    power_available_cruise = variables["data:performance:available_power_diagram:cruise_altitude:power_available"].value
-    power_max_cruise= variables["data:performance:available_power_diagram:cruise_altitude:power_max"].value
+    power_available_cruise = variables[
+        "data:performance:available_power_diagram:cruise_altitude:power_available"
+    ].value
+    power_max_cruise = variables[
+        "data:performance:available_power_diagram:cruise_altitude:power_max"
+    ].value
     cruise_altitude = float(variables["data:mission:sizing:main_route:cruise:altitude"].value[0])
+
+    start_cruise = 0
+    start_sea = 0
+
+    i = 0
+    while power_available_sea[i] > power_max_sea[i]:
+        start_sea = i
+        i = i + 1
+
+    j = 0
+    while power_available_cruise[j] > power_max_cruise[j]:
+        start_cruise = j
+        j = j + 1
+
+    v_vector_sea = v_vector_sea[start_sea:]
+    power_available_sea = power_available_sea[start_sea:]
+    power_max_sea = power_max_sea[start_sea:]
+    v_vector_cruise = v_vector_cruise[start_cruise:]
+    power_available_cruise = power_available_cruise[start_cruise:]
+    power_max_cruise = power_max_cruise[start_cruise:]
+
+    min_available_power_sea = min(power_available_sea)
+    max_available_power_sea = max(power_available_sea)
+    min_available_power_cruise = min(power_available_cruise)
+    max_available_power_cruise = max(power_available_cruise)
 
     # Plot the results
     fig = go.Figure()
 
-    scatter_thrust_max_sea = go.Scatter(
+    scatter_power_max_sea = go.Scatter(
         x=v_vector_sea,
         y=power_max_sea,
         legendgroup="group",
@@ -63,7 +98,7 @@ def available_power_diagram_drawing_plot(
         mode="lines",
         name="Max Power",
     )
-    scatter_thrust_available_sea = go.Scatter(
+    scatter_power_available_sea = go.Scatter(
         x=v_vector_sea,
         y=power_available_sea,
         legendgroup="group",
@@ -73,11 +108,11 @@ def available_power_diagram_drawing_plot(
         mode="lines",
         name="Available Power",
     )
-    scatter_thrust_max_cruise_altitude = go.Scatter(
-        x=v_vector_cruise_altitude,
+    scatter_power_max_cruise_altitude = go.Scatter(
+        x=v_vector_cruise,
         y=power_max_cruise,
         legendgroup="group2",
-        legendgrouptitle_text="Cruise altitude at %i m"%int(cruise_altitude),
+        legendgrouptitle_text="Cruise altitude at %i m" % int(cruise_altitude),
         line=dict(
             color="#0d2a63",
         ),
@@ -85,8 +120,8 @@ def available_power_diagram_drawing_plot(
         name="Max Power",
         visible="legendonly",
     )
-    scatter_thrust_available_cruise_altitude = go.Scatter(
-        x=v_vector_cruise_altitude,
+    scatter_power_available_cruise_altitude = go.Scatter(
+        x=v_vector_cruise,
         y=power_available_cruise,
         legendgroup="group2",
         line=dict(
@@ -97,44 +132,24 @@ def available_power_diagram_drawing_plot(
         visible="legendonly",
     )
 
-    fig.add_trace(scatter_thrust_max_sea)
-    fig.add_trace(scatter_thrust_available_sea)
-    fig.add_trace(scatter_thrust_max_cruise_altitude)
-    fig.add_trace(scatter_thrust_available_cruise_altitude)
+    fig.add_trace(scatter_power_max_sea)
+    fig.add_trace(scatter_power_available_sea)
+    fig.add_trace(scatter_power_max_cruise_altitude)
+    fig.add_trace(scatter_power_available_cruise_altitude)
 
     # Creating the table with all the lengths of the variables
     d = {
         "Variable": [
-            "X0 (m)",
-            "X1 (m)",
-            "X2 (m)",
-            "Y0 (m)",
-            "Y1 (m)",
-            "Y2 (m)",
-            "Y3 (m)",
-            "L0 (m)",
-            "L1 (m)",
-            "L2 (m)",
-            "L3 (m)",
-            "MAC (m)",
-            "Span (m)",
-            "Wing surface (m²)",
+            "Sea level : Min Available Power (MW)",
+            "Sea level : Max Available Power (MW)",
+            "Cruise altitude : Min Available Power (MW)",
+            "Cruise altitude : Max Available Power (MW)",
         ],
         "Value": [
-            3,  # X0
-            3,  # X1
-            3,  # X2
-            3,  # Y0
-            3,  # Y1
-            3,  # Y2
-            3,  # Y3
-            3,  # L0
-            3,  # L1
-            3,  # L2
-            3,  # L3
-            3,  # MAC
-            3,  # Span
-            3,  # Wing surface
+            min_available_power_sea / 1000000,
+            max_available_power_sea / 1000000,
+            min_available_power_cruise / 1000000,
+            max_available_power_cruise / 1000000,
         ],
     }
 

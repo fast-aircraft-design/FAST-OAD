@@ -521,7 +521,7 @@ def input_xml() -> VariableIO:
 # #assert problem["data:performance:ceiling:MZFW"] == pytest.approx(expected_ceiling_mzfw, abs=1e-5)
 
 
-#def test_ceiling_mass_diagram(input_xml):
+# def test_ceiling_mass_diagram(input_xml):
 #    # Doit contenir toutes les entrees dont le modèle a besoin
 #    input_list = [
 #        "data:geometry:wing:area",
@@ -551,6 +551,7 @@ def input_xml() -> VariableIO:
 #
 #    # assert problem["data:performance:ceiling:MTOW"] == pytest.approx(expected_ceiling_mtow, abs=1e-5)
 #    # assert problem["data:performance:ceiling:MZFW"] == pytest.approx(expected_ceiling_mzfw, abs=1e-5)
+
 
 def test_available_power_diagram(input_xml):
     # Doit contenir toutes les entrees dont le modèle a besoin
