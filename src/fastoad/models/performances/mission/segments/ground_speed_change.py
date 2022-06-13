@@ -13,25 +13,25 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from typing import List, Union
+from dataclasses import dataclass
+from typing import List
+
+from scipy.constants import g
 
 from fastoad.model_base import FlightPoint
-from .base import ManualThrustSegment
+from .base import GroundSegment
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
-from scipy.constants import g
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
-class GroundSpeedChangeSegment(ManualThrustSegment, mission_file_keyword="ground_speed_change"):
+@dataclass
+class GroundSpeedChangeSegment(GroundSegment, mission_file_keyword="ground_speed_change"):
     """
     Computes a flight path segment where aircraft is accelerated or de-accelerated on the ground
 
     The target must define an airspeed (equivalent, true or Mach) value.
     """
-
-    #: Friction coefficient considered for acceleration at take-off. The default value is representative of dry concrete/asphalte
-    # wheels_friction: float = 0.03
 
     def complete_flight_point(self, flight_point: FlightPoint):
         """
@@ -46,9 +46,9 @@ class GroundSpeedChangeSegment(ManualThrustSegment, mission_file_keyword="ground
 
         self._complete_speed_values(flight_point)
 
-        #initialize alpha, and gamma_dot
+        # initialize alpha, and gamma_dot
         alpha = 0
-        gamma_dot=0
+        gamma_dot = 0
 
         flight_point.alpha = alpha
         flight_point.slope_angle_derivative = gamma_dot
@@ -89,14 +89,15 @@ class GroundSpeedChangeSegment(ManualThrustSegment, mission_file_keyword="ground
 
     def get_gamma_and_acceleration(self, flight_point: FlightPoint):
         """
-        For ground segment, gamma is assumed always 0 and wheel friction is considered (with or without brake)
+        For ground segment, gamma is assumed always 0 and wheel friction is considered
+        (with or without brake)
         """
         mass = flight_point.mass
         drag_aero = flight_point.drag
         lift = flight_point.lift
         thrust = flight_point.thrust
 
-        drag = drag_aero + (mass*g-lift)*self.wheels_friction
+        drag = drag_aero + (mass * g - lift) * self.wheels_friction
 
         # edit flight_point fields
         flight_point.drag = drag

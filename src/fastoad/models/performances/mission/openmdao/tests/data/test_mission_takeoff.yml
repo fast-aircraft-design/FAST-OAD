@@ -24,17 +24,14 @@ phases:
       CL0_clean: data:aerodynamics:aircraft:takeoff:CL0_clean
       CL_alpha: data:aerodynamics:aircraft:takeoff:CL_alpha
       CL_high_lift: data:aerodynamics:high_lift_devices:takeoff:CL
-    wheels_friction: 0.03
     thrust_rate: 1.0
     isa_offset: data:mission:operational:ISA_offset
     parts:
       - segment: ground_speed_change
-        time_step: 0.1
         target:
           equivalent_airspeed:
             value: data:mission:operational:takeoff:Vr
       - segment: rotation
-        time_step: 0.1
         target:
           delta_altitude:
             value: 35
@@ -55,16 +52,18 @@ phases:
       CL_alpha: data:aerodynamics:aircraft:takeoff:CL_alpha
       CL_high_lift: data:aerodynamics:high_lift_devices:takeoff:CL
     thrust_rate: 1.0
-    wheels_friction: 0.03
     isa_offset: data:mission:operational:ISA_offset
     parts:
       - segment: ground_speed_change
-        time_step: 0.1
+        wheels_friction: 0.03
         target:
           equivalent_airspeed:
             value: data:mission:operational:takeoff:Vr
       - segment: rotation
-        time_step: 0.1
+        rotation_rate:
+          value: 0.0523
+        alpha_limit:
+          value: 0.3489
         target:
           delta_altitude:
             value: 35
@@ -89,7 +88,7 @@ phases:
     parts:
       - segment: ground_speed_change
         wheels_friction: 0.03
-        time_step: 0.1
+        time_step: 0.05
         target:
           equivalent_airspeed:
             value: data:mission:operational:takeoff:V1
@@ -97,39 +96,11 @@ phases:
         engine_setting: idle
         thrust_rate: 0.07
         wheels_friction: 0.5
-        time_step: 0.1
+        time_step: 0.05
         target:
           true_airspeed:
             value: 0
             unit: m/s
-  segment_parameter_test:
-    engine_setting: takeoff
-    polar:
-      CL: data:aerodynamics:aircraft:takeoff:CL
-      CD: data:aerodynamics:aircraft:takeoff:CD
-      ground_effect: Raymer
-      CL0_clean: data:aerodynamics:aircraft:takeoff:CL0_clean
-      CL_alpha: data:aerodynamics:aircraft:takeoff:CL_alpha
-      CL_high_lift: data:aerodynamics:high_lift_devices:takeoff:CL
-    wheels_friction: 0.03
-    thrust_rate: 1.0
-    isa_offset: data:mission:operational:ISA_offset
-    parts:
-      - segment: ground_speed_change
-        time_step: 0.1
-        target:
-          equivalent_airspeed:
-            value: data:mission:operational:takeoff:Vr
-      - segment: rotation
-        time_step: 0.1
-        rotation_rate:
-          value: 0.087
-        alpha_limit:
-          value: 0.35
-        target:
-          altitude:
-            value: 35
-            unit: ft
   initial_climb:
     engine_setting: takeoff
     polar: data:aerodynamics:aircraft:takeoff
@@ -248,7 +219,3 @@ missions:
     parts:
       - phase: taxi_out
       - phase: start_stop
-  segment_parameter_mission:
-    parts:
-      - phase: taxi_out
-      - phase: segment_parameter_test

@@ -18,14 +18,10 @@ from shutil import rmtree
 
 import pytest
 from numpy.testing import assert_allclose
-from openmdao.core.component import Component
 from scipy.constants import foot, knot
 
+from fastoad._utils.testing import run_system
 from fastoad.io import DataFile
-from fastoad.model_base import FlightPoint
-from fastoad.model_base.propulsion import AbstractFuelPropulsion, IOMPropulsionWrapper, IPropulsion
-from fastoad.module_management.service_registry import RegisterPropulsion
-from tests.testing_utilities import run_system
 from ..mission import Mission, MissionComponent
 from ..mission_wrapper import MissionWrapper
 from ...mission_definition.exceptions import FastMissionFileMissingMissionNameError
@@ -120,17 +116,32 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
         ivc,
     )
     # plot_flight(problem.model.component.flight_points, "test_mission.png")
-    take_off_distance = problem["data:mission:operational_wo_gnd_effect:takeoff_wo_gnd_effect:distance"]
+    take_off_distance = problem[
+        "data:mission:operational_wo_gnd_effect:takeoff_wo_gnd_effect:distance"
+    ]
     assert_allclose(take_off_distance, 1774, atol=1.0)
-    assert_allclose(problem["data:mission:operational_wo_gnd_effect:needed_block_fuel"], 6503, atol=1.0)
-    assert_allclose(problem["data:mission:operational_wo_gnd_effect:takeoff_wo_gnd_effect:fuel"], 122.7, atol=1e-1)
-    assert_allclose(problem["data:mission:operational_wo_gnd_effect:takeoff_wo_gnd_effect:duration"], 34.1, atol=1e-1)
+    assert_allclose(
+        problem["data:mission:operational_wo_gnd_effect:needed_block_fuel"], 6503, atol=1.0
+    )
+    assert_allclose(
+        problem["data:mission:operational_wo_gnd_effect:takeoff_wo_gnd_effect:fuel"],
+        122.7,
+        atol=1e-1,
+    )
+    assert_allclose(
+        problem["data:mission:operational_wo_gnd_effect:takeoff_wo_gnd_effect:duration"],
+        34.1,
+        atol=1e-1,
+    )
+
 
 def test_ground_effect(cleanup, with_dummy_plugin_2):
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
-    ivc = DataFile(input_file_path).to_ivc()
+    datafile = DataFile(input_file_path)
+    del datafile["data:mission:operational:takeoff:fuel"]
 
+    ivc = datafile.to_ivc()
     ivc.add_output("data:geometry:wing:area", 130.33, units="m**2")
     ivc.add_output("data:mission:operational:ramp_weight", 70200, units="kg")
 
@@ -149,6 +160,7 @@ def test_ground_effect(cleanup, with_dummy_plugin_2):
     assert_allclose(take_off_distance, 1768, atol=1.0)
     assert_allclose(problem["data:mission:operational:takeoff:fuel"], 122.4, atol=1e-1)
     assert_allclose(problem["data:mission:operational:takeoff:duration"], 34.0, atol=1e-1)
+
 
 def test_start_stop(cleanup, with_dummy_plugin_2):
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
@@ -170,37 +182,16 @@ def test_start_stop(cleanup, with_dummy_plugin_2):
         ivc,
     )
     plot_flight(problem.model.component.flight_points, "test_mission.png")
-    take_off_distance = problem["data:mission:start_stop_mission:start_stop:distance"]
-    assert_allclose(take_off_distance, 1659, atol=1.0)
+    start_stop_distance = problem["data:mission:start_stop_mission:start_stop:distance"]
+    assert_allclose(start_stop_distance, 1659, atol=1.0)
     assert_allclose(problem["data:mission:start_stop_mission:start_stop:duration"], 42.8, atol=1e-1)
 
-def test_additional_segment_parameter(cleanup, with_dummy_plugin_2):
-    input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
-    ivc = DataFile(input_file_path).to_ivc()
-
-    ivc.add_output("data:geometry:wing:area", 130.0, units="m**2")
-    ivc.add_output("data:mission:segment_parameter_mission:TOW", 79000, units="kg")
-    ivc.add_output("data:mission:segment_parameter_mission:OWE", 40000, units="kg")
-    ivc.add_output("data:mission:segment_parameter_mission:ramp_weight", 70200, units="kg")
-
-    problem = run_system(
-        MissionComponent(
-            propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=pth.join(RESULTS_FOLDER_PATH, "test_mission_start_stop.csv"),
-            use_initializer_iteration=False,
-            mission_wrapper=MissionWrapper(pth.join(DATA_FOLDER_PATH, "test_mission_takeoff.yml")),
-            mission_name="segment_parameter_mission",
-        ),
-        ivc,
-    )
-    plot_flight(problem.model.component.flight_points, "test_mission.png")
-    take_off_distance = problem["data:mission:start_stop_mission:start_stop:distance"]
-    assert_allclose(take_off_distance, 1453, atol=1.0)
-    assert_allclose(problem["data:mission:start_stop_mission:start_stop:duration"], 40, atol=1e-1)
 
 def test_mission_group_without_loop(cleanup, with_dummy_plugin_2):
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
-    ivc = DataFile(input_file_path).to_ivc()
+    datafile = DataFile(input_file_path)
+    del datafile["data:mission:operational:takeoff:fuel"]
+    ivc = datafile.to_ivc()
 
     ivc.add_output("data:geometry:wing:area", 100.0, units="m**2")
 
@@ -231,11 +222,12 @@ def test_mission_group_without_loop(cleanup, with_dummy_plugin_2):
     assert_allclose(problem["data:mission:operational:block_fuel"], 15000.0, atol=1.0)
 
 
-def _test_mission_group_with_loop(cleanup, with_dummy_plugin_2):
+def test_mission_group_with_loop(cleanup, with_dummy_plugin_2):
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
     vars = DataFile(input_file_path)
     del vars["data:mission:operational:TOW"]
+    del vars["data:mission:operational:takeoff:fuel"]
     ivc = vars.to_ivc()
 
     ivc.add_output("data:geometry:wing:area", 100.0, units="m**2")
@@ -268,10 +260,8 @@ def _test_mission_group_with_loop(cleanup, with_dummy_plugin_2):
     assert_allclose(
         problem["data:mission:operational:needed_block_fuel"],
         problem["data:mission:operational:needed_onboard_fuel_at_takeoff"]
-        + problem["data:mission:operational:taxi_out:fuel"],
+        + problem["data:mission:operational:taxi_out:fuel"]
         + problem["data:mission:operational:takeoff:fuel"],
         atol=1.0,
     )
     assert_allclose(problem["data:mission:operational:needed_block_fuel"], 5464, atol=1.0)
-
-

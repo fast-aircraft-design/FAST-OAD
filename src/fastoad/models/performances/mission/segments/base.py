@@ -15,7 +15,7 @@
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Dict, List, Tuple, Type, Union
+from typing import Dict, List, Tuple, Type
 
 import numpy as np
 import pandas as pd
@@ -136,9 +136,6 @@ class FlightSegment(IFlightPart):
     #: The EngineSetting value associated to the segment. Can be used in the propulsion
     #: model.
     engine_setting: EngineSetting = EngineSetting.CLIMB
-
-    #: Friction coefficient considered for acceleration at take-off. The default value is representative of dry concrete/asphalte
-    wheels_friction: float = 0.03
 
     #: Minimum and maximum authorized altitude values. If computed altitude gets beyond these
     #: limits, computation will be interrupted and a warning message will be issued in logger.
@@ -522,3 +519,15 @@ class FixedDurationSegment(FlightSegment, ABC):
     def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
         current = flight_points[-1]
         return self.target.time - current.time
+
+
+@dataclass
+class GroundSegment(ManualThrustSegment, ABC):
+    """
+    Class for computing accelerated segments on the ground with wheel friction.
+    """
+
+    # Friction coefficient considered for acceleration at take-off.
+    # The default value is representative of dry concrete/asphalte
+    wheels_friction: float = 0.03
+    time_step: float = 0.1

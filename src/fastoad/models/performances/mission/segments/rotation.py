@@ -13,29 +13,33 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from typing import List, Union
+from dataclasses import dataclass
+from typing import List
+
 from numpy import pi, sin, cos
-from stdatm import AtmosphereSI
+from scipy.constants import g
 
 from fastoad.model_base import FlightPoint
-from .base import ManualThrustSegment
+from .base import GroundSegment
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
-from scipy.constants import g
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
-class RotationSegment(ManualThrustSegment, mission_file_keyword="rotation"):
+@dataclass
+class RotationSegment(GroundSegment, mission_file_keyword="rotation"):
     """
-    Computes a flight path segment with constant rotation rate while on ground and accelerating.
+    Computes a flight path segment with constant rotation rate while on ground
+    and accelerating.
 
-    The target is the lift-off. A protection is included is the aicraft reaches alpha_limit (tail-strike).
+    The target is the lift-off. A protection is included is the aicraft reaches
+    alpha_limit (tail-strike).
     """
 
-    # This is good for SMR type of aircraft. But users may be willing to test takeoff by changing these values.
-    # TO DO : put these into the mission definition.
-    rotation_rate: float = 3/180*pi #CS-25 rotation rate
-    alpha_limit: float = 13.5/180*pi
+    # The following default values are good for SMR type of aircraft.
+    # But users may be willing to test takeoff by changing these values.
+    rotation_rate: float = 3 / 180 * pi  # CS-25 rotation rate
+    alpha_limit: float = 13.5 / 180 * pi
 
     def compute_next_flight_point(
         self, flight_points: List[FlightPoint], time_step: float
@@ -49,7 +53,6 @@ class RotationSegment(ManualThrustSegment, mission_file_keyword="rotation"):
         """
         previous = flight_points[-1]
         next_point = super().compute_next_flight_point(flight_points, time_step)
-
 
         self.compute_next_alpha(next_point, previous)
         return next_point
@@ -89,7 +92,7 @@ class RotationSegment(ManualThrustSegment, mission_file_keyword="rotation"):
 
     def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
 
-        #compute lift, including thrust projection, compare with weight
+        # compute lift, including thrust projection, compare with weight
         current = flight_points[-1]
 
         atm = self._get_atmosphere_point(current.altitude)
@@ -99,21 +102,21 @@ class RotationSegment(ManualThrustSegment, mission_file_keyword="rotation"):
         CL = self.polar.cl(alpha)
         thrust = current.thrust
 
-        lift = 0.5 * atm.density * self.reference_area * airspeed ** 2 * CL * cos(alpha) + thrust * sin(alpha)
+        lift = 0.5 * atm.density * self.reference_area * airspeed ** 2 * CL * cos(
+            alpha
+        ) + thrust * sin(alpha)
         if alpha <= self.alpha_limit:
             return lift - mass * g
 
         raise FastFlightSegmentIncompleteFlightPoint(
-            "Alpha limit reached, aircraft cannot takeoff before tailstrick, consider increasing Vr."
+            "Alpha limit reached, aircraft cannot takeoff before tailstrick,"
+            "consider increasing Vr."
         )
 
     def compute_next_alpha(self, next_point: FlightPoint, previous_point: FlightPoint):
 
         time_step = next_point.time - previous_point.time
-        next_point.alpha = (
-                previous_point.alpha
-                + time_step * self.rotation_rate
-        )
+        next_point.alpha = previous_point.alpha + time_step * self.rotation_rate
 
     def get_gamma_and_acceleration(self, flight_point: FlightPoint):
 
@@ -122,7 +125,7 @@ class RotationSegment(ManualThrustSegment, mission_file_keyword="rotation"):
         lift = flight_point.lift
         thrust = flight_point.thrust
 
-        drag = drag_aero + (mass*g-lift)*self.wheels_friction
+        drag = drag_aero + (mass * g - lift) * self.wheels_friction
 
         # edit flight_point fields
         flight_point.drag = drag

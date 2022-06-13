@@ -15,15 +15,13 @@ import numpy as np
 import pandas as pd
 import pytest
 from numpy.testing import assert_allclose
-from scipy.constants import foot
 
 from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import AbstractFuelPropulsion, FuelEngineSet
+from ..end_of_takeoff import EndOfTakoffSegment
 from ..ground_speed_change import GroundSpeedChangeSegment
 from ..rotation import RotationSegment
-from ..end_of_takeoff import EndOfTakoffSegment
-
 from ...polar import Polar
 
 
@@ -67,22 +65,22 @@ def polar() -> Polar:
     """Returns a dummy polar where max L/D ratio is around 16."""
     cl = np.arange(0.0, 1.5, 0.01) + 0.5
     polar_dict = {
-        'CL' : cl,
-        'CD' : 0.5e-1 * cl ** 2 + 0.01,
-        'ground_effect' : 'Raymer',
-        'span' : 34.5,
-        'lg_height' : 2.5,
-        'induced_drag_coef' : 0.034,
-        'k_cd' : 1.0,
-        'k_winglet' : 1.0,
-        'CL_alpha' : 5.0,
-        'CL0_clean' : 0.2,
-        'CL_high_lift' : 0.5,
+        "CL": cl,
+        "CD": 0.5e-1 * cl ** 2 + 0.01,
+        "ground_effect": "Raymer",
+        "span": 34.5,
+        "lg_height": 2.5,
+        "induced_drag_coef": 0.034,
+        "k_cd": 1.0,
+        "k_winglet": 1.0,
+        "CL_alpha": 5.0,
+        "CL0_clean": 0.2,
+        "CL_high_lift": 0.5,
     }
     return Polar(polar_dict)
 
 
-def test_takeoff_speed_change(polar):
+def test_ground_speed_change(polar):
     propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     # initialisation then change instance attributes
@@ -108,6 +106,7 @@ def test_takeoff_speed_change(polar):
     assert_allclose(last_point.ground_distance, 1100, rtol=1e-3)
     assert last_point.engine_setting == EngineSetting.CLIMB
 
+
 def test_rotation(polar):
     propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
@@ -121,7 +120,7 @@ def test_rotation(polar):
     )
     segment.thrust_rate = 1.0
     flight_points = segment.compute_from(
-        FlightPoint(time = 30.0, altitude=0.0, mass=70000.0, true_airspeed=75.0, alpha = 0.0)
+        FlightPoint(time=30.0, altitude=0.0, mass=70000.0, true_airspeed=75.0, alpha=0.0)
     )  # Test with dict
 
     last_point = flight_points.iloc[-1]
@@ -148,7 +147,14 @@ def test_end_of_takeoff(polar):
     segment.thrust_rate = 1.0
     segment.time_step = 0.05
     flight_points = segment.compute_from(
-        FlightPoint(time = 35.0, altitude=0.0, mass=70000.0, true_airspeed=85.0, alpha = 10.0/180*3.14, slope_angle =0.0)
+        FlightPoint(
+            time=35.0,
+            altitude=0.0,
+            mass=70000.0,
+            true_airspeed=85.0,
+            alpha=10.0 / 180 * 3.14,
+            slope_angle=0.0,
+        )
     )  # Test with dict
 
     last_point = flight_points.iloc[-1]
