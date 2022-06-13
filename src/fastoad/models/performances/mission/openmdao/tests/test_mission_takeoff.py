@@ -100,7 +100,6 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
     ivc = DataFile(input_file_path).to_ivc()
 
-    ivc.add_output("data:geometry:wing:area", 130.0, units="m**2")
     ivc.add_output("data:mission:operational_wo_gnd_effect:TOW", 70000, units="kg")
     ivc.add_output("data:mission:operational_wo_gnd_effect:OWE", 40000, units="kg")
     ivc.add_output("data:mission:operational_wo_gnd_effect:ramp_weight", 70200, units="kg")
@@ -121,7 +120,7 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
     ]
     assert_allclose(take_off_distance, 1774, atol=1.0)
     assert_allclose(
-        problem["data:mission:operational_wo_gnd_effect:needed_block_fuel"], 6503, atol=1.0
+        problem["data:mission:operational_wo_gnd_effect:needed_block_fuel"], 6505, atol=1.0
     )
     assert_allclose(
         problem["data:mission:operational_wo_gnd_effect:takeoff_wo_gnd_effect:fuel"],
@@ -142,7 +141,6 @@ def test_ground_effect(cleanup, with_dummy_plugin_2):
     del datafile["data:mission:operational:takeoff:fuel"]
 
     ivc = datafile.to_ivc()
-    ivc.add_output("data:geometry:wing:area", 130.33, units="m**2")
     ivc.add_output("data:mission:operational:ramp_weight", 70200, units="kg")
 
     problem = run_system(
@@ -166,7 +164,6 @@ def test_start_stop(cleanup, with_dummy_plugin_2):
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
     ivc = DataFile(input_file_path).to_ivc()
 
-    ivc.add_output("data:geometry:wing:area", 130.0, units="m**2")
     ivc.add_output("data:mission:start_stop_mission:TOW", 79000, units="kg")
     ivc.add_output("data:mission:start_stop_mission:OWE", 40000, units="kg")
     ivc.add_output("data:mission:start_stop_mission:ramp_weight", 70200, units="kg")
@@ -193,7 +190,7 @@ def test_mission_group_without_loop(cleanup, with_dummy_plugin_2):
     del datafile["data:mission:operational:takeoff:fuel"]
     ivc = datafile.to_ivc()
 
-    ivc.add_output("data:geometry:wing:area", 100.0, units="m**2")
+    # ivc.add_output("data:geometry:wing:area", 100.0, units="m**2")
 
     with pytest.raises(FastMissionFileMissingMissionNameError):
         run_system(
@@ -230,7 +227,7 @@ def test_mission_group_with_loop(cleanup, with_dummy_plugin_2):
     del vars["data:mission:operational:takeoff:fuel"]
     ivc = vars.to_ivc()
 
-    ivc.add_output("data:geometry:wing:area", 100.0, units="m**2")
+    # ivc.add_output("data:geometry:wing:area", 100.0, units="m**2")
 
     problem = run_system(
         Mission(
