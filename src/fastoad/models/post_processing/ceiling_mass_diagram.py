@@ -95,7 +95,6 @@ class CeilingMassDiagram(om.ExplicitComponent):
         alti_cruise = np.zeros_like(mass_vector)
         alti_climb = np.zeros_like(mass_vector)
         alti_buffeting = np.zeros_like(mass_vector)
-        alti_minimum = np.zeros_like(mass_vector)
 
         # Compute the pressure vector corresponding to the altitude vector
         alti_interpol = np.linspace(0, 60000, 121)  # ft
