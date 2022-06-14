@@ -437,7 +437,7 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
         2,
     )
 
-    fig.update_layout(title_text="Mass Breakdown",  title_x=0.5)
+    fig.update_layout(title_text="Mass Breakdown", title_x=0.5)
 
     return fig
 
