@@ -63,3 +63,5 @@ venv*/
 /XFOIL
 /src/fastoad/gui/geometry_drawing/.ipynb_checkpoints/
 /src/fastoad/models/post_processing/.ipynb_checkpoints/
+src/fastoad/gui/ceiling_mass/.ipynb_checkpoints/ceiling_mass_diagram_drawing-checkpoint.ipynb
+src/fastoad/gui/ceiling_mass/ceiling_mass_diagram_drawing.ipynb
