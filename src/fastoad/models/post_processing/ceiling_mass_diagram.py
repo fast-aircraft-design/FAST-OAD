@@ -89,7 +89,7 @@ class CeilingMassDiagram(om.ExplicitComponent):
         g = 9.80665  # m/s^2
 
         # Mass vectors
-        mass_vector = np.linspace(float(mzfw), float(mtow + 500), CEILING_MASS_SHAPE)
+        mass_vector = np.linspace(float(mzfw), float(mtow), CEILING_MASS_SHAPE)
 
         # Altitude vectors
         alti_cruise = np.zeros_like(mass_vector)
