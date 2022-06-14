@@ -5,16 +5,14 @@ The FlightPoint class
 #####################
 
 The :class:`~fastoad.model_base.flight_point.FlightPoint` class is designed to store
-flight parameters for one flight point.
-
-It is meant to be the class that performance modules will work with.
+flight parameters for one flight point of any computed mission.
 
 FlightPoint class is meant for:
 
-    - storing all needed parameters that are needed for performance modelling,
+    - **storing all needed parameters** that are needed for performance modelling,
       including propulsion parameters.
-    - easily exchanging data with pandas DataFrame.
-    - being extensible for new parameters.
+    - easily exchanging data with **pandas DataFrame**.
+    - **being extensible** for new parameters.
 
 .. note::
 
