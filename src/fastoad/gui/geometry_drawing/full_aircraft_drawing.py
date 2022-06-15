@@ -125,27 +125,30 @@ def full_aircraft_drawing_plot(
     fuselage_rear_length = variables["data:geometry:fuselage:rear_length"].value[0]
 
     y_fuselage = np.linspace(0, fuselage_max_width / 2, 10)
-    x_fuselage = fuselage_front_length / (0.5 * fuselage_max_width) ** 2 * y_fuselage ** 2 #parabola
-    x_fuselage = np.append(x_fuselage,np.array(
-        [
+    x_fuselage = (
+        fuselage_front_length / (0.5 * fuselage_max_width) ** 2 * y_fuselage ** 2
+    )  # parabola
+    x_fuselage = np.append(
+        x_fuselage,
+        np.array(
+            [
+                fuselage_length - fuselage_rear_length,
+                fuselage_length,
+                fuselage_length,
+            ]
+        ),
+    )
 
-            fuselage_length - fuselage_rear_length,
-            fuselage_length,
-            fuselage_length,
-        ]
-    ))
-
-
-    y_fuselage = np.append(y_fuselage,np.array(
-        [
-            fuselage_max_width / 2.0,
-            fuselage_max_width / 4.0,
-            0.0,
-        ]
-    ))
-
-
-
+    y_fuselage = np.append(
+        y_fuselage,
+        np.array(
+            [
+                fuselage_max_width / 2.0,
+                fuselage_max_width / 4.0,
+                0.0,
+            ]
+        ),
+    )
 
     # Flaps
     # Part of the code dedicated to the flaps
@@ -301,10 +304,6 @@ def full_aircraft_drawing_plot(
     )
     x_ht = x_ht + wing_25mac_x + ht_distance_from_wing - local_ht_25mac_x
 
-
-
-
-
     # Design of the elevator
     A = x_fuselage[-1] - x_ht[3]  # constants used for the computation
 
@@ -357,18 +356,18 @@ def full_aircraft_drawing_plot(
     )
     print(x_fuselage[-1])
 
-    x_fuselage[-2]= x_elevator[-1]
-    x_fuselage=x_fuselage[:-1]
+    x_fuselage[-2] = x_elevator[-1]
+    x_fuselage = x_fuselage[:-1]
     y_fuselage = y_fuselage[:-1]
 
     x_elev = x_elevator[-1]
     y_elev = y_elevator[-1]
 
-    y_rear=np.flip(np.linspace(0,fuselage_max_width/4,50))
+    y_rear = np.flip(np.linspace(0, fuselage_max_width / 4, 10))
 
-    x_rear = fuselage_length+ (x_elev - fuselage_length)/y_elev**2 * y_rear**2
+    x_rear = fuselage_length + (x_elev - fuselage_length) / y_elev ** 2 * y_rear ** 2
 
-    x_fuselage = np.concatenate((x_fuselage,x_rear))
+    x_fuselage = np.concatenate((x_fuselage, x_rear))
     y_fuselage = np.concatenate((y_fuselage, y_rear))
     # pylint: disable=invalid-name # that's a common naming
     x = np.concatenate((x_fuselage, x_wing, x_ht))
@@ -380,8 +379,6 @@ def full_aircraft_drawing_plot(
 
     # pylint: disable=invalid-name # that's a common naming
     x = np.concatenate((x, x))
-
-
 
     if fig is None:
         fig = go.Figure()
@@ -457,7 +454,7 @@ def full_aircraft_drawing_plot(
     )  # elevator
 
     fig.add_trace(scatter_aircraft)
-    #fig.add_trace(scatter_rear)
+    # fig.add_trace(scatter_rear)
     fig.add_trace(scatter_right)  # engine
     fig.add_trace(scatter_left)  # engine
     fig.add_trace(scatter_flaps_outboard)  # flaps
