@@ -73,6 +73,10 @@ jobs:
         run: poetry run pytest --no-cov tests/integration_tests
         shell: bash
 
+      - name: Memory tests
+        run: poetry run pytest --no-cov tests/memory_tests
+        shell: bash
+
       - name: Notebook tests
         #        if: ${{ github.event_name == 'pull_request' || contains(github.event.head_commit.message, '[test nb]') || github.ref == 'refs/heads/master' }}
         run: poetry run pytest --no-cov --nbval-lax -p no:python src/fastoad/notebooks

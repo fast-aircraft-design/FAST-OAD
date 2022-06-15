@@ -14,6 +14,7 @@ Basis for registering and retrieving services
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import gc
 import logging
 import re
 from typing import Any, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union
@@ -274,6 +275,18 @@ class BundleLoader:
                 )
             except TypeError as exc:
                 raise FastBundleLoaderUnknownFactoryNameError(factory_name) from exc
+
+    def clean_memory(self):
+        """
+        Removes all service objects from memory and runs garbage collector.
+        """
+        for bundle in self.context.get_bundles():
+            # FIXME: it would be better to target bundles that provide FAST-OAD registration
+            #        instead of just avoiding iPOPO bundles.
+            if bundle.get_state() > Bundle.INSTALLED and "ipopo" not in bundle.get_symbolic_name():
+                bundle.stop()
+                bundle.start()
+        gc.collect()
 
     def _get_instance_name(self, base_name: str):
         """
