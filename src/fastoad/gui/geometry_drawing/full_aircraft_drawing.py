@@ -124,27 +124,28 @@ def full_aircraft_drawing_plot(
     fuselage_front_length = variables["data:geometry:fuselage:front_length"].value[0]
     fuselage_rear_length = variables["data:geometry:fuselage:rear_length"].value[0]
 
-    x_fuselage = np.array(
+    y_fuselage = np.linspace(0, fuselage_max_width / 2, 10)
+    x_fuselage = fuselage_front_length / (0.5 * fuselage_max_width) ** 2 * y_fuselage ** 2 #parabola
+    x_fuselage = np.append(x_fuselage,np.array(
         [
-            0.0,
-            0.0,
-            fuselage_front_length,
+
             fuselage_length - fuselage_rear_length,
             fuselage_length,
             fuselage_length,
         ]
-    )
+    ))
 
-    y_fuselage = np.array(
+
+    y_fuselage = np.append(y_fuselage,np.array(
         [
-            0.0,
-            fuselage_max_width / 4.0,
-            fuselage_max_width / 2.0,
             fuselage_max_width / 2.0,
             fuselage_max_width / 4.0,
             0.0,
         ]
-    )
+    ))
+
+
+
 
     # Flaps
     # Part of the code dedicated to the flaps
@@ -300,27 +301,21 @@ def full_aircraft_drawing_plot(
     )
     x_ht = x_ht + wing_25mac_x + ht_distance_from_wing - local_ht_25mac_x
 
-    # pylint: disable=invalid-name # that's a common naming
-    x = np.concatenate((x_fuselage, x_wing, x_ht))
-    # pylint: disable=invalid-name # that's a common naming
-    y = np.concatenate((y_fuselage, y_wing, y_ht))
 
-    # pylint: disable=invalid-name # that's a common naming
-    y = np.concatenate((-y, y))
-    # pylint: disable=invalid-name # that's a common naming
-    x = np.concatenate((x, x))
+
+
 
     # Design of the elevator
-    A = x_fuselage[5] - x_ht[3]  # constants used for the computation
+    A = x_fuselage[-1] - x_ht[3]  # constants used for the computation
 
-    B = y_fuselage[4] - y_fuselage[5]  # constants used for the computation
+    B = y_fuselage[-2] - y_fuselage[-1]  # constants used for the computation
 
     D = x_ht[2] - x_ht[3]  # constants used for the computation
 
     E = y_ht[1] - y_ht[3]  # constants used for the computation
 
-    tg_alpha = (y_fuselage[3] - y_fuselage[4]) / (
-        x_fuselage[4] - x_fuselage[3]
+    tg_alpha = (y_fuselage[-3] - y_fuselage[-2]) / (
+        x_fuselage[-2] - x_fuselage[-3]
     )  # constants used for the computation
 
     ht_root_tip_x_percent = (
@@ -341,25 +336,52 @@ def full_aircraft_drawing_plot(
 
     x_elevator = np.array(
         [
-            x_fuselage[4] - delta_x,
+            x_fuselage[-2] - delta_x,
             x_ht[3] - delta_l * HORIZONTAL_TAIL_ROOT,
             x_ht[2]
             - (1 - HORIZONTAL_WIDTH_ELEVATOR) * y_ht[1] * np.tan(ht_sweep_100 * np.pi / 180)
             - HORIZONTAL_TAIL_TIP * ht_root_tip_x_percent,
             x_ht[2]
             - (1 - HORIZONTAL_WIDTH_ELEVATOR) * y_ht[1] * np.tan(ht_sweep_100 * np.pi / 180),
-            x_fuselage[4] - delta_x,
+            x_fuselage[-2] - delta_x,
         ]
     )
     y_elevator = np.array(
         [
-            y_fuselage[4] + delta_y,
-            y_fuselage[4] + HORIZONTAL_TAIL_ROOT * delta_y_tot,
+            y_fuselage[-2] + delta_y,
+            y_fuselage[-2] + HORIZONTAL_TAIL_ROOT * delta_y_tot,
             y_ht[1] * HORIZONTAL_WIDTH_ELEVATOR,
             y_ht[1] * HORIZONTAL_WIDTH_ELEVATOR,
-            y_fuselage[4] + delta_y,
+            y_fuselage[-2] + delta_y,
         ]
     )
+    print(x_fuselage[-1])
+
+    x_fuselage[-2]= x_elevator[-1]
+    x_fuselage=x_fuselage[:-1]
+    y_fuselage = y_fuselage[:-1]
+
+    x_elev = x_elevator[-1]
+    y_elev = y_elevator[-1]
+
+    y_rear=np.flip(np.linspace(0,fuselage_max_width/4,50))
+
+    x_rear = fuselage_length+ (x_elev - fuselage_length)/y_elev**2 * y_rear**2
+
+    x_fuselage = np.concatenate((x_fuselage,x_rear))
+    y_fuselage = np.concatenate((y_fuselage, y_rear))
+    # pylint: disable=invalid-name # that's a common naming
+    x = np.concatenate((x_fuselage, x_wing, x_ht))
+    # pylint: disable=invalid-name # that's a common naming
+    y = np.concatenate((y_fuselage, y_wing, y_ht))
+
+    # pylint: disable=invalid-name # that's a common naming
+    y = np.concatenate((-y, y))
+
+    # pylint: disable=invalid-name # that's a common naming
+    x = np.concatenate((x, x))
+
+
 
     if fig is None:
         fig = go.Figure()
@@ -367,6 +389,10 @@ def full_aircraft_drawing_plot(
     scatter_aircraft = go.Scatter(
         x=y, y=x, line=dict(color="blue"), mode="lines", name=name, showlegend=False
     )  # Aircraft
+    # scatter_rear = go.Scatter(
+    #     x=y_rear, y=x_rear, line=dict(color="blue"), mode="lines", name=name, showlegend=False
+    # )  # Aircraft
+
     scatter_left = go.Scatter(
         x=y_engine, y=x_engine, line=dict(color="blue"), mode="lines", name=name, showlegend=False
     )  # Left engine
@@ -377,7 +403,7 @@ def full_aircraft_drawing_plot(
         x=y_flaps_inboard,
         y=x_flaps_inboard,
         mode="lines",
-        line=dict(color="blue", width=1),
+        line=dict(color="#636efa", width=1),
         name=name,
         showlegend=False,
     )  # inboard flap
@@ -385,7 +411,7 @@ def full_aircraft_drawing_plot(
         x=y_flaps_outboard,
         y=x_flaps_outboard,
         mode="lines",
-        line=dict(color="blue", width=1),
+        line=dict(color="#636efa", width=1),
         name=name,
         showlegend=False,
     )  # outboard flap
@@ -393,14 +419,14 @@ def full_aircraft_drawing_plot(
         x=y_design_line,
         y=x_design_line,
         mode="lines",
-        line=dict(color="blue", width=1),
+        line=dict(color="#636efa", width=1),
         name=name,
         showlegend=False,
     )  # design line
     scatter_slats_left = go.Scatter(
         x=y_slats_left,
         y=x_slats_left,
-        line=dict(color="blue", width=1),
+        line=dict(color="#636efa", width=1),
         mode="lines",
         name=name,
         showlegend=False,
@@ -408,7 +434,7 @@ def full_aircraft_drawing_plot(
     scatter_slats_right = go.Scatter(
         x=y_slats_right,
         y=x_slats_right,
-        line=dict(color="blue", width=1),
+        line=dict(color="#636efa", width=1),
         mode="lines",
         name=name,
         showlegend=False,
@@ -416,7 +442,7 @@ def full_aircraft_drawing_plot(
     scatter_elevator_right = go.Scatter(
         x=y_elevator,
         y=x_elevator,
-        line=dict(color="blue", width=1),
+        line=dict(color="#636efa", width=1),
         mode="lines",
         name=name,
         showlegend=False,
@@ -424,13 +450,14 @@ def full_aircraft_drawing_plot(
     scatter_elevator_left = go.Scatter(
         x=-y_elevator,
         y=x_elevator,
-        line=dict(color="blue", width=1),
+        line=dict(color="#636efa", width=1),
         mode="lines",
         name=name,
         showlegend=False,
     )  # elevator
 
     fig.add_trace(scatter_aircraft)
+    #fig.add_trace(scatter_rear)
     fig.add_trace(scatter_right)  # engine
     fig.add_trace(scatter_left)  # engine
     fig.add_trace(scatter_flaps_outboard)  # flaps
@@ -445,7 +472,14 @@ def full_aircraft_drawing_plot(
 
     fig = go.FigureWidget(fig)
 
-    fig.update_layout(title_text="Aircraft Geometry", title_x=0.5, xaxis_title="y", yaxis_title="x")
+    fig.update_layout(
+        width=600,
+        height=600,
+        title_text="Aircraft Geometry",
+        title_x=0.5,
+        xaxis_title="y",
+        yaxis_title="x",
+    )
 
     return fig
 
@@ -692,7 +726,7 @@ def wing_drawing_plot(
         fig = go.Figure()
 
     scatter = go.Scatter(
-        x=y, y=x, line=dict(color="blue", width=3), mode="lines", name=name, showlegend=False
+        x=y, y=x, line=dict(color="#636efa", width=3), mode="lines", name=name, showlegend=False
     )  # wing
 
     scatter_fuselage = go.Scatter(
@@ -1304,7 +1338,7 @@ def flaps_and_slats_plot(
         x=y_inboard,
         y=x_inboard,
         mode="lines",
-        line=dict(color="blue", width=1),
+        line=dict(color="#636efa", width=1),
         name=name,
         showlegend=False,
     )  # first flap
@@ -1312,7 +1346,7 @@ def flaps_and_slats_plot(
         x=y_outboard,
         y=x_outboard,
         mode="lines",
-        line=dict(color="blue", width=1),
+        line=dict(color="#636efa", width=1),
         name=name,
         showlegend=False,
     )  # second flap
@@ -1320,14 +1354,14 @@ def flaps_and_slats_plot(
         x=y_design_line,
         y=x_design_line,
         mode="lines",
-        line=dict(color="blue"),
+        line=dict(color="#636efa"),
         name=name,
         showlegend=False,
     )  # design line
     scatter_slats_left = go.Scatter(
         x=y_slats_left,
         y=x_slats_left,
-        line=dict(color="blue", width=1),
+        line=dict(color="#636efa", width=1),
         mode="lines",
         name=name,
         showlegend=False,
@@ -1335,7 +1369,7 @@ def flaps_and_slats_plot(
     scatter_slats_right = go.Scatter(
         x=y_slats_right,
         y=x_slats_right,
-        line=dict(color="blue", width=1),
+        line=dict(color="#636efa", width=1),
         mode="lines",
         name=name,
         showlegend=False,
@@ -1353,6 +1387,6 @@ def flaps_and_slats_plot(
     fig = go.FigureWidget(fig)
     fig.update_xaxes(constrain="domain")
     fig.update_yaxes(constrain="domain")
-    fig.update_layout(title_text="Wing Drawing", title_x=0.5, xaxis_title="y", yaxis_title="x")
+    fig.update_layout(title_text="Wing Geometry", title_x=0.5, xaxis_title="y", yaxis_title="x")
 
     return fig
