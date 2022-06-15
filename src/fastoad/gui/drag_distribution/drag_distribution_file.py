@@ -188,10 +188,7 @@ def drag_distribution_plot(
     fig.add_trace(sunburst)
 
     fig.update_layout(
-        title_text="Drag coefficient distribution at a cruise mach of "
-        + str(mach)
-        + " : "
-        + str(name),
+        title_text="Drag coefficient distribution at a mach of " + str(mach) + " : " + str(name),
         title_x=0.5,
         xaxis_title="y",
         yaxis_title="x",

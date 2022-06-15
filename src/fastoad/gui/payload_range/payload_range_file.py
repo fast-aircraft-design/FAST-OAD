@@ -240,7 +240,7 @@ def payload_range_simple(
     fig = go.FigureWidget(fig)
     fig.update_layout(
         # title_text="Payload range diagram",
-        xaxis_title="range [NM]",
+        xaxis_title="Range [NM]",
         yaxis_title="Payload [tonnes]",
     )
 
