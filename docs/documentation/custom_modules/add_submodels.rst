@@ -144,46 +144,26 @@ At this point, there are now 2 available submodels for the "atom_counter.wing" r
 do nothing else, the command :code:`oad.RegisterSubmodel.get_submodel("atom_counter.wing")` will
 raise an error because FAST-OAD needs to be instructed what submodel to use.
 
-The first way to do that is by Python. You may insert the following line at module level (i.e. not in
-any class or function):
+*****************************************
+How to specify which submodel to be used
+*****************************************
 
-.. code-block:: python
+There are two ways to specify which submodel has to be used:
 
-    oad.RegisterSubmodel.active_models["atom_counter.wing"] = "alternate.counter.wing"
+.. contents::
+   :local:
 
-The best place for such line would probably be in the module that defines your submodel. In this
-case, our above example would become:
+.. _submodel-spec-conf-file:
 
-.. code-block:: python
+Through configuration file (recommended)
+********************************************************
 
-    import openmdao.api as om
-    import fastoad.api as oad
-
-    oad.RegisterSubmodel.active_models["atom_counter.wing"] = "alternate.counter.wing"
-
-    @oad.RegisterSubmodel("atom_counter.wing", "alternate.counter.wing")
-    class CountWingAtoms(om.ExplicitComponent):
-        """Put another implementation here"""
-
-.. warning::
-
-    In case several Python modules define their own chosen submodel for the same requirement, the
-    last interpreted line will preempt, which is not a reliable way to do.
-    We currently expect such situation to be rare, where more than one alternate submodel would be
-    available (for the same requirement) in one set of FAST-OAD modules.
-    Anyway, in such situation, the only reliable way will be to use the configuration file, as
-    instructed below.
-
-**********************************************
-How to use submodels from configuration file ?
-**********************************************
-
-The second way to define what submodels should be used is by using FAST-OAD configuration file.
+The recommended way to specify submodels to be used is by using FAST-OAD configuration file.
 
 .. note::
 
     When it comes to the specification of submodels to be used, the configuration file will have
-    the priority over any Python instruction.
+    the priority over :ref:`Python instructions<submodel-spec-python>`.
 
 The configuration file can be populated with a specific section that will state the submodels
 that should be chosen.
@@ -197,8 +177,36 @@ that should be chosen.
 In the above example, an alternate submodel is chosen for the "atom_counter.wing" requirement,
 whereas the original submodel is chosen for the "original.counter.fuselage" requirement (whether
 there is another one defined or not).
-No submodel is defined for the "atom_counter.empennage" requirement, which lets the choice to
-be done in Python, as explained in above sections.
+No submodel is defined for the "atom_counter.empennage" requirement. It will be Ok if only one
+submodel is available for this requirement. Otherwise, an error will be raised, unless the submodel
+choice is done through Python (see below).
+
+
+.. _submodel-spec-python:
+
+Through Python
+******************************
+
+The second way to specify submodels to be used is by Python.
+
+You may insert the following line at module level (i.e. **NOT in any class or function**):
+
+.. code-block:: python
+
+    import fastoad.api as oad
+
+    oad.RegisterSubmodel.active_models["atom_counter.wing"] = "alternate.counter.wing"
+
+
+.. warning::
+
+    In case several Python modules define their own chosen submodel for the same requirement, the
+    last interpreted line will preempt, which is not a reliable way to do.
+
+    Therefore, this should be reserved to your tests.
+
+    If you plan to provide your submodels to other people, it is recommended to avoid specifying
+    the used submodel through Python and let them manage that through their configuration file.
 
 
 ***********************
@@ -206,20 +214,23 @@ Deactivating a submodel
 ***********************
 It is also possible to deactivate a submodel:
 
-.. code-block:: python
-
-    import fastoad.api as oad
-
-    oad.RegisterSubmodel.active_models["atom_counter.wing"] = None  # The empty string "" is also possible
-
-Then nothing will be done when the "atom_counter.wing" submodel will be called. Of course, one
-has to correctly know which variables will be missing with such setting and what consequences it
-will have on the whole problem.
-
 From the configuration file, it can be done with:
 
 .. code-block:: yaml
 
     submodels:
         atom_counter.wing: null  # The empty string "" is also possible
+
+From Python, it can be done with:
+
+.. code-block:: python
+
+    import fastoad.api as oad
+
+    oad.RegisterSubmodel.active_models["atom_counter.wing"] = None  # The empty string "" is also possible
+
+
+Then nothing will be done when the :code:`"atom_counter.wing"` submodel will be called. Of course, one
+has to correctly know which variables will be missing with such setting and what consequences it
+will have on the whole problem.
 
