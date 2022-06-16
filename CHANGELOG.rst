@@ -2,6 +2,13 @@
 Changelog
 =========
 
+Version 1.3.4
+=============
+- Fixed:
+    - FAST-OAD was quickly crashing in multiprocessing environment. (#442)
+    - Memory consumption could increase considerably when numerous computations were done in the same Python session. (#443)
+    - Deactivated sub-models kept being deactivated in following computations done in the same Python session. (#444)
+
 Version 1.3.3
 =============
 - Fixed:
