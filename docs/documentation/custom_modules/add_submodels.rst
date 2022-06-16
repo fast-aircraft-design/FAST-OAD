@@ -110,18 +110,20 @@ To allow a simpler replacement of your submodels, you will need to use the
 This has the same behavior as the previous one, but the second one will allow substitution of
 submodels, as shown in next part.
 
-In details, :code:`CountWingAtoms` is declared as a submodel that fulfills the role of "wing atom
+In details, :code:`CountWingAtoms`is declared as a submodel that fulfills the role of "wing atom
 counter", identified by the :code:`"atom_counter.wing"` (that is put in constant
-:code:`WING_ATOM_COUNTER` to avoid typos, as it is used several times). The same applies to the
+:code:`WING_ATOM_COUNTER`to avoid typos, as it is used several times). The same applies to the
 roles of "fuselage atom counter" and "empennage atom counter".
 
-In the :code:`CountAtoms` class, the submodel that counts wing atoms is retrieved with
-:code:`oad.RegisterSubmodel.get_submodel(WING_ATOM_COUNTER)`.
+In the :code:`CountAtoms` class, the line :code:`oad.RegisterSubmodel.get_submodel(WING_ATOM_COUNTER)`
+expresses the **requirement** of getting a submodel that counts wing atoms.
 
 .. Important::
 
-    As long as only one submodel is declared in all the used Python modules, the above instruction
-    will provide it.
+    As long as only one declared submodel fulfills a requirement, the above instruction
+    will be enough to provide it.
+
+    See below how to manage several "concurrent" submodels.
 
 **********************************
 How to declare a custom submodel ?
@@ -142,27 +144,28 @@ The process for providing an alternate submodel is identical:
 
 At this point, there are now 2 available submodels for the "atom_counter.wing" requirement. If we
 do nothing else, the command :code:`oad.RegisterSubmodel.get_submodel("atom_counter.wing")` will
-raise an error because FAST-OAD needs to be instructed what submodel to use.
+raise an error because FAST-OAD needs to be instructed which submodel to use.
 
-*****************************************
-How to specify which submodel to be used
-*****************************************
+***********************
+How to select submodels
+***********************
 
-There are two ways to specify which submodel has to be used:
+There are two ways to specify which submodel has to be used when several ones fulfill a given
+requirement:
 
 .. contents::
    :local:
 
 .. _submodel-spec-conf-file:
 
-Through configuration file (recommended)
-********************************************************
+Using configuration file (recommended)
+***************************************
 
-The recommended way to specify submodels to be used is by using FAST-OAD configuration file.
+The recommended way to select submodels is to use FAST-OAD configuration files.
 
 .. note::
 
-    When it comes to the specification of submodels to be used, the configuration file will have
+    When it comes to the specification of selected submodels, the configuration file will have
     the priority over :ref:`Python instructions<submodel-spec-python>`.
 
 The configuration file can be populated with a specific section that will state the submodels
@@ -177,17 +180,16 @@ that should be chosen.
 In the above example, an alternate submodel is chosen for the "atom_counter.wing" requirement,
 whereas the original submodel is chosen for the "original.counter.fuselage" requirement (whether
 there is another one defined or not).
-No submodel is defined for the "atom_counter.empennage" requirement. It will be Ok if only one
+No submodel is defined for the "atom_counter.empennage" requirement. It will be OK if only one
 submodel is available for this requirement. Otherwise, an error will be raised, unless the submodel
 choice is done through Python (see below).
 
 
 .. _submodel-spec-python:
 
-Through Python
-******************************
-
-The second way to specify submodels to be used is by Python.
+Using Python
+************
+The second way to select submodels is by using Python.
 
 You may insert the following line at module level (i.e. **NOT in any class or function**):
 
