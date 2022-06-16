@@ -110,7 +110,7 @@ To allow a simpler replacement of your submodels, you will need to use the
 This has the same behavior as the previous one, but the second one will allow substitution of
 submodels, as shown in next part.
 
-In details, :code:`CountWingAtoms`is declared as a submodel that fulfills the role of "wing atom
+In details, :code:`CountWingAtoms` is declared as a submodel that fulfills the role of "wing atom
 counter", identified by the :code:`"atom_counter.wing"` (that is put in constant
 :code:`WING_ATOM_COUNTER`to avoid typos, as it is used several times). The same applies to the
 roles of "fuselage atom counter" and "empennage atom counter".
