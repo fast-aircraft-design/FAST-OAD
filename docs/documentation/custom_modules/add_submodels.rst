@@ -189,7 +189,7 @@ choice is done through Python (see below).
 
 Using Python
 ************
-The second way to select submodels is by using Python.
+The second way to select submodels is to use Python.
 
 You may insert the following line at module level (i.e. **NOT in any class or function**):
 
