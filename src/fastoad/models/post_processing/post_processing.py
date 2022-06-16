@@ -15,6 +15,7 @@
 from .speed_altitude_diagram import SpeedAltitudeDiagram
 from .ceiling_mass_diagram import CeilingMassDiagram
 from .available_power_diagram import AvailablepowerDiagram
+from .v_n_diagram import VnDiagram
 
 import openmdao.api as om
 import fastoad.api as oad
@@ -41,5 +42,10 @@ class PostProcessing(om.Group):
         self.add_subsystem(
             "available_power",
             AvailablepowerDiagram(propulsion_id=self.options["propulsion_id"]),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "v_n",
+            VnDiagram(propulsion_id=self.options["propulsion_id"]),
             promotes=["*"],
         )

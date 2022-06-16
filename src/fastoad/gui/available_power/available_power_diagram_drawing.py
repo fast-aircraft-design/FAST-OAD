@@ -12,9 +12,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import plotly.graph_objects as go
-import pandas as pd
-from ipywidgets import widgets, HBox
-from IPython.display import display
 from fastoad.io import VariableIO
 
 
@@ -76,11 +73,6 @@ def available_power_diagram_drawing_plot(
     power_required_cruise = power_required_cruise[start_cruise:]
     power_available_cruise = power_available_cruise[start_cruise:]
 
-    min_required_power_sea = min(power_required_sea)
-    max_required_power_sea = max(power_required_sea)
-    min_required_power_cruise = min(power_required_cruise)
-    max_required_power_cruise = max(power_required_cruise)
-
     # Plot the results
     fig = go.Figure()
 
@@ -134,34 +126,12 @@ def available_power_diagram_drawing_plot(
     fig.add_trace(scatter_power_available_cruise_altitude)
     fig.add_trace(scatter_power_required_cruise_altitude)
 
-    # Creating the table with the relevants values
-    d = {
-        "Variable": [
-            "Sea level : Min Available Power (MW)",
-            "Sea level : Max Available Power (MW)",
-            "Cruise altitude : Min Available Power (MW)",
-            "Cruise altituavailable: Max Available Power (MW)",
-        ],
-        "Value": [
-            min_required_power_sea / 1000000,
-            max_required_power_sea / 1000000,
-            min_required_power_cruise / 1000000,
-            max_required_power_cruise / 1000000,
-        ],
-    }
-
-    df = pd.DataFrame(data=d)
-    out = widgets.Output()
-    with out:
-        display(df)
-
     fig = go.FigureWidget(fig)
     fig.update_layout(
         height=700,
         width=700,
-        title_text="Available power diagram",
         title_x=0.5,
         xaxis_title="Speed [m/s]",
         yaxis_title="Power [W]",
     )
-    return widgets.HBox([fig, out])
+    return fig
