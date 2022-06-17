@@ -67,4 +67,5 @@ from fastoad.gui.analysis_and_plots import (
     payload_range_loop_computation,
     drag_distribution_plot,
     aircraft_drawing_side_view_plot,
+    aircraft_drawing_front_view_plot,
 )
