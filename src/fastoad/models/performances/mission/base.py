@@ -13,8 +13,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import List
+from dataclasses import dataclass, field
+from typing import List, Optional
 
 import pandas as pd
 
@@ -29,6 +29,7 @@ class IFlightPart(ABC, BaseDataClass):
     """
 
     name: str = ""
+    target: FlightPoint = field(init=False, default=None)
 
     @abstractmethod
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
@@ -49,15 +50,39 @@ class FlightSequence(IFlightPart):
     Defines and computes a flight sequence.
     """
 
-    def __post_init__(self):
-        super().__post_init__()
-        self._flight_sequence = []
+    #: List of IFlightPart instances that should be run sequentially.
+    flight_sequence: List[IFlightPart] = field(default_factory=list)
+
+    #: Consumed mass between sequence start and target mass, if any defined
+    consumed_mass_before_input_weight: float = field(default=0.0, init=False)
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         parts = []
         part_start = start
+
+        self.consumed_mass_before_input_weight = 0.0
+        consumed_mass = 0.0
         for part in self.flight_sequence:
+            # This check has to be done first because relative target parameters
+            # will be made absolute during compute_from()
+            part_has_target_mass = not (part.target.mass is None or part.target.is_relative("mass"))
+
             flight_points = part.compute_from(part_start)
+
+            consumed_mass += flight_points.iloc[0].mass - flight_points.iloc[-1].mass
+
+            if isinstance(part, FlightSequence):
+                self.consumed_mass_before_input_weight += part.consumed_mass_before_input_weight
+
+            # If a part has a target mass, computed mass of all previous part must be
+            # offset so this target will be reached.
+            # (mass consumption of previous parts is assumed independent of aircraft mass)
+            if part_has_target_mass:
+                mass_offset = flight_points.iloc[0].mass - part_start.mass
+                for previous_flight_points in parts:
+                    previous_flight_points.mass += mass_offset
+                self.consumed_mass_before_input_weight = float(consumed_mass)
+
             if len(parts) > 0 and len(flight_points) > 1:
                 # First point of the segment is omitted, as it is the last of previous segment.
                 #
@@ -83,6 +108,9 @@ class FlightSequence(IFlightPart):
             return pd.concat(parts).reset_index(drop=True)
 
     @property
-    def flight_sequence(self) -> List[IFlightPart]:
-        """List of IFlightPart instances that should be run sequentially."""
-        return self._flight_sequence
+    def target(self) -> Optional[FlightPoint]:
+        """Target of the last element of current sequence."""
+        if len(self.flight_sequence) > 0:
+            return self.flight_sequence[-1].target
+
+        return None
