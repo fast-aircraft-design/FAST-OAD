@@ -1,5 +1,5 @@
 """
-Defines the analysis and plotting functions for postprocessing
+Defines the analysis and plotting functions for postprocessing.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
@@ -240,7 +240,7 @@ def payload_range_simple(
     fig = go.FigureWidget(fig)
     fig.update_layout(
         # title_text="Payload range diagram",
-        xaxis_title="range [NM]",
+        xaxis_title="Range [NM]",
         yaxis_title="Payload [tonnes]",
     )
 
@@ -342,6 +342,7 @@ def grid_generation(
 
     grid_ranges = np.array([])  # to stock the ranges of the grid x
     grid_payloads = np.array([])  # to stock the payloads of the grid y
+
     n_values_ranges = np.array([]) # number of ranges(x) in th grid for a specific payload (y)
 
     if alternative_grid:

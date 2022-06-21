@@ -494,6 +494,7 @@ def aircraft_drawing_top_view(
 
     fig = go.FigureWidget(fig)
 
+
     if name is None:
         fig.update_layout(
             width=600,
@@ -1421,6 +1422,7 @@ def flaps_and_slats_drawing(
     fig.update_yaxes(constrain="domain")
     fig.update_layout(title_text="Wing Geometry", title_x=0.5, xaxis_title="y", yaxis_title="x")
 
+
     return fig
 
 
@@ -1899,6 +1901,7 @@ def aircraft_drawing_front_view(
             fuselage_max_height / 2.0 * 3.5 / 5,
         ]
     )
+
 
     y_cockpit2 = np.array([0, 0])
     z_cockpit2 = np.array(
