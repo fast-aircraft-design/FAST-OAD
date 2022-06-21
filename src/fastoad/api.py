@@ -58,13 +58,11 @@ from fastoad.gui.analysis_and_plots import (
     mass_breakdown_bar_plot,
     mass_breakdown_sun_plot,
     wing_geometry_plot,
-
     flaps_and_slats_drawing,
     wing_drawing,
     aircraft_drawing_top_view,
     aircraft_drawing_side_view,
     aircraft_drawing_front_view,
-
     payload_range_simple,
     payload_range_full,
     payload_range_grid_plot,

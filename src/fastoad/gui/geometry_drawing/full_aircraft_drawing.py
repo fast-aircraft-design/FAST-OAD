@@ -330,8 +330,8 @@ def aircraft_drawing_top_view(
     x_ht = x_ht + wing_25mac_x + ht_distance_from_wing - local_ht_25mac_x
 
     # Design of the elevator
-    constant1 = fuselage_length - x_ht[3]  # constants used for the computation
-    constant2 = ht_tip_leading_edge_x + ht_tip_chord - ht_root_chord
+    x_ht_position = fuselage_length - x_ht[3]  # constants used for the computation
+    x_virtual_ht_leading_edge = ht_tip_leading_edge_x + ht_tip_chord - ht_root_chord
 
     tg_alpha = (y_fuselage[-3] - y_fuselage[-2]) / (
         x_fuselage[-2] - x_fuselage[-3]
@@ -345,16 +345,16 @@ def aircraft_drawing_top_view(
 
     delta_l = (
         ht_root_chord
-        - np.tan(ht_sweep_0 * np.pi / 180) * (fuselage_max_width / 4.0 + constant1 * tg_alpha)
+        - np.tan(ht_sweep_0 * np.pi / 180) * (fuselage_max_width / 4.0 + x_ht_position * tg_alpha)
     ) / (
         1 + np.tan(ht_sweep_0 * np.pi / 180) * tg_alpha
     )  # constants used for the computation
 
-    delta_y_tot = tg_alpha * (constant1 + delta_l)  # constants used for the computation
+    delta_y_tot = tg_alpha * (x_ht_position + delta_l)  # constants used for the computation
 
-    delta_x = (constant1 * ht_span / 2.0 - constant2 * fuselage_max_width / 4.0) / (
-        ht_span / 2.0 + constant2 * tg_alpha
-    )
+    delta_x = (
+        x_ht_position * ht_span / 2.0 - x_virtual_ht_leading_edge * fuselage_max_width / 4.0
+    ) / (ht_span / 2.0 + x_virtual_ht_leading_edge * tg_alpha)
     # constants used for the computation
 
     delta_y = tg_alpha * delta_x  # constants used for the computation
@@ -493,7 +493,6 @@ def aircraft_drawing_top_view(
     fig.layout = go.Layout(yaxis=dict(scaleanchor="x", scaleratio=1))
 
     fig = go.FigureWidget(fig)
-
 
     if name is None:
         fig.update_layout(
@@ -1422,7 +1421,6 @@ def flaps_and_slats_drawing(
     fig.update_yaxes(constrain="domain")
     fig.update_layout(title_text="Wing Geometry", title_x=0.5, xaxis_title="y", yaxis_title="x")
 
-
     return fig
 
 
@@ -1901,7 +1899,6 @@ def aircraft_drawing_front_view(
             fuselage_max_height / 2.0 * 3.5 / 5,
         ]
     )
-
 
     y_cockpit2 = np.array([0, 0])
     z_cockpit2 = np.array(
