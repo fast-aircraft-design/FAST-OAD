@@ -342,9 +342,7 @@ def grid_generation(
 
     grid_ranges = np.array([])  # to stock the ranges of the grid x
     grid_payloads = np.array([])  # to stock the payloads of the grid y
-    n_values_ranges = np.array(
-        []
-    )  # number of ranges(x) in th grid for a specific payload (y) # used further
+    n_values_ranges = np.array([]) # number of ranges(x) in th grid for a specific payload (y)
 
     if alternative_grid:
         # The grid is divided in two parts the first is a rectangle on the left side of the payload-range diagram

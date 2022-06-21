@@ -19,10 +19,8 @@ import plotly
 import plotly.graph_objects as go
 from ipywidgets import widgets, HBox
 from IPython.display import display
-from PIL import Image
 
 pi = np.pi
-
 
 from fastoad.io import VariableIO
 
@@ -30,24 +28,32 @@ COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 NACELLE_POSITION = (
     0.6  # Nacelle position compared to the leading edge. 0 means that the back of the nacelle is
 )
+
 # aligned with the beginning of the root, 1 means that the beginning of the nacelle is aligned with the kink_x.
 HORIZONTAL_TAIL_ROOT = 0.3  # Percentage of the tail root concerned by the elevator
 HORIZONTAL_TAIL_TIP = (
     0.3  # Percentage of the tail tip, at 90 percent of the horizontal tail width, covered by the
 )
-# elevator
+
+# Elevator
 HORIZONTAL_WIDTH_ELEVATOR = (
     0.85  # Percentage of the width of the horizontal tail concerned by the elevator
 )
+
+# Horizontal tail
 HT_HEIGHT = 0.3  # Height of the horizontal tail root compared to the center line of the fuselage. 0.0 means on the
 # center line, 1.0 means at a height same as the radius of the fuselage
 HT_DIHEDRAL = 0.42  # Height of the horizontal tail tip compared to the center line of the fuselage. 0.0 means on the
 # center line, 1.0 means at a height same as the radius of the fuselage
+
+# Engine
 ENGINE_HEIGHT = 0.5  # Heigth of the middle of the ingine 0.0 means on the center line   1.0 means the middle of the
 # engine is just on the lower line of the aircraft
 WING_ROOT_HEIGHT = (
     0.2  # Height of the wing root compared to the center line of the fuselage. 0.0 means on the
 )
+
+
 # center line, 1.0 means at a height same as the radius of the fuselage below
 
 
@@ -324,13 +330,8 @@ def aircraft_drawing_top_view(
     x_ht = x_ht + wing_25mac_x + ht_distance_from_wing - local_ht_25mac_x
 
     # Design of the elevator
-    A = x_fuselage[-1] - x_ht[3]  # constants used for the computation
-
-    B = y_fuselage[-2] - y_fuselage[-1]  # constants used for the computation
-
-    D = x_ht[2] - x_ht[3]  # constants used for the computation
-
-    E = y_ht[1] - y_ht[3]  # constants used for the computation
+    constant1 = fuselage_length - x_ht[3]  # constants used for the computation
+    constant2 = ht_tip_leading_edge_x + ht_tip_chord - ht_root_chord
 
     tg_alpha = (y_fuselage[-3] - y_fuselage[-2]) / (
         x_fuselage[-2] - x_fuselage[-3]
@@ -338,18 +339,23 @@ def aircraft_drawing_top_view(
 
     ht_root_tip_x_percent = (
         x_ht[2] - (1 - HORIZONTAL_WIDTH_ELEVATOR) * y_ht[1] * np.tan(ht_sweep_100 * np.pi / 180)
-    ) - (
-        x_ht[1] - (1 - HORIZONTAL_WIDTH_ELEVATOR) * y_ht[1] * np.tan(ht_sweep_0 * np.pi / 180)
-    )  # constants used for the computation. Root chord at X percent of the horizontal tail width (depending on the
-    # value of the parameter "HORIZONTAL_WIDTH_ELEVATOR"
+    ) - (x_ht[1] - (1 - HORIZONTAL_WIDTH_ELEVATOR) * y_ht[1] * np.tan(ht_sweep_0 * np.pi / 180))
+    # constants used for the computation. Root chord at X percent of the horizontal tail width
+    # (depending on the value of the parameter "HORIZONTAL_WIDTH_ELEVATOR")
 
-    delta_l = (ht_root_chord - np.tan(ht_sweep_0 * np.pi / 180) * (B + A * tg_alpha)) / (
+    delta_l = (
+        ht_root_chord
+        - np.tan(ht_sweep_0 * np.pi / 180) * (fuselage_max_width / 4.0 + constant1 * tg_alpha)
+    ) / (
         1 + np.tan(ht_sweep_0 * np.pi / 180) * tg_alpha
     )  # constants used for the computation
 
-    delta_y_tot = tg_alpha * (A + delta_l)  # constants used for the computation
+    delta_y_tot = tg_alpha * (constant1 + delta_l)  # constants used for the computation
 
-    delta_x = (A * E - D * B) / (E + D * tg_alpha)  # constants used for the computation
+    delta_x = (constant1 * ht_span / 2.0 - constant2 * fuselage_max_width / 4.0) / (
+        ht_span / 2.0 + constant2 * tg_alpha
+    )
+    # constants used for the computation
 
     delta_y = tg_alpha * delta_x  # constants used for the computation
 
@@ -389,26 +395,27 @@ def aircraft_drawing_top_view(
     x_fuselage = np.concatenate((x_fuselage, x_rear))
     y_fuselage = np.concatenate((y_fuselage, y_rear))
     # pylint: disable=invalid-name # that's a common naming
-    x = np.concatenate((x_fuselage, x_wing, x_ht))
+    x_aircraft = np.concatenate((x_fuselage, x_wing, x_ht))
     # pylint: disable=invalid-name # that's a common naming
-    y = np.concatenate((y_fuselage, y_wing, y_ht))
+    y_aircraft = np.concatenate((y_fuselage, y_wing, y_ht))
 
     # pylint: disable=invalid-name # that's a common naming
-    y = np.concatenate((-y, y))
+    y_aircraft = np.concatenate((-y_aircraft, y_aircraft))
 
     # pylint: disable=invalid-name # that's a common naming
-    x = np.concatenate((x, x))
+    x_aircraft = np.concatenate((x_aircraft, x_aircraft))
 
     if fig is None:
         fig = go.Figure()
 
     scatter_aircraft = go.Scatter(
-        x=y, y=x, line=dict(color="blue"), mode="lines", name=name, showlegend=False
+        x=y_aircraft,
+        y=x_aircraft,
+        line=dict(color="blue"),
+        mode="lines",
+        name=name,
+        showlegend=False,
     )  # Aircraft
-    # scatter_rear = go.Scatter(
-    #     x=y_rear, y=x_rear, line=dict(color="blue"), mode="lines", name=name, showlegend=False
-    # )  # Aircraft
-
     scatter_left = go.Scatter(
         x=y_engine, y=x_engine, line=dict(color="blue"), mode="lines", name=name, showlegend=False
     )  # Left engine
@@ -473,7 +480,6 @@ def aircraft_drawing_top_view(
     )  # elevator
 
     fig.add_trace(scatter_aircraft)
-    # fig.add_trace(scatter_rear)
     fig.add_trace(scatter_right)  # engine
     fig.add_trace(scatter_left)  # engine
     fig.add_trace(scatter_flaps_outboard)  # flaps
@@ -488,14 +494,24 @@ def aircraft_drawing_top_view(
 
     fig = go.FigureWidget(fig)
 
-    fig.update_layout(
-        width=600,
-        height=600,
-        title_text="Aircraft Geometry",
-        title_x=0.5,
-        xaxis_title="y",
-        yaxis_title="x",
-    )
+    if name is None:
+        fig.update_layout(
+            width=600,
+            height=600,
+            title_text="Aircraft Geometry",
+            title_x=0.5,
+            xaxis_title="y",
+            yaxis_title="x",
+        )
+    else:
+        fig.update_layout(
+            width=600,
+            height=600,
+            title_text=name,
+            title_x=0.5,
+            xaxis_title="y",
+            yaxis_title="x",
+        )
 
     return fig
 
@@ -2056,9 +2072,11 @@ def make_circle(center_x: float, center_y: float, radius: float):
     """
     Inner function used in the functions above
     returns 2 ndarrays containing a the x and y coordinates of a circle of radius centered in (center_x,center_y)
-    param center_x : x coordinate of the circle's center
-    param center_y : y coordinate of the circle's center
-    param radius : radius of the circle
+    :param center_x : x coordinate of the circle's center
+    :param center_y : y coordinate of the circle's center
+    :param radius : radius of the circle
+
+    :return : 2 ndarrays with the circle coordinates
     """
 
     x = np.linspace(-radius, radius, 50)
