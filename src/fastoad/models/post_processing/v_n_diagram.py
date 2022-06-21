@@ -57,28 +57,59 @@ class VnDiagram(om.ExplicitComponent):
         self._engine_wrapper.setup(self)
 
         self.add_output(
-            "data:performance:V-n_diagram:speed_vector",
-            shape=V_n_SHAPE,
-            units="m/s",
-        )
-        self.add_output(
             "data:performance:V-n_diagram:v_stall",
-            shape=1,
             units="m/s",
         )
         self.add_output(
             "data:performance:V-n_diagram:v_manoeuvre",
-            shape=1,
             units="m/s",
         )
         self.add_output(
             "data:performance:V-n_diagram:v_cruising",
-            shape=1,
             units="m/s",
         )
         self.add_output(
             "data:performance:V-n_diagram:v_dive",
-            shape=1,
+            units="m/s",
+        )
+        self.add_output(
+            "data:performance:V-n_diagram:mtow:n_v_c_pos_vector",
+            units="m/s",
+        )
+        self.add_output(
+            "data:performance:V-n_diagram:mtow:n_v_c_neg_vector",
+            units="m/s",
+        )
+        self.add_output(
+            "data:performance:V-n_diagram:mtow:n_v_d_pos_vector",
+            units="m/s",
+        )
+        self.add_output(
+            "data:performance:V-n_diagram:mtow:n_v_d_neg_vector",
+            units="m/s",
+        )
+        self.add_output(
+            "data:performance:V-n_diagram:mzfw:n_v_c_pos_vector",
+            units="m/s",
+        )
+        self.add_output(
+            "data:performance:V-n_diagram:mzfw:n_v_c_neg_vector",
+            units="m/s",
+        )
+        self.add_output(
+            "data:performance:V-n_diagram:mzfw:n_v_d_pos_vector",
+            units="m/s",
+        )
+        self.add_output(
+            "data:performance:V-n_diagram:mzfw:n_v_d_neg_vector",
+            units="m/s",
+        )
+        self.add_output(
+            "data:performance:V-n_diagram:v_minus_1g",
+            units="m/s",
+        )
+        self.add_output(
+            "data:performance:V-n_diagram:v_manoeuvre_equivalent_neg",
             units="m/s",
         )
 
@@ -87,100 +118,113 @@ class VnDiagram(om.ExplicitComponent):
         propulsion_model = self._engine_wrapper.get_model(inputs)
 
         wing_area = float(inputs["data:geometry:wing:area"])
-        mtow = inputs["data:weight:aircraft:MTOW"]
-        mzfw = inputs["data:weight:aircraft:MZFW"]
+        mtow = float(inputs["data:weight:aircraft:MTOW"])
+        mzfw = float(inputs["data:weight:aircraft:MZFW"])
         cl_vector_input = inputs["data:aerodynamics:aircraft:cruise:CL"]
-        cd_vector_input = inputs["data:aerodynamics:aircraft:cruise:CD"]
-        mac = inputs["data:geometry:wing:MAC:length"]  # length of the mean aerodynamic chord
-        cl_alpha = inputs["data:aerodynamics:aircraft:cruise:CL_alpha"]
-
-        maximum_engine_mach = inputs["data:propulsion:rubber_engine:maximum_mach"]
-        cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
-        cruise_mach = inputs["data:TLAR:cruise_mach"]
+        mac = float(inputs["data:geometry:wing:MAC:length"])  # length of the mean aerodynamic chord
+        cl_alpha = float(inputs["data:aerodynamics:aircraft:cruise:CL_alpha"])
+        cruise_mach = inputs["data:TLAR:cruise_mach"][0]
 
         g = 9.80665  # m/s^2
 
         atm = Atmosphere(altitude=20000, altitude_in_feet=True)
         rho = atm.density
 
-        mass_min = 1.05 * mzfw
-        mass_max = mtow
-
-        maximum_positive_load_factor = 3.8
+        maximum_positive_load_factor = 2.1 + 24000 / (10000 + mtow * 2.2046)
+        if maximum_positive_load_factor < 2.5:
+            maximum_positive_load_factor = 2.5
+        elif maximum_positive_load_factor > 3.8:
+            maximum_positive_load_factor = 3.8
         maximum_negative_load_factor = -0.4 * maximum_positive_load_factor
 
         cl_max = max(cl_vector_input)
-        cl_min = (-2 / 3) * cl_max
+        cl_min = -(2 / 3) * cl_max
 
-        v_stall_true = np.sqrt(
-            2 * mtow * g / (rho * wing_area * cl_max)
-        )  # Minimal speed of the aircraft m/s
-        v_stall_equivalent = v_stall_true * np.sqrt(rho / 1.225)  # V_s
+        cn_max = 1.1 * cl_max
+        cn_min = -1.3
 
-        v_manoeuvre = np.sqrt(
-            (2 * mtow * g * maximum_positive_load_factor) / (rho * wing_area * cl_max)
+        v_stall_equivalent = np.sqrt(
+            2 * mtow * g / (1.225 * wing_area * cn_max)
+        )  # Minimal speed of the aircraft m/s)  # Minimal speed of the aircraft m/s
+        v_minus_1g = np.sqrt(2 * mtow * g / (1.225 * wing_area * np.abs(cn_min)))
+
+        v_manoeuvre_equivalent = np.sqrt(
+            (2 * mtow * g * maximum_positive_load_factor) / (1.225 * wing_area * cn_max)
         )
-        v_manoeuvre_equivalent = v_manoeuvre * np.sqrt(rho / 1.225)  # V_a
+
+        v_manoeuvre_equivalent_neg = np.sqrt(
+            (2 * mtow * g * np.abs(maximum_negative_load_factor))
+            / (1.225 * wing_area * np.abs(cn_min))
+        )
 
         v_cruising_true = cruise_mach * atm.speed_of_sound
         v_cruising_equivalent = v_cruising_true * np.sqrt(rho / 1.225)  # V_c
-        v_cruising_equivalent_vector = np.linspace(0, v_cruising_equivalent, 100)
 
         v_dive_true = (0.07 + cruise_mach) * atm.speed_of_sound  # V_d
         v_dive_equivalent = v_dive_true * np.sqrt(rho / 1.225)
-        v_dive_equivalent_vector = np.linspace(0, v_dive_equivalent, 100)
+        if v_dive_equivalent < 1.25 * v_cruising_equivalent:
+            v_dive_equivalent = 1.25 * v_cruising_equivalent
 
-        v_vector_true = np.linspace(0, v_dive_equivalent, V_n_SHAPE)  # speed vector m/s
-        v_vector_equivalent = v_vector_true * np.sqrt(rho / 1.225)
-
-        u_gust_v_c = 50 * 0, 3048  # 50ft/s into m/s
-        u_gust_v_d = 25 * 0, 3048  # 50ft/s into m/s
+        u_gust_v_c = 50.0 * 0.3048  # 50ft/s into m/s
+        u_gust_v_d = 25.0 * 0.3048  # 50ft/s into m/s
 
         # Computation for MTOW
         mu = 2 * mtow / (rho * wing_area * mac * cl_alpha)
         K_g = (0.88 * mu) / (5.3 + mu)
+
         n_v_c_pos_vector = 1 + (
-            1.225 * K_g * u_gust_v_c * v_cruising_equivalent_vector * wing_area * cl_alpha
-        ) / (2 * g * mtow)
+            (1.225 * K_g * u_gust_v_c * v_cruising_equivalent * wing_area * cl_alpha)
+            / (2 * g * mtow)
+        )
+
         n_v_d_pos_vector = 1 + (
-            1.225 * K_g * u_gust_v_d * v_dive_equivalent_vector * wing_area * cl_alpha
-        ) / (2 * g * mtow)
+            (1.225 * K_g * u_gust_v_d * v_dive_equivalent * wing_area * cl_alpha) / (2 * g * mtow)
+        )
 
         n_v_c_neg_vector = 1 - (
-            1.225 * K_g * u_gust_v_c * v_cruising_equivalent_vector * wing_area * cl_alpha
-        ) / (2 * g * mtow)
-        n_v_d_neg_vector = 1 - (
-            1.225 * K_g * u_gust_v_d * v_dive_equivalent_vector * wing_area * cl_alpha
-        ) / (2 * g * mtow)
-
-        # Computation for 1.05*MZFW
-
-        print("v_stall_equivalent = ", v_stall_equivalent)
-        print("v_manoeuvre_equivalent = ", v_manoeuvre_equivalent)
-        print("v_operational_equivalent = ", v_cruising_equivalent)
-        print("v_dive_equivalent = ", v_dive_equivalent)
-
-        # cl_vector = mtow * g / (0.5 * rho * v_vector * v_vector * wing_area)
-        # cd_vector = interp1d(cl_vector_input, cd_vector_input, fill_value="extrapolate")(cl_vector)
-
-        flight_point = FlightPoint(
-            mach=atm.mach,
-            altitude=atm.get_altitude(altitude_in_feet=False),
-            engine_setting=EngineSetting.CLIMB,
-            thrust_is_regulated=False,
-            thrust_rate=1.0,
+            (1.225 * K_g * u_gust_v_c * v_cruising_equivalent * wing_area * cl_alpha)
+            / (2 * g * mtow)
         )
-        # propulsion_model.compute_flight_points(flight_point)
-        # power_available_sea = flight_point.thrust * v_vector
+        n_v_d_neg_vector = 1 - (
+            (1.225 * K_g * u_gust_v_d * v_dive_equivalent * wing_area * cl_alpha) / (2 * g * mtow)
+        )
+
+        outputs["data:performance:V-n_diagram:mtow:n_v_c_pos_vector"] = n_v_c_pos_vector
+        outputs["data:performance:V-n_diagram:mtow:n_v_c_neg_vector"] = n_v_c_neg_vector
+        outputs["data:performance:V-n_diagram:mtow:n_v_d_pos_vector"] = n_v_d_pos_vector
+        outputs["data:performance:V-n_diagram:mtow:n_v_d_neg_vector"] = n_v_d_neg_vector
+
+        # Computation for MZFW
+        mu = 2 * mzfw / (rho * wing_area * mac * cl_alpha)
+        K_g = (0.88 * mu) / (5.3 + mu)
+
+        n_v_c_pos_vector = 1 + (
+            (1.225 * K_g * u_gust_v_c * v_cruising_equivalent * wing_area * cl_alpha)
+            / (2 * g * mzfw)
+        )
+        n_v_d_pos_vector = 1 + (
+            (1.225 * K_g * u_gust_v_d * v_dive_equivalent * wing_area * cl_alpha) / (2 * g * mzfw)
+        )
+
+        n_v_c_neg_vector = 1 - (
+            (1.225 * K_g * u_gust_v_c * v_cruising_equivalent * wing_area * cl_alpha)
+            / (2 * g * mzfw)
+        )
+        n_v_d_neg_vector = 1 - (
+            (1.225 * K_g * u_gust_v_d * v_dive_equivalent * wing_area * cl_alpha) / (2 * g * mzfw)
+        )
+
+        outputs["data:performance:V-n_diagram:mzfw:n_v_c_pos_vector"] = n_v_c_pos_vector
+        outputs["data:performance:V-n_diagram:mzfw:n_v_c_neg_vector"] = n_v_c_neg_vector
+        outputs["data:performance:V-n_diagram:mzfw:n_v_d_pos_vector"] = n_v_d_pos_vector
+        outputs["data:performance:V-n_diagram:mzfw:n_v_d_neg_vector"] = n_v_d_neg_vector
 
         # Put the resultst in the output file
-        outputs["data:performance:V-n_diagram:speed_vector"] = v_vector_true
         outputs["data:performance:V-n_diagram:v_stall"] = v_stall_equivalent
         outputs["data:performance:V-n_diagram:v_manoeuvre"] = v_manoeuvre_equivalent
         outputs["data:performance:V-n_diagram:v_cruising"] = v_cruising_equivalent
         outputs["data:performance:V-n_diagram:v_dive"] = v_dive_equivalent
-        # outputs[
-        #    "data:performance:V-n_diagram:speed_vector"
-        # ] = v_vector
-        #
-        # "data:performance:V-n_diagram:load_vector"
+        outputs[
+            "data:performance:V-n_diagram:v_manoeuvre_equivalent_neg"
+        ] = v_manoeuvre_equivalent_neg
+        outputs["data:performance:V-n_diagram:v_minus_1g"] = v_minus_1g
