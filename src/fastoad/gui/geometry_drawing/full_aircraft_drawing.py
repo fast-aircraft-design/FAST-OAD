@@ -1409,7 +1409,10 @@ def flaps_and_slats_drawing(
 
 
 def aircraft_drawing_side_view(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None, belgian_layout=False
+    aircraft_file_path: str,
+    name=None,
+    fig=None,
+    file_formatter=None,
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the side view of the aircraft with the engines, the flaps, the slats and the elevator.
@@ -1421,7 +1424,6 @@ def aircraft_drawing_side_view(
     :param fig: existing figure to which add the plot
     :param file_formatter: the formatter that defines the format of data file. If not provided,
                            default format will be assumed.
-    :param belgian_layout: if True shows a special layout
     :return: wing plot figure
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
@@ -1746,33 +1748,6 @@ def aircraft_drawing_side_view(
     fig.add_trace(scatter_nose_cone)
 
     fig.layout = go.Layout(yaxis=dict(scaleanchor="x", scaleratio=1))
-    if belgian_layout:
-        ht_logo = Image.open("data/logo.png")
-        fuselage_logo = Image.open("data/logo_fuselage.jpg")
-        flag_logo = Image.open("data/flag.png")
-
-        fig.add_layout_image(
-            dict(source=ht_logo, xref="paper", yref="paper", x=0.88, y=0.716, sizex=0.2, sizey=0.2)
-        )
-
-        fig.add_layout_image(
-            dict(
-                source=flag_logo, xref="paper", yref="paper", x=0.75, y=0.4, sizex=0.05, sizey=0.05
-            )
-        )
-        fig.add_layout_image(
-            dict(
-                source=fuselage_logo,
-                xref="paper",
-                yref="paper",
-                x=0.16,
-                y=0.37,
-                sizex=0.18,
-                sizey=0.18,
-            )
-        )
-
-        fig.update_layout(template="plotly_white")
 
     if name is None:
         fig.update_layout(
