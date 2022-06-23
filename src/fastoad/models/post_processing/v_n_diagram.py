@@ -15,15 +15,9 @@
 import numpy as np
 import openmdao.api as om
 from stdatm import Atmosphere
-from fastoad.module_management._bundle_loader import BundleLoader
-from fastoad.constants import EngineSetting
-from fastoad.model_base import FlightPoint
 from fastoad.module_management._plugins import FastoadLoader
-from scipy.interpolate import interp1d
 
 FastoadLoader()
-
-V_n_SHAPE = 150  # Number of points used for the computation of the graph
 
 
 class VnDiagram(om.ExplicitComponent):
@@ -52,9 +46,6 @@ class VnDiagram(om.ExplicitComponent):
         self.add_input("data:TLAR:cruise_mach", val=np.nan)
         self.add_input("data:TLAR:range", val=np.nan)
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan)
-
-        self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
-        self._engine_wrapper.setup(self)
 
         self.add_output(
             "data:performance:V-n_diagram:v_stall",
@@ -123,8 +114,6 @@ class VnDiagram(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        propulsion_model = self._engine_wrapper.get_model(inputs)
-
         wing_area = float(inputs["data:geometry:wing:area"])
         mtow = float(inputs["data:weight:aircraft:MTOW"])
         mzfw = float(inputs["data:weight:aircraft:MZFW"])
@@ -134,18 +123,17 @@ class VnDiagram(om.ExplicitComponent):
         cruise_mach = inputs["data:TLAR:cruise_mach"][0]
 
         g = 9.80665  # m/s^2
-
         atm = Atmosphere(altitude=20000, altitude_in_feet=True)
         rho = atm.density
 
-        maximum_positive_load_factor_mtow = 2.1 + 24000 / (10000 + mtow * 2.2046)
+        maximum_positive_load_factor_mtow = 2.1 + 24000 / (10000 + mtow * 2.2046)  # n_max for mtow
         if maximum_positive_load_factor_mtow < 2.5:
             maximum_positive_load_factor_mtow = 2.5
         elif maximum_positive_load_factor_mtow > 3.8:
             maximum_positive_load_factor_mtow = 3.8
         maximum_negative_load_factor_mtow = -0.4 * maximum_positive_load_factor_mtow
 
-        maximum_positive_load_factor_mzfw = 2.1 + 24000 / (10000 + mzfw * 2.2046)
+        maximum_positive_load_factor_mzfw = 2.1 + 24000 / (10000 + mzfw * 2.2046)  # n_max for mzfw
         if maximum_positive_load_factor_mzfw < 2.5:
             maximum_positive_load_factor_mzfw = 2.5
         elif maximum_positive_load_factor_mzfw > 3.8:
@@ -153,36 +141,52 @@ class VnDiagram(om.ExplicitComponent):
         maximum_negative_load_factor_mzfw = -0.4 * maximum_positive_load_factor_mzfw
 
         cl_max = max(cl_vector_input)
-
         cn_max = 1.1 * cl_max
         cn_min = -1.3
 
         v_stall_equivalent = np.sqrt(
             2 * mtow * g / (1.225 * wing_area * cn_max)
-        )  # Minimal speed of the aircraft m/s)  # Minimal speed of the aircraft m/s
-        v_1g_negative = np.sqrt(2 * mtow * g / (1.225 * wing_area * np.abs(cn_min)))
+        )  # stall speed of the aircraft and also the speed at which the load factor is equal to 1
+        v_1g_negative = np.sqrt(
+            2 * mtow * g / (1.225 * wing_area * np.abs(cn_min))
+        )  # speed at which the load factor is equal to -1
 
         v_manoeuvre_equivalent_mtow = np.sqrt(
             (2 * mtow * g * maximum_positive_load_factor_mtow) / (1.225 * wing_area * cn_max)
-        )
+        )  # manoeuvre speed at maximum positive load factor
+        if v_manoeuvre_equivalent_mtow < v_stall_equivalent * np.sqrt(
+            maximum_positive_load_factor_mtow
+        ):
+            v_manoeuvre_equivalent_mtow = v_stall_equivalent * np.sqrt(
+                maximum_positive_load_factor_mtow
+            )
+
         v_manoeuvre_equivalent_mzfw = np.sqrt(
             (2 * mzfw * g * maximum_positive_load_factor_mzfw) / (1.225 * wing_area * cn_max)
-        )
+        )  # manoeuvre speed at maximum positive load factor
+        if v_manoeuvre_equivalent_mzfw < v_stall_equivalent * np.sqrt(
+            maximum_positive_load_factor_mzfw * mzfw / mtow
+        ):
+            v_manoeuvre_equivalent_mzfw = v_stall_equivalent * np.sqrt(
+                maximum_positive_load_factor_mzfw * mzfw / mtow
+            )
 
         v_manoeuvre_equivalent_negative_mtow = np.sqrt(
             (2 * mtow * g * np.abs(maximum_negative_load_factor_mtow))
             / (1.225 * wing_area * np.abs(cn_min))
-        )
+        )  # manoeuvre speed at maximum negative load factor
         v_manoeuvre_equivalent_negative_mzfw = np.sqrt(
             (2 * mzfw * g * np.abs(maximum_negative_load_factor_mzfw))
             / (1.225 * wing_area * np.abs(cn_min))
-        )
+        )  # manoeuvre speed at maximum negative load factor
 
-        v_cruising_true = cruise_mach * atm.speed_of_sound
-        v_cruising_equivalent = v_cruising_true * np.sqrt(rho / 1.225)  # V_c
+        v_cruising_equivalent = (
+            cruise_mach * atm.speed_of_sound * np.sqrt(rho / 1.225)
+        )  # speed does not vary between MZFW and MTOW
+        v_dive_equivalent = ((0.07 + cruise_mach) * atm.speed_of_sound) * np.sqrt(
+            rho / 1.225
+        )  # speed does not vary between MZFW and MTOW
 
-        v_dive_true = (0.07 + cruise_mach) * atm.speed_of_sound  # V_d
-        v_dive_equivalent = v_dive_true * np.sqrt(rho / 1.225)
         if v_dive_equivalent < 1.25 * v_cruising_equivalent:
             v_dive_equivalent = 1.25 * v_cruising_equivalent
 
@@ -196,19 +200,19 @@ class VnDiagram(om.ExplicitComponent):
         n_v_c_positive = 1 + (
             (1.225 * K_g * u_gust_v_c * v_cruising_equivalent * wing_area * cl_alpha)
             / (2 * g * mtow)
-        )
+        )  # load factor at cruising speed for a gust of 50 ft/s
 
         n_v_d_positive = 1 + (
             (1.225 * K_g * u_gust_v_d * v_dive_equivalent * wing_area * cl_alpha) / (2 * g * mtow)
-        )
+        )  # load factor at diving speed for a gust of 25 ft/s
 
         n_v_c_negative = 1 - (
             (1.225 * K_g * u_gust_v_c * v_cruising_equivalent * wing_area * cl_alpha)
             / (2 * g * mtow)
-        )
+        )  # load factor at cruising speed for a gust of -50 ft/s
         n_v_d_negative = 1 - (
             (1.225 * K_g * u_gust_v_d * v_dive_equivalent * wing_area * cl_alpha) / (2 * g * mtow)
-        )
+        )  # load factor at cruising speed for a gust of -25 ft/s
 
         outputs["data:performance:V-n_diagram:MTOW:n_v_c_positive"] = n_v_c_positive
         outputs["data:performance:V-n_diagram:MTOW:n_v_c_negative"] = n_v_c_negative
@@ -226,18 +230,18 @@ class VnDiagram(om.ExplicitComponent):
         n_v_c_positive = 1 + (
             (1.225 * K_g * u_gust_v_c * v_cruising_equivalent * wing_area * cl_alpha)
             / (2 * g * mzfw)
-        )
+        )  # load factor at cruising speed for a gust of 50 ft/s
         n_v_d_positive = 1 + (
             (1.225 * K_g * u_gust_v_d * v_dive_equivalent * wing_area * cl_alpha) / (2 * g * mzfw)
-        )
+        )  # load factor at cruising speed for a gust of 25 ft/s
 
         n_v_c_negative = 1 - (
             (1.225 * K_g * u_gust_v_c * v_cruising_equivalent * wing_area * cl_alpha)
             / (2 * g * mzfw)
-        )
+        )  # load factor at cruising speed for a gust of -50 ft/s
         n_v_d_negative = 1 - (
             (1.225 * K_g * u_gust_v_d * v_dive_equivalent * wing_area * cl_alpha) / (2 * g * mzfw)
-        )
+        )  # load factor at cruising speed for a gust of -25 ft/s
 
         outputs["data:performance:V-n_diagram:MZFW:n_v_c_positive"] = n_v_c_positive
         outputs["data:performance:V-n_diagram:MZFW:n_v_c_negative"] = n_v_c_negative
