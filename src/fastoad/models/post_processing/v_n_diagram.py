@@ -7,7 +7,7 @@
 #  (at your option) any later version.
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURpositiveE.  See the
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
@@ -61,7 +61,19 @@ class VnDiagram(om.ExplicitComponent):
             units="m/s",
         )
         self.add_output(
-            "data:performance:V-n_diagram:v_manoeuvre",
+            "data:performance:V-n_diagram:MTOW:v_manoeuvre",
+            units="m/s",
+        )
+        self.add_output(
+            "data:performance:V-n_diagram:MTOW:v_manoeuvre_negative",
+            units="m/s",
+        )
+        self.add_output(
+            "data:performance:V-n_diagram:MZFW:v_manoeuvre",
+            units="m/s",
+        )
+        self.add_output(
+            "data:performance:V-n_diagram:MZFW:v_manoeuvre_negative",
             units="m/s",
         )
         self.add_output(
@@ -73,43 +85,39 @@ class VnDiagram(om.ExplicitComponent):
             units="m/s",
         )
         self.add_output(
-            "data:performance:V-n_diagram:mtow:n_v_c_pos_vector",
+            "data:performance:V-n_diagram:MTOW:n_v_c_positive",
             units="m/s",
         )
         self.add_output(
-            "data:performance:V-n_diagram:mtow:n_v_c_neg_vector",
+            "data:performance:V-n_diagram:MTOW:n_v_c_negative",
             units="m/s",
         )
         self.add_output(
-            "data:performance:V-n_diagram:mtow:n_v_d_pos_vector",
+            "data:performance:V-n_diagram:MTOW:n_v_d_positive",
             units="m/s",
         )
         self.add_output(
-            "data:performance:V-n_diagram:mtow:n_v_d_neg_vector",
+            "data:performance:V-n_diagram:MTOW:n_v_d_negative",
             units="m/s",
         )
         self.add_output(
-            "data:performance:V-n_diagram:mzfw:n_v_c_pos_vector",
+            "data:performance:V-n_diagram:MZFW:n_v_c_positive",
             units="m/s",
         )
         self.add_output(
-            "data:performance:V-n_diagram:mzfw:n_v_c_neg_vector",
+            "data:performance:V-n_diagram:MZFW:n_v_c_negative",
             units="m/s",
         )
         self.add_output(
-            "data:performance:V-n_diagram:mzfw:n_v_d_pos_vector",
+            "data:performance:V-n_diagram:MZFW:n_v_d_positive",
             units="m/s",
         )
         self.add_output(
-            "data:performance:V-n_diagram:mzfw:n_v_d_neg_vector",
+            "data:performance:V-n_diagram:MZFW:n_v_d_negative",
             units="m/s",
         )
         self.add_output(
-            "data:performance:V-n_diagram:v_minus_1g",
-            units="m/s",
-        )
-        self.add_output(
-            "data:performance:V-n_diagram:v_manoeuvre_equivalent_neg",
+            "data:performance:V-n_diagram:v_1g_negative",
             units="m/s",
         )
 
@@ -130,15 +138,21 @@ class VnDiagram(om.ExplicitComponent):
         atm = Atmosphere(altitude=20000, altitude_in_feet=True)
         rho = atm.density
 
-        maximum_positive_load_factor = 2.1 + 24000 / (10000 + mtow * 2.2046)
-        if maximum_positive_load_factor < 2.5:
-            maximum_positive_load_factor = 2.5
-        elif maximum_positive_load_factor > 3.8:
-            maximum_positive_load_factor = 3.8
-        maximum_negative_load_factor = -0.4 * maximum_positive_load_factor
+        maximum_positive_load_factor_mtow = 2.1 + 24000 / (10000 + mtow * 2.2046)
+        if maximum_positive_load_factor_mtow < 2.5:
+            maximum_positive_load_factor_mtow = 2.5
+        elif maximum_positive_load_factor_mtow > 3.8:
+            maximum_positive_load_factor_mtow = 3.8
+        maximum_negative_load_factor_mtow = -0.4 * maximum_positive_load_factor_mtow
+
+        maximum_positive_load_factor_mzfw = 2.1 + 24000 / (10000 + mzfw * 2.2046)
+        if maximum_positive_load_factor_mzfw < 2.5:
+            maximum_positive_load_factor_mzfw = 2.5
+        elif maximum_positive_load_factor_mzfw > 3.8:
+            maximum_positive_load_factor_mzfw = 3.8
+        maximum_negative_load_factor_mzfw = -0.4 * maximum_positive_load_factor_mzfw
 
         cl_max = max(cl_vector_input)
-        cl_min = -(2 / 3) * cl_max
 
         cn_max = 1.1 * cl_max
         cn_min = -1.3
@@ -146,14 +160,21 @@ class VnDiagram(om.ExplicitComponent):
         v_stall_equivalent = np.sqrt(
             2 * mtow * g / (1.225 * wing_area * cn_max)
         )  # Minimal speed of the aircraft m/s)  # Minimal speed of the aircraft m/s
-        v_minus_1g = np.sqrt(2 * mtow * g / (1.225 * wing_area * np.abs(cn_min)))
+        v_1g_negative = np.sqrt(2 * mtow * g / (1.225 * wing_area * np.abs(cn_min)))
 
-        v_manoeuvre_equivalent = np.sqrt(
-            (2 * mtow * g * maximum_positive_load_factor) / (1.225 * wing_area * cn_max)
+        v_manoeuvre_equivalent_mtow = np.sqrt(
+            (2 * mtow * g * maximum_positive_load_factor_mtow) / (1.225 * wing_area * cn_max)
+        )
+        v_manoeuvre_equivalent_mzfw = np.sqrt(
+            (2 * mzfw * g * maximum_positive_load_factor_mzfw) / (1.225 * wing_area * cn_max)
         )
 
-        v_manoeuvre_equivalent_neg = np.sqrt(
-            (2 * mtow * g * np.abs(maximum_negative_load_factor))
+        v_manoeuvre_equivalent_negative_mtow = np.sqrt(
+            (2 * mtow * g * np.abs(maximum_negative_load_factor_mtow))
+            / (1.225 * wing_area * np.abs(cn_min))
+        )
+        v_manoeuvre_equivalent_negative_mzfw = np.sqrt(
+            (2 * mzfw * g * np.abs(maximum_negative_load_factor_mzfw))
             / (1.225 * wing_area * np.abs(cn_min))
         )
 
@@ -172,59 +193,63 @@ class VnDiagram(om.ExplicitComponent):
         mu = 2 * mtow / (rho * wing_area * mac * cl_alpha)
         K_g = (0.88 * mu) / (5.3 + mu)
 
-        n_v_c_pos_vector = 1 + (
+        n_v_c_positive = 1 + (
             (1.225 * K_g * u_gust_v_c * v_cruising_equivalent * wing_area * cl_alpha)
             / (2 * g * mtow)
         )
 
-        n_v_d_pos_vector = 1 + (
+        n_v_d_positive = 1 + (
             (1.225 * K_g * u_gust_v_d * v_dive_equivalent * wing_area * cl_alpha) / (2 * g * mtow)
         )
 
-        n_v_c_neg_vector = 1 - (
+        n_v_c_negative = 1 - (
             (1.225 * K_g * u_gust_v_c * v_cruising_equivalent * wing_area * cl_alpha)
             / (2 * g * mtow)
         )
-        n_v_d_neg_vector = 1 - (
+        n_v_d_negative = 1 - (
             (1.225 * K_g * u_gust_v_d * v_dive_equivalent * wing_area * cl_alpha) / (2 * g * mtow)
         )
 
-        outputs["data:performance:V-n_diagram:mtow:n_v_c_pos_vector"] = n_v_c_pos_vector
-        outputs["data:performance:V-n_diagram:mtow:n_v_c_neg_vector"] = n_v_c_neg_vector
-        outputs["data:performance:V-n_diagram:mtow:n_v_d_pos_vector"] = n_v_d_pos_vector
-        outputs["data:performance:V-n_diagram:mtow:n_v_d_neg_vector"] = n_v_d_neg_vector
+        outputs["data:performance:V-n_diagram:MTOW:n_v_c_positive"] = n_v_c_positive
+        outputs["data:performance:V-n_diagram:MTOW:n_v_c_negative"] = n_v_c_negative
+        outputs["data:performance:V-n_diagram:MTOW:n_v_d_positive"] = n_v_d_positive
+        outputs["data:performance:V-n_diagram:MTOW:n_v_d_negative"] = n_v_d_negative
+        outputs["data:performance:V-n_diagram:MTOW:v_manoeuvre"] = v_manoeuvre_equivalent_mtow
+        outputs[
+            "data:performance:V-n_diagram:MTOW:v_manoeuvre_negative"
+        ] = v_manoeuvre_equivalent_negative_mtow
 
         # Computation for MZFW
         mu = 2 * mzfw / (rho * wing_area * mac * cl_alpha)
         K_g = (0.88 * mu) / (5.3 + mu)
 
-        n_v_c_pos_vector = 1 + (
+        n_v_c_positive = 1 + (
             (1.225 * K_g * u_gust_v_c * v_cruising_equivalent * wing_area * cl_alpha)
             / (2 * g * mzfw)
         )
-        n_v_d_pos_vector = 1 + (
+        n_v_d_positive = 1 + (
             (1.225 * K_g * u_gust_v_d * v_dive_equivalent * wing_area * cl_alpha) / (2 * g * mzfw)
         )
 
-        n_v_c_neg_vector = 1 - (
+        n_v_c_negative = 1 - (
             (1.225 * K_g * u_gust_v_c * v_cruising_equivalent * wing_area * cl_alpha)
             / (2 * g * mzfw)
         )
-        n_v_d_neg_vector = 1 - (
+        n_v_d_negative = 1 - (
             (1.225 * K_g * u_gust_v_d * v_dive_equivalent * wing_area * cl_alpha) / (2 * g * mzfw)
         )
 
-        outputs["data:performance:V-n_diagram:mzfw:n_v_c_pos_vector"] = n_v_c_pos_vector
-        outputs["data:performance:V-n_diagram:mzfw:n_v_c_neg_vector"] = n_v_c_neg_vector
-        outputs["data:performance:V-n_diagram:mzfw:n_v_d_pos_vector"] = n_v_d_pos_vector
-        outputs["data:performance:V-n_diagram:mzfw:n_v_d_neg_vector"] = n_v_d_neg_vector
+        outputs["data:performance:V-n_diagram:MZFW:n_v_c_positive"] = n_v_c_positive
+        outputs["data:performance:V-n_diagram:MZFW:n_v_c_negative"] = n_v_c_negative
+        outputs["data:performance:V-n_diagram:MZFW:n_v_d_positive"] = n_v_d_positive
+        outputs["data:performance:V-n_diagram:MZFW:n_v_d_negative"] = n_v_d_negative
+        outputs["data:performance:V-n_diagram:MZFW:v_manoeuvre"] = v_manoeuvre_equivalent_mzfw
+        outputs[
+            "data:performance:V-n_diagram:MZFW:v_manoeuvre_negative"
+        ] = v_manoeuvre_equivalent_negative_mzfw
 
         # Put the resultst in the output file
         outputs["data:performance:V-n_diagram:v_stall"] = v_stall_equivalent
-        outputs["data:performance:V-n_diagram:v_manoeuvre"] = v_manoeuvre_equivalent
+        outputs["data:performance:V-n_diagram:v_1g_negative"] = v_1g_negative
         outputs["data:performance:V-n_diagram:v_cruising"] = v_cruising_equivalent
         outputs["data:performance:V-n_diagram:v_dive"] = v_dive_equivalent
-        outputs[
-            "data:performance:V-n_diagram:v_manoeuvre_equivalent_neg"
-        ] = v_manoeuvre_equivalent_neg
-        outputs["data:performance:V-n_diagram:v_minus_1g"] = v_minus_1g

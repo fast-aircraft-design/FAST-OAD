@@ -32,24 +32,26 @@
     </geometry>
     <performance>
       <V-n_diagram>
+        <v_1g_negative units="m/s" is_input="False">85.31180066680851</v_1g_negative>
         <v_cruising units="m/s" is_input="False">179.9336259710738</v_cruising>
         <v_dive units="m/s" is_input="False">224.91703246384225</v_dive>
-        <v_manoeuvre units="m/s" is_input="False">120.13272056569106</v_manoeuvre>
-        <v_manoeuvre_equivalent_neg units="m/s" is_input="False">85.31180066680851</v_manoeuvre_equivalent_neg>
-        <v_minus_1g units="m/s" is_input="False">85.31180066680851</v_minus_1g>
         <v_stall units="m/s" is_input="False">75.97860370002705</v_stall>
-        <mtow>
-          <n_v_c_neg_vector units="m/s" is_input="False">-0.5221069730161687</n_v_c_neg_vector>
-          <n_v_c_pos_vector units="m/s" is_input="False">2.522106973016169</n_v_c_pos_vector>
-          <n_v_d_neg_vector units="m/s" is_input="False">0.04868314186489464</n_v_d_neg_vector>
-          <n_v_d_pos_vector units="m/s" is_input="False">1.9513168581351055</n_v_d_pos_vector>
-        </mtow>
-        <mzfw>
-          <n_v_c_neg_vector units="m/s" is_input="False">-0.8179721412884753</n_v_c_neg_vector>
-          <n_v_c_pos_vector units="m/s" is_input="False">2.8179721412884753</n_v_c_pos_vector>
-          <n_v_d_neg_vector units="m/s" is_input="False">-0.13623258830529683</n_v_d_neg_vector>
-          <n_v_d_pos_vector units="m/s" is_input="False">2.1362325883052966</n_v_d_pos_vector>
-        </mzfw>
+        <MTOW>
+          <n_v_c_negative units="m/s" is_input="False">-0.5221069730161687</n_v_c_negative>
+          <n_v_c_positive units="m/s" is_input="False">2.522106973016169</n_v_c_positive>
+          <n_v_d_negative units="m/s" is_input="False">0.04868314186489464</n_v_d_negative>
+          <n_v_d_positive units="m/s" is_input="False">1.9513168581351055</n_v_d_positive>
+          <v_manoeuvre units="m/s" is_input="False">120.13272056569106</v_manoeuvre>
+          <v_manoeuvre_negative units="m/s" is_input="False">85.31180066680851</v_manoeuvre_negative>
+        </MTOW>
+        <MZFW>
+          <n_v_c_negative units="m/s" is_input="False">-0.8179721412884753</n_v_c_negative>
+          <n_v_c_positive units="m/s" is_input="False">2.8179721412884753</n_v_c_positive>
+          <n_v_d_negative units="m/s" is_input="False">-0.13623258830529683</n_v_d_negative>
+          <n_v_d_positive units="m/s" is_input="False">2.1362325883052966</n_v_d_positive>
+          <v_manoeuvre units="m/s" is_input="False">109.06356631258053</v_manoeuvre>
+          <v_manoeuvre_negative units="m/s" is_input="False">77.45108231509897</v_manoeuvre_negative>
+        </MZFW>
       </V-n_diagram>
       <ceiling>
         <MTOW units="ft" is_input="True">41000.0</MTOW>
