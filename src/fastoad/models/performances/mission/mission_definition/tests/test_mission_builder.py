@@ -71,6 +71,19 @@ def test_initialization():
     )
 
 
+def test_get_input_weight_variable_name():
+    mission_builder = MissionBuilder(
+        pth.join(DATA_FOLDER_PATH, "mission.yml"),
+        propulsion=Mock(IPropulsion),
+        reference_area=100.0,
+    )
+    assert mission_builder.get_input_weight_variable_name("sizing") is None
+    assert (
+        mission_builder.get_input_weight_variable_name("operational")
+        == "data:mission:operational:taxi_out:TOW"
+    )
+
+
 def test_inputs():
     mission_builder = MissionBuilder(
         pth.join(DATA_FOLDER_PATH, "mission.yml"),
@@ -113,6 +126,7 @@ def test_inputs():
         Variable("data:mission:operational:taxi_in:thrust_rate", val=np.nan),
         Variable("data:mission:operational:taxi_out:duration", val=np.nan, units="s"),
         Variable("data:mission:operational:taxi_out:thrust_rate", val=np.nan),
+        Variable("data:mission:operational:taxi_out:TOW", val=np.nan, units="kg"),
         Variable("data:propulsion:initial_climb:thrust_rate", val=1.0),
         Variable("data:propulsion:climb:thrust_rate", val=np.nan),
         Variable("data:propulsion:descent:thrust_rate", val=np.nan),
@@ -298,7 +312,17 @@ def _get_expected_structure():
                                             part_identifier="operational:taxi_out",
                                             use_opposite=False,
                                             variable_name="data:mission:operational:taxi_out:duration",
-                                        )
+                                        ),
+                                        "mass": InputDefinition(
+                                            parameter_name="mass",
+                                            input_value=None,
+                                            input_unit="kg",
+                                            default_value=np.nan,
+                                            is_relative=False,
+                                            part_identifier="operational:taxi_out",
+                                            use_opposite=False,
+                                            variable_name="data:mission:operational:taxi_out:TOW",
+                                        ),
                                     },
                                     "thrust_rate": InputDefinition(
                                         parameter_name="thrust_rate",

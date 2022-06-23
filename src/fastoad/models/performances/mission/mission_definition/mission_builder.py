@@ -657,6 +657,18 @@ class MissionBuilder:
             "Mission name must be specified if several missions are defined in mission file."
         )
 
+    def get_input_weight_variable_name(self, mission_name: str) -> Optional[str]:
+        """
+        Search the mission structure for a segment that has a target mass defined and
+        returns the associated variable name.
+
+        :param mission_name:
+        :return: The variable name, or None if no target mass found.
+        """
+        return self._get_input_weight_variable_name_in_structure(
+            self._get_mission_part_structures(mission_name)
+        )
+
     def get_mission_start_mass_input(self, mission_name: str) -> Optional[str]:
         """
 
@@ -851,3 +863,23 @@ class MissionBuilder:
         )
         self._replace_input_definitions_by_values(part_kwargs)
         return part_kwargs
+
+    def _get_input_weight_variable_name_in_structure(
+        self, structure: Union[list, dict]
+    ) -> Optional[str]:
+        for tag in [PARTS_TAG, CLIMB_PARTS_TAG, DESCENT_PARTS_TAG]:
+            if tag in structure:
+                return self._get_input_weight_variable_name_in_structure(structure[tag])
+
+        if isinstance(structure, list):
+            for item in structure:
+                result = self._get_input_weight_variable_name_in_structure(item)
+                if result:
+                    return result
+
+        if "target" in structure and "mass" in structure["target"]:
+            name = structure["target"]["mass"].variable_name
+            if name:
+                return name
+
+        return None
