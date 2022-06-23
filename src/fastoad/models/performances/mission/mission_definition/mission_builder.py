@@ -659,7 +659,7 @@ class MissionBuilder:
 
     def get_input_weight_variable_name(self, mission_name: str) -> Optional[str]:
         """
-        Search the mission structure for a segment that has a target mass defined and
+        Search the mission structure for a segment that has a target absolute mass defined and
         returns the associated variable name.
 
         :param mission_name:
@@ -878,8 +878,10 @@ class MissionBuilder:
                     return result
 
         if "target" in structure and "mass" in structure["target"]:
-            name = structure["target"]["mass"].variable_name
-            if name:
-                return name
+            target_mass = structure["target"]["mass"]
+            if not target_mass.is_relative:
+                name = target_mass.variable_name
+                if name:
+                    return name
 
         return None

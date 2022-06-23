@@ -47,6 +47,7 @@ class MissionWrapper(MissionBuilder):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.mission_name = None
+        self.consumed_fuel_before_input_weight = 0.0
 
     def setup(self, component: om.ExplicitComponent, mission_name: str = None):
         """
@@ -122,7 +123,7 @@ class MissionWrapper(MissionBuilder):
             )
 
         del flight_points["name2"]
-
+        self.consumed_fuel_before_input_weight = mission.consumed_mass_before_input_weight
         return flight_points
 
     def get_reserve_variable_name(self) -> str:
