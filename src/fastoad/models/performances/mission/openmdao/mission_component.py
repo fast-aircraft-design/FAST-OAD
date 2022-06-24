@@ -195,7 +195,11 @@ class MissionComponent(om.ExplicitComponent):
         self._mission_wrapper.propulsion = propulsion_model
         self._mission_wrapper.reference_area = reference_area
 
-        start_flight_point = FlightPoint(altitude=0.0, mass=0.0, true_airspeed=0.0)
+        # This is the default start point, that can be overridden by using the "start"
+        # segment in the mission definition.
+        start_flight_point = FlightPoint(
+            altitude=0.0, mass=inputs[self._input_weight_variable_name], true_airspeed=0.0
+        )
 
         self.flight_points = self._mission_wrapper.compute(start_flight_point, inputs, outputs)
 
@@ -219,9 +223,6 @@ class MissionComponent(om.ExplicitComponent):
         if self.options["is_sizing"]:
             outputs["data:weight:aircraft:sizing_block_fuel"] = outputs[
                 self._name_provider.NEEDED_BLOCK_FUEL.value
-            ]
-            outputs["data:weight:aircraft:sizing_onboard_fuel_at_takeoff"] = outputs[
-                self._name_provider.NEEDED_FUEL_AT_TAKEOFF.value
             ]
 
         def as_scalar(value):

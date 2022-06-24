@@ -11,9 +11,6 @@ phases:
             value: ~
             unit: m/s
             default: 0.0
-          mass:
-            value: 100000.0
-            unit: kg
   taxi_out:
     parts:
       - segment: taxi

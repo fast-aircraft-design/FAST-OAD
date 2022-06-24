@@ -44,6 +44,12 @@ class Start(FlightSegment, mission_file_keyword="start"):
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
 
         self.target.name = self.name
+
+        if self.target.mass is None:
+            # If not setting the mass in the start point, the default value set in
+            # mission component will be used.
+            self.target.mass = start.mass
+
         try:
             self.complete_flight_point(self.target)
         except FastFlightSegmentIncompleteFlightPoint:
