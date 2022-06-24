@@ -88,10 +88,19 @@ class Mission(om.Group):
             "If False, block fuel will be taken from input data.",
         )
         self.options.declare(
+            "compute_input_weight",
+            default=False,
+            types=bool,
+            desc="If True, input weight will be deduced from block fuel.\n"
+            "If False, block fuel will be deduced from input weight.\n"
+            "Not used (actually forced to True) if adjust_fuel is True.",
+        )
+        self.options.declare(
             "compute_TOW",
             default=False,
             types=bool,
-            desc="If True, TakeOff Weight will be computed from onboard fuel at takeoff and ZFW.\n"
+            desc="(Deprecated. Replaced by compute_input_weight)\n"
+            "If True, TakeOff Weight will be computed from onboard fuel at takeoff and ZFW.\n"
             "If False, block fuel will be computed from ramp weight and ZFW.\n"
             "Not used (actually forced to True) if adjust_fuel is True.",
         )
@@ -120,6 +129,8 @@ class Mission(om.Group):
         )
 
     def setup(self):
+        self.options["compute_input_weight"] = self.options["compute_TOW"]
+
         if "::" in self.options["mission_file_path"]:
             # The configuration file parser will have added the working directory before
             # the file name. But as the user-provided string begins with "::", we just
@@ -138,7 +149,7 @@ class Mission(om.Group):
         self.add_subsystem("ZFW_computation", self._get_zfw_component(mission_name), promotes=["*"])
 
         if self.options["adjust_fuel"]:
-            self.options["compute_TOW"] = True
+            self.options["compute_input_weight"] = True
             self.connect(
                 self._name_provider.NEEDED_BLOCK_FUEL.value,
                 self._name_provider.BLOCK_FUEL.value,
@@ -147,13 +158,16 @@ class Mission(om.Group):
             self.nonlinear_solver = om.NonlinearBlockGS(maxiter=30, rtol=1.0e-4, iprint=0)
             self.linear_solver = om.DirectSolver()
 
-        if self.options["compute_TOW"]:
+        if self.options["compute_input_weight"]:
             self.add_subsystem(
-                "TOW_computation", self._get_target_weight_component(mission_name), promotes=["*"]
+                "input_mass_computation",
+                self._get_input_weight_component(mission_name),
+                promotes=["*"],
             )
 
         mission_options = dict(self.options.items())
         del mission_options["adjust_fuel"]
+        del mission_options["compute_input_weight"]
         del mission_options["compute_TOW"]
         del mission_options["add_solver"]
         del mission_options["mission_file_path"]
@@ -163,7 +177,7 @@ class Mission(om.Group):
         self.add_subsystem(
             "mission_computation", MissionComponent(**mission_options), promotes=["*"]
         )
-        if not self.options["adjust_fuel"]:
+        if not self.options["compute_input_weight"]:
             self.add_subsystem(
                 "block_fuel_computation",
                 self._get_block_fuel_component(mission_name),
