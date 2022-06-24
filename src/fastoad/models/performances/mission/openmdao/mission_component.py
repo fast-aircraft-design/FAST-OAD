@@ -103,7 +103,7 @@ class MissionComponent(om.ExplicitComponent):
         )
         if self.options["is_sizing"]:
             self.add_output("data:weight:aircraft:sizing_block_fuel", units="kg")
-            self.add_output("data:weight:aircraft:sizing_onboard_fuel_at_takeoff", units="kg")
+            self.add_output("data:weight:aircraft:sizing_onboard_fuel_at_input_weight", units="kg")
 
     def setup_partials(self):
         self.declare_partials(["*"], ["*"], method="fd")
@@ -224,6 +224,10 @@ class MissionComponent(om.ExplicitComponent):
             outputs["data:weight:aircraft:sizing_block_fuel"] = outputs[
                 self._name_provider.NEEDED_BLOCK_FUEL.value
             ]
+            outputs["data:weight:aircraft:sizing_onboard_fuel_at_input_weight"] = (
+                outputs[self._name_provider.NEEDED_BLOCK_FUEL.value]
+                - self._mission_wrapper.consumed_fuel_before_input_weight
+            )
 
         def as_scalar(value):
             if isinstance(value, np.ndarray):
