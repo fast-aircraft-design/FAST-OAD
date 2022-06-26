@@ -81,7 +81,6 @@ def test_sizing_mission(cleanup, with_dummy_plugin_2):
     #     pth.join(RESULTS_FOLDER_PATH, "sizing_mission.png"),
     # )
 
-    # Note: tested value are obtained by asking 1 meter of accuracy for distance routes
     assert_allclose(problem["data:mission:sizing:taxi_out:fuel"], 351.0, atol=1)
     assert_allclose(problem["data:mission:sizing:taxi_out:duration"], 500.0, atol=1)
     assert_allclose(problem["data:mission:sizing:taxi_out:distance"], 0.0, atol=1)
@@ -89,36 +88,36 @@ def test_sizing_mission(cleanup, with_dummy_plugin_2):
     assert_allclose(problem["data:mission:sizing:main_route:initial_climb:fuel"], 108.0, atol=1)
     assert_allclose(problem["data:mission:sizing:main_route:initial_climb:duration"], 30.0, atol=1)
     assert_allclose(
-        problem["data:mission:sizing:main_route:initial_climb:distance"], 3163.0, atol=1
+        problem["data:mission:sizing:main_route:initial_climb:distance"], 3168.0, atol=1
     )
 
-    assert_allclose(problem["data:mission:sizing:main_route:climb:fuel"], 656.0, atol=1)
+    assert_allclose(problem["data:mission:sizing:main_route:climb:fuel"], 657.0, atol=1)
     assert_allclose(problem["data:mission:sizing:main_route:climb:duration"], 213.0, atol=1)
-    assert_allclose(problem["data:mission:sizing:main_route:climb:distance"], 37414.0, atol=1)
+    assert_allclose(problem["data:mission:sizing:main_route:climb:distance"], 37466.0, atol=1)
 
-    assert_allclose(problem["data:mission:sizing:main_route:cruise:fuel"], 5163.0, atol=1)
-    assert_allclose(problem["data:mission:sizing:main_route:cruise:duration"], 14556.0, atol=10)
-    assert_allclose(problem["data:mission:sizing:main_route:cruise:distance"], 3442131.0, atol=500)
+    assert_allclose(problem["data:mission:sizing:main_route:cruise:fuel"], 5169.0, atol=1)
+    assert_allclose(problem["data:mission:sizing:main_route:cruise:duration"], 14555.0, atol=10)
+    assert_allclose(problem["data:mission:sizing:main_route:cruise:distance"], 3441990.0, atol=500)
 
     assert_allclose(problem["data:mission:sizing:main_route:descent:fuel"], 115.0, atol=1)
     assert_allclose(problem["data:mission:sizing:main_route:descent:duration"], 1220.0, atol=10)
-    assert_allclose(problem["data:mission:sizing:main_route:descent:distance"], 221291.0, atol=500)
+    assert_allclose(problem["data:mission:sizing:main_route:descent:distance"], 221228.0, atol=500)
 
     assert_allclose(problem["data:mission:sizing:diversion:diversion_climb:fuel"], 471.0, atol=1)
     assert_allclose(
         problem["data:mission:sizing:diversion:diversion_climb:duration"], 153.0, atol=1
     )
     assert_allclose(
-        problem["data:mission:sizing:diversion:diversion_climb:distance"], 24734.0, atol=1
+        problem["data:mission:sizing:diversion:diversion_climb:distance"], 24768.0, atol=1
     )
 
     assert_allclose(problem["data:mission:sizing:diversion:cruise:fuel"], 289.0, atol=1)
-    assert_allclose(problem["data:mission:sizing:diversion:cruise:duration"], 833.0, atol=1)
-    assert_allclose(problem["data:mission:sizing:diversion:cruise:distance"], 182105.0, atol=1)
+    assert_allclose(problem["data:mission:sizing:diversion:cruise:duration"], 832.0, atol=1)
+    assert_allclose(problem["data:mission:sizing:diversion:cruise:distance"], 182125.0, atol=1)
 
     assert_allclose(problem["data:mission:sizing:diversion:descent:fuel"], 92.0, atol=1)
     assert_allclose(problem["data:mission:sizing:diversion:descent:duration"], 973.0, atol=1)
-    assert_allclose(problem["data:mission:sizing:diversion:descent:distance"], 163561.0, atol=1)
+    assert_allclose(problem["data:mission:sizing:diversion:descent:distance"], 163507.0, atol=1)
 
     assert_allclose(problem["data:mission:sizing:holding:fuel"], 601.0, atol=1)
     assert_allclose(problem.get_val("data:mission:sizing:holding:duration", "s"), 1800.0, atol=1)
@@ -128,9 +127,9 @@ def test_sizing_mission(cleanup, with_dummy_plugin_2):
     assert_allclose(problem["data:mission:sizing:taxi_in:duration"], 500.0, atol=1)
     assert_allclose(problem["data:mission:sizing:taxi_in:distance"], 0.0, atol=1)
 
-    assert_allclose(problem["data:mission:sizing:main_route:fuel"], 6043.0, atol=1)
-    assert_allclose(problem["data:mission:sizing:main_route:duration"], 16020.0, atol=10)
-    assert_allclose(problem["data:mission:sizing:main_route:distance"], 3704000.0, atol=500)
+    assert_allclose(problem["data:mission:sizing:main_route:fuel"], 6049.0, atol=1)
+    assert_allclose(problem["data:mission:sizing:main_route:duration"], 16019.0, atol=10)
+    assert_allclose(problem["data:mission:sizing:main_route:distance"], 3703852.0, atol=500)
 
     assert_allclose(problem["data:mission:sizing:diversion:fuel"], 852.0, atol=1)
     assert_allclose(problem["data:mission:sizing:diversion:duration"], 1958.0, atol=10)
@@ -138,10 +137,10 @@ def test_sizing_mission(cleanup, with_dummy_plugin_2):
         problem.get_val("data:mission:sizing:diversion:distance", "m"), 370400.0, atol=500
     )
 
-    assert_allclose(problem["data:mission:sizing:fuel"], 8277.0, atol=1)
-    assert_allclose(problem["data:mission:sizing:duration"], 20778.0, atol=10)
-    assert_allclose(problem["data:mission:sizing:distance"], 4311064.0, atol=500)
+    assert_allclose(problem["data:mission:sizing:fuel"], 8286.0, atol=1)
+    assert_allclose(problem["data:mission:sizing:duration"], 20777.0, atol=10)
+    assert_allclose(problem["data:mission:sizing:distance"], 4310916.0, atol=500)
 
     assert_allclose(problem["data:mission:sizing:reserve:fuel"], 181.0, atol=1)
 
-    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 8459.0, atol=1)
+    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 8467.0, atol=1)

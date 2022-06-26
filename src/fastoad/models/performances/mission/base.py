@@ -13,6 +13,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from abc import ABC, abstractmethod
+from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import List, Optional
 
@@ -59,6 +60,7 @@ class FlightSequence(IFlightPart):
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         parts = []
         part_start = start
+        part_start.scalarize()
 
         self.consumed_mass_before_input_weight = 0.0
         consumed_mass = 0.0
@@ -67,7 +69,7 @@ class FlightSequence(IFlightPart):
             # will be made absolute during compute_from()
             part_has_target_mass = not (part.target.mass is None or part.target.is_relative("mass"))
 
-            flight_points = part.compute_from(part_start)
+            flight_points = part.compute_from(deepcopy(part_start))
 
             consumed_mass += flight_points.iloc[0].mass - flight_points.iloc[-1].mass
 
@@ -103,6 +105,7 @@ class FlightSequence(IFlightPart):
                 parts.append(flight_points)
 
             part_start = FlightPoint.create(flight_points.iloc[-1])
+            part_start.scalarize()
 
         if parts:
             return pd.concat(parts).reset_index(drop=True)
