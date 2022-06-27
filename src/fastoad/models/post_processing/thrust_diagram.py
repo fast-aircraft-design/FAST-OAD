@@ -19,6 +19,7 @@ from fastoad.module_management._bundle_loader import BundleLoader
 from .ceiling_computation import thrust_minus_drag
 from scipy.optimize import fsolve
 from fastoad.module_management._plugins import FastoadLoader
+from matplotlib import pyplot as plt
 
 FastoadLoader()
 
@@ -74,6 +75,10 @@ class ThrustDiagram(om.ExplicitComponent):
 
         atm_mtow = Atmosphere(altitude=20000, altitude_in_feet=True)
         rho_mtow = atm_mtow.density
+
+        x = np.linspace(0,5,5)
+        y = np.linspace(0,5,5)
+        plt.plot(x,y)
 
         #v_max_computed_mtow = fsolve(
         #    thrust_minus_drag,

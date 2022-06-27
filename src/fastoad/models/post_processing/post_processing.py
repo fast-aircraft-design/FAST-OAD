@@ -46,6 +46,6 @@ class PostProcessing(om.Group):
         )
         self.add_subsystem(
             "thrust",
-            AvailablepowerDiagram(propulsion_id=self.options["propulsion_id"]),
+            ThrustDiagram(propulsion_id=self.options["propulsion_id"]),
             promotes=["*"],
         )
