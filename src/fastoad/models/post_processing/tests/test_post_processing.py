@@ -29,6 +29,7 @@ from ..speed_altitude_diagram import SpeedAltitudeDiagram
 from ..ceiling_computation import CeilingComputation
 from ..ceiling_mass_diagram import CeilingMassDiagram
 from ..available_power_diagram import AvailablepowerDiagram
+from ..thrust_diagram import ThrustDiagram
 
 
 @pytest.fixture(scope="module")
@@ -553,7 +554,38 @@ def input_xml() -> VariableIO:
 #    # assert problem["data:performance:ceiling:MZFW"] == pytest.approx(expected_ceiling_mzfw, abs=1e-5)
 
 
-def test_available_power_diagram(input_xml):
+#def test_available_power_diagram(input_xml):
+#    # Doit contenir toutes les entrees dont le modèle a besoin
+#    input_list = [
+#        "data:geometry:wing:area",
+#        "data:weight:aircraft:MTOW",
+#        "data:weight:aircraft:MZFW",
+#        "data:propulsion:rubber_engine:bypass_ratio",
+#        "data:propulsion:rubber_engine:overall_pressure_ratio",
+#        "data:propulsion:rubber_engine:turbine_inlet_temperature",
+#        "data:propulsion:rubber_engine:maximum_mach",
+#        "data:propulsion:rubber_engine:design_altitude",
+#        "data:propulsion:MTO_thrust",
+#        "data:aerodynamics:aircraft:cruise:CD",
+#        "data:aerodynamics:aircraft:landing:CL_max_clean",
+#        "data:aerodynamics:aircraft:cruise:CL",
+#        "data:TLAR:cruise_mach",
+#    ]
+#
+#    input_vars = input_xml.read(only=input_list).to_ivc()
+#
+#    expected_v_vector = np.zeros(100)
+#    expected_thrust_max = np.zeros(100)
+#    expected_thrust_available = np.zeros(100)
+#
+#    problem = run_system(
+#        CeilingComputation(propulsion_id="fastoad.wrapper.propulsion.rubber_engine"), input_vars
+#    )
+#
+#    # assert problem["data:performance:ceiling:MTOW"] == pytest.approx(expected_ceiling_mtow, abs=1e-5)
+#    # assert problem["data:performance:ceiling:MZFW"] == pytest.approx(expected_ceiling_mzfw, abs=1e-5)
+
+def test_thrust_diagram(input_xml):
     # Doit contenir toutes les entrees dont le modèle a besoin
     input_list = [
         "data:geometry:wing:area",
@@ -575,10 +607,9 @@ def test_available_power_diagram(input_xml):
 
     expected_v_vector = np.zeros(100)
     expected_thrust_max = np.zeros(100)
-    expected_thrust_available = np.zeros(100)
 
     problem = run_system(
-        CeilingComputation(propulsion_id="fastoad.wrapper.propulsion.rubber_engine"), input_vars
+        ThrustDiagram(propulsion_id="fastoad.wrapper.propulsion.rubber_engine"), input_vars
     )
 
     # assert problem["data:performance:ceiling:MTOW"] == pytest.approx(expected_ceiling_mtow, abs=1e-5)
