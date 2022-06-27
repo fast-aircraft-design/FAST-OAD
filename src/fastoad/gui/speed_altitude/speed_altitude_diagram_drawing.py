@@ -115,7 +115,7 @@ def speed_altitude_diagram_drawing_plot(
         marker_symbol="circle",
         marker_color="#72b7b2",
         marker_size=7,
-        name="v_dive_mtow",
+        name="v_dive",
         visible="legendonly",
     )  # Altitude-Speed line for v_dive
 
@@ -127,7 +127,7 @@ def speed_altitude_diagram_drawing_plot(
         marker_symbol="circle",
         marker_color="black",
         marker_size=4.6,
-        name="v_engine_mtow",
+        name="v_engine",
         visible="legendonly",
     )  # Altitude-Speed line for v_engine
 
@@ -160,7 +160,7 @@ def speed_altitude_diagram_drawing_plot(
         marker_symbol="circle",
         marker_color="#72b7b2",
         marker_size=7,
-        name="v_dive_mzfw",
+        name="v_dive",
     )  # Altitude-Speed line for v_dive
 
     scatter_v_engine_vector_mzfw = go.Scatter(
@@ -171,7 +171,7 @@ def speed_altitude_diagram_drawing_plot(
         marker_symbol="circle",
         marker_color="black",
         marker_size=4.6,
-        name="v_engine_mzfw",
+        name="v_engine",
     )  # Altitude-Speed line for v_engine
 
     fig.add_trace(scatter_final_mzfw)
@@ -186,7 +186,6 @@ def speed_altitude_diagram_drawing_plot(
     fig = go.FigureWidget(fig)
     fig.update_layout(
         height=700,
-        title_text="Altitude-Speed diagram",
         title_x=0.5,
         xaxis_title="Speed [m/s]",
         yaxis_title="Altitude [ft]",
