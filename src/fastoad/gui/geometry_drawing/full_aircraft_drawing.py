@@ -448,6 +448,7 @@ def full_aircraft_drawing_plot(
     fig.update_layout(
         width=600,
         height=600,
+        title_text="Aircraft Geometry",
         title_x=0.5,
         xaxis_title="y",
         yaxis_title="x",
@@ -1093,6 +1094,7 @@ def wing_drawing_plot(
     fig.update_yaxes(constrain="domain")
     fig.update_xaxes(constrain="domain")
     fig.update_layout(
+        title_text="Wing Geometry",
         title_x=0.8,
         title_y=0.98,
         xaxis_title="y",
@@ -1358,6 +1360,6 @@ def flaps_and_slats_plot(
     fig = go.FigureWidget(fig)
     fig.update_xaxes(constrain="domain")
     fig.update_yaxes(constrain="domain")
-    fig.update_layout(xaxis_title="y", yaxis_title="x")
+    fig.update_layout(title_text="Wing Drawing", title_x=0.5, xaxis_title="y", yaxis_title="x")
 
     return fig
