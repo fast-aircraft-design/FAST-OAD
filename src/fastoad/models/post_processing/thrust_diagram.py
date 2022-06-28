@@ -16,6 +16,8 @@ import numpy as np
 import openmdao.api as om
 from stdatm import Atmosphere
 from fastoad.module_management._bundle_loader import BundleLoader
+from fastoad.model_base import FlightPoint
+from fastoad.constants import EngineSetting
 from .ceiling_computation import thrust_minus_drag
 from scipy.optimize import fsolve
 from fastoad.module_management._plugins import FastoadLoader
@@ -48,8 +50,8 @@ class ThrustDiagram(om.ExplicitComponent):
         self._engine_wrapper.setup(self)
 
         self.add_output(
-            "data:performance:speed_altitude_diagram:MZFW:v_engine",
-            shape=1,
+            "data:performance:thrust_diagram:iso_rating_thrust:ratio_F_F0",
+            shape=(5,50),
             units="m/s",
         )
 
@@ -67,38 +69,53 @@ class ThrustDiagram(om.ExplicitComponent):
         maximum_engine_mach = inputs["data:propulsion:rubber_engine:maximum_mach"]
         ceiling_mtow = float(inputs["data:performance:ceiling:MTOW"])
         ceiling_mzfw = float(inputs["data:performance:ceiling:MZFW"])
+        initial_thrust = 2*inputs["data:propulsion:MTO_thrust"]
+        diving_mach = 0.07 + cruise_mach
 
         g = 9.80665  # m/s^2
 
-        # Altitude vectors
-        #altitude_vector_mtow = np.linspace(0, ceiling_mtow, SPEED_ALTITUDE_SHAPE)  # feet
 
-        atm_mtow = Atmosphere(altitude=20000, altitude_in_feet=True)
-        rho_mtow = atm_mtow.density
+        altitude_vector = np.array([0, 10000, 20000, 30000, 40000])
+        maximum_mach = np.maximum(cruise_mach, np.maximum(diving_mach, maximum_engine_mach))
+        mach_vector = np.linspace(0, maximum_mach, 50)
+        thrust_available = np.zeros((5, 50))
 
-        x = np.linspace(0,5,5)
-        y = np.linspace(0,5,5)
-        plt.plot(x,y)
+        for i in range(len(altitude_vector)):
+            atm = Atmosphere(altitude=altitude_vector[i], altitude_in_feet=True)
 
-        #v_max_computed_mtow = fsolve(
-        #    thrust_minus_drag,
-        #    500,
-        #    args=(
-        #        altitude_vector_mtow[i],
-        #        mtow,
-        #        wing_area,
-        #        cl_vector_input,
-        #        cd_vector_input,
-        #        propulsion_model,
-        #    ),
-        #)[
-        #    0
-        #]  # Maximum speed of the aircraft computed with the Cl and Cd coefficient
-        #
-        ## Compute the maximum speed of the aircraft (diving speed)
-        #v_dive_mtow = (0.07 + cruise_mach) * atm_mtow.speed_of_sound
-        #
-        ## Compute the maximum engine supportable-speed
-        #v_engine_mtow = maximum_engine_mach * atm_mtow.speed_of_sound
+            flight_point = FlightPoint(
+                mach=mach_vector,
+                altitude=atm.get_altitude(altitude_in_feet=False),
+                engine_setting=EngineSetting.CLIMB,
+                thrust_is_regulated=False,
+                thrust_rate=1.0,
+            )
+            propulsion_model.compute_flight_points(flight_point)
+            thrust_available[i] = np.transpose(flight_point.thrust)
 
-        outputs["data:performance:speed_altitude_diagram:MZFW:v_engine"] = 3
+        ratio = thrust_available / initial_thrust
+
+
+
+        outputs["data:performance:thrust_diagram:iso_rating_thrust:ratio_F_F0"] = ratio
+
+# v_max_computed_mtow = fsolve(
+#    thrust_minus_drag,
+#    500,
+#    args=(
+#        altitude_vector_mtow[i],
+#        mtow,
+#        wing_area,
+#        cl_vector_input,
+#        cd_vector_input,
+#        propulsion_model,
+#    ),
+# )[
+#    0
+# ]  # Maximum speed of the aircraft computed with the Cl and Cd coefficient
+#
+## Compute the maximum speed of the aircraft (diving speed)
+# v_dive_mtow = (0.07 + cruise_mach) * atm_mtow.speed_of_sound
+#
+## Compute the maximum engine supportable-speed
+# v_engine_mtow = maximum_engine_mach * atm_mtow.speed_of_sound
