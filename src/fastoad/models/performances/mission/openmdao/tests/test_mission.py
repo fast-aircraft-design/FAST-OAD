@@ -166,7 +166,7 @@ def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
         ),
         ivc,
     )
-    # plot_flight(problem.model.component.flight_points, "test_mission.png")
+    # plot_flight(problem.model.component.flight_points, "test_mission_component_breguet.png")
     assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6256.0, atol=1.0)
 
     assert_allclose(problem["data:mission:operational:taxi_out:fuel"], 100.0, atol=1.0)

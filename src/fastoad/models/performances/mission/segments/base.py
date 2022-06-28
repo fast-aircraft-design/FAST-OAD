@@ -14,6 +14,7 @@
 
 import logging
 from abc import ABC, abstractmethod
+from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple, Type
 
@@ -103,10 +104,9 @@ class FlightSegment(IFlightPart):
 
     .. Important::
 
-        When subclassing, if you intend to overload :meth:`compute_from` without calling the
-        super method, you should consider overriding :meth:`_compute_from` instead. Therefore,
-        you will take benefit of the preprocessing of start and target flight points that is
-        done in :meth:`compute_from`
+        When subclassing, if you intend to overload :meth:`compute_from`, you should consider
+        overriding :meth:`_compute_from` instead. Therefore, you will take benefit of the
+        preprocessing of start and target flight points that is done in :meth:`compute_from`
 
     """
 
@@ -202,6 +202,13 @@ class FlightSegment(IFlightPart):
         For instance, a climb computation with too low thrust will only return one
         flight point, that is the provided start point.
 
+        .. Important::
+
+            When subclasssing, if you need to overload :meth:`compute_from`, you should consider
+            overriding :meth:`_compute_from` instead. Therefore, you will take benefit of the
+            preprocessing of start and target flight points that is done in :meth:`compute_from`
+
+
         :param start: the initial flight point, defined for `altitude`, `mass` and speed
                       (`true_airspeed`, `equivalent_airspeed` or `mach`). Can also be
                       defined for `time` and/or `ground_distance`.
@@ -214,11 +221,18 @@ class FlightSegment(IFlightPart):
         if start.ground_distance is None:
             start.ground_distance = 0.0
 
+        # We will modify the target to convert relative fields into absolute ones.
+        # We will get back to original definition after computation.
+        self._target.scalarize()
+        target_copy = deepcopy(self._target)
         self._target = self._target.make_absolute(start)
 
         self.complete_flight_point(start)
+        flight_points = self._compute_from(start)
 
-        return self._compute_from(start)
+        self._target = target_copy
+
+        return flight_points
 
     def _compute_from(self, start: FlightPoint) -> pd.DataFrame:
         flight_points = [start]

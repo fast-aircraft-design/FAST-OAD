@@ -79,9 +79,7 @@ class AltitudeChangeSegment(ManualThrustSegment, mission_file_keyword="altitude_
     #: with max lift/drag ratio.
     OPTIMAL_FLIGHT_LEVEL = "optimal_flight_level"  # pylint: disable=invalid-name # used as constant
 
-    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        self.complete_flight_point(start)  # needed to ensure all speed values are computed.
-
+    def _compute_from(self, start: FlightPoint) -> pd.DataFrame:
         if self.target.altitude is not None:
             if isinstance(self.target.altitude, str):
                 # Target altitude will be modified along the process, so we keep track
@@ -105,7 +103,7 @@ class AltitudeChangeSegment(ManualThrustSegment, mission_file_keyword="altitude_
             atm.mach = start.mach
             start.true_airspeed = atm.true_airspeed
 
-        return super().compute_from(start)
+        return super()._compute_from(start)
 
     def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
         current = flight_points[-1]

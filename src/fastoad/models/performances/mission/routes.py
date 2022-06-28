@@ -62,6 +62,7 @@ class SimpleRoute(FlightSequence):
     @cruise_distance.setter
     def cruise_distance(self, cruise_distance):
         self.cruise_segment.target.ground_distance = cruise_distance
+        self.cruise_segment.target.set_as_relative("ground_distance")
 
     @property
     def cruise_speed(self) -> Optional[Tuple[str, float]]:

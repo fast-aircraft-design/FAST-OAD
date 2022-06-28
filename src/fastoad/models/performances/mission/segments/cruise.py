@@ -106,9 +106,8 @@ class ClimbAndCruiseSegment(CruiseSegment, mission_file_keyword="cruise"):
     #: The maximum allowed flight level (i.e. multiple of 100 feet).
     maximum_flight_level: float = 500.0
 
-    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
+    def _compute_from(self, start: FlightPoint) -> pd.DataFrame:
         climb_segment = deepcopy(self.climb_segment)
-        self.target = self.target.make_absolute(start)
         climb_segment.target = self.target
 
         cruise_segment = CruiseSegment(
@@ -155,7 +154,7 @@ class ClimbAndCruiseSegment(CruiseSegment, mission_file_keyword="cruise"):
                 start, self.target.altitude, climb_segment, cruise_segment
             )
         else:
-            results = super().compute_from(start)
+            results = super()._compute_from(start)
 
         return results
 
@@ -211,21 +210,14 @@ class BreguetCruiseSegment(
     #: The reference area, in m**2. Used only if use_max_lift_drag_ratio is False.
     reference_area: float = 1.0
 
-    #:
-    climb_and_descent_distance: float = 0.0
-
-    def __post_init__(self):
-        super().__post_init__()
-        self.target.ground_distance = self.target.ground_distance - self.climb_and_descent_distance
-
-    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        self.complete_flight_point(start)
-
-        cruise_mass_ratio = self._compute_cruise_mass_ratio(start, self.target.ground_distance)
+    def _compute_from(self, start: FlightPoint) -> pd.DataFrame:
+        cruise_mass_ratio = self._compute_cruise_mass_ratio(
+            start, self.target.ground_distance - start.ground_distance
+        )
 
         end = deepcopy(start)
         end.mass = start.mass * cruise_mass_ratio
-        end.ground_distance = start.ground_distance + self.target.ground_distance
+        end.ground_distance = self.target.ground_distance
         end.time = start.time + (end.ground_distance - start.ground_distance) / end.true_airspeed
         end.name = self.name
         self.complete_flight_point(end)
