@@ -51,8 +51,11 @@ class ThrustDiagram(om.ExplicitComponent):
 
         self.add_output(
             "data:performance:thrust_diagram:iso_rating_thrust:ratio_F_F0",
-            shape=(5,50),
-            units="m/s",
+            shape=(5,50)
+        )
+        self.add_output(
+            "data:performance:thrust_diagram:iso_rating_consumption:SFC",
+            shape=(5, 50)
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -74,11 +77,12 @@ class ThrustDiagram(om.ExplicitComponent):
 
         g = 9.80665  # m/s^2
 
-
+        # iso rating thrust
         altitude_vector = np.array([0, 10000, 20000, 30000, 40000])
         maximum_mach = np.maximum(cruise_mach, np.maximum(diving_mach, maximum_engine_mach))
         mach_vector = np.linspace(0, maximum_mach, 50)
         thrust_available = np.zeros((5, 50))
+        specific_consumption_in_altitude = np.zeros((5, 50))
 
         for i in range(len(altitude_vector)):
             atm = Atmosphere(altitude=altitude_vector[i], altitude_in_feet=True)
@@ -92,12 +96,12 @@ class ThrustDiagram(om.ExplicitComponent):
             )
             propulsion_model.compute_flight_points(flight_point)
             thrust_available[i] = np.transpose(flight_point.thrust)
+            specific_consumption_in_altitude[i] = np.transpose(flight_point.sfc)
 
-        ratio = thrust_available / initial_thrust
+        ratio_thrust = thrust_available / initial_thrust
 
-
-
-        outputs["data:performance:thrust_diagram:iso_rating_thrust:ratio_F_F0"] = ratio
+        outputs["data:performance:thrust_diagram:iso_rating_thrust:ratio_F_F0"] = ratio_thrust
+        outputs["data:performance:thrust_diagram:iso_rating_consumption:SFC"] = specific_consumption_in_altitude
 
 # v_max_computed_mtow = fsolve(
 #    thrust_minus_drag,
