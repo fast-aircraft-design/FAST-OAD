@@ -2,8 +2,8 @@ title: OAD Process
 
 module_folders:
 
-input_file: ../data_folder/oad_process_inputs.xml
-output_file: ../data_folder/oad_process_outputs.xml
+input_file: ../data/oad_process_inputs.xml
+output_file: ../data/oad_process_outputs.xml
 
 model:
   post_processing:
