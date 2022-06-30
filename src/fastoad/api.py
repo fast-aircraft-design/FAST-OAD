@@ -68,5 +68,4 @@ from fastoad.gui.analysis_and_plots import (
     payload_range_grid_plot,
     payload_range_loop_computation,
     drag_distribution_plot,
-    thrust_diagram_drawing_plot,
 )
