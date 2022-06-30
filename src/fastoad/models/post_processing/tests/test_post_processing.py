@@ -583,4 +583,3 @@ def input_xml() -> VariableIO:
 #
 #    # assert problem["data:performance:ceiling:MTOW"] == pytest.approx(expected_ceiling_mtow, abs=1e-5)
 #    # assert problem["data:performance:ceiling:MZFW"] == pytest.approx(expected_ceiling_mzfw, abs=1e-5)
-
