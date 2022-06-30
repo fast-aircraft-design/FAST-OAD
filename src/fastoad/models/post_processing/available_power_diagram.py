@@ -57,12 +57,12 @@ class AvailablepowerDiagram(om.ExplicitComponent):
         self.add_output(
             "data:performance:available_power_diagram:sea_level:power_required",
             shape=AVAILABLE_POWER_SHAPE,
-            units="N",
+            units="W",
         )
         self.add_output(
             "data:performance:available_power_diagram:sea_level:power_available",
             shape=AVAILABLE_POWER_SHAPE,
-            units="N",
+            units="W",
         )
         self.add_output(
             "data:performance:available_power_diagram:sea_level:speed_vector",
@@ -77,12 +77,12 @@ class AvailablepowerDiagram(om.ExplicitComponent):
         self.add_output(
             "data:performance:available_power_diagram:cruise_altitude:power_required",
             shape=AVAILABLE_POWER_SHAPE,
-            units="N",
+            units="W",
         )
         self.add_output(
             "data:performance:available_power_diagram:cruise_altitude:power_available",
             shape=AVAILABLE_POWER_SHAPE,
-            units="N",
+            units="W",
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

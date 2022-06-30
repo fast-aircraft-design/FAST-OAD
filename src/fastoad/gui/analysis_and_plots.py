@@ -39,6 +39,13 @@ from .payload_range.payload_range_file import payload_range_full
 from .payload_range.payload_range_file import payload_range_grid_plot
 from .payload_range.payload_range_file import payload_range_loop_computation
 from .drag_distribution.drag_distribution_file import drag_distribution_plot
+from .v_n.v_n_diagram_drawing import v_n_diagram_drawing_plot
+
+from .speed_altitude.speed_altitude_diagram_drawing import speed_altitude_diagram_drawing_plot
+from .ceiling_mass.ceiling_mass_diagram_drawing import ceiling_mass_diagram_drawing_plot
+
+
+from .stability_diagram.stability_diagram_file import stability_diagram_plot
 
 from .thrust.thrust_diagram_drawing import thrust_diagram_drawing_plot
 
