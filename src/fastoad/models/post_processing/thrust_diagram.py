@@ -18,12 +18,10 @@ from stdatm import Atmosphere
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.model_base import FlightPoint
 from fastoad.constants import EngineSetting
-from .ceiling_computation import thrust_minus_drag
-from scipy.optimize import fsolve
 from fastoad.module_management._plugins import FastoadLoader
-from matplotlib import pyplot as plt
 
 FastoadLoader()
+
 
 class ThrustDiagram(om.ExplicitComponent):
     def __init__(self, **kwargs):
@@ -36,57 +34,64 @@ class ThrustDiagram(om.ExplicitComponent):
 
     def setup(self):
 
-        self.add_input("data:geometry:wing:area", units="m**2", val=np.nan)
-        self.add_input("data:weight:aircraft:MTOW", units="kg", val=np.nan)
-        self.add_input("data:weight:aircraft:MZFW", units="kg", val=np.nan)
-        self.add_input("data:aerodynamics:aircraft:cruise:CL", val=np.nan, shape=150)
-        self.add_input("data:aerodynamics:aircraft:cruise:CD", val=np.nan, shape=150)
-        self.add_input("data:aerodynamics:aircraft:landing:CL_max_clean", val=np.nan)
-        self.add_input("data:performance:ceiling:MTOW", val=np.nan)
-        self.add_input("data:performance:ceiling:MZFW", val=np.nan)
         self.add_input("data:TLAR:cruise_mach", val=np.nan)
 
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
         self.add_output(
-            "data:performance:thrust_diagram:iso_rating_thrust:ratio_F_F0",
-            shape=(5,50)
+            "data:performance:thrust_diagram:iso_rating_thrust:ratio_F_F0", shape=(5, 50)
         )
         self.add_output(
-            "data:performance:thrust_diagram:iso_rating_consumption:SFC",
-            shape=(5, 50)
+            "data:performance:thrust_diagram:iso_altitude_thrust:ratio_F_F0", shape=(4, 50)
+        )
+        self.add_output("data:performance:thrust_diagram:iso_rating_consumption:SFC", shape=(5, 50))
+        self.add_output(
+            "data:performance:thrust_diagram:iso_altitude_consumption:SFC", shape=(4, 50)
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         propulsion_model = self._engine_wrapper.get_model(inputs)
 
-        wing_area = inputs["data:geometry:wing:area"]
-        mtow = inputs["data:weight:aircraft:MTOW"]
-        mzfw = inputs["data:weight:aircraft:MZFW"]
-        cl_vector_input = inputs["data:aerodynamics:aircraft:cruise:CL"]
-        cd_vector_input = inputs["data:aerodynamics:aircraft:cruise:CD"]
-        cl_max_clean = inputs["data:aerodynamics:aircraft:landing:CL_max_clean"]
         cruise_mach = inputs["data:TLAR:cruise_mach"]
         maximum_engine_mach = inputs["data:propulsion:rubber_engine:maximum_mach"]
-        ceiling_mtow = float(inputs["data:performance:ceiling:MTOW"])
-        ceiling_mzfw = float(inputs["data:performance:ceiling:MZFW"])
-        initial_thrust = 2*inputs["data:propulsion:MTO_thrust"]
+        initial_thrust = 2 * inputs["data:propulsion:MTO_thrust"]  # because 2 engines
         diving_mach = 0.07 + cruise_mach
 
-        g = 9.80665  # m/s^2
-
-        # iso rating thrust
-        altitude_vector = np.array([0, 10000, 20000, 30000, 40000])
         maximum_mach = np.maximum(cruise_mach, np.maximum(diving_mach, maximum_engine_mach))
         mach_vector = np.linspace(0, maximum_mach, 50)
-        thrust_available = np.zeros((5, 50))
-        specific_consumption_in_altitude = np.zeros((5, 50))
+        thrust_rate_vector = np.array(
+            [1, 0.98, 0.93, 0.35]
+        )  # vector to use for the different regimes of the engine
+
+        altitude_vector = np.array([0, 10000, 20000, 30000, 40000])
+        thrust_iso_rating_thrust = np.zeros((5, 50))
+        thrust_iso_altitude_thrust = np.zeros((4, 50))
+        sfc_iso_rating_consumption = np.zeros((5, 50))
+        sfc_iso_altitude_consumption = np.zeros((4, 50))
 
         for i in range(len(altitude_vector)):
-            atm = Atmosphere(altitude=altitude_vector[i], altitude_in_feet=True)
 
+            if (
+                altitude_vector[i] == 0
+            ):  # the case for iso altitude thrust and iso altitude consumption at 0 ft
+
+                atm = Atmosphere(altitude=0, altitude_in_feet=True)
+                for j in range(len(thrust_rate_vector)):
+
+                    flight_point = FlightPoint(
+                        mach=mach_vector,
+                        altitude=atm.get_altitude(altitude_in_feet=False),
+                        engine_setting=EngineSetting.CLIMB,
+                        thrust_is_regulated=False,
+                        thrust_rate=thrust_rate_vector[j],
+                    )
+                    propulsion_model.compute_flight_points(flight_point)
+                    thrust_iso_altitude_thrust[j] = np.transpose(flight_point.thrust)
+                    sfc_iso_altitude_consumption[j] = np.transpose(flight_point.sfc)
+
+            atm = Atmosphere(altitude=altitude_vector[i], altitude_in_feet=True)
             flight_point = FlightPoint(
                 mach=mach_vector,
                 altitude=atm.get_altitude(altitude_in_feet=False),
@@ -95,31 +100,21 @@ class ThrustDiagram(om.ExplicitComponent):
                 thrust_rate=1.0,
             )
             propulsion_model.compute_flight_points(flight_point)
-            thrust_available[i] = np.transpose(flight_point.thrust)
-            specific_consumption_in_altitude[i] = np.transpose(flight_point.sfc)
+            thrust_iso_rating_thrust[i] = np.transpose(flight_point.thrust)
+            sfc_iso_rating_consumption[i] = np.transpose(flight_point.sfc)
 
-        ratio_thrust = thrust_available / initial_thrust
+        ratio_iso_rating_thrust = thrust_iso_rating_thrust / initial_thrust
+        ratio_iso_altitude_thrust = thrust_iso_altitude_thrust / initial_thrust
 
-        outputs["data:performance:thrust_diagram:iso_rating_thrust:ratio_F_F0"] = ratio_thrust
-        outputs["data:performance:thrust_diagram:iso_rating_consumption:SFC"] = specific_consumption_in_altitude
-
-# v_max_computed_mtow = fsolve(
-#    thrust_minus_drag,
-#    500,
-#    args=(
-#        altitude_vector_mtow[i],
-#        mtow,
-#        wing_area,
-#        cl_vector_input,
-#        cd_vector_input,
-#        propulsion_model,
-#    ),
-# )[
-#    0
-# ]  # Maximum speed of the aircraft computed with the Cl and Cd coefficient
-#
-## Compute the maximum speed of the aircraft (diving speed)
-# v_dive_mtow = (0.07 + cruise_mach) * atm_mtow.speed_of_sound
-#
-## Compute the maximum engine supportable-speed
-# v_engine_mtow = maximum_engine_mach * atm_mtow.speed_of_sound
+        outputs[
+            "data:performance:thrust_diagram:iso_rating_thrust:ratio_F_F0"
+        ] = ratio_iso_rating_thrust
+        outputs[
+            "data:performance:thrust_diagram:iso_altitude_thrust:ratio_F_F0"
+        ] = ratio_iso_altitude_thrust
+        outputs[
+            "data:performance:thrust_diagram:iso_rating_consumption:SFC"
+        ] = sfc_iso_rating_consumption
+        outputs[
+            "data:performance:thrust_diagram:iso_altitude_consumption:SFC"
+        ] = sfc_iso_altitude_consumption
