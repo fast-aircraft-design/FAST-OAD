@@ -69,4 +69,7 @@ from fastoad.gui.analysis_and_plots import (
     payload_range_loop_computation,
     drag_distribution_plot,
     stability_diagram_plot,
+    v_n_diagram_drawing_plot,
+    speed_altitude_diagram_drawing_plot,
+    ceiling_mass_diagram_drawing_plot,
 )

@@ -29,6 +29,7 @@ from ..speed_altitude_diagram import SpeedAltitudeDiagram
 from ..ceiling_computation import CeilingComputation
 from ..ceiling_mass_diagram import CeilingMassDiagram
 from ..available_power_diagram import AvailablepowerDiagram
+from ..v_n_diagram import VnDiagram
 
 
 @pytest.fixture(scope="module")
@@ -553,33 +554,120 @@ def input_xml() -> VariableIO:
 #    # assert problem["data:performance:ceiling:MZFW"] == pytest.approx(expected_ceiling_mzfw, abs=1e-5)
 
 
-def test_available_power_diagram(input_xml):
+# def test_available_power_diagram(input_xml):
+#    # Doit contenir toutes les entrees dont le modèle a besoin
+#    input_list = [
+#        "data:geometry:wing:area",
+#        "data:weight:aircraft:MTOW",
+#        "data:weight:aircraft:MZFW",
+#        "data:propulsion:rubber_engine:bypass_ratio",
+#        "data:propulsion:rubber_engine:overall_pressure_ratio",
+#        "data:propulsion:rubber_engine:turbine_inlet_temperature",
+#        "data:propulsion:rubber_engine:maximum_mach",
+#        "data:propulsion:rubber_engine:design_altitude",
+#        "data:propulsion:MTO_thrust",
+#        "data:aerodynamics:aircraft:cruise:CD",
+#        "data:aerodynamics:aircraft:landing:CL_max_clean",
+#        "data:aerodynamics:aircraft:cruise:CL",
+#        "data:TLAR:cruise_mach",
+#    ]
+#
+#    input_vars = input_xml.read(only=input_list).to_ivc()
+#
+#    expected_v_vector = np.zeros(100)
+#    expected_thrust_max = np.zeros(100)
+#    expected_thrust_available = np.zeros(100)
+#
+#    problem = run_system(
+#        CeilingComputation(propulsion_id="fastoad.wrapper.propulsion.rubber_engine"), input_vars
+#    )
+#
+#    # assert problem["data:performance:ceiling:MTOW"] == pytest.approx(expected_ceiling_mtow, abs=1e-5)
+#    # assert problem["data:performance:ceiling:MZFW"] == pytest.approx(expected_ceiling_mzfw, abs=1e-5)
+
+
+def test_v_n_diagram(input_xml):
     # Doit contenir toutes les entrees dont le modèle a besoin
     input_list = [
         "data:geometry:wing:area",
+        "data:geometry:wing:aspect_ratio",
+        "data:geometry:wing:MAC:length",
         "data:weight:aircraft:MTOW",
         "data:weight:aircraft:MZFW",
-        "data:propulsion:rubber_engine:bypass_ratio",
-        "data:propulsion:rubber_engine:overall_pressure_ratio",
-        "data:propulsion:rubber_engine:turbine_inlet_temperature",
-        "data:propulsion:rubber_engine:maximum_mach",
-        "data:propulsion:rubber_engine:design_altitude",
-        "data:propulsion:MTO_thrust",
-        "data:aerodynamics:aircraft:cruise:CD",
-        "data:aerodynamics:aircraft:landing:CL_max_clean",
         "data:aerodynamics:aircraft:cruise:CL",
+        "data:aerodynamics:aircraft:cruise:CD",
+        "data:aerodynamics:aircraft:cruise:oswald_coefficient",
+        "data:aerodynamics:aircraft:cruise:CL_alpha",
+        "data:aerodynamics:aircraft:landing:CL_max_clean",
+        "data:performance:ceiling:MTOW",
+        "data:performance:ceiling:MZFW",
         "data:TLAR:cruise_mach",
+        "data:TLAR:range",
+        "data:mission:sizing:main_route:cruise:altitude",
     ]
 
     input_vars = input_xml.read(only=input_list).to_ivc()
 
-    expected_v_vector = np.zeros(100)
-    expected_thrust_max = np.zeros(100)
-    expected_thrust_available = np.zeros(100)
+    v_stall = 75.9786037
+    v_manoeuvre_mtow = 120.13272057
+    v_manoeuvre_negative_mtow = 85.31180067
+    v_manoeuvre_mzfw = 109.06356631
+    v_manoeuvre_negative_mzfw = 77.45108
+    v_cruising = 179.93362597
+    v_dive = 224.91703246
+    n_v_c_positive_mtow = 2.52210697
+    n_v_c_negative_mtow = -0.522107
+    n_v_d_positive_mtow = 1.951317
+    n_v_d_negative_mtow = 0.048683
+    n_v_c_positive_mzfw = 2.81797214
+    n_v_c_negative_mzfw = -0.817972
+    n_v_d_positive_mzfw = 2.136233
+    n_v_d_negative_mzfw = -0.1362326
+    v_1g_negative = 85.31180067
 
     problem = run_system(
-        CeilingComputation(propulsion_id="fastoad.wrapper.propulsion.rubber_engine"), input_vars
+        VnDiagram(propulsion_id="fastoad.wrapper.propulsion.rubber_engine"), input_vars
     )
 
-    # assert problem["data:performance:ceiling:MTOW"] == pytest.approx(expected_ceiling_mtow, abs=1e-5)
-    # assert problem["data:performance:ceiling:MZFW"] == pytest.approx(expected_ceiling_mzfw, abs=1e-5)
+    assert problem["data:performance:V-n_diagram:v_stall"] == pytest.approx(v_stall, abs=1e-5)
+    assert problem["data:performance:V-n_diagram:MTOW:v_manoeuvre"] == pytest.approx(
+        v_manoeuvre_mtow, abs=1e-5
+    )
+    assert problem["data:performance:V-n_diagram:MTOW:v_manoeuvre_negative"] == pytest.approx(
+        v_manoeuvre_negative_mtow, abs=1e-5
+    )
+    assert problem["data:performance:V-n_diagram:MZFW:v_manoeuvre"] == pytest.approx(
+        v_manoeuvre_mzfw, abs=1e-5
+    )
+    assert problem["data:performance:V-n_diagram:MZFW:v_manoeuvre_negative"] == pytest.approx(
+        v_manoeuvre_negative_mzfw, abs=1e-5
+    )
+    assert problem["data:performance:V-n_diagram:v_cruising"] == pytest.approx(v_cruising, abs=1e-5)
+    assert problem["data:performance:V-n_diagram:v_dive"] == pytest.approx(v_dive, abs=1e-5)
+    assert problem["data:performance:V-n_diagram:MTOW:n_v_c_positive"] == pytest.approx(
+        n_v_c_positive_mtow, abs=1e-5
+    )
+    assert problem["data:performance:V-n_diagram:MTOW:n_v_c_negative"] == pytest.approx(
+        n_v_c_negative_mtow, abs=1e-5
+    )
+    assert problem["data:performance:V-n_diagram:MTOW:n_v_d_positive"] == pytest.approx(
+        n_v_d_positive_mtow, abs=1e-5
+    )
+    assert problem["data:performance:V-n_diagram:MTOW:n_v_d_negative"] == pytest.approx(
+        n_v_d_negative_mtow, abs=1e-5
+    )
+    assert problem["data:performance:V-n_diagram:MZFW:n_v_c_positive"] == pytest.approx(
+        n_v_c_positive_mzfw, abs=1e-5
+    )
+    assert problem["data:performance:V-n_diagram:MZFW:n_v_c_negative"] == pytest.approx(
+        n_v_c_negative_mzfw, abs=1e-5
+    )
+    assert problem["data:performance:V-n_diagram:MZFW:n_v_d_positive"] == pytest.approx(
+        n_v_d_positive_mzfw, abs=1e-5
+    )
+    assert problem["data:performance:V-n_diagram:MZFW:n_v_d_negative"] == pytest.approx(
+        n_v_d_negative_mzfw, abs=1e-5
+    )
+    assert problem["data:performance:V-n_diagram:v_1g_negative"] == pytest.approx(
+        v_1g_negative, abs=1e-5
+    )
