@@ -185,7 +185,8 @@ def speed_altitude_diagram_drawing_plot(
 
     fig = go.FigureWidget(fig)
     fig.update_layout(
-        height=700,
+        #height=700,
+        title_text = "Speed Altitude Diagram",
         title_x=0.5,
         xaxis_title="Speed [m/s]",
         yaxis_title="Altitude [ft]",

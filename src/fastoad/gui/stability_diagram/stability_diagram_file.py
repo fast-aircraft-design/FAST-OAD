@@ -202,7 +202,7 @@ def stability_diagram_plot(
     scatter_ac2 = go.Scatter(
         x=x_cg_rear_percentage_minus_5perc * 100,
         y=surface_ratio * 100,
-        line=dict(color="lightblue"),
+        line=dict(color="lightgreen"),
         mode="lines",
         name="Neutral point - 5%",
     )
@@ -240,7 +240,7 @@ def stability_diagram_plot(
     fig.add_trace(scatter_actual)
 
     fig.update_layout(
-        title_text=name,
+        title_text = "Stability Diagram",
         title_x=0.5,
         xaxis_title="Centering (% of MAC)",
         yaxis_title="Sh/S (%)",

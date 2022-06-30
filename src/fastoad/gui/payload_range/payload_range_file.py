@@ -230,8 +230,8 @@ def payload_range_simple(
         x=[BL_ranges[-1]],
         y=[BL_payloads[-1]],
         mode="markers",
-        name="Sizing point " + str(name),
         marker_color=color,
+        showlegend=False,
     )
 
     fig.add_trace(scatter_BL)
@@ -789,7 +789,7 @@ def payload_range_full(
         fig = go.Figure()
     # load the results from payload_range_loop_computation(...)
     try:
-        results = np.loadtxt(pth.join("data", file_save))
+        results = np.loadtxt(pth.join("data_folder/data_results_payload", file_save))
         results = results.T
 
         x = results[0, 0 : n_values_ranges[0]]

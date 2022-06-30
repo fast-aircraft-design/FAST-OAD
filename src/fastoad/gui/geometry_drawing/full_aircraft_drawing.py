@@ -496,8 +496,6 @@ def aircraft_drawing_top_view(
 
     if name is None:
         fig.update_layout(
-            width=600,
-            height=600,
             title_text="Aircraft Geometry",
             title_x=0.5,
             xaxis_title="y",
@@ -505,8 +503,6 @@ def aircraft_drawing_top_view(
         )
     else:
         fig.update_layout(
-            width=600,
-            height=600,
             title_text=name,
             title_x=0.5,
             xaxis_title="y",
