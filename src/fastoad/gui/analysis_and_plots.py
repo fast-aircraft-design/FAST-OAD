@@ -45,6 +45,8 @@ from .speed_altitude.speed_altitude_diagram_drawing import speed_altitude_diagra
 from .ceiling_mass.ceiling_mass_diagram_drawing import ceiling_mass_diagram_drawing_plot
 
 
+from .stability_diagram.stability_diagram_file import stability_diagram_plot
+
 
 # pylint: disable-msg=too-many-locals
 def wing_geometry_plot(
