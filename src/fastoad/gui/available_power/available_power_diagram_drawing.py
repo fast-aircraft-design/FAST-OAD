@@ -130,6 +130,7 @@ def available_power_diagram_drawing_plot(
     fig.update_layout(
         height=700,
         width=700,
+        title_text="Available Power Diagram",
         title_x=0.5,
         xaxis_title="Speed [m/s]",
         yaxis_title="Power [W]",
