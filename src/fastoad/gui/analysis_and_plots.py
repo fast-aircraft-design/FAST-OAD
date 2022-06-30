@@ -47,6 +47,8 @@ from .ceiling_mass.ceiling_mass_diagram_drawing import ceiling_mass_diagram_draw
 
 from .stability_diagram.stability_diagram_file import stability_diagram_plot
 
+from .thrust.thrust_diagram_drawing import thrust_diagram_drawing_plot
+
 
 # pylint: disable-msg=too-many-locals
 def wing_geometry_plot(
