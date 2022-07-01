@@ -131,7 +131,7 @@ def ceiling_mass_diagram_drawing_plot(
     fig = go.FigureWidget(fig)
     fig.update_layout(
         height=700,
-        title_text="Ceiling-Mass diagram",
+        title_text="Ceiling diagram",
         title_x=0.5,
         xaxis_title="Mass [kg]",
         yaxis_title="Altitude [ft]",
