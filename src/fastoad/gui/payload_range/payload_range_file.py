@@ -332,7 +332,7 @@ def grid_generation(
         val_payloads[ra_c_id:] - payload_c
     ) + ra_c
 
-    max_range = max_range - right_limit_box_tolerance  # safety margin
+    max_range = max_range - right_limit_box_tolerance*max_range  # safety margin
 
     min_range = left_limit_box_tolerance * ra_b  # safety margin
     if min_range < range_step:
