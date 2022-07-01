@@ -240,7 +240,7 @@ def stability_diagram_plot(
     fig.add_trace(scatter_actual)
 
     fig.update_layout(
-        title_text = "Stability Diagram",
+        title_text="Stability Diagram",
         title_x=0.5,
         xaxis_title="Centering (% of MAC)",
         yaxis_title="Sh/S (%)",

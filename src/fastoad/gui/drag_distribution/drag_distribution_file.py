@@ -118,11 +118,11 @@ def drag_distribution_plot(
 
     # error calculation
     CD_estimate = np.interp(CL, CL_table, CD_table)
-    #print("Error calculation : ")
-    #print("CD from table", CD_estimate)
-    #print("CD calculated", CD)
-    #print("Error: ", CD_estimate - CD)
-    #print("Error percentage : ", (CD_estimate - CD) / CD * 100, "%")
+    # print("Error calculation : ")
+    # print("CD from table", CD_estimate)
+    # print("CD calculated", CD)
+    # print("Error: ", CD_estimate - CD)
+    # print("Error percentage : ", (CD_estimate - CD) / CD * 100, "%")
 
     labels = [
         "CD" + "<br>" + str("% 12.3f" % CD),

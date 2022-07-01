@@ -88,7 +88,7 @@ def speed_altitude_diagram_drawing_plot(
         x=v_final_mtow,
         y=altitude_final_mtow,
         legendgroup="group",
-        #legendgrouptitle_text="MTOW",
+        # legendgrouptitle_text="MTOW",
         line=dict(color="royalblue", width=4),
         mode="lines",
         name="MTOW : Ceiling at %i ft" % ceiling_mtow,
@@ -135,7 +135,7 @@ def speed_altitude_diagram_drawing_plot(
         x=v_final_mzfw,
         y=altitude_final_mzfw,
         legendgroup="group2",
-        #legendgrouptitle_text="MZFW",
+        # legendgrouptitle_text="MZFW",
         line=dict(color="dodgerblue", width=4),
         mode="lines",
         name="MZFW : Ceiling at %i ft" % ceiling_mzfw,
@@ -185,8 +185,8 @@ def speed_altitude_diagram_drawing_plot(
 
     fig = go.FigureWidget(fig)
     fig.update_layout(
-        #height=700,
-        title_text = "Speed Altitude Diagram",
+        # height=700,
+        title_text="Speed Altitude Diagram",
         title_x=0.5,
         xaxis_title="Speed [m/s]",
         yaxis_title="Altitude [ft]",
