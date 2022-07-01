@@ -202,7 +202,7 @@ def stability_diagram_plot(
     scatter_ac2 = go.Scatter(
         x=x_cg_rear_percentage_minus_5perc * 100,
         y=surface_ratio * 100,
-        line=dict(color="lightgreen"),
+        line=dict(color="lightblue"),
         mode="lines",
         name="Neutral point - 5%",
     )

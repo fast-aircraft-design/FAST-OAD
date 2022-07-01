@@ -144,7 +144,7 @@ def drag_distribution_plot(
         "horizontal tail" + "<br>" + str("% 12.3f" % CD0_ht),
         "wing" + "<br>" + str("% 12.3f" % CD0_wing),
         "nacelles" + "<br>" + str("% 12.3f" % CD0_nacelles),
-        "nacelles" + "<br>" + str("% 12.3f" % CD0_pylons),
+        "pylons" + "<br>" + str("% 12.3f" % CD0_pylons),
     ]
 
     parents = [
