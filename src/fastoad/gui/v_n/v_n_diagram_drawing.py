@@ -759,7 +759,7 @@ def v_n_diagram_drawing_plot(
         ),
         mode="lines",
         name="flight envelope : n_max = %3f"
-        % np.maximum(n_v_c_positive_mtow, n_from_0_to_n_max[-1]),
+        % np.round(np.maximum(n_v_c_positive_mtow, n_from_0_to_n_max[-1]),2),
         visible="legendonly",
     )
 
@@ -838,7 +838,7 @@ def v_n_diagram_drawing_plot(
         ),
         mode="lines",
         name="flight envelope : n_max = %3f"
-        % np.maximum(n_v_c_positive_mzfw, n_from_0_to_n_max[-1]),
+        % np.round(np.maximum(n_v_c_positive_mzfw, n_from_0_to_n_max[-1]), 2),
     )
 
     scatter_cruising_vertical_mtow = go.Scatter(

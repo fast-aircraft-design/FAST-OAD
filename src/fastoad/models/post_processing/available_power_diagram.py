@@ -38,18 +38,10 @@ class AvailablepowerDiagram(om.ExplicitComponent):
     def setup(self):
 
         self.add_input("data:geometry:wing:area", units="m**2", val=np.nan)
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:weight:aircraft:MTOW", units="kg", val=np.nan)
-        self.add_input("data:weight:aircraft:MZFW", units="kg", val=np.nan)
         self.add_input("data:aerodynamics:aircraft:cruise:CL", val=np.nan, shape=150)
         self.add_input("data:aerodynamics:aircraft:cruise:CD", val=np.nan, shape=150)
-        self.add_input("data:aerodynamics:aircraft:cruise:oswald_coefficient", val=np.nan)
-        self.add_input("data:aerodynamics:aircraft:landing:CL_max_clean", val=np.nan)
-        self.add_input("data:performance:ceiling:MTOW", val=np.nan)
-        self.add_input("data:performance:ceiling:MZFW", val=np.nan)
-        self.add_input("data:TLAR:cruise_mach", val=np.nan)
-        self.add_input("data:TLAR:range", val=np.nan)
-        self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan)
+        self.add_input("data:mission:sizing:main_route:cruise:altitude", units="m", val=np.nan)
 
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)

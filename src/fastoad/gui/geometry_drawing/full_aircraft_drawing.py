@@ -979,20 +979,20 @@ def wing_drawing(
             "Wing surface (m²)",
         ],
         "Value": [
-            np.round(x_x0[0] - x_x0[1], 4),  # X0
-            np.round(x_x1[1] - x_x1[0], 4),  # X1
-            np.round(x_x2[0] - x_x2[1], 4),  # X2
-            np.round(y_y0[1] - y_y0[0], 4),  # Y0
-            np.round(y_y1[1] - y_y1[0], 4),  # Y1
-            np.round(y_y2[1] - y_y2[0], 4),  # Y2
-            np.round(y_y3[1] - y_y3[0], 4),  # Y3
-            np.round(x_l0[1] - x_l0[0], 4),  # L0
-            np.round(x_l1[0] - x_l1[1], 4),  # L1
-            np.round(x_l2[1] - x_l2[0], 4),  # L2
-            np.round(x_l3[1] - x_l3[0], 4),  # L3
-            np.round(mean_aerodynamic_chord, 4),  # MAC
-            np.round(total_wing_span, 4),  # Span
-            np.round(wing_area, 4),  # Wing surface
+            np.round(x_x0[0] - x_x0[1], 2),  # X0
+            np.round(x_x1[1] - x_x1[0], 2),  # X1
+            np.round(x_x2[0] - x_x2[1], 2),  # X2
+            np.round(y_y0[1] - y_y0[0], 2),  # Y0
+            np.round(y_y1[1] - y_y1[0], 2),  # Y1
+            np.round(y_y2[1] - y_y2[0], 2),  # Y2
+            np.round(y_y3[1] - y_y3[0], 2),  # Y3
+            np.round(x_l0[1] - x_l0[0], 2),  # L0
+            np.round(x_l1[0] - x_l1[1], 2),  # L1
+            np.round(x_l2[1] - x_l2[0], 2),  # L2
+            np.round(x_l3[1] - x_l3[0], 2),  # L3
+            np.round(mean_aerodynamic_chord, 2),  # MAC
+            np.round(total_wing_span, 2),  # Span
+            np.round(wing_area, 2),  # Wing surface
         ],
     }
     df = pd.DataFrame(data=d)

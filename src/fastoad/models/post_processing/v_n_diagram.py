@@ -32,20 +32,12 @@ class VnDiagram(om.ExplicitComponent):
     def setup(self):
 
         self.add_input("data:geometry:wing:area", units="m**2", val=np.nan)
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:MAC:length", val=np.nan)
+        self.add_input("data:geometry:wing:MAC:length", units="m", val=np.nan)
         self.add_input("data:weight:aircraft:MTOW", units="kg", val=np.nan)
         self.add_input("data:weight:aircraft:MZFW", units="kg", val=np.nan)
         self.add_input("data:aerodynamics:aircraft:cruise:CL", val=np.nan, shape=150)
-        self.add_input("data:aerodynamics:aircraft:cruise:CD", val=np.nan, shape=150)
-        self.add_input("data:aerodynamics:aircraft:cruise:oswald_coefficient", val=np.nan)
         self.add_input("data:aerodynamics:aircraft:cruise:CL_alpha", val=np.nan)
-        self.add_input("data:aerodynamics:aircraft:landing:CL_max_clean", val=np.nan)
-        self.add_input("data:performance:ceiling:MTOW", val=np.nan)
-        self.add_input("data:performance:ceiling:MZFW", val=np.nan)
         self.add_input("data:TLAR:cruise_mach", val=np.nan)
-        self.add_input("data:TLAR:range", val=np.nan)
-        self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan)
 
         self.add_output(
             "data:performance:V-n_diagram:v_stall",
