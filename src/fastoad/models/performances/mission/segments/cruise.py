@@ -49,9 +49,11 @@ class CruiseSegment(RegulatedThrustSegment):
         ):
             self.target.mach = FlightSegment.CONSTANT_VALUE
 
-    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
+    def get_distance_to_target(
+        self, flight_points: List[FlightPoint], target: FlightPoint
+    ) -> float:
         current = flight_points[-1]
-        return self.target.ground_distance - current.ground_distance
+        return target.ground_distance - current.ground_distance
 
 
 @dataclass

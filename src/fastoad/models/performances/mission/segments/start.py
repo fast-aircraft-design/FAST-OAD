@@ -63,7 +63,9 @@ class Start(FlightSegment, mission_file_keyword="start"):
 
     # As we overloaded self.compute_from(), next abstract method are not used.
     # We just need to implement them for Python to be happy.
-    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
+    def get_distance_to_target(
+        self, flight_points: List[FlightPoint], target: FlightPoint
+    ) -> float:
         pass
 
     def compute_propulsion(self, flight_point: FlightPoint):

@@ -236,11 +236,11 @@ class FlightSegment(IFlightPart):
 
     def _compute_from(self, start: FlightPoint) -> pd.DataFrame:
         flight_points = [start]
-        previous_point_to_target = self.get_distance_to_target(flight_points)
+        previous_point_to_target = self.get_distance_to_target(flight_points, self.target)
         tol = 1.0e-5  # Such accuracy is not needed, but ensures reproducibility of results.
         while np.abs(previous_point_to_target) > tol:
             self._add_new_flight_point(flight_points, self.time_step)
-            last_point_to_target = self.get_distance_to_target(flight_points)
+            last_point_to_target = self.get_distance_to_target(flight_points, self.target)
 
             if last_point_to_target * previous_point_to_target < 0.0:
 
@@ -260,12 +260,12 @@ class FlightSegment(IFlightPart):
                         time_step = time_step.item()
                     del flight_points[-1]
                     self._add_new_flight_point(flight_points, time_step)
-                    return self.get_distance_to_target(flight_points)
+                    return self.get_distance_to_target(flight_points, self.target)
 
                 root_scalar(
                     replace_last_point, x0=self.time_step, x1=self.time_step / 2.0, rtol=tol
                 )
-                last_point_to_target = self.get_distance_to_target(flight_points)
+                last_point_to_target = self.get_distance_to_target(flight_points, self.target)
             elif (
                 np.abs(last_point_to_target) > np.abs(previous_point_to_target)
                 # If self.target.CL is defined, it means that we look for an optimal altitude and
@@ -451,7 +451,9 @@ class FlightSegment(IFlightPart):
         return optimal_altitude
 
     @abstractmethod
-    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
+    def get_distance_to_target(
+        self, flight_points: List[FlightPoint], target: FlightPoint
+    ) -> float:
         """
         Computes a "distance" from last flight point to target.
 
@@ -461,6 +463,7 @@ class FlightSegment(IFlightPart):
         And of course, it should be 0. if flight point is on target.
 
         :param flight_points: list of all currently computed flight_points
+        :param target: segment target (will not contain relative values)
         :return: O. if target is attained, a non-null value otherwise
         """
 
@@ -534,6 +537,8 @@ class FixedDurationSegment(FlightSegment, ABC):
 
     time_step: float = 60.0
 
-    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
+    def get_distance_to_target(
+        self, flight_points: List[FlightPoint], target: FlightPoint
+    ) -> float:
         current = flight_points[-1]
-        return self.target.time - current.time
+        return target.time - current.time
