@@ -332,7 +332,7 @@ def grid_generation(
         val_payloads[ra_c_id:] - payload_c
     ) + ra_c
 
-    max_range = max_range - right_limit_box_tolerance * max_range  # safety margin
+    max_range = right_limit_box_tolerance * max_range  # safety margin
 
     min_range = left_limit_box_tolerance * ra_b  # safety margin
     if min_range < range_step:
@@ -355,16 +355,15 @@ def grid_generation(
         range_add = np.array([0])
         i = 0
 
-        while len(range_add) != 0:
+
+        while len(range_add) != 0 and i < n_intervals_payloads:
             range_add = np.arange(min_range, ra_b, range_step)
             if len(range_add) == 0:
-                range_add = np.arange(min_range, max_range[i] + 1, delta_x)
+                break
             else:
                 range_add = np.append(
                     range_add, np.arange(range_add[-1], max_range[i] + 1, delta_x)
                 )
-            if len(range_add) == 0:
-                break
 
             n_values_ranges = np.append(n_values_ranges, len(range_add))
             grid_ranges = np.append(grid_ranges, range_add)

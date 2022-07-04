@@ -106,6 +106,8 @@ def stability_diagram_plot(
     mac_leading_edge = x_aerodynamic_center - mac / 4.0
     x_cg_rear_percentage = (x_cg_rear - mac_leading_edge) / mac
     x_cg_rear_percentage_minus_5perc = x_cg_rear_percentage - 0.05
+    x_cg_rear_percentage_minus_10perc = x_cg_rear_percentage - 0.1
+    x_cg_rear_percentage_minus_15perc = x_cg_rear_percentage - 0.15
 
     # 2) trim to glide : forward limit
     atm = Atmosphere(altitude=0)
@@ -195,22 +197,37 @@ def stability_diagram_plot(
     scatter_ac = go.Scatter(
         x=x_cg_rear_percentage * 100,
         y=surface_ratio * 100,
-        line=dict(color="blue"),
+        line=dict(color="darkslateblue"),
         mode="lines",
         name="Neutral point",
     )
     scatter_ac2 = go.Scatter(
         x=x_cg_rear_percentage_minus_5perc * 100,
         y=surface_ratio * 100,
-        line=dict(color="lightblue"),
+        line=dict(color="blue"),
         mode="lines",
         name="Neutral point - 5%",
+    )
+
+    scatter_ac3 = go.Scatter(
+        x=x_cg_rear_percentage_minus_10perc * 100,
+        y=surface_ratio * 100,
+        line=dict(color="lightblue"),
+        mode="lines",
+        name="Neutral point - 10%",
+    )
+    scatter_ac4 = go.Scatter(
+        x=x_cg_rear_percentage_minus_15perc * 100,
+        y=surface_ratio * 100,
+        line=dict(color="white"),
+        mode="lines",
+        name="Neutral point - 15%",
     )
 
     scatter_trim_mtow = go.Scatter(
         x=x_cg_front_percentage * 100,
         y=surface_ratio * 100,
-        line=dict(color="red"),
+        line=dict(color="orange"),
         mode="lines",
         name="Trim on glide (landing)",
     )
@@ -228,13 +245,15 @@ def stability_diagram_plot(
     scatter_trim_nressource = go.Scatter(
         x=x_cg_front_percentage_nressource,
         y=surface_ratio,
-        line=dict(color="orange"),
+        line=dict(color="yellow"),
         mode="lines",
         name="Trim on glide (landing)",
     )
 
     fig.add_trace(scatter_ac)
     fig.add_trace(scatter_ac2)
+    fig.add_trace(scatter_ac3)
+    fig.add_trace(scatter_ac4)
     fig.add_trace(scatter_trim_mtow)
     # fig.add_trace(scatter_trim_nressource)
     fig.add_trace(scatter_actual)
