@@ -108,12 +108,12 @@ class ClimbAndCruiseSegment(CruiseSegment, mission_file_keyword="cruise"):
     #: The maximum allowed flight level (i.e. multiple of 100 feet).
     maximum_flight_level: float = 500.0
 
-    def _compute_from(self, start: FlightPoint) -> pd.DataFrame:
+    def _compute_from(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
         climb_segment = deepcopy(self.climb_segment)
-        climb_segment.target = self.target
+        climb_segment.target = target
 
         cruise_segment = CruiseSegment(
-            target=deepcopy(self.target),  # deepcopy needed because altitude will be modified.
+            target=deepcopy(target),  # deepcopy needed because altitude will be modified.
             propulsion=self.propulsion,
             reference_area=self.reference_area,
             polar=self.polar,
@@ -151,12 +151,12 @@ class ClimbAndCruiseSegment(CruiseSegment, mission_file_keyword="cruise"):
                 if go_to_next_level:
                     results = new_results
 
-        elif self.target.altitude is not None:
+        elif target.altitude is not None:
             results = self._climb_to_altitude_and_cruise(
-                start, self.target.altitude, climb_segment, cruise_segment
+                start, target.altitude, climb_segment, cruise_segment
             )
         else:
-            results = super()._compute_from(start)
+            results = super()._compute_from(start, target)
 
         return results
 
@@ -212,14 +212,14 @@ class BreguetCruiseSegment(
     #: The reference area, in m**2. Used only if use_max_lift_drag_ratio is False.
     reference_area: float = 1.0
 
-    def _compute_from(self, start: FlightPoint) -> pd.DataFrame:
+    def _compute_from(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
         cruise_mass_ratio = self._compute_cruise_mass_ratio(
-            start, self.target.ground_distance - start.ground_distance
+            start, target.ground_distance - start.ground_distance
         )
 
         end = deepcopy(start)
         end.mass = start.mass * cruise_mass_ratio
-        end.ground_distance = self.target.ground_distance
+        end.ground_distance = target.ground_distance
         end.time = start.time + (end.ground_distance - start.ground_distance) / end.true_airspeed
         end.name = self.name
         self.complete_flight_point(end)

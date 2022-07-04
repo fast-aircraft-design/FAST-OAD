@@ -79,31 +79,31 @@ class AltitudeChangeSegment(ManualThrustSegment, mission_file_keyword="altitude_
     #: with max lift/drag ratio.
     OPTIMAL_FLIGHT_LEVEL = "optimal_flight_level"  # pylint: disable=invalid-name # used as constant
 
-    def _compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        if self.target.altitude is not None:
-            if isinstance(self.target.altitude, str):
+    def _compute_from(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+        if target.altitude is not None:
+            if isinstance(target.altitude, str):
                 # Target altitude will be modified along the process, so we keep track
                 # of the original order in target CL, that is not used otherwise.
-                self.target.CL = self.target.altitude  # pylint: disable=invalid-name
-                # let's put a numerical, negative value in self.target.altitude to
+                target.CL = target.altitude  # pylint: disable=invalid-name
+                # let's put a numerical, negative value in target.altitude to
                 # ensure there will be no problem in self.get_distance_to_target()
-                self.target.altitude = -1000.0
+                target.altitude = -1000.0
                 self.interrupt_if_getting_further_from_target = False
             else:
                 # Target altitude is fixed, back to original settings (in case
                 # this instance is used more than once)
-                self.target.CL = None
+                target.CL = None
                 self.interrupt_if_getting_further_from_target = True
 
         atm = self._get_atmosphere_point(start.altitude)
-        if self.target.equivalent_airspeed == self.CONSTANT_VALUE:
+        if target.equivalent_airspeed == self.CONSTANT_VALUE:
             atm.equivalent_airspeed = start.equivalent_airspeed
             start.true_airspeed = atm.true_airspeed
-        elif self.target.mach == self.CONSTANT_VALUE:
+        elif target.mach == self.CONSTANT_VALUE:
             atm.mach = start.mach
             start.true_airspeed = atm.true_airspeed
 
-        return super()._compute_from(start)
+        return super()._compute_from(start, target)
 
     def get_distance_to_target(
         self, flight_points: List[FlightPoint], target: FlightPoint

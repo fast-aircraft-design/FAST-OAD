@@ -60,8 +60,8 @@ class DummyTransitionSegment(FlightSegment, mission_file_keyword="transition"):
     #: Unused
     polar: Polar = None
 
-    def _compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        end = deepcopy(self.target)
+    def _compute_from(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+        end = deepcopy(target)
         end.name = self.name
         if not end.mass:
             end.mass = start.mass * self.mass_ratio

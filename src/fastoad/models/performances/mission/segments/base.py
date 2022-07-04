@@ -14,7 +14,6 @@
 
 import logging
 from abc import ABC, abstractmethod
-from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple, Type
 
@@ -216,31 +215,26 @@ class FlightSegment(IFlightPart):
                  :meth:`~fastoad.model_base.flight_point.FlightPoint`
         """
         start.scalarize()
+        self.complete_flight_point(start)
+        self._target.scalarize()
+
         if start.time is None:
             start.time = 0.0
         if start.ground_distance is None:
             start.ground_distance = 0.0
 
-        # We will modify the target to convert relative fields into absolute ones.
-        # We will get back to original definition after computation.
-        self._target.scalarize()
-        target_copy = deepcopy(self._target)
-        self._target = self._target.make_absolute(start)
-
-        self.complete_flight_point(start)
-        flight_points = self._compute_from(start)
-
-        self._target = target_copy
+        target_copy = self._target.make_absolute(start)
+        flight_points = self._compute_from(start, target_copy)
 
         return flight_points
 
-    def _compute_from(self, start: FlightPoint) -> pd.DataFrame:
+    def _compute_from(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
         flight_points = [start]
-        previous_point_to_target = self.get_distance_to_target(flight_points, self.target)
+        previous_point_to_target = self.get_distance_to_target(flight_points, target)
         tol = 1.0e-5  # Such accuracy is not needed, but ensures reproducibility of results.
         while np.abs(previous_point_to_target) > tol:
             self._add_new_flight_point(flight_points, self.time_step)
-            last_point_to_target = self.get_distance_to_target(flight_points, self.target)
+            last_point_to_target = self.get_distance_to_target(flight_points, target)
 
             if last_point_to_target * previous_point_to_target < 0.0:
 
@@ -260,12 +254,12 @@ class FlightSegment(IFlightPart):
                         time_step = time_step.item()
                     del flight_points[-1]
                     self._add_new_flight_point(flight_points, time_step)
-                    return self.get_distance_to_target(flight_points, self.target)
+                    return self.get_distance_to_target(flight_points, target)
 
                 root_scalar(
                     replace_last_point, x0=self.time_step, x1=self.time_step / 2.0, rtol=tol
                 )
-                last_point_to_target = self.get_distance_to_target(flight_points, self.target)
+                last_point_to_target = self.get_distance_to_target(flight_points, target)
             elif (
                 np.abs(last_point_to_target) > np.abs(previous_point_to_target)
                 # If self.target.CL is defined, it means that we look for an optimal altitude and
