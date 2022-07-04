@@ -46,17 +46,17 @@ class TaxiSegment(
     def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
         return 0.0, 0.0
 
-    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
+    def _compute_from(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
         new_start = deepcopy(start)
-        if self.target.mass:
-            new_start.mass = self.target.mass
+        if target.mass:
+            new_start.mass = target.mass
         new_start.mach = None
         new_start.equivalent_airspeed = None
         new_start.true_airspeed = self.true_airspeed
 
-        flight_points = super().compute_from(new_start)
+        flight_points = super()._compute_from(new_start, target)
 
-        if self.target.mass:
+        if target.mass:
             consumed_fuel = new_start.mass - flight_points.mass.iloc[-1]
             flight_points.mass += consumed_fuel
 

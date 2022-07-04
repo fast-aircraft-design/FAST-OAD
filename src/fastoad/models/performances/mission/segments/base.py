@@ -215,7 +215,7 @@ class FlightSegment(IFlightPart):
                  :meth:`~fastoad.model_base.flight_point.FlightPoint`
         """
         start.scalarize()
-        self.complete_flight_point(start)
+        self.complete_flight_point(start, raise_error_on_missing_speeds=False)
         self._target.scalarize()
 
         if start.time is None:
@@ -348,7 +348,7 @@ class FlightSegment(IFlightPart):
         next_point.name = self.name
         return next_point
 
-    def complete_flight_point(self, flight_point: FlightPoint):
+    def complete_flight_point(self, flight_point: FlightPoint, raise_error_on_missing_speeds=True):
         """
         Computes data for provided flight point.
 
@@ -356,20 +356,24 @@ class FlightSegment(IFlightPart):
         ground distance and speed (TAS, EAS, or Mach).
 
         :param flight_point: the flight point that will be completed in-place
+        :param raise_error_on_missing_speeds: if False, will not complain if no speed is defined.
         """
         flight_point.engine_setting = self.engine_setting
 
-        self._complete_speed_values(flight_point)
+        has_speeds = self._complete_speed_values(flight_point, raise_error_on_missing_speeds)
 
         atm = self._get_atmosphere_point(flight_point.altitude)
-        reference_force = 0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_area
+        if has_speeds:
+            reference_force = (
+                0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_area
+            )
 
-        if self.polar:
-            flight_point.CL = flight_point.mass * g / reference_force
-            flight_point.CD = self.polar.cd(flight_point.CL)
-        else:
-            flight_point.CL = flight_point.CD = 0.0
-        flight_point.drag = flight_point.CD * reference_force
+            if self.polar:
+                flight_point.CL = flight_point.mass * g / reference_force
+                flight_point.CD = self.polar.cd(flight_point.CL)
+            else:
+                flight_point.CL = flight_point.CD = 0.0
+            flight_point.drag = flight_point.CD * reference_force
 
         self.compute_propulsion(flight_point)
         flight_point.slope_angle, flight_point.acceleration = self.get_gamma_and_acceleration(
@@ -385,7 +389,9 @@ class FlightSegment(IFlightPart):
         """
         return AtmosphereSI(altitude, self.isa_offset)
 
-    def _complete_speed_values(self, flight_point: FlightPoint):
+    def _complete_speed_values(
+        self, flight_point: FlightPoint, raise_error_on_missing_speeds=True
+    ) -> bool:
         """
         Computes consistent values between TAS, EAS and Mach, assuming one of them is defined.
         """
@@ -396,17 +402,20 @@ class FlightSegment(IFlightPart):
                 atm.mach = flight_point.mach
             elif flight_point.equivalent_airspeed is not None:
                 atm.equivalent_airspeed = flight_point.equivalent_airspeed
-            else:
+            elif raise_error_on_missing_speeds:
                 raise FastFlightSegmentIncompleteFlightPoint(
                     "Flight point should be defined for true_airspeed, "
                     "equivalent_airspeed, or mach."
                 )
+            else:
+                return False
             flight_point.true_airspeed = atm.true_airspeed
         else:
             atm.true_airspeed = flight_point.true_airspeed
 
         flight_point.mach = atm.mach
         flight_point.equivalent_airspeed = atm.equivalent_airspeed
+        return True
 
     @staticmethod
     def _compute_next_altitude(next_point: FlightPoint, previous_point: FlightPoint):
