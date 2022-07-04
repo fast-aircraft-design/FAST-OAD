@@ -68,39 +68,32 @@ def drag_distribution_plot(
         "data:aerodynamics:aircraft:" + case_string + ":induced_drag_coefficient"
     ].value[0]
 
-    CDi_wing = k_induced * CL ** 2
+    CDi_wing = k_induced * CL ** 2 * 100
 
     CL_table = np.asarray(variables["data:aerodynamics:aircraft:" + case_string + ":CL"].value)
 
-    if CL > CL_table[-1]:
-        print(
-            CL,
-            " > ",
-            CL_table[-1],
-            " CL bigger than CL_table, might be a problem for the precision",
-        )
     CD_table = np.asarray(variables["data:aerodynamics:aircraft:" + case_string + ":CD"].value)
     CD_trim_table = np.asarray(
         variables["data:aerodynamics:aircraft:" + case_string + ":CD:trim"].value
     )
 
-    CD_trim = np.interp(CL, CL_table, CD_trim_table)  # drag due to the horizontal surface
+    CD_trim = np.interp(CL, CL_table, CD_trim_table) *100  # drag due to the horizontal surface
 
     # step 3 : retrieve the parasitic drag CDp
     CD0_fuselage_table = np.asarray(
         variables["data:aerodynamics:fuselage:" + case_string + ":CD0"].value
     )  # depend on CL
-    CD0_fuselage = np.interp(CL, CL_table, CD0_fuselage_table)
+    CD0_fuselage = np.interp(CL, CL_table, CD0_fuselage_table)  *100
 
-    CD0_ht = variables["data:aerodynamics:horizontal_tail:" + case_string + ":CD0"].value[0]
-    CD0_nacelles = variables["data:aerodynamics:nacelles:" + case_string + ":CD0"].value[0]
-    CD0_pylons = variables["data:aerodynamics:pylons:" + case_string + ":CD0"].value[0]
-    CD0_vt = variables["data:aerodynamics:vertical_tail:" + case_string + ":CD0"].value[0]
+    CD0_ht = variables["data:aerodynamics:horizontal_tail:" + case_string + ":CD0"].value[0]*100
+    CD0_nacelles = variables["data:aerodynamics:nacelles:" + case_string + ":CD0"].value[0]*100
+    CD0_pylons = variables["data:aerodynamics:pylons:" + case_string + ":CD0"].value[0]*100
+    CD0_vt = variables["data:aerodynamics:vertical_tail:" + case_string + ":CD0"].value[0]*100
 
     CD0_wing_table = np.asarray(
         variables["data:aerodynamics:wing:" + case_string + ":CD0"].value
     )  # depend on cl
-    CD0_wing = np.interp(CL, CL_table, CD0_wing_table)
+    CD0_wing = np.interp(CL, CL_table, CD0_wing_table)*100
 
     CD0 = CD0_fuselage + CD0_ht + CD0_nacelles + CD0_pylons + CD0_vt + CD0_wing
 
@@ -112,7 +105,7 @@ def drag_distribution_plot(
         CDc_table = np.asarray(
             variables["data:aerodynamics:aircraft:cruise:CD:compressibility"].value
         )
-        CDc_wing = np.interp(CL, CL_table, CDc_table)
+        CDc_wing = np.interp(CL, CL_table, CDc_table)*100
 
     CD = CDi_wing + CD0 + CDc_wing + CD_trim
 
@@ -125,40 +118,31 @@ def drag_distribution_plot(
     # print("Error percentage : ", (CD_estimate - CD) / CD * 100, "%")
 
     labels = [
-        "CD" + "<br>" + str("% 12.3f" % CD),
-        "CDi"
-        + "<br>"
-        + str("% 12.3f" % CDi_wing)
-        + " ("
-        + str(np.round(CDi_wing / CD * 100, 1))
-        + " %)",
-        "CDp" + "<br>" + str("% 12.3f" % CD0) + " (" + str(np.round(CD0 / CD * 100, 1)) + " %)",
-        "CD_trim"
-        + "<br>"
-        + str("% 12.3f" % CD_trim)
-        + " ("
-        + str(np.round(CD_trim / CD * 100, 1))
-        + " %)",
-        "fuselage" + "<br>" + str("% 12.3f" % CD0_fuselage),
-        "vertical tail" + "<br>" + str("% 12.3f" % CD0_vt),
-        "horizontal tail" + "<br>" + str("% 12.3f" % CD0_ht),
-        "wing" + "<br>" + str("% 12.3f" % CD0_wing),
-        "nacelles" + "<br>" + str("% 12.3f" % CD0_nacelles),
-        "pylons" + "<br>" + str("% 12.3f" % CD0_pylons),
+        "100 CD" + "<br>" + str("% 9.2f" % CD),
+        "CDi" + "<br>" + str("% 9.2f" % CDi_wing) + " (" + str(np.round(CDi_wing / CD * 100, 1)) + " %)",
+        "CDp" + "<br>" + str("% 9.2f" % CD0) + " (" + str(np.round(CD0 / CD * 100, 1)) + " %)",
+        "CD_trim" + "<br>" + str("% 9.2f" % CD_trim) + " (" + str(np.round(CD_trim / CD * 100, 1)) + " %)",
+        "fuselage" + "<br>" + str("% 9.2f" % CD0_fuselage),
+        "vertical tail" + "<br>" + str("% 9.2f" % CD0_vt),
+        "horizontal tail" + "<br>" + str("% 9.2f" % CD0_ht),
+        "wing" + "<br>" + str("% 9.2f" % CD0_wing),
+        "nacelles" + "<br>" + str("% 9.2f" % CD0_nacelles),
+        "pylons" + "<br>" + str("% 9.2f" % CD0_pylons),
     ]
 
     parents = [
         "",
-        "CD" + "<br>" + str("% 12.3f" % CD),
-        "CD" + "<br>" + str("% 12.3f" % CD),
-        "CD" + "<br>" + str("% 12.3f" % CD),
-        "CDp" + "<br>" + str("% 12.3f" % CD0) + " (" + str(np.round(CD0 / CD * 100, 1)) + " %)",
-        "CDp" + "<br>" + str("% 12.3f" % CD0) + " (" + str(np.round(CD0 / CD * 100, 1)) + " %)",
-        "CDp" + "<br>" + str("% 12.3f" % CD0) + " (" + str(np.round(CD0 / CD * 100, 1)) + " %)",
-        "CDp" + "<br>" + str("% 12.3f" % CD0) + " (" + str(np.round(CD0 / CD * 100, 1)) + " %)",
-        "CDp" + "<br>" + str("% 12.3f" % CD0) + " (" + str(np.round(CD0 / CD * 100, 1)) + " %)",
-        "CDp" + "<br>" + str("% 12.3f" % CD0) + " (" + str(np.round(CD0 / CD * 100, 1)) + " %)",
+        "100 CD" + "<br>" + str("% 9.2f" % CD),
+        "100 CD" + "<br>" + str("% 9.2f" % CD),
+        "100 CD" + "<br>" + str("% 9.2f" % CD),
+        "CDp" + "<br>" + str("% 9.2f" % CD0) + " (" + str(np.round(CD0 / CD * 100, 1)) + " %)",
+        "CDp" + "<br>" + str("% 9.2f" % CD0) + " (" + str(np.round(CD0 / CD * 100, 1)) + " %)",
+        "CDp" + "<br>" + str("% 9.2f" % CD0) + " (" + str(np.round(CD0 / CD * 100, 1)) + " %)",
+        "CDp" + "<br>" + str("% 9.2f" % CD0) + " (" + str(np.round(CD0 / CD * 100, 1)) + " %)",
+        "CDp" + "<br>" + str("% 9.2f" % CD0) + " (" + str(np.round(CD0 / CD * 100, 1)) + " %)",
+        "CDp" + "<br>" + str("% 9.2f" % CD0) + " (" + str(np.round(CD0 / CD * 100, 1)) + " %)",
     ]
+
     values = [
         CD,
         CDi_wing,
@@ -175,12 +159,12 @@ def drag_distribution_plot(
         labels.append(
             "CDc"
             + "<br>"
-            + str("% 12.3f" % CDc_wing)
+            + str("% 9.2f" % CDc_wing)
             + " ("
             + str(np.round(CDc_wing / CD * 100, 1))
             + " %)"
         )
-        parents.append("CD" + "<br>" + str("% 12.3f" % CD))
+        parents.append("100 CD" + "<br>" + str("% 9.2f" % CD))
         values.append(CDc_wing)
 
     sunburst = go.Sunburst(labels=labels, parents=parents, values=values, branchvalues="total")
