@@ -381,6 +381,22 @@ class FlightSegment(IFlightPart):
             flight_point
         )
 
+    def complete_flight_point_from(self, flight_point: FlightPoint, source: FlightPoint):
+        speed_fields = {
+            "true_airspeed",
+            "equivalent_airspeed",
+            "calibrated_airspeed",
+            "mach",
+            "unitary_reynolds",
+        }.intersection(flight_point.get_field_names())
+        other_fields = list(set(flight_point.get_field_names()) - speed_fields)
+
+        speeds_are_missing = np.all([getattr(flight_point, name) is None for name in speed_fields])
+
+        for field_name in other_fields + speeds_are_missing * list(speed_fields):
+            if getattr(flight_point, field_name) is None and not source.is_relative(field_name):
+                setattr(flight_point, field_name, getattr(source, field_name))
+
     def _get_atmosphere_point(self, altitude: float) -> AtmosphereSI:
         """
         Convenience method to ensure used atmosphere model is initiated with :attr:`delta_isa`.

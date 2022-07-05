@@ -21,11 +21,11 @@ import pandas as pd
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IPropulsion
 from fastoad.models.performances.mission.polar import Polar
-from fastoad.models.performances.mission.segments.base import FlightSegment
+from fastoad.models.performances.mission.segments.base import MassTargetSegment
 
 
 @dataclass
-class DummyTransitionSegment(FlightSegment, mission_file_keyword="transition"):
+class DummyTransitionSegment(MassTargetSegment, mission_file_keyword="transition"):
     """
     Computes a transient flight part in a very quick and dummy way.
 
@@ -63,8 +63,14 @@ class DummyTransitionSegment(FlightSegment, mission_file_keyword="transition"):
     def _compute_from(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
         end = deepcopy(target)
         end.name = self.name
-        if not end.mass:
-            end.mass = start.mass * self.mass_ratio
+
+        end_mass = start.mass * self.mass_ratio
+        if end.mass is None:
+            end.mass = end_mass
+        elif not self.target.is_relative("mass"):
+            start.mass += end.mass - end_mass
+
+        self.complete_flight_point_from(end, start)
         self.complete_flight_point(end)
 
         flight_points = [start, end]
