@@ -14,6 +14,7 @@
 
 import logging
 from abc import ABC, abstractmethod
+from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple, Type
 
@@ -545,3 +546,25 @@ class FixedDurationSegment(FlightSegment, ABC):
     ) -> float:
         current = flight_points[-1]
         return target.time - current.time
+
+
+@dataclass
+class MassTargetSegment(FlightSegment, ABC):
+    """
+    Class that can set a target mass.
+
+    Fuel consumption should be independent of aircraft mass.
+    """
+
+    def _compute_from(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+        start = deepcopy(start)
+        if target.mass:
+            start.mass = target.mass
+
+        flight_points = super()._compute_from(start, target)
+
+        if target.mass:
+            consumed_fuel = start.mass - flight_points.mass.iloc[-1]
+            flight_points.mass += consumed_fuel
+
+        return flight_points
