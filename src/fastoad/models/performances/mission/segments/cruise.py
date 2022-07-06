@@ -69,9 +69,10 @@ class OptimalCruiseSegment(CruiseSegment, mission_file_keyword="optimal_cruise")
     `true_airspeed` and `equivalent_airspeed`. If not, Mach will be assumed constant.
     """
 
-    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
+    def _compute_from(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
         start.altitude = self._get_optimal_altitude(start.mass, start.mach)
-        return super().compute_from(start)
+        self.complete_flight_point(start)
+        return super()._compute_from(start, target)
 
     def _compute_next_altitude(self, next_point: FlightPoint, previous_point: FlightPoint):
         next_point.altitude = self._get_optimal_altitude(
