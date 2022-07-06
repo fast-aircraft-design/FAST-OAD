@@ -59,7 +59,7 @@ class FlightSequence(IFlightPart):
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         parts = []
-        part_start = start
+        part_start = deepcopy(start)
         part_start.scalarize()
 
         self.consumed_mass_before_input_weight = 0.0
@@ -69,7 +69,7 @@ class FlightSequence(IFlightPart):
             # will be made absolute during compute_from()
             part_has_target_mass = not (part.target.mass is None or part.target.is_relative("mass"))
 
-            flight_points = part.compute_from(deepcopy(part_start))
+            flight_points = part.compute_from(part_start)
 
             consumed_mass += flight_points.iloc[0].mass - flight_points.iloc[-1].mass
 

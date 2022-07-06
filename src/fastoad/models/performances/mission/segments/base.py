@@ -215,17 +215,21 @@ class FlightSegment(IFlightPart):
         :return: a pandas DataFrame where column names match fields of
                  :meth:`~fastoad.model_base.flight_point.FlightPoint`
         """
-        start.scalarize()
-        self.complete_flight_point(start, raise_error_on_missing_parameters=False)
-        self._target.scalarize()
+        # Let's ensure we do not modify the original definitions of start and target
+        # during the process
+        start_copy = deepcopy(start)
+        self.complete_flight_point(start_copy, raise_error_on_missing_parameters=False)
+        start_copy.scalarize()
 
-        if start.time is None:
-            start.time = 0.0
-        if start.ground_distance is None:
-            start.ground_distance = 0.0
+        target_copy = self._target.make_absolute(start_copy)
+        target_copy.scalarize()
 
-        target_copy = self._target.make_absolute(start)
-        flight_points = self._compute_from(start, target_copy)
+        if start_copy.time is None:
+            start_copy.time = 0.0
+        if start_copy.ground_distance is None:
+            start_copy.ground_distance = 0.0
+
+        flight_points = self._compute_from(start_copy, target_copy)
 
         return flight_points
 
@@ -579,7 +583,6 @@ class MassTargetSegment(FlightSegment, ABC):
     """
 
     def _compute_from(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
-        start = deepcopy(start)
         if target.mass:
             start.mass = target.mass
 
