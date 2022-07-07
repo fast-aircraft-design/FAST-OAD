@@ -233,9 +233,14 @@ def payload_range_simple(
     fig.add_trace(scatter_BL)
     fig = go.FigureWidget(fig)
     fig.update_layout(
-        title_text="Payload-Range Diagram",
         xaxis_title="Range [NM]",
         yaxis_title="Payload [tonnes]",
+        title={
+            'text': name,
+            'y': 0.9,
+            'x': 0.5,
+            'xanchor': 'center',
+            'yanchor': 'top'}
     )
 
     if x_axis is not None:
@@ -502,6 +507,7 @@ def payload_range_loop_computation(
         lower_limit_box_tolerance=0.4,
         right_limit_box_tolerance=0.95,
         left_limit_box_tolerance=0.1,
+        workdir_path = "workdir",
         file_save_folder="data",
         file_save: str = "loop_results.txt",
         alternative_grid=False,
@@ -549,7 +555,7 @@ def payload_range_loop_computation(
     # We need to have a mission_file_conf.yml
 
     CONFIG_MISSION_FILE = pth.join(
-        "workdir", "mission_file_conf.yml"
+        workdir_path, "mission_file_conf.yml"
     )  # defined by the configuration : can be changed and made a variable
     SOURCE_FILE = aircraft_file_path  # modular
     input_file_mission = oad.generate_inputs(CONFIG_MISSION_FILE, SOURCE_FILE, overwrite=True)
@@ -656,7 +662,7 @@ def payload_range_loop_computation(
         # Evaluate the problem and retrieve the results
 
         mission_problem = oad.evaluate_problem(CONFIG_MISSION_FILE, overwrite=True)
-        MISSION_OUTPUT_FILE = pth.join("workdir", "mission_outputs.xml")
+        MISSION_OUTPUT_FILE = pth.join(workdir_path, "mission_outputs.xml")
         mission_variables = VariableIO(MISSION_OUTPUT_FILE, file_formatter).read()
 
         main_route_fuel = mission_variables["data:mission:op_mission:main_route:fuel"].value[0]
@@ -683,9 +689,9 @@ def payload_range_loop_computation(
     np.savetxt(pth.join(file_save_folder, file_save), grid.T)
 
     # remove the mission_inputs outputs
-    os.remove(pth.join("workdir", "mission_inputs.xml"))
-    os.remove(pth.join("workdir", "mission_outputs.xml"))
-    os.remove(pth.join("workdir", "mission_study.csv"))
+    os.remove(pth.join(workdir_path, "mission_inputs.xml"))
+    os.remove(pth.join(workdir_path, "mission_outputs.xml"))
+    os.remove(pth.join(workdir_path, "mission_study.csv"))
 
     # Save the grid configuration
     string_file = "grid_" + file_save
@@ -830,6 +836,12 @@ def payload_range_full(
         showlegend=False,
         height=500,
         width=900,
+        title={
+            'text': name,
+            'y': 0.9,
+            'x': 0.5,
+            'xanchor': 'center',
+            'yanchor': 'top'}
     )
 
     if x_axis is not None:

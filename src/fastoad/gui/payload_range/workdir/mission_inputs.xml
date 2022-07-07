@@ -96,7 +96,7 @@
           <duration units="s" is_input="True">2700<!--Input defined by the mission.--></duration>
         </holding>
         <main_route>
-          <range units="m" is_input="True">0.0<!--Input defined by the mission.--></range>
+          <range units="m" is_input="True">834591.5377901043<!--Input defined by the mission.--></range>
         </main_route>
         <takeoff>
           <V2 units="m/s" is_input="True">79.3<!--takeoff safety speed for mission "op_mission"--></V2>

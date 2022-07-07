@@ -5,4 +5,4 @@ upper_limit_box_tolerance = 1.0
 lower_limit_box_tolerance = 0.4
 right_limit_box_tolerance = 1.0
 left_limit_box_tolerance = 0.1
-alternative_grid= False
+alternative_grid= True
