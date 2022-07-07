@@ -917,7 +917,7 @@ def v_n_diagram_drawing_plot(
     fig.update_layout(
         height=750,
         width=900,
-        title_text="V-n manoeuvre diagram",
+        title_text="V-n Diagram",
         title_x=0.5,
         xaxis_title="Equivalent Air Speed [m/s]",
         yaxis_title="Load factor [-]",

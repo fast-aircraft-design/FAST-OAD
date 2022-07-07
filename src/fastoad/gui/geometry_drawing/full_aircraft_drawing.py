@@ -1415,7 +1415,7 @@ def flaps_and_slats_drawing(
     fig = go.FigureWidget(fig)
     fig.update_xaxes(constrain="domain")
     fig.update_yaxes(constrain="domain")
-    fig.update_layout(title_text="Wing Geometry", title_x=0.5, xaxis_title="y", yaxis_title="x")
+    fig.update_layout(title_text="Wing Drawing", title_x=0.5, xaxis_title="y", yaxis_title="x")
 
     return fig
 
