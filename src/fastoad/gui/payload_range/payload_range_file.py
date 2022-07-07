@@ -64,10 +64,10 @@ def breguet_leduc_formula(mass_in, mass_out, constant_coeff, x0):
 
 
 def breguet_leduc_points(
-    aircraft_file_path: str,
-    propulsion_id: str = "fastoad.wrapper.propulsion.rubber_engine",
-    sizing_name: str = "sizing",
-    file_formatter=None,
+        aircraft_file_path: str,
+        propulsion_id: str = "fastoad.wrapper.propulsion.rubber_engine",
+        sizing_name: str = "sizing",
+        file_formatter=None,
 ):
     """
     Function used internally
@@ -171,7 +171,10 @@ def breguet_leduc_points(
     # design point and point B: max_payload,MTOW
     payload_b = max_payload
     ra_b = (sizing_range - ra_c) * (payload_b - payload_c) / (sizing_payload - payload_c) + ra_c
-
+    if ra_b < 0:
+        mass_in = mtow
+        mass_out = owe + payload_b
+        ra_b = breguet_leduc_formula(mass_in, mass_out, coeff, sizing_range * 10)[0]
     # point D 0 payload, MFW ==> range
     mass_in = owe + mfw
     mass_out = owe
@@ -183,15 +186,15 @@ def breguet_leduc_points(
 
 
 def payload_range_simple(
-    aircraft_file_path: str,
-    propulsion_id: str = "fastoad.wrapper.propulsion.rubber_engine",
-    sizing_name: str = "sizing",
-    name=None,
-    fig=None,
-    file_formatter=None,
-    x_axis=None,
-    y_axis=None,
-    color="black",
+        aircraft_file_path: str,
+        propulsion_id: str = "fastoad.wrapper.propulsion.rubber_engine",
+        sizing_name: str = "sizing",
+        name=None,
+        fig=None,
+        file_formatter=None,
+        x_axis=None,
+        y_axis=None,
+        color="black",
 ) -> go.FigureWidget:
     """
     Returns a figure of the payload range using the corrected leduc-breguet formula
@@ -226,17 +229,8 @@ def payload_range_simple(
         name=name,
         showlegend=False,
     )
-    scatter_SIZING = go.Scatter(
-        x=[BL_ranges[-1]],
-        y=[BL_payloads[-1]],
-        mode="markers",
-        marker_color=color,
-        showlegend=False,
-    )
 
     fig.add_trace(scatter_BL)
-    fig.add_trace(scatter_SIZING)
-
     fig = go.FigureWidget(fig)
     fig.update_layout(
         # title_text="Payload range diagram",
@@ -253,23 +247,23 @@ def payload_range_simple(
 
 
 def grid_generation(
-    aircraft_file_path: str,
-    propulsion_id: str = "fastoad.wrapper.propulsion.rubber_engine",
-    sizing_name: str = "sizing",
-    name=None,
-    fig=None,
-    file_formatter=None,
-    n_intervals_payloads=8,
-    range_step=500,
-    upper_limit_box_tolerance=0.95,
-    lower_limit_box_tolerance=0.4,
-    right_limit_box_tolerance=0.95,
-    left_limit_box_tolerance=0.1,
-    show_grid: bool = True,
-    x_axis=None,
-    y_axis=None,
-    color="black",
-    alternative_grid=False,
+        aircraft_file_path: str,
+        propulsion_id: str = "fastoad.wrapper.propulsion.rubber_engine",
+        sizing_name: str = "sizing",
+        name=None,
+        fig=None,
+        file_formatter=None,
+        n_intervals_payloads=8,
+        range_step=500,
+        upper_limit_box_tolerance=0.95,
+        lower_limit_box_tolerance=0.4,
+        right_limit_box_tolerance=0.95,
+        left_limit_box_tolerance=0.1,
+        show_grid: bool = True,
+        x_axis=None,
+        y_axis=None,
+        color="black",
+        alternative_grid=False,
 ):
     """
     Returns a figure of the payload range using the corrected leduc-breguet formula,
@@ -329,7 +323,7 @@ def grid_generation(
     max_range = np.zeros(n_intervals_payloads)
     max_range[0:ra_c_id] = (ra_c - ra_d) / payload_c * (val_payloads[0:ra_c_id]) + ra_d
     max_range[ra_c_id:] = (ra_b - ra_c) / (max_payload - payload_c) * (
-        val_payloads[ra_c_id:] - payload_c
+            val_payloads[ra_c_id:] - payload_c
     ) + ra_c
 
     max_range = right_limit_box_tolerance * max_range  # safety margin
@@ -355,7 +349,6 @@ def grid_generation(
         range_add = np.array([0])
         i = 0
 
-
         while len(range_add) != 0 and i < n_intervals_payloads:
             range_add = np.arange(min_range, ra_b, range_step)
             if len(range_add) == 0:
@@ -375,8 +368,8 @@ def grid_generation(
         n_values_ranges = np.zeros(n_intervals_payloads)
 
         grid_x = [
-            np.flip(np.arange(max_range[-1], min_range, -range_step)).tolist()
-        ] * n_intervals_payloads
+                     np.flip(np.arange(max_range[-1], min_range, -range_step)).tolist()
+                 ] * n_intervals_payloads
 
         # 2) Zone near MTOW and MFW
         for i in range(1, n_intervals_payloads):
@@ -429,23 +422,23 @@ def grid_generation(
 
 
 def payload_range_grid_plot(
-    aircraft_file_path: str,
-    propulsion_id: str = "fastoad.wrapper.propulsion.rubber_engine",
-    sizing_name: str = "sizing",
-    name=None,
-    fig=None,
-    file_formatter=None,
-    n_intervals_payloads=8,
-    range_step=500,
-    upper_limit_box_tolerance=0.95,
-    lower_limit_box_tolerance=0.4,
-    right_limit_box_tolerance=0.95,
-    left_limit_box_tolerance=0.1,
-    show_grid: bool = True,
-    x_axis=None,
-    y_axis=None,
-    color="black",
-    alternative_grid=False,
+        aircraft_file_path: str,
+        propulsion_id: str = "fastoad.wrapper.propulsion.rubber_engine",
+        sizing_name: str = "sizing",
+        name=None,
+        fig=None,
+        file_formatter=None,
+        n_intervals_payloads=8,
+        range_step=500,
+        upper_limit_box_tolerance=0.95,
+        lower_limit_box_tolerance=0.4,
+        right_limit_box_tolerance=0.95,
+        left_limit_box_tolerance=0.1,
+        show_grid: bool = True,
+        x_axis=None,
+        y_axis=None,
+        color="black",
+        alternative_grid=False,
 ):
     """
     Returns a figure of the payload range using the corrected leduc-breguet formula +
@@ -497,20 +490,21 @@ def payload_range_grid_plot(
 
 
 def payload_range_loop_computation(
-    aircraft_file_path: str,
-    propulsion_id: str = "fastoad.wrapper.propulsion.rubber_engine",
-    sizing_name: str = "sizing",
-    name=None,
-    fig=None,
-    file_formatter=None,
-    n_intervals_payloads=8,
-    range_step=500,
-    upper_limit_box_tolerance=0.95,
-    lower_limit_box_tolerance=0.4,
-    right_limit_box_tolerance=0.95,
-    left_limit_box_tolerance=0.1,
-    file_save: str = "loop_results.txt",
-    alternative_grid=False,
+        aircraft_file_path: str,
+        propulsion_id: str = "fastoad.wrapper.propulsion.rubber_engine",
+        sizing_name: str = "sizing",
+        name=None,
+        fig=None,
+        file_formatter=None,
+        n_intervals_payloads=8,
+        range_step=500,
+        upper_limit_box_tolerance=0.95,
+        lower_limit_box_tolerance=0.4,
+        right_limit_box_tolerance=0.95,
+        left_limit_box_tolerance=0.1,
+        file_save_folder="data",
+        file_save: str = "loop_results.txt",
+        alternative_grid=False,
 ):
     """
     Returns nothing but saves the results of the loop in the specified file
@@ -530,7 +524,7 @@ def payload_range_loop_computation(
     :param left_limit_box_tolerance : left limit of the grid box, default = 0.1 means 0.1*range(point B)
     :param right_limit_box_tolerance : right limit of the grid box, default = 0.95 means 0.95* max_range, meaning there is 5% safety
     :param alternative_grid: an alternative way to plot the grid, particular useful for low range aircrafts
-    :param file_save: sets the name where the results are saved
+    :param file_save_path: sets the name where the results are saved (path)
     """
 
     # grid generation
@@ -620,7 +614,7 @@ def payload_range_loop_computation(
 
     input_file_mission["data:mission:op_mission:takeoff:fuel"].value = input_file[
         "data:mission:" + sizing_name + ":takeoff:fuel"
-    ].value
+        ].value
 
     try:
 
@@ -641,7 +635,7 @@ def payload_range_loop_computation(
 
     input_file_mission["data:mission:op_mission:taxi_out:thrust_rate"].value = input_file[
         "data:mission:" + sizing_name + ":taxi_out:thrust_rate"
-    ].value
+        ].value
 
     # Run a mission on each grid point and generate the fuel consumption/km/kg_payload
 
@@ -655,7 +649,7 @@ def payload_range_loop_computation(
         time_begin = time.perf_counter()
         input_file_mission["data:mission:op_mission:payload"].value = grid_payloads[i]
         input_file_mission["data:mission:op_mission:main_route:range"].value = (
-            grid_ranges[i] * 10 ** 3 * 1.852
+                grid_ranges[i] * 10 ** 3 * 1.852
         )
         input_file_mission.save()
 
@@ -686,7 +680,7 @@ def payload_range_loop_computation(
     # Specific consumption computation and saving into a file
 
     grid[2] = grid[2] / (grid[1] * grid[0] * 1.852 * 10 ** 3)  # kg_fuel/kg_payload/km
-    np.savetxt(pth.join("data", file_save), grid.T)
+    np.savetxt(pth.join(file_save_folder, file_save), grid.T)
 
     # remove the mission_inputs outputs
     os.remove(pth.join("workdir", "mission_inputs.xml"))
@@ -694,43 +688,36 @@ def payload_range_loop_computation(
     os.remove(pth.join("workdir", "mission_study.csv"))
 
     # Save the grid configuration
-    string_file_path = "grid_" + file_save
-    file = open(pth.join("data", string_file_path), "w")
+    string_file = "grid_" + file_save
+    file = open(pth.join(file_save_folder, string_file), "w")
     file.write(
         "This is the file which contains the grid parameters for the results in file : "
         + file_save
         + "\n"
     )
-    file.write("n_intervals_payloads = " + str(n_intervals_payloads) + "\n")
-    file.write("range_step = " + str(range_step) + "\n")
-    file.write("upper_limit_box_tolerance = " + str(upper_limit_box_tolerance) + "\n")
-    file.write("lower_limit_box_tolerance = " + str(lower_limit_box_tolerance) + "\n")
-    file.write("right_limit_box_tolerance = " + str(right_limit_box_tolerance) + "\n")
-    file.write("left_limit_box_tolerance = " + str(left_limit_box_tolerance) + "\n")
-    file.write("left_limit_box_tolerance = " + str(left_limit_box_tolerance) + "\n")
-    file.write("alternative_grid =" + str(alternative_grid) + "\n")
+    file.write("n_intervals_payloads= " + str(n_intervals_payloads) + "\n")
+    file.write("range_step= " + str(range_step) + "\n")
+    file.write("upper_limit_box_tolerance= " + str(upper_limit_box_tolerance) + "\n")
+    file.write("lower_limit_box_tolerance= " + str(lower_limit_box_tolerance) + "\n")
+    file.write("right_limit_box_tolerance= " + str(right_limit_box_tolerance) + "\n")
+    file.write("left_limit_box_tolerance= " + str(left_limit_box_tolerance) + "\n")
+    file.write("alternative_grid= " + str(alternative_grid) + "\n")
     file.close()
 
 
 def payload_range_full(
-    aircraft_file_path: str,
-    propulsion_id: str = "fastoad.wrapper.propulsion.rubber_engine",
-    sizing_name: str = "sizing",
-    name=None,
-    fig=None,
-    file_formatter=None,
-    n_intervals_payloads=8,
-    range_step=500,
-    upper_limit_box_tolerance=0.95,
-    lower_limit_box_tolerance=0.4,
-    right_limit_box_tolerance=0.95,
-    left_limit_box_tolerance=0.1,
-    file_save: str = "loop_results.txt",
-    show_grid: bool = True,
-    x_axis=None,
-    y_axis=None,
-    color="black",
-    alternative_grid=False,
+        aircraft_file_path: str,
+        propulsion_id: str = "fastoad.wrapper.propulsion.rubber_engine",
+        sizing_name: str = "sizing",
+        name=None,
+        fig=None,
+        file_formatter=None,
+        file_save_folder: str = "data",
+        file_save: str = "loop_results.txt",
+        show_grid: bool = True,
+        x_axis=None,
+        y_axis=None,
+        color="black",
 ) -> go.FigureWidget:
     """
     Returns a figure of the payload range using the corrected leduc-breguet formula,
@@ -751,7 +738,7 @@ def payload_range_full(
     :param lower_limit_box_tolerance : lower limit of the grid box, default 0.4 means 0.4*max_payload
     :param left_limit_box_tolerance : left limit of the grid box, default = 0.1 means 0.1*range(point B)
     :param right_limit_box_tolerance : right limit of the grid box, default = 0.95 means 0.95* max_range, meaning there is 5% safety
-    :param file_save: sets the name where the results are saved
+    :param file_save_path: sets the name where the results are saved (path)
     :param show_grid: states if the grid points are to be shown on the fig
     :param x_axis: defines the x axis if the user wants to
     :param y_axis: defines the y axis if the user wants to
@@ -759,6 +746,18 @@ def payload_range_full(
     :param alternative_grid: an alternative way to plot the grid, particular useful for low range aircrafts
     :return: fig with payload range diagram + specific consumptions
     """
+    string_file_path = "grid_" + file_save
+    grid_file = open(pth.join(file_save_folder, string_file_path), "r")
+    lines = grid_file.readlines()[1:]
+    grid_file.close()
+
+    n_intervals_payloads = int(lines[0].split(" ")[-1])
+    range_step = int(lines[1].split(" ")[-1])
+    upper_limit_box_tolerance = float(lines[2].split(" ")[-1])
+    lower_limit_box_tolerance = float(lines[3].split(" ")[-1])
+    right_limit_box_tolerance = float(lines[4].split(" ")[-1])
+    left_limit_box_tolerance = float(lines[5].split(" ")[-1])
+    alternative_grid = (lines[6].split(" ")[-1] == "True\n")
 
     # Generate grid figure + look up for n_values_ranges
     fig, grid, n_values_ranges = grid_generation(
@@ -788,19 +787,19 @@ def payload_range_full(
         fig = go.Figure()
     # load the results from payload_range_loop_computation(...)
     try:
-        results = np.loadtxt(pth.join("data_folder/data_results_payload", file_save))
+        results = np.loadtxt(pth.join(file_save_folder, file_save))
         results = results.T
 
-        x = results[0, 0 : n_values_ranges[0]]
+        x = results[0, 0: n_values_ranges[0]]
         y = np.linspace(min(results[1]), max(results[1]), n_intervals_payloads)
         y = y.tolist()
 
         z = [[None] * n_values_ranges[0] for _ in range(n_intervals_payloads)]
 
         for i in range(n_intervals_payloads):
-            z[i][0 : n_values_ranges[i]] = results[
-                2, sum(n_values_ranges[0:i]) : sum(n_values_ranges[0:i]) + n_values_ranges[i]
-            ]
+            z[i][0: n_values_ranges[i]] = results[
+                                          2, sum(n_values_ranges[0:i]): sum(n_values_ranges[0:i]) + n_values_ranges[i]
+                                          ]
 
         fig.add_trace(
             go.Contour(
@@ -822,7 +821,7 @@ def payload_range_full(
     except OSError:
         print(
             "No results were found in the data folder, you first need to run the function "
-            "payload_range_loop_computation(...) \n attention: takes time"
+            "payload_range_loop_computation(...) "
         )
 
     fig.update_layout(

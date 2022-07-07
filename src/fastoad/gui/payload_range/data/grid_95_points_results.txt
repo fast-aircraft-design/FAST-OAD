@@ -1,0 +1,8 @@
+This is the file which contains the grid parameters for the results in file : 95_points_results.txt
+n_intervals_payloads = 10
+range_step = 300
+upper_limit_box_tolerance = 1.0
+lower_limit_box_tolerance = 0.4
+right_limit_box_tolerance = 1.0
+left_limit_box_tolerance = 0.1
+alternative_grid= True
