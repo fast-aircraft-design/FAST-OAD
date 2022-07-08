@@ -759,7 +759,7 @@ def v_n_diagram_drawing_plot(
         ),
         mode="lines",
         name="flight envelope : n_max = %3f"
-        % np.round(np.maximum(n_v_c_positive_mtow, n_from_0_to_n_max[-1]),2),
+        % np.round(np.maximum(n_v_c_positive_mtow, n_from_0_to_n_max[-1]), 2),
         visible="legendonly",
     )
 

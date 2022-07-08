@@ -28,7 +28,7 @@ ths_deportation = -5 * pi / 180  # rad
 
 
 def stability_diagram_plot(
-        aircraft_file_path: str, name=None, fig=None, file_formatter=None
+    aircraft_file_path: str, name=None, fig=None, file_formatter=None
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the available power diagram of the aircraft.
@@ -71,14 +71,14 @@ def stability_diagram_plot(
     fuselage_front_length = variables["data:geometry:fuselage:front_length"].value[0]
     fuselage_length = variables["data:geometry:fuselage:length"].value[0]
     fuselage_radius = 0.25 * (
-            variables["data:geometry:fuselage:maximum_height"].value[0]
-            + variables["data:geometry:fuselage:maximum_width"].value[0]
+        variables["data:geometry:fuselage:maximum_height"].value[0]
+        + variables["data:geometry:fuselage:maximum_width"].value[0]
     )
     fuselage_rear_length = variables["data:geometry:fuselage:rear_length"].value[0]
 
     v1 = 2.0 * pi / 3.0 * fuselage_radius ** 3.0
     v2 = (
-            pi * fuselage_radius ** 2 * (fuselage_length - fuselage_rear_length - fuselage_front_length)
+        pi * fuselage_radius ** 2 * (fuselage_length - fuselage_rear_length - fuselage_front_length)
     )
     v3 = 1 / 3.0 * pi * fuselage_radius ** 2 * fuselage_rear_length
     v = v1 + v2 + v3
@@ -93,12 +93,12 @@ def stability_diagram_plot(
     # 1) Neutral point calculation (rear limit):
 
     ht_effectiveness = 1 - cl_alpha_wing * 8 / (pi ** 3 * aspect_ratio_wing) * (
-            1 + 1 / np.cos(beta)
+        1 + 1 / np.cos(beta)
     )
     numerator = (
-            x_aerodynamic_center * cl_alpha_wing
-            + surface_ratio * x_ht * cl_alpha_ht * ht_effectiveness
-            - 2.0 * v / area_wing
+        x_aerodynamic_center * cl_alpha_wing
+        + surface_ratio * x_ht * cl_alpha_ht * ht_effectiveness
+        - 2.0 * v / area_wing
     )
     denominator = cl_alpha_wing + surface_ratio * cl_alpha_ht * ht_effectiveness
     x_cg_rear = numerator / denominator
@@ -139,10 +139,10 @@ def stability_diagram_plot(
 
     # Moment equilibrium
     numerator = (
-            -cm0_wing * mac
-            + x_aerodynamic_center * cl_wing
-            + surface_ratio * x_ht * cl_horizontal_tail
-            - 2 * alpha * v / area_wing
+        -cm0_wing * mac
+        + x_aerodynamic_center * cl_wing
+        + surface_ratio * x_ht * cl_horizontal_tail
+        - 2 * alpha * v / area_wing
     )  # ac near pc
     denominator = cl_wing + surface_ratio * cl_horizontal_tail
 
@@ -152,7 +152,7 @@ def stability_diagram_plot(
     delta_x_cg = [0, 0]
     delta_x_cg[0] = np.interp(actual_surface_ratio, surface_ratio, x_cg_front_percentage) * 100
     delta_x_cg[1] = (
-            np.interp(actual_surface_ratio, surface_ratio, x_cg_rear_percentage_minus_5perc) * 100
+        np.interp(actual_surface_ratio, surface_ratio, x_cg_rear_percentage_minus_5perc) * 100
     )
 
     # 2) Negative_ressource :
@@ -178,10 +178,10 @@ def stability_diagram_plot(
 
     # Moment equilibrium
     numerator = (
-            -cm0_wing * mac
-            + x_aerodynamic_center * cl_wing
-            + surface_ratio * x_ht * cl_horizontal_tail
-            - 2 * alpha * v / area_wing
+        -cm0_wing * mac
+        + x_aerodynamic_center * cl_wing
+        + surface_ratio * x_ht * cl_horizontal_tail
+        - 2 * alpha * v / area_wing
     )  # ac near pc
     denominator = cl_wing + surface_ratio * cl_horizontal_tail
 
@@ -260,7 +260,7 @@ def stability_diagram_plot(
 
     fig.update_layout(
         title_text=name,
-        paper_bgcolor='rgb(233,233,233)',
+        paper_bgcolor="rgb(233,233,233)",
         title_x=0.5,
         xaxis_title="Centering (% of MAC)",
         yaxis_title="Sh/S (%)",

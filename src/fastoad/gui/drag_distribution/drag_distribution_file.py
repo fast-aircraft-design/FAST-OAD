@@ -77,23 +77,23 @@ def drag_distribution_plot(
         variables["data:aerodynamics:aircraft:" + case_string + ":CD:trim"].value
     )
 
-    CD_trim = np.interp(CL, CL_table, CD_trim_table) *100  # drag due to the horizontal surface
+    CD_trim = np.interp(CL, CL_table, CD_trim_table) * 100  # drag due to the horizontal surface
 
     # step 3 : retrieve the parasitic drag CDp
     CD0_fuselage_table = np.asarray(
         variables["data:aerodynamics:fuselage:" + case_string + ":CD0"].value
     )  # depend on CL
-    CD0_fuselage = np.interp(CL, CL_table, CD0_fuselage_table)  *100
+    CD0_fuselage = np.interp(CL, CL_table, CD0_fuselage_table) * 100
 
-    CD0_ht = variables["data:aerodynamics:horizontal_tail:" + case_string + ":CD0"].value[0]*100
-    CD0_nacelles = variables["data:aerodynamics:nacelles:" + case_string + ":CD0"].value[0]*100
-    CD0_pylons = variables["data:aerodynamics:pylons:" + case_string + ":CD0"].value[0]*100
-    CD0_vt = variables["data:aerodynamics:vertical_tail:" + case_string + ":CD0"].value[0]*100
+    CD0_ht = variables["data:aerodynamics:horizontal_tail:" + case_string + ":CD0"].value[0] * 100
+    CD0_nacelles = variables["data:aerodynamics:nacelles:" + case_string + ":CD0"].value[0] * 100
+    CD0_pylons = variables["data:aerodynamics:pylons:" + case_string + ":CD0"].value[0] * 100
+    CD0_vt = variables["data:aerodynamics:vertical_tail:" + case_string + ":CD0"].value[0] * 100
 
     CD0_wing_table = np.asarray(
         variables["data:aerodynamics:wing:" + case_string + ":CD0"].value
     )  # depend on cl
-    CD0_wing = np.interp(CL, CL_table, CD0_wing_table)*100
+    CD0_wing = np.interp(CL, CL_table, CD0_wing_table) * 100
 
     CD0 = CD0_fuselage + CD0_ht + CD0_nacelles + CD0_pylons + CD0_vt + CD0_wing
 
@@ -105,7 +105,7 @@ def drag_distribution_plot(
         CDc_table = np.asarray(
             variables["data:aerodynamics:aircraft:cruise:CD:compressibility"].value
         )
-        CDc_wing = np.interp(CL, CL_table, CDc_table)*100
+        CDc_wing = np.interp(CL, CL_table, CDc_table) * 100
 
     CD = CDi_wing + CD0 + CDc_wing + CD_trim
 
@@ -119,9 +119,19 @@ def drag_distribution_plot(
 
     labels = [
         "100 CD" + "<br>" + str("% 9.2f" % CD),
-        "CDi" + "<br>" + str("% 9.2f" % CDi_wing) + " (" + str(np.round(CDi_wing / CD * 100, 1)) + " %)",
+        "CDi"
+        + "<br>"
+        + str("% 9.2f" % CDi_wing)
+        + " ("
+        + str(np.round(CDi_wing / CD * 100, 1))
+        + " %)",
         "CDp" + "<br>" + str("% 9.2f" % CD0) + " (" + str(np.round(CD0 / CD * 100, 1)) + " %)",
-        "CD_trim" + "<br>" + str("% 9.2f" % CD_trim) + " (" + str(np.round(CD_trim / CD * 100, 1)) + " %)",
+        "CD_trim"
+        + "<br>"
+        + str("% 9.2f" % CD_trim)
+        + " ("
+        + str(np.round(CD_trim / CD * 100, 1))
+        + " %)",
         "fuselage" + "<br>" + str("% 9.2f" % CD0_fuselage),
         "vertical tail" + "<br>" + str("% 9.2f" % CD0_vt),
         "horizontal tail" + "<br>" + str("% 9.2f" % CD0_ht),

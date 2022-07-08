@@ -11,13 +11,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Dict
-
 import numpy as np
 import pandas as pd
 import plotly
 import plotly.graph_objects as go
-from ipywidgets import widgets, HBox
+from ipywidgets import widgets
 from IPython.display import display
 
 pi = np.pi
@@ -26,7 +24,7 @@ from fastoad.io import VariableIO
 
 COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 NACELLE_POSITION = (
-    0.6  # Nacelle position compared to the leading edge. 0 means that the back of the nacelle is
+    0.7  # Nacelle position compared to the leading edge. 0 means that the back of the nacelle is
 )
 
 # aligned with the beginning of the root, 1 means that the beginning of the nacelle is aligned with the kink_x.
@@ -58,7 +56,12 @@ WING_ROOT_HEIGHT = (
 
 
 def aircraft_drawing_top_view(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+    aircraft_file_path: str,
+    name=None,
+    fig=None,
+    file_formatter=None,
+    height=500,
+    width=900,
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the top view of the aircraft with the engines, the flaps, the slats and the elevator.
@@ -70,6 +73,8 @@ def aircraft_drawing_top_view(
     :param fig: existing figure to which add the plot
     :param file_formatter: the formatter that defines the format of data file. If not provided,
                            default format will be assumed.
+    :param height : height of the image
+    :param width : width of the image
     :return: wing plot figure
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
@@ -500,6 +505,8 @@ def aircraft_drawing_top_view(
             title_x=0.5,
             xaxis_title="y",
             yaxis_title="x",
+            height=height,
+            width=width,
         )
     else:
         fig.update_layout(
@@ -507,13 +514,22 @@ def aircraft_drawing_top_view(
             title_x=0.5,
             xaxis_title="y",
             yaxis_title="x",
+            height=height,
+            width=width,
         )
+    # fig.update_xaxes(range=[-50, 50])
+    # fig.update_yaxes(range=[y_axis[0], y_axis[1]])
 
     return fig
 
 
 def wing_drawing(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+    aircraft_file_path: str,
+    name=None,
+    fig=None,
+    file_formatter=None,
+    height=500,
+    width=900,
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the top view of the wing with the relevant distances on it.
@@ -525,6 +541,8 @@ def wing_drawing(
     :param fig: existing figure to which add the plot
     :param file_formatter: the formatter that defines the format of data file. If not provided,
                            default format will be assumed.
+    :param height : height of the image
+    :param width : width of the image
     :return: wing plot figure
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
@@ -979,20 +997,20 @@ def wing_drawing(
             "Wing surface (m²)",
         ],
         "Value": [
-            np.round(x_x0[0] - x_x0[1], 2),  # X0
-            np.round(x_x1[1] - x_x1[0], 2),  # X1
-            np.round(x_x2[0] - x_x2[1], 2),  # X2
-            np.round(y_y0[1] - y_y0[0], 2),  # Y0
-            np.round(y_y1[1] - y_y1[0], 2),  # Y1
-            np.round(y_y2[1] - y_y2[0], 2),  # Y2
-            np.round(y_y3[1] - y_y3[0], 2),  # Y3
-            np.round(x_l0[1] - x_l0[0], 2),  # L0
-            np.round(x_l1[0] - x_l1[1], 2),  # L1
-            np.round(x_l2[1] - x_l2[0], 2),  # L2
-            np.round(x_l3[1] - x_l3[0], 2),  # L3
-            np.round(mean_aerodynamic_chord, 2),  # MAC
-            np.round(total_wing_span, 2),  # Span
-            np.round(wing_area, 2),  # Wing surface
+            np.round(x_x0[0] - x_x0[1], 1),  # X0
+            np.round(x_x1[1] - x_x1[0], 1),  # X1
+            np.round(x_x2[0] - x_x2[1], 1),  # X2
+            np.round(y_y0[1] - y_y0[0], 1),  # Y0
+            np.round(y_y1[1] - y_y1[0], 1),  # Y1
+            np.round(y_y2[1] - y_y2[0], 1),  # Y2
+            np.round(y_y3[1] - y_y3[0], 1),  # Y3
+            np.round(x_l0[1] - x_l0[0], 1),  # L0
+            np.round(x_l1[0] - x_l1[1], 1),  # L1
+            np.round(x_l2[1] - x_l2[0], 1),  # L2
+            np.round(x_l3[1] - x_l3[0], 1),  # L3
+            np.round(mean_aerodynamic_chord, 1),  # MAC
+            np.round(total_wing_span, 1),  # Span
+            np.round(wing_area, 1),  # Wing surface
         ],
     }
     df = pd.DataFrame(data=d)
@@ -1149,18 +1167,25 @@ def wing_drawing(
     fig.update_yaxes(constrain="domain")
     fig.update_xaxes(constrain="domain")
     fig.update_layout(
-        title_text="Wing Geometry",
+        title_text=name,
         title_x=0.8,
         title_y=0.98,
         xaxis_title="y",
         yaxis_title="x",
+        height=height,
+        width=width,
     )
 
     return widgets.HBox([fig, out])
 
 
 def flaps_and_slats_drawing(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+    aircraft_file_path: str,
+    name=None,
+    fig=None,
+    file_formatter=None,
+    height=500,
+    width=900,
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the top view of the wing with the flaps and slats added.
@@ -1172,6 +1197,8 @@ def flaps_and_slats_drawing(
     :param fig: existing figure to which add the plot
     :param file_formatter: the formatter that defines the format of data file. If not provided,
                            default format will be assumed.
+    :param height : height of the image
+    :param width : width of the image
     :return: plot figure of wing the wing with flaps and slats
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
@@ -1415,7 +1442,14 @@ def flaps_and_slats_drawing(
     fig = go.FigureWidget(fig)
     fig.update_xaxes(constrain="domain")
     fig.update_yaxes(constrain="domain")
-    fig.update_layout(title_text="Wing Drawing", title_x=0.5, xaxis_title="y", yaxis_title="x")
+    fig.update_layout(
+        title_text=name,
+        title_x=0.5,
+        xaxis_title="y",
+        yaxis_title="x",
+        height=height,
+        width=width,
+    )
 
     return fig
 
@@ -1425,6 +1459,8 @@ def aircraft_drawing_side_view(
     name=None,
     fig=None,
     file_formatter=None,
+    height=500,
+    width=900,
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the side view of the aircraft with the engines, the flaps, the slats and the elevator.
@@ -1436,6 +1472,8 @@ def aircraft_drawing_side_view(
     :param fig: existing figure to which add the plot
     :param file_formatter: the formatter that defines the format of data file. If not provided,
                            default format will be assumed.
+    :param height : height of the image
+    :param width : width of the image
     :return: wing plot figure
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
@@ -1767,15 +1805,29 @@ def aircraft_drawing_side_view(
             title_x=0.5,
             xaxis_title="y",
             yaxis_title="z",
+            height=height,
+            width=width,
         )
     if name is not None:
-        fig.update_layout(title_text=name, title_x=0.5, xaxis_title="y", yaxis_title="z")
+        fig.update_layout(
+            title_text=name,
+            title_x=0.5,
+            xaxis_title="y",
+            yaxis_title="z",
+            height=height,
+            width=width,
+        )
     fig = go.FigureWidget(fig)
     return fig
 
 
 def aircraft_drawing_front_view(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+    aircraft_file_path: str,
+    name=None,
+    fig=None,
+    file_formatter=None,
+    height=500,
+    width=900,
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the front view of the aircraft with the engines, the flaps, the slats and the elevator.
@@ -1787,6 +1839,8 @@ def aircraft_drawing_front_view(
     :param fig: existing figure to which add the plot
     :param file_formatter: the formatter that defines the format of data file. If not provided,
                            default format will be assumed.
+    :param height : height of the image
+    :param width : width of the image
     :return: wing plot figure
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
@@ -2058,9 +2112,18 @@ def aircraft_drawing_front_view(
             title_x=0.5,
             xaxis_title="y",
             yaxis_title="z",
+            height=height,
+            width=width,
         )
     if name is not None:
-        fig.update_layout(title_text=name, title_x=0.5, xaxis_title="y", yaxis_title="z")
+        fig.update_layout(
+            title_text=name,
+            title_x=0.5,
+            xaxis_title="y",
+            yaxis_title="z",
+            height=height,
+            width=width,
+        )
     return fig
 
 
