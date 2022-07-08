@@ -21,6 +21,7 @@ from typing import Dict, List, Optional, Tuple, Type
 import numpy as np
 import pandas as pd
 from aenum import Enum, extend_enum
+from deprecated import deprecated
 from scipy.constants import g
 from scipy.optimize import root_scalar
 from stdatm import AtmosphereSI
@@ -282,6 +283,12 @@ class AbstractFlightSegment(IFlightPart, ABC):
         return AtmosphereSI(altitude, self.isa_offset)
 
 
+@deprecated("Class FlightSegment will be removed in version 2.0. Please use AbstractFlightSegment.")
+@dataclass
+class FlightSegment(AbstractFlightSegment, ABC):
+    pass
+
+
 @dataclass
 class AbstractPolarSegment(AbstractFlightSegment, ABC):
     """
@@ -379,7 +386,12 @@ class AbstractPropulsionSegment(AbstractFlightSegment, ABC):
 
 
 @dataclass
-class FlightSegment(AbstractVelocityChangeSegment, AbstractPropulsionSegment, AbstractPolarSegment):
+class AbstractTimeStepFlightSegment(
+    AbstractVelocityChangeSegment,
+    AbstractPropulsionSegment,
+    AbstractPolarSegment,
+    ABC,
+):
     """
     Base class for time step computation flight segments.
 
@@ -579,7 +591,7 @@ class FlightSegment(AbstractVelocityChangeSegment, AbstractPropulsionSegment, Ab
 
 
 @dataclass
-class ManualThrustSegment(AbstractPropulsionSegment, ABC):
+class AbstractManualThrustSegment(AbstractPropulsionSegment, ABC):
     """
     Base class for computing flight segment where thrust rate is imposed.
 
@@ -595,7 +607,7 @@ class ManualThrustSegment(AbstractPropulsionSegment, ABC):
 
 
 @dataclass
-class RegulatedThrustSegment(AbstractPropulsionSegment, ABC):
+class AbstractRegulatedThrustSegment(AbstractPropulsionSegment, ABC):
     """
     Base class for computing flight segment where thrust rate is adjusted on drag.
     """
@@ -611,34 +623,20 @@ class RegulatedThrustSegment(AbstractPropulsionSegment, ABC):
         flight_point.thrust_is_regulated = True
         self.propulsion.compute_flight_points(flight_point)
 
-    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
+    @staticmethod
+    def get_gamma_and_acceleration(flight_point: FlightPoint) -> Tuple[float, float]:
         return 0.0, 0.0
 
 
 @dataclass
-class FixedDurationSegment(AbstractFlightSegment, ABC):
+class AbstractFixedDurationSegment(AbstractFlightSegment, ABC):
     """
-    Class for computing phases where duration is fixed.
+    Base class for computing a fixed-duration segment.
     """
 
     time_step: float = 60.0
 
-    def get_distance_to_target(
-        self, flight_points: List[FlightPoint], target: FlightPoint
-    ) -> float:
+    @staticmethod
+    def get_distance_to_target(flight_points: List[FlightPoint], target: FlightPoint) -> float:
         current = flight_points[-1]
         return target.time - current.time
-
-
-@dataclass
-class MassTargetSegment(AbstractFlightSegment, mission_file_keyword="mass_input"):
-    """
-    Class that can set a target mass.
-
-    Fuel consumption should be independent of aircraft mass.
-    """
-
-    def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
-        start.mass = target.mass
-        self.complete_flight_point(start)
-        return pd.DataFrame([start])

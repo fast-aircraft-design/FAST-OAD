@@ -16,7 +16,7 @@ from numpy.testing import assert_allclose
 
 from fastoad.model_base import FlightPoint
 from ..base import FlightSequence
-from ..segments.base import MassTargetSegment
+from ..segments.mass_input import MassTargetSegment
 from ..segments.taxi import TaxiSegment
 
 

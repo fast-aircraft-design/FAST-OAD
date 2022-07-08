@@ -21,7 +21,7 @@ import pandas as pd
 from scipy.constants import foot, g
 
 from fastoad.model_base import FlightPoint
-from .base import FlightSegment, ManualThrustSegment
+from .base import AbstractManualThrustSegment, AbstractTimeStepFlightSegment
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
 from ..util import get_closest_flight_level
 
@@ -30,7 +30,9 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 @dataclass
 class AltitudeChangeSegment(
-    ManualThrustSegment, FlightSegment, mission_file_keyword="altitude_change"
+    AbstractManualThrustSegment,
+    AbstractTimeStepFlightSegment,
+    mission_file_keyword="altitude_change",
 ):
     """
     Computes a flight path segment where altitude is modified with constant speed.

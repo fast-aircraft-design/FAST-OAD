@@ -22,12 +22,12 @@ from scipy.constants import foot, g
 
 from fastoad.model_base import FlightPoint
 from .altitude_change import AltitudeChangeSegment
-from .base import FlightSegment, RegulatedThrustSegment
+from .base import AbstractRegulatedThrustSegment, AbstractTimeStepFlightSegment
 from ..util import get_closest_flight_level
 
 
 @dataclass
-class CruiseSegment(RegulatedThrustSegment, FlightSegment):
+class CruiseSegment(AbstractRegulatedThrustSegment, AbstractTimeStepFlightSegment):
     """
     Class for computing cruise flight segment at constant altitude and speed.
 
@@ -44,10 +44,10 @@ class CruiseSegment(RegulatedThrustSegment, FlightSegment):
         # subclasses can be at variable altitude, so Mach is considered constant
         # if no other constant speed parameter is set to "constant".
         if (
-            self.target.true_airspeed != FlightSegment.CONSTANT_VALUE
-            and self.target.equivalent_airspeed != FlightSegment.CONSTANT_VALUE
+            self.target.true_airspeed != AbstractTimeStepFlightSegment.CONSTANT_VALUE
+            and self.target.equivalent_airspeed != AbstractTimeStepFlightSegment.CONSTANT_VALUE
         ):
-            self.target.mach = FlightSegment.CONSTANT_VALUE
+            self.target.mach = AbstractTimeStepFlightSegment.CONSTANT_VALUE
 
     def get_distance_to_target(
         self, flight_points: List[FlightPoint], target: FlightPoint
