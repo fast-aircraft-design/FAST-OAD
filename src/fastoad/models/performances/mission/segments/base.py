@@ -77,39 +77,7 @@ class SegmentDefinitions(Enum):
 
 
 @dataclass
-class FlightSegment(IFlightPart):
-    """
-    Base class for flight path segment.
-
-    As a dataclass, attributes can be set at instantiation.
-
-    This class implements the time computation. For this computation to work, subclasses must
-    implement abstract methods :meth:`get_get_distance_to_target`,
-    :meth:`get_gamma_and_acceleration` and :meth:`compute_propulsion`.
-
-    When subclassing this class, the attribute "mission_file_keyword" can be set,
-    so that the segment can be used in mission file definition with this keyword:
-
-        >>> class NewSegment(FlightSegment, mission_file_keyword="new_segment")
-        >>>     ...
-
-    Then in mission definition:
-
-    .. code-block:: yaml
-
-        phases:
-            my_phase:
-                parts:
-                    - segment: new_segment
-
-    .. Important::
-
-        When subclassing, if you intend to overload :meth:`compute_from`, you should consider
-        overriding :meth:`_compute_from` instead. Therefore, you will take benefit of the
-        preprocessing of start and target flight points that is done in :meth:`compute_from`
-
-    """
-
+class AbstractFlightSegment(IFlightPart, ABC):
     #: A FlightPoint instance that provides parameter values that should all be reached at the
     #: end of :meth:`~fastoad.models.performances.mission.segments.base.FlightSegment.compute_from`.
     #: Possible parameters depend on the current segment. A parameter can also be set to
@@ -120,40 +88,8 @@ class FlightSegment(IFlightPart):
     # the `target` field above will be overloaded by a property, using the hidden value below:
     _target: FlightPoint = field(default=BaseDataClass.no_default, init=False)
 
-    #: A IPropulsion instance that will be called at each time step.
-    propulsion: IPropulsion = BaseDataClass.no_default
-
-    #: The Polar instance that will provide drag data.
-    polar: Polar = BaseDataClass.no_default
-
-    #: The reference area, in m**2.
-    reference_area: float = BaseDataClass.no_default
-
     #: The temperature offset for ISA atmosphere model.
     isa_offset: float = 0.0
-
-    #: Used time step for computation (actual time step can be lower at some particular times of
-    #: the flight path).
-    time_step: float = DEFAULT_TIME_STEP
-
-    #: The EngineSetting value associated to the segment. Can be used in the propulsion
-    #: model.
-    engine_setting: EngineSetting = EngineSetting.CLIMB
-
-    #: Minimum and maximum authorized altitude values. If computed altitude gets beyond these
-    #: limits, computation will be interrupted and a warning message will be issued in logger.
-    altitude_bounds: tuple = (-500.0, 40000.0)
-
-    #: Minimum and maximum authorized mach values. If computed Mach gets beyond these limits,
-    #: computation will be interrupted and a warning message will be issued in logger.
-    mach_bounds: tuple = (0.0, 5.0)
-
-    #: The name of the current flight sequence.
-    name: str = ""
-
-    #: If True, computation will be interrupted if a parameter stops getting closer to target
-    #: between two iterations (which can mean the provided thrust rate is not adapted).
-    interrupt_if_getting_further_from_target: bool = True
 
     #: Using this value will tell to keep the associated parameter constant.
     CONSTANT_VALUE = "constant"  # pylint: disable=invalid-name # used as constant
@@ -192,6 +128,83 @@ class FlightSegment(IFlightPart):
     def get_attribute_unit(cls, attribute_name: str) -> str:
         """Returns unit for specified attribute."""
         return cls._attribute_units.get(attribute_name)
+
+
+@dataclass
+class FlightSegment(AbstractFlightSegment):
+    """
+    Base class for flight path segment.
+
+    As a dataclass, attributes can be set at instantiation.
+
+    This class implements the time computation. For this computation to work, subclasses must
+    implement abstract methods :meth:`get_get_distance_to_target`,
+    :meth:`get_gamma_and_acceleration` and :meth:`compute_propulsion`.
+
+    When subclassing this class, the attribute "mission_file_keyword" can be set,
+    so that the segment can be used in mission file definition with this keyword:
+
+        >>> class NewSegment(FlightSegment, mission_file_keyword="new_segment")
+        >>>     ...
+
+    Then in mission definition:
+
+    .. code-block:: yaml
+
+        phases:
+            my_phase:
+                parts:
+                    - segment: new_segment
+
+    .. Important::
+
+        When subclassing, if you intend to overload :meth:`compute_from`, you should consider
+        overriding :meth:`_compute_from` instead. Therefore, you will take benefit of the
+        preprocessing of start and target flight points that is done in :meth:`compute_from`
+
+    """
+
+    #: A FlightPoint instance that provides parameter values that should all be reached at the
+    #: end of :meth:`~fastoad.models.performances.mission.segments.base.FlightSegment.compute_from`.
+    #: Possible parameters depend on the current segment. A parameter can also be set to
+    #: :attr:`~fastoad.models.performances.mission.segments.base.FlightSegment.CONSTANT_VALUE`
+    #: to tell that initial value should be kept during all segment.
+
+    # the `target` field above will be overloaded by a property, using the hidden value below:
+
+    #: A IPropulsion instance that will be called at each time step.
+    propulsion: IPropulsion = BaseDataClass.no_default
+
+    #: The Polar instance that will provide drag data.
+    polar: Polar = BaseDataClass.no_default
+
+    #: The reference area, in m**2.
+    reference_area: float = BaseDataClass.no_default
+
+    #: The temperature offset for ISA atmosphere model.
+
+    #: Used time step for computation (actual time step can be lower at some particular times of
+    #: the flight path).
+    time_step: float = DEFAULT_TIME_STEP
+
+    #: The EngineSetting value associated to the segment. Can be used in the propulsion
+    #: model.
+    engine_setting: EngineSetting = EngineSetting.CLIMB
+
+    #: Minimum and maximum authorized altitude values. If computed altitude gets beyond these
+    #: limits, computation will be interrupted and a warning message will be issued in logger.
+    altitude_bounds: tuple = (-500.0, 40000.0)
+
+    #: Minimum and maximum authorized mach values. If computed Mach gets beyond these limits,
+    #: computation will be interrupted and a warning message will be issued in logger.
+    mach_bounds: tuple = (0.0, 5.0)
+
+    #: The name of the current flight sequence.
+    name: str = ""
+
+    #: If True, computation will be interrupted if a parameter stops getting closer to target
+    #: between two iterations (which can mean the provided thrust rate is not adapted).
+    interrupt_if_getting_further_from_target: bool = True
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         """
