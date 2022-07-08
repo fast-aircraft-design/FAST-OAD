@@ -14,7 +14,7 @@ Mission wrapper.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Dict, Optional, Tuple
+from typing import Dict, Tuple
 
 import numpy as np
 import openmdao.api as om
@@ -22,7 +22,7 @@ import pandas as pd
 from openmdao.vectors.vector import Vector
 
 from fastoad.model_base import FlightPoint
-from ..mission_definition.mission_builder import MissionBuilder, NAME_TAG, SEGMENT_TYPE_TAG
+from ..mission_definition.mission_builder import MissionBuilder
 from ..mission_definition.schema import (
     CLIMB_PARTS_TAG,
     DESCENT_PARTS_TAG,
@@ -33,8 +33,6 @@ from ..mission_definition.schema import (
     ROUTE_DEFINITIONS_TAG,
     ROUTE_TAG,
 )
-from ..segments.base import SegmentDefinitions
-from ..segments.taxi import TaxiSegment
 
 
 class MissionWrapper(MissionBuilder):
@@ -47,6 +45,7 @@ class MissionWrapper(MissionBuilder):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.mission_name = None
+        self.consumed_fuel_before_input_weight = 0.0
 
     def setup(self, component: om.ExplicitComponent, mission_name: str = None):
         """
@@ -122,7 +121,7 @@ class MissionWrapper(MissionBuilder):
             )
 
         del flight_points["name2"]
-
+        self.consumed_fuel_before_input_weight = mission.consumed_mass_before_input_weight
         return flight_points
 
     def get_reserve_variable_name(self) -> str:
@@ -131,32 +130,6 @@ class MissionWrapper(MissionBuilder):
                  outputs in :meth:`setup`.
         """
         return f"{self._variable_prefix}:reserve:fuel"
-
-    def need_start_mass(self, mission_name):
-        """
-        Start mass will not be needed if the first segment has a target mass.
-        It will be needed in other cases.
-
-        :param mission_name:
-        :return: True if the start mass is needed.
-        """
-        # Mass is needed if there is no target mass in first segment.
-        struct = self._get_first_segment_structure(mission_name)
-        return "mass" not in struct["target"]
-
-    def get_taxi_out_phase_name(self, mission_name: str) -> Optional[str]:
-        """
-
-        :param mission_name:
-        :return: the name of the first phase if its first segment is a taxi segment.
-                 Returns None otherwise.
-        """
-        first_part = self._get_mission_part_structures(mission_name)[0]
-        first_segment = self._get_first_segment_structure(mission_name)
-        if SegmentDefinitions.get_segment_class(first_segment[SEGMENT_TYPE_TAG]) is TaxiSegment:
-            return first_part[NAME_TAG].split(":")[-1]
-
-        return None
 
     def _identify_outputs(self) -> Dict[str, Tuple[str, str]]:
         """

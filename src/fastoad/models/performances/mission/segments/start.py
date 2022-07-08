@@ -44,6 +44,12 @@ class Start(FlightSegment, mission_file_keyword="start"):
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
 
         self.target.name = self.name
+
+        if self.target.mass is None:
+            # If not setting the mass in the start point, the default value set in
+            # mission component will be used.
+            self.target.mass = start.mass
+
         try:
             self.complete_flight_point(self.target)
         except FastFlightSegmentIncompleteFlightPoint:
@@ -57,7 +63,9 @@ class Start(FlightSegment, mission_file_keyword="start"):
 
     # As we overloaded self.compute_from(), next abstract method are not used.
     # We just need to implement them for Python to be happy.
-    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
+    def get_distance_to_target(
+        self, flight_points: List[FlightPoint], target: FlightPoint
+    ) -> float:
         pass
 
     def compute_propulsion(self, flight_point: FlightPoint):

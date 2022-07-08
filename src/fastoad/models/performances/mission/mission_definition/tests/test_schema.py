@@ -560,7 +560,20 @@ def _get_expected_dict():
                                                     ("true_airspeed", 0.0),
                                                     (
                                                         "target",
-                                                        OrderedDict([("delta_time", "~:duration")]),
+                                                        OrderedDict(
+                                                            [
+                                                                ("delta_time", "~:duration"),
+                                                                (
+                                                                    "mass",
+                                                                    OrderedDict(
+                                                                        [
+                                                                            ("value", "~TOW"),
+                                                                            ("unit", "kg"),
+                                                                        ]
+                                                                    ),
+                                                                ),
+                                                            ]
+                                                        ),
                                                     ),
                                                 ]
                                             )

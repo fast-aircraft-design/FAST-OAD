@@ -233,11 +233,11 @@ def test_api_eval_breguet(cleanup):
 
     assert_allclose(problem["data:handling_qualities:static_margin"], 0.05, atol=1e-2)
     assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 17.149, atol=1e-2)
-    assert_allclose(problem["data:weight:aircraft:MTOW"], 74991, atol=1)
-    assert_allclose(problem["data:geometry:wing:area"], 126.752, atol=1e-2)
+    assert_allclose(problem["data:weight:aircraft:MTOW"], 74892, atol=1)
+    assert_allclose(problem["data:geometry:wing:area"], 126.732, atol=1e-2)
     assert_allclose(problem["data:geometry:vertical_tail:area"], 27.565, atol=1e-2)
-    assert_allclose(problem["data:geometry:horizontal_tail:area"], 35.927, atol=1e-2)
-    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 19531, atol=1)
+    assert_allclose(problem["data:geometry:horizontal_tail:area"], 35.884, atol=1e-2)
+    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 19527, atol=1)
 
 
 class MissionConfigurator(_IConfigurationModifier):
@@ -273,11 +273,11 @@ def test_api_eval_mission(cleanup):
 
     assert_allclose(problem["data:handling_qualities:static_margin"], 0.05, atol=1e-2)
     assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 17.149, atol=1e-2)
-    assert_allclose(problem["data:weight:aircraft:MTOW"], 74793, atol=1)
-    assert_allclose(problem["data:geometry:wing:area"], 126.101, atol=1e-2)
+    assert_allclose(problem["data:weight:aircraft:MTOW"], 74695, atol=10)
+    assert_allclose(problem["data:geometry:wing:area"], 126.083, atol=1e-1)
     assert_allclose(problem["data:geometry:vertical_tail:area"], 27.437, atol=1e-2)
-    assert_allclose(problem["data:geometry:horizontal_tail:area"], 35.774, atol=1e-2)
-    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 19393, atol=1)
+    assert_allclose(problem["data:geometry:horizontal_tail:area"], 35.731, atol=1e-2)
+    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 19390, atol=10)
 
 
 def test_api_optim(cleanup):
@@ -300,13 +300,13 @@ def test_api_optim(cleanup):
     _check_weight_performance_loop(problem)
 
     # Design Variable
-    assert_allclose(problem["data:geometry:wing:aspect_ratio"], 14.52, atol=1e-2)
+    assert_allclose(problem["data:geometry:wing:aspect_ratio"], 14.53, atol=2e-2)
 
     # Constraint
-    assert_allclose(problem["data:geometry:wing:span"], 44.9, atol=1e-1)
+    assert_allclose(problem["data:geometry:wing:span"], 44.88, atol=1e-2)
 
     # Objective
-    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 18905.0, atol=1)
+    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 18900.0, atol=1)
 
 
 def _check_weight_performance_loop(problem):
@@ -328,6 +328,6 @@ def _check_weight_performance_loop(problem):
         problem["data:weight:aircraft:MTOW"],
         problem["data:weight:aircraft:OWE"]
         + problem["data:weight:aircraft:payload"]
-        + problem["data:weight:aircraft:sizing_onboard_fuel_at_takeoff"],
+        + problem["data:weight:aircraft:sizing_onboard_fuel_at_input_weight"],
         atol=1,
     )

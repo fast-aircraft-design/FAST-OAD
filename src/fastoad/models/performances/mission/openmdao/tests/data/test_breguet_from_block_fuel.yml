@@ -1,4 +1,19 @@
 phases:
+  start:
+    parts:
+      - segment: start
+        target:
+          altitude:
+            value: ~
+            unit: ft
+            default: 0.0
+          true_airspeed:
+            value: ~
+            unit: m/s
+            default: 0.0
+          mass:
+            value: data:mission:operational:ramp_weight
+            unit: kg
   taxi_out:
     parts:
       - segment: taxi
@@ -73,6 +88,7 @@ missions:
   operational:
     isa_offset: ~ISA_offset
     parts:
+      - phase: start
       - phase: taxi_out
       - phase: takeoff
       - route: main_route

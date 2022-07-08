@@ -79,35 +79,35 @@ class AltitudeChangeSegment(ManualThrustSegment, mission_file_keyword="altitude_
     #: with max lift/drag ratio.
     OPTIMAL_FLIGHT_LEVEL = "optimal_flight_level"  # pylint: disable=invalid-name # used as constant
 
-    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        self.complete_flight_point(start)  # needed to ensure all speed values are computed.
-
-        if self.target.altitude is not None:
-            if isinstance(self.target.altitude, str):
+    def _compute_from(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+        if target.altitude is not None:
+            if isinstance(target.altitude, str):
                 # Target altitude will be modified along the process, so we keep track
                 # of the original order in target CL, that is not used otherwise.
-                self.target.CL = self.target.altitude  # pylint: disable=invalid-name
-                # let's put a numerical, negative value in self.target.altitude to
+                target.CL = target.altitude  # pylint: disable=invalid-name
+                # let's put a numerical, negative value in target.altitude to
                 # ensure there will be no problem in self.get_distance_to_target()
-                self.target.altitude = -1000.0
+                target.altitude = -1000.0
                 self.interrupt_if_getting_further_from_target = False
             else:
                 # Target altitude is fixed, back to original settings (in case
                 # this instance is used more than once)
-                self.target.CL = None
+                target.CL = None
                 self.interrupt_if_getting_further_from_target = True
 
         atm = self._get_atmosphere_point(start.altitude)
-        if self.target.equivalent_airspeed == self.CONSTANT_VALUE:
+        if target.equivalent_airspeed == self.CONSTANT_VALUE:
             atm.equivalent_airspeed = start.equivalent_airspeed
             start.true_airspeed = atm.true_airspeed
-        elif self.target.mach == self.CONSTANT_VALUE:
+        elif target.mach == self.CONSTANT_VALUE:
             atm.mach = start.mach
             start.true_airspeed = atm.true_airspeed
 
-        return super().compute_from(start)
+        return super()._compute_from(start, target)
 
-    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
+    def get_distance_to_target(
+        self, flight_points: List[FlightPoint], target: FlightPoint
+    ) -> float:
         current = flight_points[-1]
 
         # Max flight level is first priority
@@ -115,20 +115,20 @@ class AltitudeChangeSegment(ManualThrustSegment, mission_file_keyword="altitude_
         if current.altitude >= max_authorized_altitude:
             return max_authorized_altitude - current.altitude
 
-        if self.target.CL:
+        if target.CL:
             # Optimal altitude is based on a target Mach number, though target speed
             # may be specified as TAS or EAS. If so, Mach number has to be computed
             # for target altitude and speed.
 
             # First, as target speed is expected to be set to self.CONSTANT_VALUE for one
             # parameter. Let's get the real value from start point.
-            target_speed = copy(self.target)
+            target_speed = copy(target)
             for speed_param in ["true_airspeed", "equivalent_airspeed", "mach"]:
                 if isinstance(getattr(target_speed, speed_param), str):
                     setattr(target_speed, speed_param, getattr(flight_points[0], speed_param))
 
             # Now, let's compute target Mach number
-            atm = self._get_atmosphere_point(max(self.target.altitude, current.altitude))
+            atm = self._get_atmosphere_point(max(target.altitude, current.altitude))
             if target_speed.equivalent_airspeed:
                 atm.equivalent_airspeed = target_speed.equivalent_airspeed
                 target_speed.true_airspeed = atm.true_airspeed
@@ -140,24 +140,19 @@ class AltitudeChangeSegment(ManualThrustSegment, mission_file_keyword="altitude_
             optimal_altitude = self._get_optimal_altitude(
                 current.mass, target_speed.mach, current.altitude
             )
-            if self.target.CL == self.OPTIMAL_ALTITUDE:
-                self.target.altitude = optimal_altitude
-            else:  # self.target.CL == self.OPTIMAL_FLIGHT_LEVEL:
-                self.target.altitude = get_closest_flight_level(
-                    optimal_altitude, up_direction=False
-                )
+            if target.CL == self.OPTIMAL_ALTITUDE:
+                target.altitude = optimal_altitude
+            else:  # target.CL == self.OPTIMAL_FLIGHT_LEVEL:
+                target.altitude = get_closest_flight_level(optimal_altitude, up_direction=False)
 
-        if self.target.altitude is not None:
-            return self.target.altitude - current.altitude
-        if self.target.true_airspeed and self.target.true_airspeed != self.CONSTANT_VALUE:
-            return self.target.true_airspeed - current.true_airspeed
-        if (
-            self.target.equivalent_airspeed
-            and self.target.equivalent_airspeed != self.CONSTANT_VALUE
-        ):
-            return self.target.equivalent_airspeed - current.equivalent_airspeed
-        if self.target.mach is not None and self.target.mach != self.CONSTANT_VALUE:
-            return self.target.mach - current.mach
+        if target.altitude is not None:
+            return target.altitude - current.altitude
+        if target.true_airspeed and target.true_airspeed != self.CONSTANT_VALUE:
+            return target.true_airspeed - current.true_airspeed
+        if target.equivalent_airspeed and target.equivalent_airspeed != self.CONSTANT_VALUE:
+            return target.equivalent_airspeed - current.equivalent_airspeed
+        if target.mach is not None and target.mach != self.CONSTANT_VALUE:
+            return target.mach - current.mach
 
         raise FastFlightSegmentIncompleteFlightPoint(
             "No valid target definition for altitude change."

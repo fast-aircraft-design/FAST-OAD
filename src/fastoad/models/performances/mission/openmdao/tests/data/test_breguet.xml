@@ -43,7 +43,7 @@
     </aerodynamics>
     <mission>
       <operational>
-        <TOW units="kg">70000.0</TOW>
+        <ramp_weight units="kg">70000.0</ramp_weight>
         <OWE units="kg">40000.0</OWE>
         <payload units="kg">15000.0</payload>
         <takeoff>

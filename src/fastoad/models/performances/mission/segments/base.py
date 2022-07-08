@@ -14,6 +14,7 @@
 
 import logging
 from abc import ABC, abstractmethod
+from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple, Type
 
@@ -103,10 +104,9 @@ class FlightSegment(IFlightPart):
 
     .. Important::
 
-        When subclassing, if you intend to overload :meth:`compute_from` without calling the
-        super method, you should consider overriding :meth:`_compute_from` instead. Therefore,
-        you will take benefit of the preprocessing of start and target flight points that is
-        done in :meth:`compute_from`
+        When subclassing, if you intend to overload :meth:`compute_from`, you should consider
+        overriding :meth:`_compute_from` instead. Therefore, you will take benefit of the
+        preprocessing of start and target flight points that is done in :meth:`compute_from`
 
     """
 
@@ -202,31 +202,44 @@ class FlightSegment(IFlightPart):
         For instance, a climb computation with too low thrust will only return one
         flight point, that is the provided start point.
 
+        .. Important::
+
+            When subclasssing, if you need to overload :meth:`compute_from`, you should consider
+            overriding :meth:`_compute_from` instead. Therefore, you will take benefit of the
+            preprocessing of start and target flight points that is done in :meth:`compute_from`
+
+
         :param start: the initial flight point, defined for `altitude`, `mass` and speed
                       (`true_airspeed`, `equivalent_airspeed` or `mach`). Can also be
                       defined for `time` and/or `ground_distance`.
         :return: a pandas DataFrame where column names match fields of
                  :meth:`~fastoad.model_base.flight_point.FlightPoint`
         """
-        start.scalarize()
-        if start.time is None:
-            start.time = 0.0
-        if start.ground_distance is None:
-            start.ground_distance = 0.0
+        # Let's ensure we do not modify the original definitions of start and target
+        # during the process
+        start_copy = deepcopy(start)
+        self.complete_flight_point(start_copy, raise_error_on_missing_parameters=False)
+        start_copy.scalarize()
 
-        self._target = self._target.make_absolute(start)
+        target_copy = self._target.make_absolute(start_copy)
+        target_copy.scalarize()
 
-        self.complete_flight_point(start)
+        if start_copy.time is None:
+            start_copy.time = 0.0
+        if start_copy.ground_distance is None:
+            start_copy.ground_distance = 0.0
 
-        return self._compute_from(start)
+        flight_points = self._compute_from(start_copy, target_copy)
 
-    def _compute_from(self, start: FlightPoint) -> pd.DataFrame:
+        return flight_points
+
+    def _compute_from(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
         flight_points = [start]
-        previous_point_to_target = self.get_distance_to_target(flight_points)
+        previous_point_to_target = self.get_distance_to_target(flight_points, target)
         tol = 1.0e-5  # Such accuracy is not needed, but ensures reproducibility of results.
         while np.abs(previous_point_to_target) > tol:
             self._add_new_flight_point(flight_points, self.time_step)
-            last_point_to_target = self.get_distance_to_target(flight_points)
+            last_point_to_target = self.get_distance_to_target(flight_points, target)
 
             if last_point_to_target * previous_point_to_target < 0.0:
 
@@ -246,12 +259,12 @@ class FlightSegment(IFlightPart):
                         time_step = time_step.item()
                     del flight_points[-1]
                     self._add_new_flight_point(flight_points, time_step)
-                    return self.get_distance_to_target(flight_points)
+                    return self.get_distance_to_target(flight_points, target)
 
                 root_scalar(
                     replace_last_point, x0=self.time_step, x1=self.time_step / 2.0, rtol=tol
                 )
-                last_point_to_target = self.get_distance_to_target(flight_points)
+                last_point_to_target = self.get_distance_to_target(flight_points, target)
             elif (
                 np.abs(last_point_to_target) > np.abs(previous_point_to_target)
                 # If self.target.CL is defined, it means that we look for an optimal altitude and
@@ -340,7 +353,9 @@ class FlightSegment(IFlightPart):
         next_point.name = self.name
         return next_point
 
-    def complete_flight_point(self, flight_point: FlightPoint):
+    def complete_flight_point(
+        self, flight_point: FlightPoint, raise_error_on_missing_parameters=True
+    ):
         """
         Computes data for provided flight point.
 
@@ -348,25 +363,49 @@ class FlightSegment(IFlightPart):
         ground distance and speed (TAS, EAS, or Mach).
 
         :param flight_point: the flight point that will be completed in-place
+        :param raise_error_on_missing_parameters: if False, will not complain if speed or altitude
+                                                  is not defined.
         """
         flight_point.engine_setting = self.engine_setting
 
-        self._complete_speed_values(flight_point)
+        if flight_point.altitude is not None or raise_error_on_missing_parameters:
+            has_speeds = self._complete_speed_values(
+                flight_point, raise_error_on_missing_parameters
+            )
 
-        atm = self._get_atmosphere_point(flight_point.altitude)
-        reference_force = 0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_area
+            atm = self._get_atmosphere_point(flight_point.altitude)
+            if has_speeds:
+                reference_force = (
+                    0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_area
+                )
 
-        if self.polar:
-            flight_point.CL = flight_point.mass * g / reference_force
-            flight_point.CD = self.polar.cd(flight_point.CL)
-        else:
-            flight_point.CL = flight_point.CD = 0.0
-        flight_point.drag = flight_point.CD * reference_force
+                if self.polar:
+                    flight_point.CL = flight_point.mass * g / reference_force
+                    flight_point.CD = self.polar.cd(flight_point.CL)
+                else:
+                    flight_point.CL = flight_point.CD = 0.0
+                flight_point.drag = flight_point.CD * reference_force
 
-        self.compute_propulsion(flight_point)
-        flight_point.slope_angle, flight_point.acceleration = self.get_gamma_and_acceleration(
-            flight_point
-        )
+            self.compute_propulsion(flight_point)
+            flight_point.slope_angle, flight_point.acceleration = self.get_gamma_and_acceleration(
+                flight_point
+            )
+
+    def complete_flight_point_from(self, flight_point: FlightPoint, source: FlightPoint):
+        speed_fields = {
+            "true_airspeed",
+            "equivalent_airspeed",
+            "calibrated_airspeed",
+            "mach",
+            "unitary_reynolds",
+        }.intersection(flight_point.get_field_names())
+        other_fields = list(set(flight_point.get_field_names()) - speed_fields)
+
+        speeds_are_missing = np.all([getattr(flight_point, name) is None for name in speed_fields])
+
+        for field_name in other_fields + speeds_are_missing * list(speed_fields):
+            if getattr(flight_point, field_name) is None and not source.is_relative(field_name):
+                setattr(flight_point, field_name, getattr(source, field_name))
 
     def _get_atmosphere_point(self, altitude: float) -> AtmosphereSI:
         """
@@ -377,7 +416,9 @@ class FlightSegment(IFlightPart):
         """
         return AtmosphereSI(altitude, self.isa_offset)
 
-    def _complete_speed_values(self, flight_point: FlightPoint):
+    def _complete_speed_values(
+        self, flight_point: FlightPoint, raise_error_on_missing_speeds=True
+    ) -> bool:
         """
         Computes consistent values between TAS, EAS and Mach, assuming one of them is defined.
         """
@@ -388,17 +429,20 @@ class FlightSegment(IFlightPart):
                 atm.mach = flight_point.mach
             elif flight_point.equivalent_airspeed is not None:
                 atm.equivalent_airspeed = flight_point.equivalent_airspeed
-            else:
+            elif raise_error_on_missing_speeds:
                 raise FastFlightSegmentIncompleteFlightPoint(
                     "Flight point should be defined for true_airspeed, "
                     "equivalent_airspeed, or mach."
                 )
+            else:
+                return False
             flight_point.true_airspeed = atm.true_airspeed
         else:
             atm.true_airspeed = flight_point.true_airspeed
 
         flight_point.mach = atm.mach
         flight_point.equivalent_airspeed = atm.equivalent_airspeed
+        return True
 
     @staticmethod
     def _compute_next_altitude(next_point: FlightPoint, previous_point: FlightPoint):
@@ -437,7 +481,9 @@ class FlightSegment(IFlightPart):
         return optimal_altitude
 
     @abstractmethod
-    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
+    def get_distance_to_target(
+        self, flight_points: List[FlightPoint], target: FlightPoint
+    ) -> float:
         """
         Computes a "distance" from last flight point to target.
 
@@ -447,6 +493,7 @@ class FlightSegment(IFlightPart):
         And of course, it should be 0. if flight point is on target.
 
         :param flight_points: list of all currently computed flight_points
+        :param target: segment target (will not contain relative values)
         :return: O. if target is attained, a non-null value otherwise
         """
 
@@ -520,6 +567,29 @@ class FixedDurationSegment(FlightSegment, ABC):
 
     time_step: float = 60.0
 
-    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
+    def get_distance_to_target(
+        self, flight_points: List[FlightPoint], target: FlightPoint
+    ) -> float:
         current = flight_points[-1]
-        return self.target.time - current.time
+        return target.time - current.time
+
+
+@dataclass
+class MassTargetSegment(FlightSegment, ABC):
+    """
+    Class that can set a target mass.
+
+    Fuel consumption should be independent of aircraft mass.
+    """
+
+    def _compute_from(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+        if target.mass:
+            start.mass = target.mass
+
+        flight_points = super()._compute_from(start, target)
+
+        if target.mass:
+            consumed_fuel = start.mass - flight_points.mass.iloc[-1]
+            flight_points.mass += consumed_fuel
+
+        return flight_points

@@ -58,6 +58,7 @@ class MissionComponent(om.ExplicitComponent):
         self._engine_wrapper = None
         self._mission_wrapper: MissionWrapper = None
         self._name_provider = None
+        self._input_weight_variable_name = ""
 
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
@@ -78,44 +79,15 @@ class MissionComponent(om.ExplicitComponent):
 
         mission_name = self.options["mission_name"]
 
-        self._name_provider = _get_variable_name_provider(
-            mission_name, self._mission_wrapper.get_taxi_out_phase_name(mission_name)
+        self._name_provider = _get_variable_name_provider(mission_name)
+        self._input_weight_variable_name = self._mission_wrapper.get_input_weight_variable_name(
+            self.options["mission_name"]
         )
-        try:
-            self.add_input(
-                self._name_provider.TOW.value,
-                np.nan,
-                units="kg",
-                desc='TakeOff Weight for mission "%s"' % mission_name,
-            )
-        except ValueError:
-            pass
 
         try:
             self.add_input(self.options["reference_area_variable"], np.nan, units="m**2")
         except ValueError:
             pass
-
-        # Mission start inputs
-        self.add_input(
-            self._name_provider.START_ALTITUDE.value,
-            0.0,
-            units="ft",
-            desc=f'Starting altitude for mission "{mission_name}"',
-        )
-        self.add_input(
-            self._name_provider.START_TAS.value,
-            0.0,
-            units="m/s",
-            desc=f'Starting speed for mission "{mission_name}"',
-        )
-        if self._mission_wrapper.need_start_mass(mission_name):
-            self.add_input(
-                self._name_provider.RAMP_WEIGHT.value,
-                np.nan,
-                units="kg",
-                desc=f'Starting mass for mission "{mission_name}"',
-            )
 
         # Global mission outputs
         self.add_output(
@@ -124,14 +96,14 @@ class MissionComponent(om.ExplicitComponent):
             desc=f'Needed fuel to complete mission "{mission_name}", including reserve fuel',
         )
         self.add_output(
-            self._name_provider.NEEDED_FUEL_AT_TAKEOFF.value,
+            self._name_provider.CONSUMED_FUEL_BEFORE_INPUT_WEIGHT.value,
             units="kg",
-            desc=f'fuel quantity at instant of takeoff of mission "{mission_name}"',
+            desc=f'consumed fuel quantity before target mass defined for "{mission_name}",'
+            f" if any (e.g. TakeOff Weight)",
         )
-
         if self.options["is_sizing"]:
             self.add_output("data:weight:aircraft:sizing_block_fuel", units="kg")
-            self.add_output("data:weight:aircraft:sizing_onboard_fuel_at_takeoff", units="kg")
+            self.add_output("data:weight:aircraft:sizing_onboard_fuel_at_input_weight", units="kg")
 
     def setup_partials(self):
         self.declare_partials(["*"], ["*"], method="fd")
@@ -175,7 +147,9 @@ class MissionComponent(om.ExplicitComponent):
             use_max_lift_drag_ratio=True,
         )
         start_point = FlightPoint(
-            mass=inputs[self._name_provider.TOW.value], altitude=altitude, mach=cruise_mach
+            mass=inputs[self._input_weight_variable_name],
+            altitude=altitude,
+            mach=cruise_mach,
         )
         flight_points = breguet.compute_from(start_point)
         end_point = FlightPoint.create(flight_points.iloc[-1])
@@ -221,14 +195,10 @@ class MissionComponent(om.ExplicitComponent):
         self._mission_wrapper.propulsion = propulsion_model
         self._mission_wrapper.reference_area = reference_area
 
+        # This is the default start point, that can be overridden by using the "start"
+        # segment in the mission definition.
         start_flight_point = FlightPoint(
-            altitude=inputs[self._name_provider.START_ALTITUDE.value],
-            true_airspeed=inputs[self._name_provider.START_TAS.value],
-            mass=(
-                inputs[self._name_provider.RAMP_WEIGHT.value]
-                if self._name_provider.RAMP_WEIGHT.value in inputs
-                else 0.0
-            ),
+            altitude=0.0, mass=inputs[self._input_weight_variable_name], true_airspeed=0.0
         )
 
         self.flight_points = self._mission_wrapper.compute(start_flight_point, inputs, outputs)
@@ -245,24 +215,19 @@ class MissionComponent(om.ExplicitComponent):
         outputs[self._name_provider.NEEDED_BLOCK_FUEL.value] = (
             start_of_mission.mass - end_of_mission.mass + reserve
         )
-        outputs[self._name_provider.NEEDED_FUEL_AT_TAKEOFF.value] = outputs[
-            self._name_provider.NEEDED_BLOCK_FUEL.value
-        ]
-        if (
-            self._name_provider.TAXI_OUT_FUEL.value
-            and self._name_provider.TAXI_OUT_FUEL.value in outputs
-        ):
-            outputs[self._name_provider.NEEDED_FUEL_AT_TAKEOFF.value] -= outputs[
-                self._name_provider.TAXI_OUT_FUEL.value
-            ]
+
+        outputs[
+            self._name_provider.CONSUMED_FUEL_BEFORE_INPUT_WEIGHT.value
+        ] = self._mission_wrapper.consumed_fuel_before_input_weight
 
         if self.options["is_sizing"]:
             outputs["data:weight:aircraft:sizing_block_fuel"] = outputs[
                 self._name_provider.NEEDED_BLOCK_FUEL.value
             ]
-            outputs["data:weight:aircraft:sizing_onboard_fuel_at_takeoff"] = outputs[
-                self._name_provider.NEEDED_FUEL_AT_TAKEOFF.value
-            ]
+            outputs["data:weight:aircraft:sizing_onboard_fuel_at_input_weight"] = (
+                outputs[self._name_provider.NEEDED_BLOCK_FUEL.value]
+                - self._mission_wrapper.consumed_fuel_before_input_weight
+            )
 
         def as_scalar(value):
             if isinstance(value, np.ndarray):
@@ -292,7 +257,7 @@ class MissionComponent(om.ExplicitComponent):
         return RegisterPropulsion.get_provider(self.options["propulsion_id"])
 
 
-def _get_variable_name_provider(mission_name, taxi_out_name):
+def _get_variable_name_provider(mission_name):
     """Factory for enum class that provide mission variable names."""
 
     def get_variable_name(suffix):
@@ -301,16 +266,10 @@ def _get_variable_name_provider(mission_name, taxi_out_name):
     class VariableNames(Enum):
         """Enum with mission-related variable names."""
 
-        START_ALTITUDE = get_variable_name("start:altitude")
-        START_TAS = get_variable_name("start:true_airspeed")
-        RAMP_WEIGHT = get_variable_name("ramp_weight")
         ZFW = get_variable_name("ZFW")
-        TOW = get_variable_name("TOW")
         PAYLOAD = get_variable_name("payload")
-        TAXI_OUT_FUEL = get_variable_name(f"{taxi_out_name}:fuel") if taxi_out_name else None
         BLOCK_FUEL = get_variable_name("block_fuel")
-        FUEL_AT_TAKEOFF = get_variable_name("onboard_fuel_at_takeoff")
         NEEDED_BLOCK_FUEL = get_variable_name("needed_block_fuel")
-        NEEDED_FUEL_AT_TAKEOFF = get_variable_name("needed_onboard_fuel_at_takeoff")
+        CONSUMED_FUEL_BEFORE_INPUT_WEIGHT = get_variable_name("consumed_fuel_before_input_weight")
 
     return VariableNames

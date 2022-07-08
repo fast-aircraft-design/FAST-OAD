@@ -21,11 +21,11 @@ import pandas as pd
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IPropulsion
 from fastoad.models.performances.mission.polar import Polar
-from fastoad.models.performances.mission.segments.base import FlightSegment
+from fastoad.models.performances.mission.segments.base import MassTargetSegment
 
 
 @dataclass
-class DummyTransitionSegment(FlightSegment, mission_file_keyword="transition"):
+class DummyTransitionSegment(MassTargetSegment, mission_file_keyword="transition"):
     """
     Computes a transient flight part in a very quick and dummy way.
 
@@ -60,11 +60,17 @@ class DummyTransitionSegment(FlightSegment, mission_file_keyword="transition"):
     #: Unused
     polar: Polar = None
 
-    def _compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        end = deepcopy(self.target)
+    def _compute_from(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+        end = deepcopy(target)
         end.name = self.name
-        if not end.mass:
-            end.mass = start.mass * self.mass_ratio
+
+        end_mass = start.mass * self.mass_ratio
+        if end.mass is None:
+            end.mass = end_mass
+        elif not self.target.is_relative("mass"):
+            start.mass += end.mass - end_mass
+
+        self.complete_flight_point_from(end, start)
         self.complete_flight_point(end)
 
         flight_points = [start, end]
@@ -81,7 +87,9 @@ class DummyTransitionSegment(FlightSegment, mission_file_keyword="transition"):
 
     # As we overloaded self.compute_from(), next abstract method are not used.
     # We just need to implement them for Python to be happy.
-    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
+    def get_distance_to_target(
+        self, flight_points: List[FlightPoint], target: FlightPoint
+    ) -> float:
         pass
 
     def compute_propulsion(self, flight_point: FlightPoint):

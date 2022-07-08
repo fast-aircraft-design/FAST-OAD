@@ -1,4 +1,16 @@
 phases:
+  start:
+    parts:
+      - segment: start
+        target:
+          altitude:
+            value: ~
+            unit: ft
+            default: 0.0
+          true_airspeed:
+            value: ~
+            unit: m/s
+            default: 0.0
   taxi_out:
     parts:
       - segment: taxi
@@ -121,6 +133,7 @@ missions:
       - route: main_route
   operational:
     parts:
+      - phase: start
       - phase: taxi_out
       - phase: takeoff
       - route: main_route
