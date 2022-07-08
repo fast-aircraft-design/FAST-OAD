@@ -21,7 +21,6 @@ from fastoad.model_base import FlightPoint
 from fastoad.models.performances.mission.segments.base import (
     FixedDurationSegment,
     FlightSegment,
-    MassTargetSegment,
 )
 from .base import ManualThrustSegment
 from ..polar import Polar
@@ -29,7 +28,6 @@ from ..polar import Polar
 
 @dataclass
 class TaxiSegment(
-    MassTargetSegment,
     ManualThrustSegment,
     FixedDurationSegment,
     FlightSegment,

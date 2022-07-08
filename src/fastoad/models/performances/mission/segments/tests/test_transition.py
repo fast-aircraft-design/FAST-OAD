@@ -15,6 +15,7 @@
 from numpy.testing import assert_allclose
 
 from fastoad.model_base import FlightPoint
+from ..base import MassTargetSegment
 from ..transition import DummyTransitionSegment
 
 
@@ -111,7 +112,7 @@ def test_dummy_reserve():
 
 
 def test_dummy_target_mass():
-    dummy_target_mass = DummyTransitionSegment(target=FlightPoint(mass=70.0e5))
+    dummy_target_mass = MassTargetSegment(target=FlightPoint(mass=70.0e5))
 
     flight_points = dummy_target_mass.compute_from(
         FlightPoint(altitude=10.0, time=1000.0, mach=0.3, mass=100.0e5)

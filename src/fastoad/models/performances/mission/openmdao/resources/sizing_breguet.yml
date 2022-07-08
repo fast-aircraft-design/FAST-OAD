@@ -19,10 +19,8 @@ phases:
           delta_mass: -~fuel
           time: ~duration
           true_airspeed: ~V2
-      - segment: transition
+      - segment: mass_input
         target:
-          delta_altitude: 0.0
-          delta_true_airspeed: 0.0
           mass: data:mission:sizing:TOW
   climb:
     parts:

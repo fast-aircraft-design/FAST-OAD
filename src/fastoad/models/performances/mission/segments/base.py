@@ -631,7 +631,7 @@ class FixedDurationSegment(AbstractFlightSegment, ABC):
 
 
 @dataclass
-class MassTargetSegment(AbstractFlightSegment, ABC):
+class MassTargetSegment(AbstractFlightSegment, mission_file_keyword="mass_input"):
     """
     Class that can set a target mass.
 
@@ -639,13 +639,6 @@ class MassTargetSegment(AbstractFlightSegment, ABC):
     """
 
     def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
-        if target.mass:
-            start.mass = target.mass
-
-        flight_points = super().compute_from_start_to_target(start, target)
-
-        if target.mass:
-            consumed_fuel = start.mass - flight_points.mass.iloc[-1]
-            flight_points.mass += consumed_fuel
-
-        return flight_points
+        start.mass = target.mass
+        self.complete_flight_point(start)
+        return pd.DataFrame([start])

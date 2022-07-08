@@ -16,6 +16,7 @@ from numpy.testing import assert_allclose
 
 from fastoad.model_base import FlightPoint
 from ..base import FlightSequence
+from ..segments.base import MassTargetSegment
 from ..segments.taxi import TaxiSegment
 
 
@@ -48,7 +49,11 @@ def get_sequence_without_target_mass(propulsion):
 
 
 def get_sequence_with_target_mass(propulsion):
-    return [get_taxi_definition(propulsion), get_taxi_definition(propulsion, target_mass=70000.0)]
+    return [
+        get_taxi_definition(propulsion),
+        get_taxi_definition(propulsion),
+        MassTargetSegment(target=FlightPoint(mass=70000.0)),
+    ]
 
 
 def get_nested_flight_sequence_without_target_mass(propulsion):
