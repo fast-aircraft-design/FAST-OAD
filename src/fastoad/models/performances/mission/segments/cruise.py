@@ -27,7 +27,7 @@ from ..util import get_closest_flight_level
 
 
 @dataclass
-class CruiseSegment(RegulatedThrustSegment):
+class CruiseSegment(RegulatedThrustSegment, FlightSegment):
     """
     Class for computing cruise flight segment at constant altitude and speed.
 
@@ -69,10 +69,10 @@ class OptimalCruiseSegment(CruiseSegment, mission_file_keyword="optimal_cruise")
     `true_airspeed` and `equivalent_airspeed`. If not, Mach will be assumed constant.
     """
 
-    def _compute_from(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+    def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
         start.altitude = self._get_optimal_altitude(start.mass, start.mach)
         self.complete_flight_point(start)
-        return super()._compute_from(start, target)
+        return super().compute_from_start_to_target(start, target)
 
     def _compute_next_altitude(self, next_point: FlightPoint, previous_point: FlightPoint):
         next_point.altitude = self._get_optimal_altitude(
@@ -109,7 +109,7 @@ class ClimbAndCruiseSegment(CruiseSegment, mission_file_keyword="cruise"):
     #: The maximum allowed flight level (i.e. multiple of 100 feet).
     maximum_flight_level: float = 500.0
 
-    def _compute_from(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+    def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
         climb_segment = deepcopy(self.climb_segment)
         climb_segment.target = target
 
@@ -157,7 +157,7 @@ class ClimbAndCruiseSegment(CruiseSegment, mission_file_keyword="cruise"):
                 start, target.altitude, climb_segment, cruise_segment
             )
         else:
-            results = super()._compute_from(start, target)
+            results = super().compute_from_start_to_target(start, target)
 
         return results
 
@@ -213,7 +213,7 @@ class BreguetCruiseSegment(
     #: The reference area, in m**2. Used only if use_max_lift_drag_ratio is False.
     reference_area: float = 1.0
 
-    def _compute_from(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+    def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
         cruise_mass_ratio = self._compute_cruise_mass_ratio(
             start, target.ground_distance - start.ground_distance
         )

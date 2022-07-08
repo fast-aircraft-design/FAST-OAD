@@ -21,7 +21,7 @@ import pandas as pd
 from scipy.constants import foot, g
 
 from fastoad.model_base import FlightPoint
-from .base import ManualThrustSegment
+from .base import FlightSegment, ManualThrustSegment
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
 from ..util import get_closest_flight_level
 
@@ -29,7 +29,9 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 @dataclass
-class AltitudeChangeSegment(ManualThrustSegment, mission_file_keyword="altitude_change"):
+class AltitudeChangeSegment(
+    ManualThrustSegment, FlightSegment, mission_file_keyword="altitude_change"
+):
     """
     Computes a flight path segment where altitude is modified with constant speed.
 
@@ -79,7 +81,7 @@ class AltitudeChangeSegment(ManualThrustSegment, mission_file_keyword="altitude_
     #: with max lift/drag ratio.
     OPTIMAL_FLIGHT_LEVEL = "optimal_flight_level"  # pylint: disable=invalid-name # used as constant
 
-    def _compute_from(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+    def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
         if target.altitude is not None:
             if isinstance(target.altitude, str):
                 # Target altitude will be modified along the process, so we keep track
@@ -103,7 +105,7 @@ class AltitudeChangeSegment(ManualThrustSegment, mission_file_keyword="altitude_
             atm.mach = start.mach
             start.true_airspeed = atm.true_airspeed
 
-        return super()._compute_from(start, target)
+        return super().compute_from_start_to_target(start, target)
 
     def get_distance_to_target(
         self, flight_points: List[FlightPoint], target: FlightPoint

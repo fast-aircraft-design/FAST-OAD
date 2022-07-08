@@ -12,10 +12,18 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .base import FixedDurationSegment, RegulatedThrustSegment
+from dataclasses import dataclass
+
+from .base import FixedDurationSegment, FlightSegment, RegulatedThrustSegment
 
 
-class HoldSegment(RegulatedThrustSegment, FixedDurationSegment, mission_file_keyword="holding"):
+@dataclass
+class HoldSegment(
+    RegulatedThrustSegment,
+    FixedDurationSegment,
+    FlightSegment,
+    mission_file_keyword="holding",
+):
     """
     Class for computing hold flight segment.
 

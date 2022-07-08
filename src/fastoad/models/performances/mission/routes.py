@@ -24,7 +24,7 @@ from scipy.optimize import root_scalar
 from fastoad._utils.datacls import BaseDataClass
 from fastoad.model_base import FlightPoint
 from fastoad.models.performances.mission.base import FlightSequence, IFlightPart
-from fastoad.models.performances.mission.segments.base import FlightSegment
+from fastoad.models.performances.mission.segments.base import AbstractFlightSegment
 from fastoad.models.performances.mission.segments.cruise import CruiseSegment
 
 
@@ -77,7 +77,7 @@ class SimpleRoute(FlightSequence):
         for segment in climb_segments:
             for speed_param in ["true_airspeed", "equivalent_airspeed", "mach"]:
                 speed_value = getattr(segment.target, speed_param)
-                if speed_value and speed_value != FlightSegment.CONSTANT_VALUE:
+                if speed_value and speed_value != AbstractFlightSegment.CONSTANT_VALUE:
                     return speed_param, speed_value
 
         return None
@@ -130,7 +130,7 @@ class RangedRoute(SimpleRoute):
     def _get_ground_distances(cls, phase: FlightSequence) -> list:
         ground_distances = []
         for flight_part in phase.flight_sequence:
-            if isinstance(flight_part, FlightSegment):
+            if isinstance(flight_part, AbstractFlightSegment):
                 ground_distances.append(flight_part.target.ground_distance)
             else:
                 ground_distances.extend(cls._get_ground_distances(flight_part))
