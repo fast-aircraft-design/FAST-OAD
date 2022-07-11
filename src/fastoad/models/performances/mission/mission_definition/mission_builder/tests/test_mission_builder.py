@@ -28,9 +28,10 @@ from fastoad.models.performances.mission.segments.hold import HoldSegment
 from fastoad.models.performances.mission.segments.speed_change import SpeedChangeSegment
 from fastoad.models.performances.mission.segments.taxi import TaxiSegment
 from fastoad.openmdao.variables import Variable
-from ..exceptions import FastMissionFileMissingMissionNameError
-from ..mission_builder import InputDefinition, MissionBuilder
-from ..schema import MissionDefinition
+from ..mission_builder import InputDefinition
+from ..mission_builder import MissionBuilder
+from ...exceptions import FastMissionFileMissingMissionNameError
+from ...schema import MissionDefinition
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 

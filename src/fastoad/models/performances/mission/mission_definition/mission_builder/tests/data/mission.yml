@@ -1,0 +1,191 @@
+phases:
+  initial_climb:
+    engine_setting: takeoff
+    polar:
+      CL: [ 0.0, 0.5, 1.0 ]
+      CD: [ 0., 0.03, 0.12 ]
+    thrust_rate:
+      value: data:propulsion:initial_climb:thrust_rate
+      default: 1.0
+    time_step:
+      value: settings:mission:~
+      unit: s
+    parts:
+      - segment: altitude_change
+        target:
+          altitude:
+            value: 400.
+            unit: ft
+          equivalent_airspeed:
+            value: constant
+      - segment: speed_change
+        polar: data:aerodynamics:aircraft:takeoff
+        target:
+          equivalent_airspeed:
+            value: 250
+            unit: kn
+      - segment: altitude_change
+        polar:
+          CL: data:aerodynamics:aircraft:takeoff:CL
+          CD: data:aerodynamics:aircraft:takeoff:CD
+        target:
+          altitude:
+            value: 1500.
+            unit: ft
+          equivalent_airspeed:
+            value: constant
+  climb:
+    engine_setting: climb
+    polar: data:aerodynamics:aircraft:cruise
+    thrust_rate: data:propulsion:climb:thrust_rate
+    time_step:
+      value:
+      unit: s
+    parts:
+      - segment: altitude_change
+        target:
+          altitude:
+            value: 10000.
+            unit: ft
+          equivalent_airspeed:
+            value: constant
+      - segment: speed_change
+        target:
+          equivalent_airspeed:
+            value: 300.
+            unit: kn
+      - segment: altitude_change
+        target:
+          equivalent_airspeed: constant
+          mach: data:TLAR:cruise_mach
+      - segment: altitude_change
+        target:
+          mach: constant
+          altitude:
+            value: -20000.
+  diversion_climb:
+    engine_setting: climb
+    polar: data:aerodynamics:aircraft:cruise
+    thrust_rate: 0.93
+    time_step:
+      value: settings:mission~t_step
+      unit: s
+    parts:
+      - segment: altitude_change
+        target:
+          altitude:
+            value: 10000.
+            unit: ft
+          equivalent_airspeed: constant
+      - segment: speed_change
+        target:
+          equivalent_airspeed:
+            value: 300.
+            unit: kn
+      - segment: altitude_change
+        target:
+          altitude:
+            value: 22000.
+            unit: ft
+          equivalent_airspeed: constant
+  descent:
+    engine_setting:
+      value: idle
+    polar: data:aerodynamics:aircraft:cruise
+    thrust_rate: data:propulsion:descent:thrust_rate
+    parts:
+      - segment: altitude_change
+        target:
+          equivalent_airspeed:
+            value: 300
+            unit: kn
+          mach:
+            value: constant
+      - segment: altitude_change
+        target:
+          altitude:
+            value: 10000.
+            unit: ft
+          equivalent_airspeed:
+            value: constant
+      - segment: speed_change
+        target:
+          equivalent_airspeed:
+            value: 250.
+            unit: kn
+      - segment: altitude_change
+        target:
+          equivalent_airspeed:
+            value: constant
+          altitude: ~:final_altitude
+  holding:
+    parts:
+      - segment: holding
+        polar: data:aerodynamics:aircraft:cruise
+        target:
+          delta_time: ~duration
+  taxi_out:
+    parts:
+      - segment: taxi
+        thrust_rate: ~
+        true_airspeed: 0.
+        target:
+          delta_time: ~:duration
+          mass:
+            value: ~TOW
+            unit: kg
+  taxi_in:
+    thrust_rate: ~
+    parts:
+      - segment: taxi
+        true_airspeed: 0.
+        target:
+          delta_time: ~duration
+
+routes:
+  main:
+    range: ~
+    distance_accuracy: 500
+    climb_parts:
+      - phase: initial_climb
+      - phase: climb
+    cruise_part:
+      segment: optimal_cruise
+      engine_setting: cruise
+      polar: data:aerodynamics:aircraft:cruise
+    descent_parts:
+      - phase: descent
+
+  diversion:
+    range: ~
+    distance_accuracy:
+      value: 0.1
+      unit: km
+    climb_parts:
+      - phase: diversion_climb
+    cruise_part:
+        segment: cruise
+        engine_setting: cruise
+        polar: data:aerodynamics:aircraft:cruise
+    descent_parts:
+      - phase: descent
+
+missions:
+  sizing:
+    parts:
+      - route: main
+      - route: diversion
+      - phase: holding
+      - phase: taxi_in
+      - reserve:
+          ref: main
+          multiplier: 0.03
+  operational:
+    parts:
+      - phase: taxi_out
+      - route: main
+      - phase: taxi_in
+      - reserve:
+          ref: main
+          multiplier: 0.02
+

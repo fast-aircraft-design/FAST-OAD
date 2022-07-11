@@ -30,8 +30,8 @@ from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IPropulsion
 from fastoad.openmdao.variables import Variable, VariableList
-from .exceptions import FastMissionFileMissingMissionNameError
-from .schema import (
+from ..exceptions import FastMissionFileMissingMissionNameError
+from ..schema import (
     CLIMB_PARTS_TAG,
     CRUISE_PART_TAG,
     DESCENT_PARTS_TAG,
@@ -45,10 +45,10 @@ from .schema import (
     ROUTE_TAG,
     SEGMENT_TAG,
 )
-from ..base import FlightSequence
-from ..polar import Polar
-from ..routes import RangedRoute
-from ..segments.base import AbstractFlightSegment, SegmentDefinitions
+from ...base import FlightSequence
+from ...polar import Polar
+from ...routes import RangedRoute
+from ...segments.base import AbstractFlightSegment, SegmentDefinitions
 
 # FIXME: should be set in Route class
 
