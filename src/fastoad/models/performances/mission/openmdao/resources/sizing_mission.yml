@@ -1,4 +1,16 @@
 phases:
+  start:
+    parts:
+      - segment: start
+        target:
+          altitude:
+            value: ~
+            unit: ft
+            default: 0.0
+          true_airspeed:
+            value: ~
+            unit: m/s
+            default: 0.0
   taxi_out:
     time_step:
       value: settings:mission~
@@ -213,6 +225,7 @@ missions:
       unit: degK
       default: 0.0
     parts:
+      - phase: start
       - phase: taxi_out
       - phase: takeoff
       - route: main_route
