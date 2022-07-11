@@ -108,19 +108,3 @@ def test_dummy_reserve():
 
     # A second call is done to ensure first run did not modify anything (like target definition)
     run()
-
-
-def test_dummy_target_mass():
-    dummy_target_mass = DummyTransitionSegment(target=FlightPoint(mass=70.0e5))
-
-    flight_points = dummy_target_mass.compute_from(
-        FlightPoint(altitude=10.0, time=1000.0, mach=0.3, mass=100.0e5)
-    )
-
-    start_point = flight_points.iloc[0]
-    last_point = flight_points.iloc[-1]
-    assert_allclose(last_point.altitude, 10.0, atol=1.0)
-    assert_allclose(last_point.time, 1000.0, rtol=1e-2)
-    assert_allclose(last_point.mach, 0.3, atol=0.001)
-    assert_allclose(start_point.mass, 70.0e5, rtol=1e-4)
-    assert_allclose(last_point.mass, 70.0e5, rtol=1e-4)

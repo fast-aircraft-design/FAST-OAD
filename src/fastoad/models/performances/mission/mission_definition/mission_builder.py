@@ -17,7 +17,7 @@ Mission generator.
 from abc import ABC, abstractmethod
 from collections import ChainMap, OrderedDict
 from copy import deepcopy
-from dataclasses import InitVar, dataclass, field
+from dataclasses import InitVar, dataclass, field, fields
 from itertools import chain
 from numbers import Number
 from typing import Dict, Iterable, List, Mapping, Optional, Tuple, Union
@@ -48,7 +48,7 @@ from .schema import (
 from ..base import FlightSequence
 from ..polar import Polar
 from ..routes import RangedRoute
-from ..segments.base import FlightSegment, SegmentDefinitions
+from ..segments.base import AbstractFlightSegment, SegmentDefinitions
 
 # FIXME: should be set in Route class
 
@@ -797,24 +797,18 @@ class MissionBuilder:
 
         return phase
 
-    def _build_segment(self, segment_definition: Mapping, kwargs: Mapping) -> FlightSegment:
+    def _build_segment(self, segment_definition: Mapping, kwargs: Mapping) -> AbstractFlightSegment:
         """
         Builds a flight segment according to provided definition.
 
         :param segment_definition: the segment definition from mission file
-        :param kwargs: a preset of keyword arguments for FlightSegment instantiation
+        :param kwargs: a preset of keyword arguments for AbstractFlightSegment instantiation
         :param tag: the expected tag for specifying the segment type
         :return: the FlightSegment instance
         """
         segment_class = SegmentDefinitions.get_segment_class(segment_definition[SEGMENT_TYPE_TAG])
         part_kwargs = kwargs.copy()
-        part_kwargs.update(
-            {
-                name: value
-                for name, value in segment_definition.items()
-                if name not in [SEGMENT_TYPE_TAG, TYPE_TAG]
-            }
-        )
+        part_kwargs.update({name: value for name, value in segment_definition.items()})
         part_kwargs.update(self._base_kwargs)
         for key, value in part_kwargs.items():
             if key == "polar":
@@ -837,6 +831,10 @@ class MissionBuilder:
         if "engine_setting" in part_kwargs:
             part_kwargs["engine_setting"] = EngineSetting.convert(part_kwargs["engine_setting"])
 
+        input_field_names = [
+            class_field.name for class_field in fields(segment_class) if class_field.init
+        ]
+        part_kwargs = {key: value for key, value in part_kwargs.items() if key in input_field_names}
         segment = segment_class(**part_kwargs)
         return segment
 

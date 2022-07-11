@@ -19,18 +19,18 @@ import pandas as pd
 
 from fastoad.model_base import FlightPoint
 from fastoad.models.performances.mission.segments.base import (
-    FixedDurationSegment,
-    MassTargetSegment,
+    AbstractFixedDurationSegment,
+    AbstractTimeStepFlightSegment,
 )
-from .base import ManualThrustSegment
+from .base import AbstractManualThrustSegment
 from ..polar import Polar
 
 
 @dataclass
 class TaxiSegment(
-    MassTargetSegment,
-    ManualThrustSegment,
-    FixedDurationSegment,
+    AbstractManualThrustSegment,
+    AbstractFixedDurationSegment,
+    AbstractTimeStepFlightSegment,
     mission_file_keyword="taxi",
     attribute_units=dict(true_airspeed="m/s"),
 ):
@@ -49,9 +49,10 @@ class TaxiSegment(
     def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
         return 0.0, 0.0
 
-    def _compute_from(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+    def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
         start.mach = None
         start.equivalent_airspeed = None
         start.true_airspeed = self.true_airspeed
+        self.complete_flight_point(start)
 
-        return super()._compute_from(start, target)
+        return super().compute_from_start_to_target(start, target)
