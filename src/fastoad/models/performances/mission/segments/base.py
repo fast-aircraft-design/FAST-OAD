@@ -283,12 +283,6 @@ class AbstractFlightSegment(IFlightPart, ABC):
         return AtmosphereSI(altitude, self.isa_offset)
 
 
-@deprecated("Class FlightSegment will be removed in version 2.0. Please use AbstractFlightSegment.")
-@dataclass
-class FlightSegment(AbstractFlightSegment, ABC):
-    pass
-
-
 @dataclass
 class AbstractPolarSegment(AbstractFlightSegment, ABC):
     """
@@ -588,6 +582,15 @@ class AbstractTimeStepFlightSegment(
         ).root
 
         return optimal_altitude
+
+
+@deprecated(
+    "Class FlightSegment will be removed in version 2.0. "
+    "It is replaced by class AbstractTimeStepFlightSegment."
+)
+@dataclass
+class FlightSegment(AbstractTimeStepFlightSegment, ABC):
+    pass
 
 
 @dataclass
