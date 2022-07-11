@@ -1,4 +1,12 @@
 phases:
+  test_phase:
+    parts:
+      - segment: test_segment
+        scalar_parameter: 42.0
+        vector_parameter_1: some:static:array
+        vector_parameter_2: some:dynamic:array
+        target:
+          altitude: 0.0
   initial_climb:
     engine_setting: takeoff
     polar:
@@ -164,9 +172,9 @@ routes:
     climb_parts:
       - phase: diversion_climb
     cruise_part:
-        segment: cruise
-        engine_setting: cruise
-        polar: data:aerodynamics:aircraft:cruise
+      segment: cruise
+      engine_setting: cruise
+      polar: data:aerodynamics:aircraft:cruise
     descent_parts:
       - phase: descent
 
@@ -188,4 +196,6 @@ missions:
       - reserve:
           ref: main
           multiplier: 0.02
-
+  test:
+    parts:
+      - phase: test_phase

@@ -21,9 +21,11 @@ be transformed in a Python implementation.
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from copy import deepcopy
-from dataclasses import InitVar, dataclass, field
+from dataclasses import InitVar, dataclass, field, fields
 from itertools import chain
 from typing import List, Tuple
+
+import numpy as np
 
 from .constants import NAME_TAG, SEGMENT_TYPE_TAG, TYPE_TAG
 from .input_definition import InputDefinition
@@ -39,6 +41,7 @@ from ..schema import (
     ROUTE_TAG,
     SEGMENT_TAG,
 )
+from ...segments.base import SegmentDefinitions
 
 
 @dataclass
@@ -153,17 +156,18 @@ class AbstractStructureBuilder(ABC):
         """
 
         if isinstance(structure, dict):
-            if "value" in structure.keys():
+            if "polar" in structure:
+                structure["polar"] = self._process_polar(structure["polar"])
+
+            if "value" in structure:
                 input_definition = InputDefinition.from_dict(
                     parent, structure, part_identifier=part_identifier
                 )
                 input_definitions.append(input_definition)
                 return input_definition
 
-            name = structure.get(NAME_TAG, "")
-            if name:
-                part_identifier = name
-
+            part_identifier = structure.get(NAME_TAG, part_identifier)
+            segment_class = SegmentDefinitions.get_segment_class(structure.get(SEGMENT_TYPE_TAG))
             for key, value in structure.items():
                 if key not in [
                     NAME_TAG,
@@ -174,14 +178,58 @@ class AbstractStructureBuilder(ABC):
                     DESCENT_PARTS_TAG,
                     CRUISE_PART_TAG,
                 ]:
+                    if segment_class:
+                        self._process_shape_by_conn(key, value, segment_class)
+
                     structure[key] = self._parse_inputs(
-                        value, input_definitions, parent=key, part_identifier=part_identifier
+                        value,
+                        input_definitions,
+                        parent=key,
+                        part_identifier=part_identifier,
                     )
             return structure
 
         input_definition = InputDefinition(parent, structure, part_identifier=part_identifier)
         input_definitions.append(input_definition)
         return input_definition
+
+    def _process_shape_by_conn(self, key, value, segment_class):
+        """
+        Here variables that are expected to be arrays or lists in the provided segment class are
+        attributed the "shape_by_conn=True" property.
+        """
+        segment_fields = [fld for fld in fields(segment_class) if fld.name == key]
+        if len(segment_fields) == 1 and isinstance(value, dict) and "value" in value:
+            value["shape_by_conn"] = segment_fields[0].type in [list, np.ndarray]
+
+    @staticmethod
+    def _process_polar(polar_structure):
+        """
+        Polar data are handled specifically, as it a particular parameter of segments (
+        a Polar class).
+
+        If "foo:bar:baz" is provided as `polar_structure`, it is replaced by the dict
+        { "CL": {value:"foo:bar:baz:CL", "shape_by_conn": True},
+          "CD": {value:"foo:bar:baz:CD", "shape_by_conn": True}}
+
+        Also, even if `polar_structure` is a dict, it is ensured that it has the structure above.
+        """
+
+        if isinstance(polar_structure, str):
+            polar_structure = OrderedDict(
+                {
+                    "CL": {"value": polar_structure + ":CL", "shape_by_conn": True},
+                    "CD": {"value": polar_structure + ":CD", "shape_by_conn": True},
+                }
+            )
+        elif isinstance(polar_structure, dict):
+            for key in ["CL", "CD"]:
+                if isinstance(polar_structure[key], str):
+                    polar_structure[key] = {"value": polar_structure[key], "shape_by_conn": True}
+                elif isinstance(polar_structure[key], dict):
+                    polar_structure[key]["shape_by_conn"] = True
+
+        return polar_structure
 
 
 class DefaultStructureBuilder(AbstractStructureBuilder):

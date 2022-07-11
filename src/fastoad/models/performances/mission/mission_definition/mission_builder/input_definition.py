@@ -14,7 +14,7 @@
 
 from dataclasses import InitVar, dataclass, field
 from numbers import Number
-from typing import Iterable, Mapping, Optional, Union
+from typing import Iterable, Mapping, Optional, Tuple, Union
 
 import numpy as np
 from openmdao import api as om
@@ -55,6 +55,12 @@ class InputDefinition:
     #: Unit used for self.value. Automatically determined from self.parameter_name,
     #: mainly from unit definition for FlightPoint class.
     output_unit: Optional[str] = field(default=None, init=False, repr=False)
+
+    #: Value of the "shape" openMDAO flag for input declaration.
+    shape: Optional[Tuple[int]] = None
+
+    #: Value of the "shape_by_conn" openMDAO flag for input declaration.
+    shape_by_conn: bool = False
 
     #: Used only for tests
     variable_name: InitVar[Optional[str]] = None
@@ -132,6 +138,7 @@ class InputDefinition:
             definition_dict["value"],
             input_unit=definition_dict.get("unit"),
             default_value=definition_dict.get("default", np.nan),
+            shape_by_conn=definition_dict.get("shape_by_conn", False),
             part_identifier=part_identifier,
         )
         return input_def
@@ -161,11 +168,10 @@ class InputDefinition:
         :return: Variable instance with input definition, or None if no variable name was defined.
         """
         if self.variable_name:
-            shape_by_conn = self.variable_name.endswith(":CD") or self.variable_name.endswith(":CL")
             return Variable(
                 name=self.variable_name,
                 val=self.default_value,
-                shape_by_conn=shape_by_conn,
+                shape_by_conn=self.shape_by_conn,
                 units=self.input_unit,
                 desc="Input defined by the mission.",
             )
