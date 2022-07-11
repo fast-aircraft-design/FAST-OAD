@@ -28,7 +28,7 @@ from fastoad.models.performances.mission.segments.hold import HoldSegment
 from fastoad.models.performances.mission.segments.speed_change import SpeedChangeSegment
 from fastoad.models.performances.mission.segments.taxi import TaxiSegment
 from fastoad.openmdao.variables import Variable
-from ..mission_builder import InputDefinition
+from ..input_definition import InputDefinition
 from ..mission_builder import MissionBuilder
 from ...exceptions import FastMissionFileMissingMissionNameError
 from ...schema import MissionDefinition
