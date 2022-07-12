@@ -24,7 +24,9 @@ from collections import defaultdict
 from collections.abc import Iterable
 from time import time
 from typing import Dict, IO, List, Union
-from multiprocessing import Pool
+
+# from multiprocessing import Pool
+from pathos.pools import ProcessPool as Pool
 
 import openmdao.api as om
 import pandas as pd
@@ -750,37 +752,7 @@ def _run_multistart(problem: FASTOADProblem, conf: FASTOADProblemConfigurator):
 
     successfull_problems = []
 
-    def _run_sample(sample, problem, objective_name):
-        # Set initial values of design variables
-        for name, value in sample.items():
-            problem.set_val(name, val=value)
-
-        # Run the problem
-        failed_to_converge = problem.run_driver()
-
-        # Keep only the problems that converged correctly
-        if not failed_to_converge:
-            return tuple([problem.get_val(name=objective_name), problem])
-
-    with Pool(num_proc) as pool:
-        # processed = pool.map(
-        #     lambda item: _run_sample(
-        #         item,
-        #         problem=problem,
-        #         successfull_problems=successfull_problems,
-        #         objective_name=objective_name,
-        #     ),
-        #     samples,
-        # )
-
-        for sample in samples:
-            result = pool.apply_async(
-                _run_sample, (sample, problem, successfull_problems, objective_name)
-            )
-            print(result.get())
-
-        pool.close()
-        pool.join()
+    _run_samples(num_proc, samples, problem, successfull_problems, objective_name)
 
     # for sample in samples:
     #     _run_sample(sample, problem=problem, successfull_problems=successfull_problems)
@@ -788,3 +760,41 @@ def _run_multistart(problem: FASTOADProblem, conf: FASTOADProblemConfigurator):
     # Find the best result
     min_objective = min(successfull_problems, key=lambda t: t[0])
     return min_objective[1]
+
+
+def _run_sample(sample, problem, successfull_problems, objective_name):
+    # Set initial values of design variables
+    for name, value in sample.items():
+        problem.set_val(name, val=value)
+
+    # Run the problem
+    failed_to_converge = problem.run_driver()
+
+    # Keep only the problems that converged correctly
+    if not failed_to_converge:
+        return tuple([problem.get_val(name=objective_name), problem])
+
+
+def _run_samples(num_proc, samples, problem, successfull_problems, objective_name):
+    with Pool(num_proc) as pool:
+        # processed = pool.map(
+        #     lambda item: _run_sample(
+        #         item,
+        #         problem=problem,
+        #         objective_name=objective_name,
+        #     ),
+        #     samples,
+        # )
+        #
+        # print(processed)
+
+        for sample in samples:
+            result = pool.apply_async(_run_sample, (sample, problem, objective_name)).get()
+            successfull_problems.append(result)
+        multiple_results = [
+            pool.apply_async(_run_sample, (sample, problem, objective_name)) for sample in samples
+        ]
+        print([res.get(timeout=1) for res in multiple_results])
+
+        pool.close()
+        pool.join()
