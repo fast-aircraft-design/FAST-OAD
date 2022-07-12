@@ -24,7 +24,7 @@ from collections import defaultdict
 from collections.abc import Iterable
 from time import time
 from typing import Dict, IO, List, Union
-import copy
+from multiprocessing import Pool
 
 import openmdao.api as om
 import pandas as pd
@@ -720,10 +720,10 @@ def _run_multistart(problem: FASTOADProblem, conf: FASTOADProblemConfigurator):
                 criterion = optimization_option.get("criterion")
             else:
                 criterion = None
-            # if optimization_option.get("num_proc") is not None:
-            #     num_proc = optimization_option.get("num_proc")
-            # else:
-            #     num_proc = 1
+            if optimization_option.get("num_proc") is not None:
+                num_proc = optimization_option.get("num_proc")
+            else:
+                num_proc = 1
 
     design_variables = conf._get_design_vars()
     num_design_var = len(design_variables.values())
@@ -748,36 +748,42 @@ def _run_multistart(problem: FASTOADProblem, conf: FASTOADProblemConfigurator):
     # We do not consider multiobjective, therefore take the first
     objective_name = list(objectives.values())[0]["name"]
 
-    def _run_sample(sample, problem=None, successfull_problems=None):
-        # TODO: check new way to copy Problem
-        problem_copy = copy.deepcopy(problem)
-        problem_copy.setup()
+    successfull_problems = []
 
+    def _run_sample(sample, problem, objective_name):
         # Set initial values of design variables
         for name, value in sample.items():
-            problem_copy.set_val(name, val=value)
+            problem.set_val(name, val=value)
 
         # Run the problem
-        failed_to_converge = problem_copy.run_driver()
+        failed_to_converge = problem.run_driver()
 
         # Keep only the problems that converged correctly
         if not failed_to_converge:
-            successfull_problems.append(
-                tuple([problem_copy.get_val(name=objective_name), problem_copy])
+            return tuple([problem.get_val(name=objective_name), problem])
+
+    with Pool(num_proc) as pool:
+        # processed = pool.map(
+        #     lambda item: _run_sample(
+        #         item,
+        #         problem=problem,
+        #         successfull_problems=successfull_problems,
+        #         objective_name=objective_name,
+        #     ),
+        #     samples,
+        # )
+
+        for sample in samples:
+            result = pool.apply_async(
+                _run_sample, (sample, problem, successfull_problems, objective_name)
             )
+            print(result.get())
 
-    successfull_problems = []
+        pool.close()
+        pool.join()
 
-    # with Pool(num_proc) as pool:
-    #     processed = pool.map(
-    #         lambda item: _run_sample(
-    #             item, problem=problem, successfull_problems=successfull_problems
-    #         ),
-    #         samples,
-    #     )
-
-    for sample in samples:
-        _run_sample(sample, problem=problem, successfull_problems=successfull_problems)
+    # for sample in samples:
+    #     _run_sample(sample, problem=problem, successfull_problems=successfull_problems)
 
     # Find the best result
     min_objective = min(successfull_problems, key=lambda t: t[0])
