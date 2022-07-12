@@ -13,6 +13,7 @@
 
 import os.path as pth
 from collections import OrderedDict
+from dataclasses import dataclass
 from unittest.mock import Mock
 
 import numpy as np
@@ -21,18 +22,31 @@ import pytest
 from numpy.testing import assert_allclose
 from scipy.constants import foot, knot
 
+from fastoad._utils.datacls import BaseDataClass
 from fastoad.model_base.propulsion import IPropulsion
 from fastoad.models.performances.mission.base import FlightSequence
 from fastoad.models.performances.mission.segments.altitude_change import AltitudeChangeSegment
+from fastoad.models.performances.mission.segments.base import AbstractFlightSegment
 from fastoad.models.performances.mission.segments.hold import HoldSegment
 from fastoad.models.performances.mission.segments.speed_change import SpeedChangeSegment
 from fastoad.models.performances.mission.segments.taxi import TaxiSegment
 from fastoad.openmdao.variables import Variable
-from ..exceptions import FastMissionFileMissingMissionNameError
-from ..mission_builder import InputDefinition, MissionBuilder
-from ..schema import MissionDefinition
+from ..input_definition import InputDefinition
+from ..mission_builder import MissionBuilder
+from ...exceptions import FastMissionFileMissingMissionNameError
+from ...schema import MissionDefinition
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
+
+
+@dataclass
+class TestSegment(AbstractFlightSegment, mission_file_keyword="test_segment"):
+    scalar_parameter: float = BaseDataClass.no_default
+    vector_parameter_1: np.ndarray = BaseDataClass.no_default
+    vector_parameter_2: np.ndarray = BaseDataClass.no_default
+
+    def compute_from_start_to_target(self, start, target) -> pd.DataFrame:
+        return pd.DataFrame([start])
 
 
 def test_input_definition_units():
@@ -68,6 +82,9 @@ def test_initialization():
     assert (
         mission_builder._structure_builders["operational"].structure
         == _get_expected_structure()["operational"]
+    )
+    assert (
+        mission_builder._structure_builders["test"].structure == _get_expected_structure()["test"]
     )
 
 
@@ -217,6 +234,30 @@ def test_build():
     assert len(taxi_in_phase.flight_sequence) == 1
     taxi_in = taxi_in_phase.flight_sequence[0]
     assert isinstance(taxi_in, TaxiSegment)
+
+    test_inputs = {
+        "some:static:array": [1.0, 2.0, 3.0],
+        "some:dynamic:array": np.linspace(0.0, 5.0, 6),
+    }
+    test_mission = mission_builder.build(test_inputs, mission_name="test")
+    assert len(test_mission.flight_sequence) == 1
+    assert isinstance(test_mission.flight_sequence[0], FlightSequence)
+    assert len(test_mission.flight_sequence[0].flight_sequence) == 1
+    segment = test_mission.flight_sequence[0].flight_sequence[0]
+    assert isinstance(segment, TestSegment)
+    assert segment.scalar_parameter == 42.0
+    assert_allclose(segment.vector_parameter_1, [1.0, 2.0, 3.0])
+    assert_allclose(
+        segment.vector_parameter_2,
+        [
+            0.0,
+            1.0,
+            2.0,
+            3.0,
+            4.0,
+            5.0,
+        ],
+    )
 
 
 def test_get_route_ranges():
@@ -406,6 +447,7 @@ def _get_expected_structure():
                                                             part_identifier="operational:main:initial_climb",
                                                             use_opposite=False,
                                                             variable_name="data:aerodynamics:aircraft:takeoff:CL",
+                                                            shape_by_conn=True,
                                                         ),
                                                     ),
                                                     (
@@ -419,6 +461,7 @@ def _get_expected_structure():
                                                             part_identifier="operational:main:initial_climb",
                                                             use_opposite=False,
                                                             variable_name="data:aerodynamics:aircraft:takeoff:CD",
+                                                            shape_by_conn=True,
                                                         ),
                                                     ),
                                                 ]
@@ -450,6 +493,7 @@ def _get_expected_structure():
                                                     part_identifier="operational:main:initial_climb",
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:takeoff:CD",
+                                                    shape_by_conn=True,
                                                 ),
                                                 "CL": InputDefinition(
                                                     parameter_name="CL",
@@ -460,6 +504,7 @@ def _get_expected_structure():
                                                     part_identifier="operational:main:initial_climb",
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:takeoff:CL",
+                                                    shape_by_conn=True,
                                                 ),
                                             },
                                             "segment_type": "altitude_change",
@@ -657,6 +702,7 @@ def _get_expected_structure():
                                                     part_identifier="operational:main:climb",
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                    shape_by_conn=True,
                                                 ),
                                             ),
                                             (
@@ -670,6 +716,7 @@ def _get_expected_structure():
                                                     part_identifier="operational:main:climb",
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                    shape_by_conn=True,
                                                 ),
                                             ),
                                         ]
@@ -722,6 +769,7 @@ def _get_expected_structure():
                                                 part_identifier="operational:main:cruise",
                                                 use_opposite=False,
                                                 variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                shape_by_conn=True,
                                             ),
                                         ),
                                         (
@@ -735,6 +783,7 @@ def _get_expected_structure():
                                                 part_identifier="operational:main:cruise",
                                                 use_opposite=False,
                                                 variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                shape_by_conn=True,
                                             ),
                                         ),
                                     ]
@@ -868,6 +917,7 @@ def _get_expected_structure():
                                                     part_identifier="operational:main:descent",
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                    shape_by_conn=True,
                                                 ),
                                             ),
                                             (
@@ -881,6 +931,7 @@ def _get_expected_structure():
                                                     part_identifier="operational:main:descent",
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                    shape_by_conn=True,
                                                 ),
                                             ),
                                         ]
@@ -1057,6 +1108,7 @@ def _get_expected_structure():
                                                             part_identifier="sizing:main:initial_climb",
                                                             use_opposite=False,
                                                             variable_name="data:aerodynamics:aircraft:takeoff:CL",
+                                                            shape_by_conn=True,
                                                         ),
                                                     ),
                                                     (
@@ -1070,6 +1122,7 @@ def _get_expected_structure():
                                                             part_identifier="sizing:main:initial_climb",
                                                             use_opposite=False,
                                                             variable_name="data:aerodynamics:aircraft:takeoff:CD",
+                                                            shape_by_conn=True,
                                                         ),
                                                     ),
                                                 ]
@@ -1101,6 +1154,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:main:initial_climb",
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:takeoff:CD",
+                                                    shape_by_conn=True,
                                                 ),
                                                 "CL": InputDefinition(
                                                     parameter_name="CL",
@@ -1111,6 +1165,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:main:initial_climb",
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:takeoff:CL",
+                                                    shape_by_conn=True,
                                                 ),
                                             },
                                             "segment_type": "altitude_change",
@@ -1308,6 +1363,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:main:climb",
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                    shape_by_conn=True,
                                                 ),
                                             ),
                                             (
@@ -1321,6 +1377,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:main:climb",
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                    shape_by_conn=True,
                                                 ),
                                             ),
                                         ]
@@ -1373,6 +1430,7 @@ def _get_expected_structure():
                                                 part_identifier="sizing:main:cruise",
                                                 use_opposite=False,
                                                 variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                shape_by_conn=True,
                                             ),
                                         ),
                                         (
@@ -1386,6 +1444,7 @@ def _get_expected_structure():
                                                 part_identifier="sizing:main:cruise",
                                                 use_opposite=False,
                                                 variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                shape_by_conn=True,
                                             ),
                                         ),
                                     ]
@@ -1519,6 +1578,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:main:descent",
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                    shape_by_conn=True,
                                                 ),
                                             ),
                                             (
@@ -1532,6 +1592,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:main:descent",
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                    shape_by_conn=True,
                                                 ),
                                             ),
                                         ]
@@ -1672,6 +1733,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:diversion:diversion_climb",
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                    shape_by_conn=True,
                                                 ),
                                             ),
                                             (
@@ -1685,6 +1747,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:diversion:diversion_climb",
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                    shape_by_conn=True,
                                                 ),
                                             ),
                                         ]
@@ -1737,6 +1800,7 @@ def _get_expected_structure():
                                                 part_identifier="sizing:diversion:cruise",
                                                 use_opposite=False,
                                                 variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                shape_by_conn=True,
                                             ),
                                         ),
                                         (
@@ -1750,6 +1814,7 @@ def _get_expected_structure():
                                                 part_identifier="sizing:diversion:cruise",
                                                 use_opposite=False,
                                                 variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                shape_by_conn=True,
                                             ),
                                         ),
                                     ]
@@ -1883,6 +1948,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:diversion:descent",
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                    shape_by_conn=True,
                                                 ),
                                             ),
                                             (
@@ -1896,6 +1962,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:diversion:descent",
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                    shape_by_conn=True,
                                                 ),
                                             ),
                                         ]
@@ -1954,6 +2021,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:holding",
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                    shape_by_conn=True,
                                                 ),
                                             ),
                                             (
@@ -1967,6 +2035,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:holding",
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                    shape_by_conn=True,
                                                 ),
                                             ),
                                         ]
@@ -2060,6 +2129,70 @@ def _get_expected_structure():
                     ],
                 ),
                 ("name", "sizing"),
+                ("type", "mission"),
+            ]
+        ),
+        "test": OrderedDict(
+            [
+                (
+                    "parts",
+                    [
+                        {
+                            "name": "test:test_phase",
+                            "parts": [
+                                {
+                                    "name": "test:test_phase",
+                                    "scalar_parameter": InputDefinition(
+                                        parameter_name="scalar_parameter",
+                                        input_value=42.0,
+                                        input_unit=None,
+                                        default_value=np.nan,
+                                        is_relative=False,
+                                        part_identifier="test:test_phase",
+                                        use_opposite=False,
+                                        variable_name=None,
+                                    ),
+                                    "segment_type": "test_segment",
+                                    "type": "segment",
+                                    "vector_parameter_1": InputDefinition(
+                                        parameter_name="vector_parameter_1",
+                                        input_value=None,
+                                        input_unit=None,
+                                        default_value=np.nan,
+                                        is_relative=False,
+                                        part_identifier="test:test_phase",
+                                        use_opposite=False,
+                                        variable_name="some:static:array",
+                                    ),
+                                    "vector_parameter_2": InputDefinition(
+                                        parameter_name="vector_parameter_2",
+                                        input_value=None,
+                                        input_unit=None,
+                                        default_value=np.nan,
+                                        is_relative=False,
+                                        part_identifier="test:test_phase",
+                                        use_opposite=False,
+                                        variable_name="some:dynamic:array",
+                                    ),
+                                    "target": {
+                                        "altitude": InputDefinition(
+                                            parameter_name="altitude",
+                                            input_value=0.0,
+                                            input_unit="m",
+                                            default_value=np.nan,
+                                            is_relative=False,
+                                            part_identifier="test:test_phase",
+                                            use_opposite=False,
+                                            variable_name=None,
+                                        )
+                                    },
+                                }
+                            ],
+                            "type": "phase",
+                        }
+                    ],
+                ),
+                ("name", "test"),
                 ("type", "mission"),
             ]
         ),

@@ -97,17 +97,10 @@ class MissionDefinition(OrderedDict):
         """
         phase_names = set(content[PHASE_DEFINITIONS_TAG].keys())
 
-        for phase_definition in content[PHASE_DEFINITIONS_TAG].values():
-            cls._process_polar_definition(phase_definition)
-            for segment_definition in phase_definition[PARTS_TAG]:
-                cls._process_polar_definition(segment_definition)
-
         for route_definition in content[ROUTE_DEFINITIONS_TAG].values():
-            cls._process_polar_definition(route_definition[CRUISE_PART_TAG])
             for part in list(route_definition[CLIMB_PARTS_TAG]) + list(
                 route_definition[DESCENT_PARTS_TAG]
             ):
-                cls._process_polar_definition(part)
                 Ensure(part[PHASE_TAG]).is_in(phase_names)
 
         for mission_definition in content[MISSION_DEFINITION_TAG].values():
@@ -127,17 +120,6 @@ class MissionDefinition(OrderedDict):
                 Ensure(part_type).equals(RESERVE_TAG)
 
         cls._convert_none_values(content)
-
-    @staticmethod
-    def _process_polar_definition(struct: dict):
-        """
-        If "foo:bar:baz" is provided as value for the "polar" key in provided dictionary, it is
-        replaced by the dict {"CL":"foo:bar:baz:CL", "CD":"foo:bar:baz:CD"}
-        """
-        if POLAR_TAG in struct:
-            polar_def = struct[POLAR_TAG]
-            if isinstance(polar_def, str) and ":" in polar_def:
-                struct[POLAR_TAG] = OrderedDict({"CL": polar_def + ":CL", "CD": polar_def + ":CD"})
 
     @classmethod
     def _convert_none_values(cls, struct: Union[dict, list]):

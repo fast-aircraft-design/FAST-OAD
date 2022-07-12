@@ -116,18 +116,7 @@ def _get_expected_dict():
                                                     ("segment", "speed_change"),
                                                     (
                                                         "polar",
-                                                        OrderedDict(
-                                                            [
-                                                                (
-                                                                    "CL",
-                                                                    "data:aerodynamics:aircraft:takeoff:CL",
-                                                                ),
-                                                                (
-                                                                    "CD",
-                                                                    "data:aerodynamics:aircraft:takeoff:CD",
-                                                                ),
-                                                            ]
-                                                        ),
+                                                        "data:aerodynamics:aircraft:takeoff",
                                                     ),
                                                     (
                                                         "target",
@@ -201,12 +190,7 @@ def _get_expected_dict():
                                     ("engine_setting", "climb"),
                                     (
                                         "polar",
-                                        OrderedDict(
-                                            [
-                                                ("CL", "data:aerodynamics:aircraft:cruise:CL"),
-                                                ("CD", "data:aerodynamics:aircraft:cruise:CD"),
-                                            ]
-                                        ),
+                                        "data:aerodynamics:aircraft:cruise",
                                     ),
                                     ("thrust_rate", "data:propulsion:climb:thrust_rate"),
                                     ("time_step", OrderedDict([("value", "~"), ("unit", "s")])),
@@ -306,12 +290,7 @@ def _get_expected_dict():
                                     ("engine_setting", "climb"),
                                     (
                                         "polar",
-                                        OrderedDict(
-                                            [
-                                                ("CL", "data:aerodynamics:aircraft:cruise:CL"),
-                                                ("CD", "data:aerodynamics:aircraft:cruise:CD"),
-                                            ]
-                                        ),
+                                        "data:aerodynamics:aircraft:cruise",
                                     ),
                                     ("thrust_rate", 0.93),
                                     (
@@ -400,12 +379,7 @@ def _get_expected_dict():
                                     ("engine_setting", OrderedDict([("value", "idle")])),
                                     (
                                         "polar",
-                                        OrderedDict(
-                                            [
-                                                ("CL", "data:aerodynamics:aircraft:cruise:CL"),
-                                                ("CD", "data:aerodynamics:aircraft:cruise:CD"),
-                                            ]
-                                        ),
+                                        "data:aerodynamics:aircraft:cruise",
                                     ),
                                     ("thrust_rate", "data:propulsion:descent:thrust_rate"),
                                     (
@@ -522,18 +496,7 @@ def _get_expected_dict():
                                                     ("segment", "holding"),
                                                     (
                                                         "polar",
-                                                        OrderedDict(
-                                                            [
-                                                                (
-                                                                    "CL",
-                                                                    "data:aerodynamics:aircraft:cruise:CL",
-                                                                ),
-                                                                (
-                                                                    "CD",
-                                                                    "data:aerodynamics:aircraft:cruise:CD",
-                                                                ),
-                                                            ]
-                                                        ),
+                                                        "data:aerodynamics:aircraft:cruise",
                                                     ),
                                                     (
                                                         "target",
@@ -633,18 +596,7 @@ def _get_expected_dict():
                                                 ("engine_setting", "cruise"),
                                                 (
                                                     "polar",
-                                                    OrderedDict(
-                                                        [
-                                                            (
-                                                                "CL",
-                                                                "data:aerodynamics:aircraft:cruise:CL",
-                                                            ),
-                                                            (
-                                                                "CD",
-                                                                "data:aerodynamics:aircraft:cruise:CD",
-                                                            ),
-                                                        ]
-                                                    ),
+                                                    "data:aerodynamics:aircraft:cruise",
                                                 ),
                                             ]
                                         ),
@@ -671,18 +623,7 @@ def _get_expected_dict():
                                                 ("engine_setting", "cruise"),
                                                 (
                                                     "polar",
-                                                    OrderedDict(
-                                                        [
-                                                            (
-                                                                "CL",
-                                                                "data:aerodynamics:aircraft:cruise:CL",
-                                                            ),
-                                                            (
-                                                                "CD",
-                                                                "data:aerodynamics:aircraft:cruise:CD",
-                                                            ),
-                                                        ]
-                                                    ),
+                                                    "data:aerodynamics:aircraft:cruise",
                                                 ),
                                             ]
                                         ),
