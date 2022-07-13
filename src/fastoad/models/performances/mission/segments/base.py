@@ -294,104 +294,8 @@ class AbstractFlightSegment(IFlightPart, ABC):
 
 
 @dataclass
-class AbstractPolarSegment(AbstractFlightSegment, ABC):
-    """
-    Base class for segments that use an aerodynamic polar.
-
-    :meth:`complete_flight_point` feeds attributes "CL", "CD" and "drag" of
-    computed flight points.
-    """
-
-    #: The Polar instance that will provide drag data.
-    polar: Polar = BaseDataClass.no_default
-
-    #: The reference area, in m**2.
-    reference_area: float = BaseDataClass.no_default
-
-    def complete_flight_point(self, flight_point: FlightPoint):
-        super().complete_flight_point(flight_point)
-        if flight_point.altitude is not None:
-            atm = self._get_atmosphere_point(flight_point.altitude)
-            reference_force = (
-                0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_area
-            )
-
-            if self.polar:
-                flight_point.CL = flight_point.mass * g / reference_force
-                flight_point.CD = self.polar.cd(flight_point.CL)
-            else:
-                flight_point.CL = flight_point.CD = 0.0
-            flight_point.drag = flight_point.CD * reference_force
-
-
-@dataclass
-class AbstractVelocityChangeSegment(AbstractFlightSegment, ABC):
-    """
-    Base class for segments that modify attributes "slope_angle" and/or "acceleration"
-    of computed flight points.
-
-    Child classes must implement :meth:`get_gamma_and_acceleration`.
-    """
-
-    @abstractmethod
-    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
-        """
-        Computes slope angle (gamma) and acceleration.
-
-        :param flight_point: parameters after propulsion model has been called
-                             (i.e. mass, thrust and drag are available)
-        :return: slope angle in radians and acceleration in m**2/s
-        """
-
-    def complete_flight_point(self, flight_point: FlightPoint):
-        super().complete_flight_point(flight_point)
-        flight_point.slope_angle, flight_point.acceleration = self.get_gamma_and_acceleration(
-            flight_point
-        )
-
-
-@dataclass
-class AbstractPropulsionSegment(AbstractFlightSegment, ABC):
-    """
-    Base class for segments that computes propulsion.
-
-    The propulsion model is provided as :attr:`propulsion`.
-
-    Child classes must implement :meth:`compute_propulsion`.
-    """
-
-    #: A IPropulsion instance that will be called at each time step.
-    propulsion: IPropulsion = BaseDataClass.no_default
-
-    #: The EngineSetting value associated to the segment. Can be used in the
-    #: propulsion model.
-    engine_setting: EngineSetting = EngineSetting.CLIMB
-
-    @abstractmethod
-    def compute_propulsion(self, flight_point: FlightPoint):
-        """
-        Computes propulsion data.
-
-        Provided flight point is modified in place.
-
-        Generally, this method should end with::
-
-            self.propulsion.compute_flight_points(flight_point)
-
-        :param flight_point:
-        """
-
-    def complete_flight_point(self, flight_point: FlightPoint):
-        super().complete_flight_point(flight_point)
-        flight_point.engine_setting = self.engine_setting
-        self.compute_propulsion(flight_point)
-
-
-@dataclass
 class AbstractTimeStepFlightSegment(
-    AbstractVelocityChangeSegment,
-    AbstractPropulsionSegment,
-    AbstractPolarSegment,
+    AbstractFlightSegment,
     ABC,
 ):
     """
@@ -401,6 +305,15 @@ class AbstractTimeStepFlightSegment(
     implement abstract methods :meth:`get_get_distance_to_target`,
     :meth:`get_gamma_and_acceleration` and :meth:`compute_propulsion`.
     """
+
+    #: A IPropulsion instance that will be called at each time step.
+    propulsion: IPropulsion = BaseDataClass.no_default
+
+    #: The Polar instance that will provide drag data.
+    polar: Polar = BaseDataClass.no_default
+
+    #: The reference area, in m**2.
+    reference_area: float = BaseDataClass.no_default
 
     #: Used time step for computation (actual time step can be lower at some particular times of
     #: the flight path).
@@ -418,6 +331,10 @@ class AbstractTimeStepFlightSegment(
     #: between two iterations (which can mean the provided thrust rate is not adapted).
     interrupt_if_getting_further_from_target: bool = True
 
+    #: The EngineSetting value associated to the segment. Can be used in the
+    #: propulsion model.
+    engine_setting: EngineSetting = EngineSetting.CLIMB
+
     @abstractmethod
     def get_distance_to_target(
         self, flight_points: List[FlightPoint], target: FlightPoint
@@ -434,6 +351,50 @@ class AbstractTimeStepFlightSegment(
         :param target: segment target (will not contain relative values)
         :return: O. if target is attained, a non-null value otherwise
         """
+
+    @abstractmethod
+    def compute_propulsion(self, flight_point: FlightPoint):
+        """
+        Computes propulsion data.
+
+        Provided flight point is modified in place.
+
+        Generally, this method should end with::
+
+            self.propulsion.compute_flight_points(flight_point)
+
+        :param flight_point:
+        """
+
+    @abstractmethod
+    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
+        """
+        Computes slope angle (gamma) and acceleration.
+
+        :param flight_point: parameters after propulsion model has been called
+                             (i.e. mass, thrust and drag are available)
+        :return: slope angle in radians and acceleration in m**2/s
+        """
+
+    def complete_flight_point(self, flight_point: FlightPoint):
+        super().complete_flight_point(flight_point)
+        if flight_point.altitude is not None:
+            atm = self._get_atmosphere_point(flight_point.altitude)
+            reference_force = (
+                0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_area
+            )
+
+            if self.polar:
+                flight_point.CL = flight_point.mass * g / reference_force
+                flight_point.CD = self.polar.cd(flight_point.CL)
+            else:
+                flight_point.CL = flight_point.CD = 0.0
+            flight_point.drag = flight_point.CD * reference_force
+        flight_point.engine_setting = self.engine_setting
+        self.compute_propulsion(flight_point)
+        flight_point.slope_angle, flight_point.acceleration = self.get_gamma_and_acceleration(
+            flight_point
+        )
 
     def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
         flight_points = [start]
@@ -492,34 +453,6 @@ class AbstractTimeStepFlightSegment(
         flight_points_df = pd.DataFrame(flight_points)
         return flight_points_df
 
-    def _check_values(self, flight_point: FlightPoint) -> str:
-        """
-        Checks that computed values are consistent.
-
-        May be overloaded for doing specific additional checks at each time step.
-
-        :param flight_point:
-        :return: None if Ok, or an error message otherwise
-        """
-
-        if not self.mach_bounds[0] <= flight_point.mach <= self.mach_bounds[1]:
-            return "true_airspeed value %f.1m/s is out of bound." % flight_point.true_airspeed
-        if not self.altitude_bounds[0] <= flight_point.altitude <= self.altitude_bounds[1]:
-            return "Altitude value %.0fm is out of bound." % flight_point.altitude
-        if flight_point.mass <= 0.0:
-            return "Negative mass value."
-
-    def _add_new_flight_point(self, flight_points: List[FlightPoint], time_step):
-        """
-        Appends a new flight point to provided flight point list.
-
-        :param flight_points: list of previous flight points, modified in place.
-        :param time_step: time step for new computed flight point.
-        """
-        new_point = self.compute_next_flight_point(flight_points, time_step)
-        self.complete_flight_point(new_point)
-        flight_points.append(new_point)
-
     def compute_next_flight_point(
         self, flight_points: List[FlightPoint], time_step: float
     ) -> FlightPoint:
@@ -554,6 +487,34 @@ class AbstractTimeStepFlightSegment(
         # The naming is not done in complete_flight_point for not naming the start point
         next_point.name = self.name
         return next_point
+
+    def _check_values(self, flight_point: FlightPoint) -> str:
+        """
+        Checks that computed values are consistent.
+
+        May be overloaded for doing specific additional checks at each time step.
+
+        :param flight_point:
+        :return: None if Ok, or an error message otherwise
+        """
+
+        if not self.mach_bounds[0] <= flight_point.mach <= self.mach_bounds[1]:
+            return "true_airspeed value %f.1m/s is out of bound." % flight_point.true_airspeed
+        if not self.altitude_bounds[0] <= flight_point.altitude <= self.altitude_bounds[1]:
+            return "Altitude value %.0fm is out of bound." % flight_point.altitude
+        if flight_point.mass <= 0.0:
+            return "Negative mass value."
+
+    def _add_new_flight_point(self, flight_points: List[FlightPoint], time_step):
+        """
+        Appends a new flight point to provided flight point list.
+
+        :param flight_points: list of previous flight points, modified in place.
+        :param time_step: time step for new computed flight point.
+        """
+        new_point = self.compute_next_flight_point(flight_points, time_step)
+        self.complete_flight_point(new_point)
+        flight_points.append(new_point)
 
     @staticmethod
     def _compute_next_altitude(next_point: FlightPoint, previous_point: FlightPoint):
