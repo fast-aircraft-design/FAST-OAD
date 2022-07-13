@@ -21,7 +21,7 @@ import pandas as pd
 from scipy.constants import foot, g
 
 from fastoad.model_base import FlightPoint
-from .base import AbstractManualThrustSegment, AbstractTimeStepFlightSegment
+from .base import AbstractManualThrustSegment
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
 from ..util import get_closest_flight_level
 
@@ -31,7 +31,6 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 @dataclass
 class AltitudeChangeSegment(
     AbstractManualThrustSegment,
-    AbstractTimeStepFlightSegment,
     mission_file_keyword="altitude_change",
 ):
     """

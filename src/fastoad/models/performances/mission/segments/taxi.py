@@ -20,7 +20,6 @@ import pandas as pd
 from fastoad.model_base import FlightPoint
 from fastoad.models.performances.mission.segments.base import (
     AbstractFixedDurationSegment,
-    AbstractTimeStepFlightSegment,
 )
 from .base import AbstractManualThrustSegment
 from ..polar import Polar
@@ -30,7 +29,6 @@ from ..polar import Polar
 class TaxiSegment(
     AbstractManualThrustSegment,
     AbstractFixedDurationSegment,
-    AbstractTimeStepFlightSegment,
     mission_file_keyword="taxi",
     attribute_units=dict(true_airspeed="m/s"),
 ):

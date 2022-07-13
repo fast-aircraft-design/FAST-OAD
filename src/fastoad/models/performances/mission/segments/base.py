@@ -139,7 +139,6 @@ class AbstractFlightSegment(IFlightPart, ABC):
         :return: a pandas DataFrame where column names match fields of
                  :class:`~fastoad.model_base.flight_point.FlightPoint`
         """
-        pass
 
     @classmethod
     def __init_subclass__(cls, *, mission_file_keyword="", attribute_units: Dict[str, str] = None):
@@ -229,7 +228,18 @@ class AbstractFlightSegment(IFlightPart, ABC):
 
         self._complete_speed_values(flight_point)
 
-    def complete_flight_point_from(self, flight_point: FlightPoint, source: FlightPoint):
+    @staticmethod
+    def complete_flight_point_from(flight_point: FlightPoint, source: FlightPoint):
+        """
+        Sets undefined values in `flight_point` using the ones from `source`.
+
+        The particular case of speeds is taken into account: if at least one speed parameter is
+        defined, all other speed parameters are considered defined, because they will be
+        deduced when needed.
+
+        :param flight_point:
+        :param source:
+        """
         speed_fields = {
             "true_airspeed",
             "equivalent_airspeed",
@@ -371,9 +381,7 @@ class AbstractPropulsionSegment(AbstractFlightSegment, ABC):
         :param flight_point:
         """
 
-    def complete_flight_point(
-        self, flight_point: FlightPoint, raise_error_on_missing_parameters=True
-    ):
+    def complete_flight_point(self, flight_point: FlightPoint):
         super().complete_flight_point(flight_point)
         flight_point.engine_setting = self.engine_setting
         self.compute_propulsion(flight_point)
@@ -590,11 +598,17 @@ class AbstractTimeStepFlightSegment(
 )
 @dataclass
 class FlightSegment(AbstractTimeStepFlightSegment, ABC):
-    pass
+    """
+    Base class for time step computation flight segments.
+
+    This class implements the time computation. For this computation to work, subclasses must
+    implement abstract methods :meth:`get_get_distance_to_target`,
+    :meth:`get_gamma_and_acceleration` and :meth:`compute_propulsion`.
+    """
 
 
 @dataclass
-class AbstractManualThrustSegment(AbstractPropulsionSegment, ABC):
+class AbstractManualThrustSegment(AbstractTimeStepFlightSegment, ABC):
     """
     Base class for computing flight segment where thrust rate is imposed.
 
@@ -610,7 +624,7 @@ class AbstractManualThrustSegment(AbstractPropulsionSegment, ABC):
 
 
 @dataclass
-class AbstractRegulatedThrustSegment(AbstractPropulsionSegment, ABC):
+class AbstractRegulatedThrustSegment(AbstractTimeStepFlightSegment, ABC):
     """
     Base class for computing flight segment where thrust rate is adjusted on drag.
     """
@@ -626,20 +640,20 @@ class AbstractRegulatedThrustSegment(AbstractPropulsionSegment, ABC):
         flight_point.thrust_is_regulated = True
         self.propulsion.compute_flight_points(flight_point)
 
-    @staticmethod
-    def get_gamma_and_acceleration(flight_point: FlightPoint) -> Tuple[float, float]:
+    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
         return 0.0, 0.0
 
 
 @dataclass
-class AbstractFixedDurationSegment(AbstractFlightSegment, ABC):
+class AbstractFixedDurationSegment(AbstractTimeStepFlightSegment, ABC):
     """
     Base class for computing a fixed-duration segment.
     """
 
     time_step: float = 60.0
 
-    @staticmethod
-    def get_distance_to_target(flight_points: List[FlightPoint], target: FlightPoint) -> float:
+    def get_distance_to_target(
+        self, flight_points: List[FlightPoint], target: FlightPoint
+    ) -> float:
         current = flight_points[-1]
         return target.time - current.time

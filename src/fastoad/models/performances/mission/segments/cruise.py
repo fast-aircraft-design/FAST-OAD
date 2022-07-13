@@ -27,7 +27,7 @@ from ..util import get_closest_flight_level
 
 
 @dataclass
-class CruiseSegment(AbstractRegulatedThrustSegment, AbstractTimeStepFlightSegment):
+class CruiseSegment(AbstractRegulatedThrustSegment):
     """
     Class for computing cruise flight segment at constant altitude and speed.
 

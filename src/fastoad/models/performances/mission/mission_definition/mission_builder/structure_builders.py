@@ -193,7 +193,8 @@ class AbstractStructureBuilder(ABC):
         input_definitions.append(input_definition)
         return input_definition
 
-    def _process_shape_by_conn(self, key, value, segment_class):
+    @staticmethod
+    def _process_shape_by_conn(key, value, segment_class):
         """
         Here variables that are expected to be arrays or lists in the provided segment class are
         attributed the "shape_by_conn=True" property.

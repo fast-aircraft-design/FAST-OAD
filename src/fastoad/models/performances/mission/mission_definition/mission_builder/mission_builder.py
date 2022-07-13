@@ -47,6 +47,10 @@ from ...segments.base import AbstractFlightSegment, SegmentDefinitions
 
 
 class MissionBuilder:
+    """
+    This class builds and computes a mission from a provided definition.
+    """
+
     def __init__(
         self,
         mission_definition: Union[str, MissionDefinition],
@@ -55,8 +59,6 @@ class MissionBuilder:
         reference_area: float = None,
     ):
         """
-        This class builds and computes a mission from a provided definition.
-
         :param mission_definition: a file path or MissionDefinition instance
         :param propulsion: if not provided, the property :attr:`propulsion` must be
                            set before calling :meth:`build`
@@ -344,7 +346,7 @@ class MissionBuilder:
         """
         segment_class = SegmentDefinitions.get_segment_class(segment_definition[SEGMENT_TYPE_TAG])
         part_kwargs = kwargs.copy()
-        part_kwargs.update({name: value for name, value in segment_definition.items()})
+        part_kwargs.update(segment_definition)
         part_kwargs.update(self._base_kwargs)
         for key, value in part_kwargs.items():
             if key == "polar":

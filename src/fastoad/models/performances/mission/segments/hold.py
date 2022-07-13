@@ -17,7 +17,6 @@ from dataclasses import dataclass
 from .base import (
     AbstractFixedDurationSegment,
     AbstractRegulatedThrustSegment,
-    AbstractTimeStepFlightSegment,
 )
 
 
@@ -25,7 +24,6 @@ from .base import (
 class HoldSegment(
     AbstractRegulatedThrustSegment,
     AbstractFixedDurationSegment,
-    AbstractTimeStepFlightSegment,
     mission_file_keyword="holding",
 ):
     """
