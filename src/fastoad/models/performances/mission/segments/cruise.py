@@ -43,10 +43,10 @@ class CruiseSegment(AbstractRegulatedThrustSegment):
         # Constant speed at constant altitude is necessarily constant Mach, but
         # subclasses can be at variable altitude, so Mach is considered constant
         # if no other constant speed parameter is set to "constant".
-        if (
-            self.target.true_airspeed != AbstractTimeStepFlightSegment.CONSTANT_VALUE
-            and self.target.equivalent_airspeed != AbstractTimeStepFlightSegment.CONSTANT_VALUE
-        ):
+        if AbstractTimeStepFlightSegment.CONSTANT_VALUE not in [
+            self.target.true_airspeed,
+            self.target.equivalent_airspeed,
+        ]:
             self.target.mach = AbstractTimeStepFlightSegment.CONSTANT_VALUE
 
     def get_distance_to_target(

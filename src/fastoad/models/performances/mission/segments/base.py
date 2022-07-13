@@ -56,8 +56,8 @@ class SegmentDefinitions(Enum):
             extend_enum(cls, segment_name, segment_class)
         else:
             raise RuntimeWarning(
-                '"%s" is ignored as segment name because its associated class '
-                "does not derive from FlightSegment." % segment_name
+                f'"{segment_name}" is ignored as segment name because its associated class '
+                "does not derive from FlightSegment."
             )
 
     @classmethod
@@ -499,9 +499,9 @@ class AbstractTimeStepFlightSegment(
         """
 
         if not self.mach_bounds[0] <= flight_point.mach <= self.mach_bounds[1]:
-            return "true_airspeed value %f.1m/s is out of bound." % flight_point.true_airspeed
+            return f"true_airspeed value {flight_point.true_airspeed:.1f}m/s is out of bound."
         if not self.altitude_bounds[0] <= flight_point.altitude <= self.altitude_bounds[1]:
-            return "Altitude value %.0fm is out of bound." % flight_point.altitude
+            return f"Altitude value {flight_point.altitude:.0f}m is out of bound."
         if flight_point.mass <= 0.0:
             return "Negative mass value."
 
