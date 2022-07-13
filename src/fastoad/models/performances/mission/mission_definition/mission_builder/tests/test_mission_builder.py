@@ -22,7 +22,7 @@ import pytest
 from numpy.testing import assert_allclose
 from scipy.constants import foot, knot
 
-from fastoad._utils.datacls import BaseDataClass
+from fastoad.model_base.datacls import MANDATORY_FIELD
 from fastoad.model_base.propulsion import IPropulsion
 from fastoad.models.performances.mission.base import FlightSequence
 from fastoad.models.performances.mission.segments.altitude_change import AltitudeChangeSegment
@@ -41,9 +41,9 @@ DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 
 @dataclass
 class TestSegment(AbstractFlightSegment, mission_file_keyword="test_segment"):
-    scalar_parameter: float = BaseDataClass.no_default
-    vector_parameter_1: np.ndarray = BaseDataClass.no_default
-    vector_parameter_2: np.ndarray = BaseDataClass.no_default
+    scalar_parameter: float = MANDATORY_FIELD
+    vector_parameter_1: np.ndarray = MANDATORY_FIELD
+    vector_parameter_2: np.ndarray = MANDATORY_FIELD
 
     def compute_from_start_to_target(self, start, target) -> pd.DataFrame:
         return pd.DataFrame([start])

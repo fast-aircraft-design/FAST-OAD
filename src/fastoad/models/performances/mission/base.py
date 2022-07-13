@@ -19,8 +19,8 @@ from typing import List, Optional
 
 import pandas as pd
 
-from fastoad._utils.datacls import BaseDataClass
 from fastoad.model_base import FlightPoint
+from fastoad.model_base.datacls import BaseDataClass
 
 
 @dataclass

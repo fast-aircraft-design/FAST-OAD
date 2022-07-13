@@ -26,9 +26,9 @@ from scipy.constants import g
 from scipy.optimize import root_scalar
 from stdatm import AtmosphereSI
 
-from fastoad._utils.datacls import BaseDataClass
 from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
+from fastoad.model_base.datacls import MANDATORY_FIELD
 from fastoad.model_base.propulsion import IPropulsion
 from fastoad.models.performances.mission.polar import Polar
 from ..base import IFlightPart
@@ -101,7 +101,7 @@ class AbstractFlightSegment(IFlightPart, ABC):
 
     .. Important::
 
-        :meth:`compute_from` is the class to call to achieve the segment computation.
+        :meth:`compute_from` is the method to call to achieve the segment computation.
 
         However, when subclassing, the method to overload is :meth:`compute_from_start_to_target`.
         Generic reprocessing of start and target flight points is done in :meth:`compute_from`
@@ -114,10 +114,10 @@ class AbstractFlightSegment(IFlightPart, ABC):
     #: Possible parameters depend on the current segment. A parameter can also be set to
     #: :attr:`~fastoad.models.performances.mission.segments.base.FlightSegment.CONSTANT_VALUE`
     #: to tell that initial value should be kept during all segment.
-    target: FlightPoint = BaseDataClass.no_default
+    target: FlightPoint = MANDATORY_FIELD
 
     # the `target` field above will be overloaded by a property, using the hidden value below:
-    _target: FlightPoint = field(default=BaseDataClass.no_default, init=False)
+    _target: FlightPoint = field(default=MANDATORY_FIELD, init=False)
 
     #: The temperature offset for ISA atmosphere model.
     isa_offset: float = 0.0
@@ -307,13 +307,13 @@ class AbstractTimeStepFlightSegment(
     """
 
     #: A IPropulsion instance that will be called at each time step.
-    propulsion: IPropulsion = BaseDataClass.no_default
+    propulsion: IPropulsion = MANDATORY_FIELD
 
     #: The Polar instance that will provide drag data.
-    polar: Polar = BaseDataClass.no_default
+    polar: Polar = MANDATORY_FIELD
 
     #: The reference area, in m**2.
-    reference_area: float = BaseDataClass.no_default
+    reference_area: float = MANDATORY_FIELD
 
     #: Used time step for computation (actual time step can be lower at some particular times of
     #: the flight path).

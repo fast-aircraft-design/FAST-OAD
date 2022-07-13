@@ -21,8 +21,8 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import root_scalar
 
-from fastoad._utils.datacls import BaseDataClass
 from fastoad.model_base import FlightPoint
+from fastoad.model_base.datacls import MANDATORY_FIELD
 from fastoad.models.performances.mission.base import FlightSequence, IFlightPart
 from fastoad.models.performances.mission.segments.base import AbstractFlightSegment
 from fastoad.models.performances.mission.segments.cruise import CruiseSegment
@@ -40,13 +40,13 @@ class SimpleRoute(FlightSequence):
     """
 
     #: Any number of flight phases that will occur before cruise.
-    climb_phases: List[FlightSequence] = BaseDataClass.no_default
+    climb_phases: List[FlightSequence] = MANDATORY_FIELD
 
     #: The cruise phase.
-    cruise_segment: CruiseSegment = BaseDataClass.no_default
+    cruise_segment: CruiseSegment = MANDATORY_FIELD
 
     #: Any number of flight phases that will occur after cruise.
-    descent_phases: List[FlightSequence] = BaseDataClass.no_default
+    descent_phases: List[FlightSequence] = MANDATORY_FIELD
 
     def __post_init__(self):
         super().__post_init__()
@@ -100,7 +100,7 @@ class RangedRoute(SimpleRoute):
     """
 
     #: Target ground distance for whole route
-    flight_distance: float = BaseDataClass.no_default
+    flight_distance: float = MANDATORY_FIELD
 
     #: Accuracy on actual total ground distance for the solver. In meters
     distance_accuracy: float = 0.5e3

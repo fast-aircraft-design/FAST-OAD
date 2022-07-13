@@ -14,6 +14,10 @@
 
 from dataclasses import asdict, dataclass
 
+#: To be put as default value for dataclass fields that should not have a default value.
+#: See :class:`BaseDataClass` for further information.
+MANDATORY_FIELD = object()
+
 
 @dataclass
 class BaseDataClass:
@@ -25,15 +29,13 @@ class BaseDataClass:
         will follow a default field, which is forbidden.
 
     The chosen solution (from https://stackoverflow.com/a/53085935/16488238) is to always define
-    default values, but mandatory fields will have the :attr:`_no_default` object as default.
+    default values, but mandatory fields will have the :const:`MANDATORY_FIELD` object as default.
 
-    After initialization, the __post_init__ method will process fields and raise an error if
-    a field has _no_default as value.
+    After initialization, :meth:`__post_init__` will process fields and raise an error if
+    a field has :const:`MANDATORY_FIELD` as value.
     """
-
-    no_default = object()
 
     def __post_init__(self):
         for name, value in asdict(self).items():
-            if value is self.__class__.no_default:
+            if value is MANDATORY_FIELD:
                 raise TypeError(f"__init__ missing 1 required argument: '{name}'")

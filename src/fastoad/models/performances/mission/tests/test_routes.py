@@ -32,9 +32,9 @@ import pytest
 from numpy.testing import assert_allclose
 from scipy.constants import foot, knot
 
-from fastoad._utils.datacls import BaseDataClass
 from fastoad.constants import EngineSetting, FlightPhase
 from fastoad.model_base import FlightPoint
+from fastoad.model_base.datacls import MANDATORY_FIELD
 from fastoad.model_base.propulsion import AbstractFuelPropulsion, FuelEngineSet, IPropulsion
 from fastoad.models.performances.mission.base import FlightSequence
 from fastoad.models.performances.mission.polar import Polar
@@ -219,9 +219,9 @@ class AbstractManualThrustFlightPhase(FlightSequence):
     Base class for climb and descent phases.
     """
 
-    propulsion: InitVar[IPropulsion] = BaseDataClass.no_default
-    reference_area: InitVar[float] = BaseDataClass.no_default
-    polar: InitVar[Polar] = BaseDataClass.no_default
+    propulsion: InitVar[IPropulsion] = MANDATORY_FIELD
+    reference_area: InitVar[float] = MANDATORY_FIELD
+    polar: InitVar[Polar] = MANDATORY_FIELD
     thrust_rate: InitVar[float] = 1.0
     time_step: InitVar[float] = None
     segment_kwargs: dict = field(default_factory=dict, init=False)
@@ -315,7 +315,7 @@ class ClimbPhase(AbstractManualThrustFlightPhase):
     """
 
     maximum_mach: float = field(default=5.0)
-    target_altitude: Union[float, str] = BaseDataClass.no_default
+    target_altitude: Union[float, str] = MANDATORY_FIELD
 
     def __post_init__(self, *args, **kwargs):
         super().__post_init__(*args, **kwargs)
@@ -351,7 +351,7 @@ class DescentPhase(AbstractManualThrustFlightPhase):
     - Descends down to target altitude at constant EAS
     """
 
-    target_altitude: Union[float, str] = BaseDataClass.no_default
+    target_altitude: Union[float, str] = MANDATORY_FIELD
 
     def __post_init__(self, *args, **kwargs):
         super().__post_init__(*args, **kwargs)
