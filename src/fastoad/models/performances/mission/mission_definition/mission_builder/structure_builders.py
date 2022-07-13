@@ -169,7 +169,7 @@ class AbstractStructureBuilder(ABC):
             part_identifier = structure.get(NAME_TAG, part_identifier)
             segment_class = SegmentDefinitions.get_segment_class(structure.get(SEGMENT_TYPE_TAG))
             for key, value in structure.items():
-                if key not in [
+                if key in [
                     NAME_TAG,
                     TYPE_TAG,
                     SEGMENT_TYPE_TAG,
@@ -178,15 +178,16 @@ class AbstractStructureBuilder(ABC):
                     DESCENT_PARTS_TAG,
                     CRUISE_PART_TAG,
                 ]:
-                    if segment_class:
-                        self._process_shape_by_conn(key, value, segment_class)
+                    continue
+                if segment_class:
+                    self._process_shape_by_conn(key, value, segment_class)
 
-                    structure[key] = self._parse_inputs(
-                        value,
-                        input_definitions,
-                        parent=key,
-                        part_identifier=part_identifier,
-                    )
+                structure[key] = self._parse_inputs(
+                    value,
+                    input_definitions,
+                    parent=key,
+                    part_identifier=part_identifier,
+                )
             return structure
 
         input_definition = InputDefinition(parent, structure, part_identifier=part_identifier)

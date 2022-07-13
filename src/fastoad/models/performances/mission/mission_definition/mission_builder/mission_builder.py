@@ -1,6 +1,4 @@
-"""
-Mission generator.
-"""
+"""Mission generator."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -250,16 +248,15 @@ class MissionBuilder:
 
         mission.name = mission_structure[NAME_TAG]
         for part_spec in mission_structure[PARTS_TAG]:
-            if TYPE_TAG in part_spec:
-                if part_spec[TYPE_TAG] == SEGMENT_TAG:
-                    part = self._build_segment(part_spec, part_kwargs)
-                if part_spec[TYPE_TAG] == ROUTE_TAG:
-                    part = self._build_route(part_spec, part_kwargs)
-                elif part_spec[TYPE_TAG] == PHASE_TAG:
-                    part = self._build_phase(part_spec, part_kwargs)
-                mission.flight_sequence.append(part)
-            else:  # reserve definition is used differently
+            if TYPE_TAG not in part_spec:
                 continue
+            if part_spec[TYPE_TAG] == SEGMENT_TAG:
+                part = self._build_segment(part_spec, part_kwargs)
+            if part_spec[TYPE_TAG] == ROUTE_TAG:
+                part = self._build_route(part_spec, part_kwargs)
+            elif part_spec[TYPE_TAG] == PHASE_TAG:
+                part = self._build_phase(part_spec, part_kwargs)
+            mission.flight_sequence.append(part)
 
         return mission
 
