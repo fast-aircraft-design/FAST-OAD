@@ -720,10 +720,6 @@ def _run_multistart(problem: FASTOADProblem, conf: FASTOADProblemConfigurator):
                 criterion = optimization_option.get("criterion")
             else:
                 criterion = None
-            # if optimization_option.get("num_proc") is not None:
-            #     num_proc = optimization_option.get("num_proc")
-            # else:
-            #     num_proc = 1
 
     design_variables = conf._get_design_vars()
     num_design_var = len(design_variables.values())
@@ -768,14 +764,7 @@ def _run_multistart(problem: FASTOADProblem, conf: FASTOADProblemConfigurator):
 
     successfull_problems = []
 
-    # with Pool(num_proc) as pool:
-    #     processed = pool.map(
-    #         lambda item: _run_sample(
-    #             item, problem=problem, successfull_problems=successfull_problems
-    #         ),
-    #         samples,
-    #     )
-
+    # TODO: Implement multiprocessing to parallelize the evaluation of each sample
     for sample in samples:
         _run_sample(sample, problem=problem, successfull_problems=successfull_problems)
 
