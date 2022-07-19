@@ -24,7 +24,6 @@ from collections import defaultdict
 from collections.abc import Iterable
 from time import time
 from typing import Dict, IO, List, Union
-import copy
 
 import openmdao.api as om
 import pandas as pd
@@ -745,22 +744,16 @@ def _run_multistart(problem: FASTOADProblem, conf: FASTOADProblemConfigurator):
     objective_name = list(objectives.values())[0]["name"]
 
     def _run_sample(sample, problem=None, successfull_problems=None):
-        # TODO: check new way to copy Problem
-        problem_copy = copy.deepcopy(problem)
-        problem_copy.setup()
-
         # Set initial values of design variables
         for name, value in sample.items():
-            problem_copy.set_val(name, val=value)
+            problem.set_val(name, val=value)
 
         # Run the problem
-        failed_to_converge = problem_copy.run_driver()
+        failed_to_converge = problem.run_driver()
 
         # Keep only the problems that converged correctly
         if not failed_to_converge:
-            successfull_problems.append(
-                tuple([problem_copy.get_val(name=objective_name), problem_copy])
-            )
+            successfull_problems.append(tuple([problem.get_val(name=objective_name), problem]))
 
     successfull_problems = []
 
