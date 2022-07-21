@@ -3,9 +3,9 @@ from .sub_components.compute_induced_drag_coefficient import compute_k
 from .sub_components.compute_lift_to_drag_ratio import compute_l_d
 
 
-def compute_aerodynamic(cruise_altitude, cruise_speed, mtow, wing_area, aspect_ratio):
+def compute_aerodynamics(cruise_altitude, cruise_speed, mtow, wing_area, aspect_ratio):
     """
-    Gather all the aerodynamic sub-functions in the main function
+    Gather all the aerodynamics sub-functions in the main function
 
     :param cruise_altitude: Cruise altitude, in m
     :param cruise_speed: Cruise speed, in m/s

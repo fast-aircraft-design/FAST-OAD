@@ -25,7 +25,7 @@ model:
     id: tutorial.fast_oad.geometry
 
   aerodynamic:
-    id: tutorial.fast_oad.aerodynamic
+    id: tutorial.fast_oad.aerodynamics
 
   mass:
     id: tutorial.fast_oad.mass

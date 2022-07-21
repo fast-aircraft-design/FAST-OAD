@@ -1,5 +1,5 @@
 from ..pure_python.geometry.geometry import compute_geometry
-from ..pure_python.aerodynamic.aerodynamic import compute_aerodynamic
+from ..pure_python.aerodynamics.aerodynamics import compute_aerodynamics
 from ..pure_python.mass.mass import compute_mass
 from ..pure_python.performance.performance import compute_performance
 from ..pure_python.update_mtow.update_mtow import update_mtow
@@ -29,7 +29,7 @@ def mtow_loop_scipy(x, wing_loading, cruise_altitude, cruise_speed, mission_rang
     wing_area = compute_geometry(mtow=mtow, wing_loading=wing_loading)
 
     # Let's now compute its aerodynamic properties
-    l_d = compute_aerodynamic(
+    l_d = compute_aerodynamics(
         cruise_altitude=cruise_altitude,
         cruise_speed=cruise_speed,
         mtow=mtow,

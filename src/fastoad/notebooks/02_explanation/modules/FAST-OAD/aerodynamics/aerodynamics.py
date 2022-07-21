@@ -1,15 +1,16 @@
 import openmdao.api as om
 
-from ...OpenMDAO.aerodynamic.sub_components.compute_profile_drag import ComputeProfileDrag
-from ...OpenMDAO.aerodynamic.sub_components.compute_induced_drag_coefficient import (
+from ...OpenMDAO.aerodynamics.sub_components.compute_profile_drag import ComputeProfileDrag
+from ...OpenMDAO.aerodynamics.sub_components.compute_induced_drag_coefficient import (
     ComputeInducedDragCoefficient,
 )
-from ...OpenMDAO.aerodynamic.sub_components.compute_lift_to_drag_ratio import ComputeLiftToDragRatio
+from ...OpenMDAO.aerodynamics.sub_components.compute_lift_to_drag_ratio import \
+    ComputeLiftToDragRatio
 
 import fastoad.api as oad
 
 
-@oad.RegisterOpenMDAOSystem("tutorial.fast_oad.aerodynamic")
+@oad.RegisterOpenMDAOSystem("tutorial.fast_oad.aerodynamics")
 class ComputeAerodynamics(om.Group):
     def setup(self):
 
