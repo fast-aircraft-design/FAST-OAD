@@ -10,7 +10,7 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+import os
 import warnings
 from copy import deepcopy
 from typing import Tuple
@@ -47,10 +47,15 @@ class FASTOADProblem(om.Problem):
     """
 
     def __init__(self, *args, **kwargs):
-        if version.parse(openmdao.__version__) >= version.parse("3.17"):
-            # Automatic reports are deactivated for FAST-OAD.
-            if "reports" not in kwargs and len(args) < 5:
-                kwargs["reports"] = None
+        if (
+            version.parse(openmdao.__version__) >= version.parse("3.17")
+            and "OPENMDAO_REPORTS" not in os.environ
+            and "reports" not in kwargs
+            and len(args) < 5
+        ):
+            # Automatic reports are deactivated for FAST-OAD, unless OPENMDAO_REPORTS env
+            # variable is set.
+            kwargs["reports"] = None
         super().__init__(*args, **kwargs)
 
         #: File path where :meth:`read_inputs` will read inputs
