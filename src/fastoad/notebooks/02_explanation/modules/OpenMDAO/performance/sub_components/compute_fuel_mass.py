@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.constants as sc
 
 import openmdao.api as om
 
@@ -33,12 +34,9 @@ class ComputeFuelMass(om.ExplicitComponent):
         l_d = inputs["l_d_ratio"]
         cruise_speed = inputs["cruise_speed"]
 
-        # Free-fall acceleration constant
-        g = 9.81
-
-        # To simplify the computation, we will first start by computing the range parameter, which correspond to the
-        # term inside the exponential in the original formula
-        range_parameter = (mission_range * tsfc * g) / (cruise_speed * l_d)
+        # To simplify the computation, we will first start by computing the range parameter,
+        # which correspond to the term inside the exponential in the original formula
+        range_parameter = (mission_range * tsfc * sc.g) / (cruise_speed * l_d)
 
         # Let's now computed the fuel using Breguet's range equation rearranged
         mission_fuel = (owe + payload) * (np.exp(range_parameter) - 1.0)

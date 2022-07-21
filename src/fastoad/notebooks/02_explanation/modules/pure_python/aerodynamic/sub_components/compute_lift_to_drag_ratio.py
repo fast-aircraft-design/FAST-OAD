@@ -1,3 +1,5 @@
+import scipy.constants as sc
+
 from fastoad.model_base.atmosphere import Atmosphere
 
 
@@ -15,9 +17,6 @@ def compute_l_d(cruise_altitude, cruise_speed, cd0, k, mtow, wing_area):
     :return l_d: Lift-to-drag ratio in cruise conditions, no unit
     """
 
-    # Free-fall acceleration constant
-    g = 9.81
-
     # Air density at cruise level, to compute it, we will use the Atmosphere model available in
     # FAST-OAD, so we will create an Atmosphere instance using the cruise altitude and extract
     # its density attribute
@@ -25,7 +24,7 @@ def compute_l_d(cruise_altitude, cruise_speed, cd0, k, mtow, wing_area):
     rho = atm.density
 
     # Computation of the cruise lift coefficient using a simple equilibrium
-    cl = (mtow * g) / (0.5 * rho * cruise_speed ** 2.0 * wing_area)
+    cl = (mtow * sc.g) / (0.5 * rho * cruise_speed ** 2.0 * wing_area)
 
     # Computation of the cruise drag coefficient using the simple quadratic model
     cd = cd0 + k * cl ** 2

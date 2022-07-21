@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.constants as sc
 
 import openmdao.api as om
 
@@ -13,8 +14,8 @@ class ComputeWingMass(om.ExplicitComponent):
         # Defining the input(s)
 
         self.add_input(name="wing_area", units="ft**2", val=np.nan)
-        # Notice that here we ask for the wing area in sq. ft as it is the unit we need for the formula, so we won't
-        # need to convert the wing area in the proper unit
+        # Notice that here we ask for the wing area in sq. ft as it is the unit we need for the
+        # formula, so we won't need to convert the wing area in the proper unit
         self.add_input(name="mtow", units="lbm", val=np.nan)
         # Same for the MTOW
         self.add_input(name="aspect_ratio", val=np.nan)
@@ -22,8 +23,8 @@ class ComputeWingMass(om.ExplicitComponent):
         # Defining the output(s)
 
         self.add_output(name="wing_mass", units="lbm")
-        # Same situation here, the formula outputs in lbm but if we later want to use it in kg, we will just have to
-        # ask for units="kg" and OpenMDAO automatically handles the conversion
+        # Same situation here, the formula outputs in lbm but if we later want to use it in kg,
+        # we will just have to ask for units="kg" and OpenMDAO automatically handles the conversion
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

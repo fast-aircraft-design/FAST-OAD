@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.constants as sc
 
 
 def compute_fuel_mission(owe, payload, mission_range, tsfc, l_d, cruise_speed):
@@ -15,12 +16,9 @@ def compute_fuel_mission(owe, payload, mission_range, tsfc, l_d, cruise_speed):
     :return mission_fuel: the fuel consumed during the designated mission, in kg
     """
 
-    # Free-fall acceleration constant
-    g = 9.81
-
-    # To simplify the computation, we will first start by computing the range parameter, which correspond to the term
-    # inside the exponential in the original formula
-    range_parameter = (mission_range * tsfc * g) / (cruise_speed * l_d)
+    # To simplify the computation, we will first start by computing the range parameter,
+    # which correspond to the term inside the exponential in the original formula
+    range_parameter = (mission_range * tsfc * sc.g) / (cruise_speed * l_d)
 
     # Let's now computed the fuel using Breguet's range equation rearranged
     mission_fuel = (owe + payload) * (np.exp(range_parameter) - 1.0)
