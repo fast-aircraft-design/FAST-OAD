@@ -38,7 +38,8 @@ SHAPER_SYSTEM_NAME = "fastoad_shaper"
 
 
 class FASTOADProblem(om.Problem):
-    """Vanilla OpenMDAO Problem except that it can write its outputs to a file.
+    """
+    Vanilla OpenMDAO Problem except that it can write its outputs to a file.
 
     It also runs :class:`~fastoad.openmdao.validity_checker.ValidityDomainChecker`
     after each :meth:`run_model` or :meth:`run_driver`
@@ -46,6 +47,10 @@ class FASTOADProblem(om.Problem):
     """
 
     def __init__(self, *args, **kwargs):
+        if version.parse(openmdao.__version__) >= version.parse("3.17"):
+            # Automatic reports are deactivated for FAST-OAD.
+            if "reports" not in kwargs and len(args) < 5:
+                kwargs["reports"] = None
         super().__init__(*args, **kwargs)
 
         #: File path where :meth:`read_inputs` will read inputs
@@ -244,7 +249,7 @@ class FASTOADProblem(om.Problem):
     ):
         # In OpenMDAO >3.16, get_io_metadata() won't complain after dynamically shaped, non-
         # connected inputs.
-        if version.parse(openmdao.__version__) > version.parse("3.16"):
+        if version.parse(openmdao.__version__) >= version.parse("3.17"):
             return system.get_io_metadata(iotypes)
         else:
             # For OpenMDAO<=3.16, we try the vanilla get_io_metadata() and if it fails, we
