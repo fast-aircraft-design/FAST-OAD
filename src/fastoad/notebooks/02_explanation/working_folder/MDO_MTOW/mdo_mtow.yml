@@ -43,3 +43,4 @@ optimization: # This section is needed only if optimization process is run
       upper: 20.0
   objective:
     - name: mtow
+#      scaler: -1.0  # Activate this line to maximize the objective instead of minimizing it.

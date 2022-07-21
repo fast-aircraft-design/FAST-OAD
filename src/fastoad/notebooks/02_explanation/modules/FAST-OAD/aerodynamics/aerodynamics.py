@@ -4,8 +4,9 @@ from ...OpenMDAO.aerodynamics.sub_components.compute_profile_drag import Compute
 from ...OpenMDAO.aerodynamics.sub_components.compute_induced_drag_coefficient import (
     ComputeInducedDragCoefficient,
 )
-from ...OpenMDAO.aerodynamics.sub_components.compute_lift_to_drag_ratio import \
-    ComputeLiftToDragRatio
+from ...OpenMDAO.aerodynamics.sub_components.compute_lift_to_drag_ratio import (
+    ComputeLiftToDragRatio,
+)
 
 import fastoad.api as oad
 
