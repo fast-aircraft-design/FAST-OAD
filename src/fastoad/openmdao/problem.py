@@ -256,33 +256,33 @@ class FASTOADProblem(om.Problem):
         # connected inputs.
         if version.parse(openmdao.__version__) >= version.parse("3.17"):
             return system.get_io_metadata(iotypes)
-        else:
-            # For OpenMDAO<=3.16, we try the vanilla get_io_metadata() and if it fails, we
-            # try with our simplified implementation.
-            try:
-                return system.get_io_metadata(iotypes)
-            except RuntimeError:
-                prefix = system.pathname + "." if system.pathname else ""
-                rel_idx = len(prefix)
-                if isinstance(iotypes, str):
-                    iotypes = (iotypes,)
 
-                result = {}
-                for iotype in iotypes:
-                    for abs_name, prom in system._var_abs2prom[iotype].items():
-                        rel_name = abs_name[rel_idx:]
-                        meta = system._var_allprocs_abs2meta[iotype].get(abs_name)
-                        ret_meta = _MetadataDict(meta) if meta is not None else None
-                        if ret_meta is not None:
-                            ret_meta["prom_name"] = prom
-                            result[rel_name] = ret_meta
+        # For OpenMDAO<=3.16, we try the vanilla get_io_metadata() and if it fails, we
+        # try with our simplified implementation.
+        try:
+            return system.get_io_metadata(iotypes)
+        except RuntimeError:
+            prefix = system.pathname + "." if system.pathname else ""
+            rel_idx = len(prefix)
+            if isinstance(iotypes, str):
+                iotypes = (iotypes,)
 
-                warnings.warn(
-                    "Dynamically shaped problem inputs are better managed with OpenMDAO>3.16 "
-                    "Upgrade is recommended.",
-                    DeprecationWarning,
-                )
-                return result
+            result = {}
+            for iotype in iotypes:
+                for abs_name, prom in system._var_abs2prom[iotype].items():
+                    rel_name = abs_name[rel_idx:]
+                    meta = system._var_allprocs_abs2meta[iotype].get(abs_name)
+                    ret_meta = _MetadataDict(meta) if meta is not None else None
+                    if ret_meta is not None:
+                        ret_meta["prom_name"] = prom
+                        result[rel_name] = ret_meta
+
+            warnings.warn(
+                "Dynamically shaped problem inputs are better managed with OpenMDAO>3.16 "
+                "Upgrade is recommended.",
+                DeprecationWarning,
+            )
+            return result
 
 
 class AutoUnitsDefaultGroup(om.Group):
