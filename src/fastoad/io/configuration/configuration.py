@@ -20,7 +20,6 @@ import os.path as pth
 from abc import ABC, abstractmethod
 from importlib.resources import open_text
 from typing import Dict
-import copy
 
 import openmdao.api as om
 import tomlkit
@@ -506,7 +505,7 @@ class FASTOADProblemConfigurator:
 
         # TODO: Implement multiprocessing to parallelize the evaluation of each sample
         for sample in samples:
-            problem_copy = copy.deepcopy(problem)
+            problem_copy = problem.copy()
             problem_copy.setup()
             failed_converge, returned_problem = _run_sample(sample, problem=problem_copy)
             # Keep only the problems that converged correctly

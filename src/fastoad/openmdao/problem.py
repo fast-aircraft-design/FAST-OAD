@@ -128,6 +128,17 @@ class FASTOADProblem(om.Problem):
             # will be properly set by new inputs.
             self._read_inputs_after_setup = True
 
+    def copy(self):
+        """
+        Returns a copy of the problem (itself).
+
+        The copy works for both MPI and non-MPI environments
+
+        :return: copy of the problem
+        """
+        with problem_without_mpi(self) as problem_copy:
+            return problem_copy
+
     def _get_problem_inputs(self) -> Tuple[VariableList, VariableList]:
         """
         Reads input file for the configured problem.
