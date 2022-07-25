@@ -29,8 +29,8 @@ Python implementation.
 All parameters of the Python constructor can be set in the mission file (except for
 :code:`propulsion` and :code:`reference_area` that are set within the mission module).
 Most of these parameters are scalars and can be set as described :ref:`here<setting-values>`.
-The segment target is a special parameter, detailed in :ref:`further section<segment-target>`
-Special parameters are detailed in :ref:`last section<segment-special-parameters>`.
+The segment target is a special parameter, detailed in :ref:`further section<segment-target>`.
+Other special parameters are detailed in :ref:`last section<segment-special-parameters>`.
 
 
 
@@ -41,6 +41,49 @@ Available segments are:
    :depth: 1
 
 .. _segment-speed_change:
+
+
+:code:`start` segment
+=====================
+
+:code:`start` is a special segment to be used at the beginning of the mission definition to
+specify the starting point of the mission, preferably by defining variables so it can be
+controlled from FAST-OAD input file.
+
+Without no :code:`start` specified, the mission is assumed to start at altitude 0, speed 0.
+
+**Example:**
+
+.. code-block:: yaml
+
+    phases:
+      start_phase:
+        - segment: start
+          target:
+            true_airspeed: 0.0                # hard-coded value
+            altitude:
+              value: my:altitude:variable     # variable definition WITH associated default value
+              unit: ft
+              default: 100.0
+            mass:
+              value: my:mass:variable         # variable definition WITHOUT associated default value
+              unit: kg                        # (will have to be set by another module or by FAST-OAD
+                                            #  input file)
+
+    ...
+
+    missions:
+      main_mission:
+        parts:
+          - phase: start_phase
+          - ...
+
+.. note::
+
+    The :code:`start` segment allows to define the aircraft mass at the beginning of the mission.
+    Yet it is possible to define aircraft mass at some intermediate phase (e.g. takeoff) using
+    the `mass_input segment`_. In any case, mass has to be defined once and only once in the whole
+    mission.
 
 
 :code:`speed_change` segment
@@ -299,6 +342,39 @@ Typically, it will be used as last segment to compute a reserve based on the Zer
       mach: 0.
 
 
+:code:`mass_input` segment
+==================
+
+The `start segment` allows to define aircraft mass at the beginning of the mission, but it
+is sometimes needed to define the aircraft mass at some point in the mission. The typical
+example would be the need to specify a takeoff weight that is expected to be achieved after the
+taxi-out phase.
+
+The :code:`mass_input` segment is designed to address this need. It will ensure this mass is
+achieved at the specify instant in the mission by setting the start mass input accordingly.
+
+**Example:**
+
+.. code:: yaml
+
+    # For setting mass at the end of taxi-out:
+    phases:
+      taxi-out:
+        parts:
+          - segment: taxi
+            ...
+          - segment: mass_input
+            target:
+              mass:
+                value: my:MTOW:variable
+                unit: kg
+
+.. warning::
+
+    Currently, FAST-OAD assumes the fuel consumption before the :code:`mass_input` segment is
+    independent of aircraft mass, which is considered true in a phase such as taxi. Assuming
+    otherwise would require to solve an additional inner loop. Since it does not correspond to
+    any use case we currently know of, it has been decided to stick to the simple case.
 
 .. _segment-target:
 

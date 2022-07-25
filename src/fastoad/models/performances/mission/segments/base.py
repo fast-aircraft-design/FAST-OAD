@@ -302,7 +302,7 @@ class AbstractTimeStepFlightSegment(
     Base class for time step computation flight segments.
 
     This class implements the time computation. For this computation to work, subclasses must
-    implement abstract methods :meth:`get_get_distance_to_target`,
+    implement abstract methods :meth:`get_distance_to_target`,
     :meth:`get_gamma_and_acceleration` and :meth:`compute_propulsion`.
     """
 
