@@ -755,12 +755,12 @@ def _run_multistart(problem: FASTOADProblem, conf: FASTOADProblemConfigurator):
         if not failed_to_converge:
             successfull_problems.append(tuple([problem.get_val(name=objective_name), problem]))
 
-    successfull_problems = []
+    successful_problems = []
 
     # TODO: Implement multiprocessing to parallelize the evaluation of each sample
     for sample in samples:
-        _run_sample(sample, problem=problem, successfull_problems=successfull_problems)
+        _run_sample(sample, problem=problem, successfull_problems=successful_problems)
 
     # Find the best result
-    min_objective = min(successfull_problems, key=lambda t: t[0])
+    min_objective = min(successful_problems, key=lambda t: t[0])
     return min_objective[1]
