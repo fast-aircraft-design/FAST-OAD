@@ -30,7 +30,6 @@ import pandas as pd
 from IPython import InteractiveShell
 from IPython.display import HTML, clear_output, display
 from tabulate import tabulate
-from pyDOE2 import lhs
 
 import fastoad.openmdao.whatsopt
 from fastoad._utils.files import make_parent_dir
@@ -604,13 +603,9 @@ def _run_problem(
         if optimization_options:
             for optimization_option in optimization_options:
                 if optimization_option.get("multistart"):
-                    multistart = True
-                else:
-                    multistart = False
-            if multistart:
-                problem = _run_multistart(problem, conf=conf)
-                # TODO: check that at least one sample converged
-                problem.optim_failed = False
+                    problem = conf._run_multistart(problem)
+                    # TODO: check that at least one sample converged
+                    problem.optim_failed = False
             else:
                 problem.optim_failed = problem.run_driver()
         else:
@@ -703,64 +698,3 @@ def variable_viewer(file_path: str, file_formatter: IVariableIOFormatter = None,
 
         handle = display(HTML(table.to_html()))
     return handle
-
-
-def _run_multistart(problem: FASTOADProblem, conf: FASTOADProblemConfigurator):
-
-    optimization_options = conf._get_optimization_options()
-    for optimization_option in optimization_options:
-        # Retrieving options for multistart
-        if optimization_option.get("multistart"):
-            if optimization_option.get("samples") is not None:
-                samples = optimization_option.get("samples")
-            else:
-                samples = None
-            if optimization_option.get("criterion") is not None:
-                criterion = optimization_option.get("criterion")
-            else:
-                criterion = None
-
-    design_variables = conf._get_design_vars()
-    num_design_var = len(design_variables.values())
-    num_samples = samples
-
-    objectives = conf._get_objectives()
-
-    doe = lhs(num_design_var, samples=num_samples, criterion=criterion)
-
-    samples = []
-    for i in range(num_samples):
-        sample = {}
-        for j in range(num_design_var):
-            dv = list(design_variables.values())
-            name = dv[j]["name"]
-            lower = dv[j]["lower"]
-            upper = dv[j]["upper"]
-            # Key = name, value = initial value
-            sample[name] = doe[i][j] * (upper - lower) + lower
-        samples.append(sample)
-
-    # We do not consider multiobjective, therefore take the first
-    objective_name = list(objectives.values())[0]["name"]
-
-    def _run_sample(sample, problem=None, successfull_problems=None):
-        # Set initial values of design variables
-        for name, value in sample.items():
-            problem.set_val(name, val=value)
-
-        # Run the problem
-        failed_to_converge = problem.run_driver()
-
-        # Keep only the problems that converged correctly
-        if not failed_to_converge:
-            successfull_problems.append(tuple([problem.get_val(name=objective_name), problem]))
-
-    successful_problems = []
-
-    # TODO: Implement multiprocessing to parallelize the evaluation of each sample
-    for sample in samples:
-        _run_sample(sample, problem=problem, successfull_problems=successful_problems)
-
-    # Find the best result
-    min_objective = min(successful_problems, key=lambda t: t[0])
-    return min_objective[1]

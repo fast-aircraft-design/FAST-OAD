@@ -1,21 +1,32 @@
 title: Sellar
 
 module_folders:
-  - ./cmd_sellar_example
+  - conf_sellar_example
+  - d:/path/does/not/exist  # will only trigger a warning
 
 input_file: ../results/inputs.xml
 output_file: ../results/outputs.xml
 
 driver: om.ScipyOptimizeDriver(optimizer='SLSQP', tol=1e-8)
 model:
-  group:
+  connections:
+    - source: y1
+      target: yy1
+    - source: y2
+      target: yy2
+  cycle:
     nonlinear_solver: om.NewtonSolver(maxiter=20, solve_subsystems=False)
     disc1:
-      id: cmd_test.sellar.disc1
+      id: configuration_test.sellar.disc1
     disc2:
-      id: cmd_test.sellar.disc2
+      id: configuration_test.sellar.disc2
   functions:
-    id: cmd_test.sellar.functions
+    id: configuration_test.sellar.functions
+
+submodels:
+  service.function.f: function.f.default
+  service.function.g1: function.g1.default
+  service.function.g2: function.g2.default
 
 optimization:
   options:

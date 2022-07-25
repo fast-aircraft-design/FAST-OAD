@@ -25,6 +25,7 @@ import openmdao.api as om
 import tomlkit
 from jsonschema import validate
 from ruamel.yaml import YAML
+from pyDOE2 import lhs
 
 from fastoad._utils.files import make_parent_dir
 from fastoad.io import DataFile, IVariableIOFormatter
@@ -450,6 +451,67 @@ class FASTOADProblemConfigurator:
 
     def _set_configuration_modifier(self, modifier: "_IConfigurationModifier"):
         self._configuration_modifier = modifier
+
+    def _run_multistart(self):
+        problem = self.get_problem(read_inputs=True, auto_scaling=False)
+        problem.setup()
+        optimization_options = self._get_optimization_options()
+        for optimization_option in optimization_options:
+            # Retrieving options for multistart
+            if optimization_option.get("multistart"):
+                if optimization_option.get("samples") is not None:
+                    samples = optimization_option.get("samples")
+                else:
+                    samples = None
+                if optimization_option.get("criterion") is not None:
+                    criterion = optimization_option.get("criterion")
+                else:
+                    criterion = None
+
+        design_variables = self._get_design_vars()
+        num_design_var = len(design_variables.values())
+        num_samples = samples
+
+        objectives = self._get_objectives()
+
+        doe = lhs(num_design_var, samples=num_samples, criterion=criterion)
+
+        samples = []
+        for i in range(num_samples):
+            sample = {}
+            for j in range(num_design_var):
+                dv = list(design_variables.values())
+                name = dv[j]["name"]
+                lower = dv[j]["lower"]
+                upper = dv[j]["upper"]
+                # Key = name, value = initial value
+                sample[name] = doe[i][j] * (upper - lower) + lower
+            samples.append(sample)
+
+        # We do not consider multiobjective, therefore take the first
+        objective_name = list(objectives.values())[0]["name"]
+
+        def _run_sample(sample, problem=None, successfull_problems=None):
+            # Set initial values of design variables
+            for name, value in sample.items():
+                problem.set_val(name, val=value)
+
+            # Run the problem
+            failed_to_converge = problem.run_driver()
+
+            # Keep only the problems that converged correctly
+            if not failed_to_converge:
+                successfull_problems.append(tuple([problem.get_val(name=objective_name), problem]))
+
+        successful_problems = []
+
+        # TODO: Implement multiprocessing to parallelize the evaluation of each sample
+        for sample in samples:
+            _run_sample(sample, problem=problem, successfull_problems=successful_problems)
+
+        # Find the best result
+        min_objective = min(successful_problems, key=lambda t: t[0])
+        return min_objective[1]
 
 
 def _om_eval(string_to_eval: str):
