@@ -491,7 +491,7 @@ class FASTOADProblemConfigurator:
         # We do not consider multiobjective, therefore take the first
         objective_name = list(objectives.values())[0]["name"]
 
-        def _run_sample(sample, problem=None, successfull_problems=None):
+        def _run_sample(sample, problem=None):
             # Set initial values of design variables
             for name, value in sample.items():
                 problem.set_val(name, val=value)
@@ -499,15 +499,18 @@ class FASTOADProblemConfigurator:
             # Run the problem
             failed_to_converge = problem.run_driver()
 
-            # Keep only the problems that converged correctly
-            if not failed_to_converge:
-                successfull_problems.append(tuple([problem.get_val(name=objective_name), problem]))
+            return failed_to_converge, problem
 
         successful_problems = []
 
         # TODO: Implement multiprocessing to parallelize the evaluation of each sample
         for sample in samples:
-            _run_sample(sample, problem=problem, successfull_problems=successful_problems)
+            failed_converge, returned_problem = _run_sample(sample, problem=problem)
+            # Keep only the problems that converged correctly
+            if not failed_converge:
+                successful_problems.append(
+                    tuple([returned_problem.get_val(name=objective_name), returned_problem])
+                )
 
         # Find the best result
         min_objective = min(successful_problems, key=lambda t: t[0])
