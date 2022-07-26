@@ -307,7 +307,7 @@ def mass_breakdown_bar_plot(
         )
 
     # Same color for each aircraft configuration
-    i = int(len(fig.data) / 2)
+    i = int(len(fig.data) / 2) % 10
 
     weight_labels = ["MTOW", "OWE", "Fuel - Mission", "Payload"]
     weight_values = [mtow, owe, fuel_mission, payload]

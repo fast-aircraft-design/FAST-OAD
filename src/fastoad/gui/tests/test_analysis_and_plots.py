@@ -47,7 +47,7 @@ def test_wing_geometry_plot():
     # Adding plots to the previous fig
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    for i in range(9):
+    for i in range(20):
         fig = wing_geometry_plot(filename, name=f"Plot {i}", fig=fig)
 
 
@@ -71,7 +71,7 @@ def test_aircraft_geometry_plot():
     # Adding plots to the previous fig
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    for i in range(9):
+    for i in range(20):
         fig = aircraft_geometry_plot(filename, name=f"Plot {i}", fig=fig)
 
 
@@ -95,7 +95,7 @@ def test_mass_breakdown_bar_plot():
     # Adding plots to the previous fig
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    for i in range(9):
+    for i in range(20):
         _ = mass_breakdown_bar_plot(filename, name=f"Plot {i}", fig=fig)
 
 
