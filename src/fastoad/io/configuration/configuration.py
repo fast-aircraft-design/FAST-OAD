@@ -541,10 +541,10 @@ class FASTOADProblemConfigurator:
 
         # Find the best result
         if scaler_sign == "positive":
-            best_objective = min(successful_problems, key=lambda t: t[0])
+            best_problem = min(successful_problems, key=lambda t: t[0])
         else:
-            best_objective = max(successful_problems, key=lambda t: t[0])
-        return best_objective[1]
+            best_problem = max(successful_problems, key=lambda t: t[0])
+        return best_problem[1]
 
 
 def _om_eval(string_to_eval: str):
