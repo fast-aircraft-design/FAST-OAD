@@ -34,9 +34,7 @@ from ..exceptions import (
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
 CONFIGURATION_FILE_PATH = pth.join(DATA_FOLDER_PATH, "sellar.yml")
-MULTISTART_CONFIGURATION_FILE_PATH = pth.join(
-    DATA_FOLDER_PATH, "valid_sellar_with_newton_multistart.yml"
-)
+MULTISTART_CONFIGURATION_FILE_PATH = pth.join(DATA_FOLDER_PATH, "sellar_with_multistart.yml")
 
 
 @pytest.fixture(scope="module")
@@ -338,6 +336,19 @@ def test_optimize_problem(cleanup):
     with pytest.raises(FastPathExistsError):
         api.optimize_problem(CONFIGURATION_FILE_PATH, False)
     problem = api.optimize_problem(CONFIGURATION_FILE_PATH, True)
+
+    assert problem["f"] == pytest.approx(3.18339395, abs=1e-8)
+
+
+def test_optimize_problem_with_multistart(cleanup):
+    api.generate_inputs(
+        MULTISTART_CONFIGURATION_FILE_PATH, pth.join(DATA_FOLDER_PATH, "inputs.xml"), overwrite=True
+    )
+    api.optimize_problem(MULTISTART_CONFIGURATION_FILE_PATH, False)
+    # Running again without forcing overwrite of outputs will make it fail
+    with pytest.raises(FastPathExistsError):
+        api.optimize_problem(MULTISTART_CONFIGURATION_FILE_PATH, False)
+    problem = api.optimize_problem(MULTISTART_CONFIGURATION_FILE_PATH, True)
 
     assert problem["f"] == pytest.approx(3.18339395, abs=1e-8)
 
