@@ -339,6 +339,12 @@ def test_optimize_problem(cleanup):
 
     assert problem["f"] == pytest.approx(3.18339395, abs=1e-8)
 
+    # Move output file because it will be overwritten by the multistart optim test
+    shutil.move(
+        pth.join(RESULTS_FOLDER_PATH, "outputs.xml"),
+        pth.join(RESULTS_FOLDER_PATH, "outputs_eval.xml"),
+    )
+
 
 def test_optimize_problem_with_multistart(cleanup):
     api.generate_inputs(
