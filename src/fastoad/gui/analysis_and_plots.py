@@ -2,7 +2,7 @@
 Defines the analysis and plotting functions for postprocessing
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -25,7 +25,11 @@ from plotly.subplots import make_subplots
 from fastoad.io import VariableIO
 from fastoad.openmdao.variables import VariableList
 
-COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
+# TODO: COLS is a reordered version of DEFAULT_PLOTLY_COLORS simply because issue #450 was using
+#       only even-indexed items of DEFAULT_PLOTLY_COLORS.
+#       This reordering allows to keep the same colors as before for the 5 first plots.
+#       FAST-OAD 2.0 will have to use the original order.
+COLS = plotly.colors.DEFAULT_PLOTLY_COLORS[::2] + plotly.colors.DEFAULT_PLOTLY_COLORS[1::1]
 
 
 # pylint: disable-msg=too-many-locals
@@ -303,7 +307,7 @@ def mass_breakdown_bar_plot(
         )
 
     # Same color for each aircraft configuration
-    i = len(fig.data)
+    i = int(len(fig.data) / 2)
 
     weight_labels = ["MTOW", "OWE", "Fuel - Mission", "Payload"]
     weight_values = [mtow, owe, fuel_mission, payload]
