@@ -17,7 +17,6 @@ Defines the analysis and plotting functions for postprocessing
 from typing import Dict
 
 import numpy as np
-import plotly
 import plotly.graph_objects as go
 from openmdao.utils.units import convert_units
 from plotly.subplots import make_subplots
@@ -25,11 +24,21 @@ from plotly.subplots import make_subplots
 from fastoad.io import VariableIO
 from fastoad.openmdao.variables import VariableList
 
-# TODO: COLS is a reordered version of DEFAULT_PLOTLY_COLORS simply because issue #450 was using
-#       only even-indexed items of DEFAULT_PLOTLY_COLORS.
-#       This reordering allows to keep the same colors as before for the 5 first plots.
-#       FAST-OAD 2.0 will have to use the original order.
-COLS = plotly.colors.DEFAULT_PLOTLY_COLORS[::2] + plotly.colors.DEFAULT_PLOTLY_COLORS[1::1]
+# This color list is an attempt to mimic the default color list (the one used
+# when no color is specified). And strangely enough, it is not
+# plotly.colors.DEFAULT_PLOTLY_COLORS
+COLS = [
+    "mediumblue",
+    "red",
+    "mediumseagreen",
+    "mediumpurple",
+    "darkorange",
+    "cyan",
+    "orangered",
+    "lightgreen",
+    "pink",
+    "orange",
+]
 
 
 # pylint: disable-msg=too-many-locals
