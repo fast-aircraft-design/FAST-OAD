@@ -504,7 +504,16 @@ class FASTOADProblemConfigurator:
 
         objectives = self._get_objectives()
         # We do not consider multiobjective, therefore take the first
-        objective_name = list(objectives.values())[0]["name"]
+        objective_infos = list(objectives.values())[0]
+        objective_name = objective_infos["name"]
+        if "scaler" in objective_infos:
+            scaler = objective_infos["scaler"]
+            if scaler > 0:
+                scaler_sign = "positive"
+            else:
+                scaler_sign = "negative"
+        else:
+            scaler_sign = "positive"
 
         def _run_sample(sample, problem=None):
             # Set initial values of design variables
@@ -531,8 +540,11 @@ class FASTOADProblemConfigurator:
                 )
 
         # Find the best result
-        min_objective = min(successful_problems, key=lambda t: t[0])
-        return min_objective[1]
+        if scaler_sign == "positive":
+            best_objective = min(successful_problems, key=lambda t: t[0])
+        else:
+            best_objective = max(successful_problems, key=lambda t: t[0])
+        return best_objective[1]
 
 
 def _om_eval(string_to_eval: str):
