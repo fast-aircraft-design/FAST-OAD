@@ -521,9 +521,9 @@ class FASTOADProblemConfigurator:
                 problem.set_val(name, val=value)
 
             # Run the problem
-            optim_failed = problem.run_driver()
+            problem.optim_failed = problem.run_driver()
 
-            return optim_failed, problem
+            return problem
 
         successful_problems = []
 
@@ -532,11 +532,11 @@ class FASTOADProblemConfigurator:
         for sample in samples:
             problem_copy = problem.copy()
             problem_copy.setup()
-            optim_failed, returned_problem = _run_sample(sample, problem_copy)
+            runned_problem = _run_sample(sample, problem_copy)
             # Keep only the problems that converged correctly
-            if not optim_failed:
+            if not runned_problem.optim_failed:
                 successful_problems.append(
-                    tuple([returned_problem.get_val(name=objective_name), returned_problem])
+                    tuple([runned_problem.get_val(name=objective_name), runned_problem])
                 )
 
         # We check that at least one sample converged
