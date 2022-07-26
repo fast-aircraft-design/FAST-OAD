@@ -19,7 +19,7 @@ import logging
 import os.path as pth
 from abc import ABC, abstractmethod
 from importlib.resources import open_text
-from typing import Dict
+from typing import Dict, Tuple
 
 import openmdao.api as om
 import tomlkit
@@ -452,30 +452,44 @@ class FASTOADProblemConfigurator:
     def _set_configuration_modifier(self, modifier: "_IConfigurationModifier"):
         self._configuration_modifier = modifier
 
-    def _run_multistart(self):
-        problem = self.get_problem(read_inputs=True, auto_scaling=False)
+    def _get_multistart_options(self) -> Tuple[int, str]:
+        """
+        Returns the options for multistart optimization
 
+        :return: tuple with the options (number of samples, criterion for LHS)
+        """
         optimization_options = self._get_optimization_options()
         for optimization_option in optimization_options:
             # Retrieving options for multistart
             if optimization_option.get("multistart"):
                 if optimization_option.get("samples") is not None:
-                    samples = optimization_option.get("samples")
+                    num_samples = optimization_option.get("samples")
                 else:
-                    samples = None
+                    num_samples = None
                 if optimization_option.get("criterion") is not None:
                     criterion = optimization_option.get("criterion")
                 else:
                     criterion = None
 
+        return num_samples, criterion
+
+    def _run_multistart(self):
+        """
+        Runs a multistart optimization and returns the best result
+
+        :return: instance of the problem with the best result
+        """
+        # Get multistart options
+        num_samples, criterion = self._get_multistart_options()
+
+        # Estimate the number of design variables required for the doe
         design_variables = self._get_design_vars()
         num_design_var = len(design_variables.values())
-        num_samples = samples
 
-        objectives = self._get_objectives()
-
+        # Build the doe
         doe = lhs(num_design_var, samples=num_samples, criterion=criterion)
 
+        # Adapt the doe to design variable bounds
         samples = []
         for i in range(num_samples):
             sample = {}
@@ -488,6 +502,7 @@ class FASTOADProblemConfigurator:
                 sample[name] = doe[i][j] * (upper - lower) + lower
             samples.append(sample)
 
+        objectives = self._get_objectives()
         # We do not consider multiobjective, therefore take the first
         objective_name = list(objectives.values())[0]["name"]
 
@@ -503,6 +518,7 @@ class FASTOADProblemConfigurator:
 
         successful_problems = []
 
+        problem = self.get_problem(read_inputs=True, auto_scaling=False)
         # TODO: Implement multiprocessing to parallelize the evaluation of each sample
         for sample in samples:
             problem_copy = problem.copy()
