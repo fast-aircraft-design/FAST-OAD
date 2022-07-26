@@ -515,7 +515,7 @@ class FASTOADProblemConfigurator:
         else:
             scaler_sign = "positive"
 
-        def _run_sample(sample, problem=None):
+        def _run_sample(sample, problem):
             # Set initial values of design variables
             for name, value in sample.items():
                 problem.set_val(name, val=value)
@@ -532,7 +532,7 @@ class FASTOADProblemConfigurator:
         for sample in samples:
             problem_copy = problem.copy()
             problem_copy.setup()
-            optim_failed, returned_problem = _run_sample(sample, problem=problem_copy)
+            optim_failed, returned_problem = _run_sample(sample, problem_copy)
             # Keep only the problems that converged correctly
             if not optim_failed:
                 successful_problems.append(
