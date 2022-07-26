@@ -600,14 +600,10 @@ def _run_problem(
         problem.optim_failed = False  # Actually, we don't know
     else:
         optimization_options = conf._get_optimization_options()
-        if optimization_options:
-            for optimization_option in optimization_options:
-                if optimization_option.get("multistart"):
-                    problem = conf._run_multistart(problem)
-                    # TODO: check that at least one sample converged
-                    problem.optim_failed = False
-            else:
-                problem.optim_failed = problem.run_driver()
+        if optimization_options is not None and "multistart" in optimization_options:
+            problem = conf._run_multistart(problem)
+            # TODO: check that at least one sample converged
+            problem.optim_failed = False
         else:
             problem.optim_failed = problem.run_driver()
     end_time = time()
