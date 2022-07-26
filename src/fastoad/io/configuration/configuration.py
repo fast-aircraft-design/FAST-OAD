@@ -521,9 +521,9 @@ class FASTOADProblemConfigurator:
                 problem.set_val(name, val=value)
 
             # Run the problem
-            failed_to_converge = problem.run_driver()
+            optim_failed = problem.run_driver()
 
-            return failed_to_converge, problem
+            return optim_failed, problem
 
         successful_problems = []
 
@@ -532,19 +532,28 @@ class FASTOADProblemConfigurator:
         for sample in samples:
             problem_copy = problem.copy()
             problem_copy.setup()
-            failed_converge, returned_problem = _run_sample(sample, problem=problem_copy)
+            optim_failed, returned_problem = _run_sample(sample, problem=problem_copy)
             # Keep only the problems that converged correctly
-            if not failed_converge:
+            if not optim_failed:
                 successful_problems.append(
                     tuple([returned_problem.get_val(name=objective_name), returned_problem])
                 )
 
-        # Find the best result
-        if scaler_sign == "positive":
-            best_problem = min(successful_problems, key=lambda t: t[0])
+        # We check that at least one sample converged
+        if successful_problems:
+            # Find the best result
+            if scaler_sign == "positive":
+                best_problem = min(successful_problems, key=lambda t: t[0])
+            else:
+                best_problem = max(successful_problems, key=lambda t: t[0])
+            final_problem = best_problem[1]
+            final_problem.optim_failed = False
         else:
-            best_problem = max(successful_problems, key=lambda t: t[0])
-        return best_problem[1]
+            # If not sample converged return the original problem
+            final_problem = problem
+            final_problem.optim_failed = True
+
+        return final_problem
 
 
 def _om_eval(string_to_eval: str):
