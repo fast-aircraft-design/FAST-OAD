@@ -153,7 +153,7 @@ class FlightPoint:
         Tells if given field is considered as relative or absolut
 
         :param field_name:
-        :return: Ture if it is relative
+        :return: True if it is relative
         """
         return field_name in self._relative_parameters
 
