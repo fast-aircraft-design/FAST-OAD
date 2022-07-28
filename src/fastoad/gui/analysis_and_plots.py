@@ -17,6 +17,7 @@ Defines the analysis and plotting functions for postprocessing
 from typing import Dict
 
 import numpy as np
+import plotly.express as px
 import plotly.graph_objects as go
 from openmdao.utils.units import convert_units
 from plotly.subplots import make_subplots
@@ -24,21 +25,7 @@ from plotly.subplots import make_subplots
 from fastoad.io import VariableIO
 from fastoad.openmdao.variables import VariableList
 
-# This color list is an attempt to mimic the default color list (the one used
-# when no color is specified). And strangely enough, it is not
-# plotly.colors.DEFAULT_PLOTLY_COLORS
-COLS = [
-    "mediumblue",
-    "red",
-    "mediumseagreen",
-    "mediumpurple",
-    "darkorange",
-    "cyan",
-    "orangered",
-    "lightgreen",
-    "pink",
-    "orange",
-]
+COLS = px.colors.qualitative.Plotly
 
 
 # pylint: disable-msg=too-many-locals
