@@ -2,7 +2,7 @@
 Tests for analysis and plots functions
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -44,10 +44,11 @@ def test_wing_geometry_plot():
     # The test will fail if an error is raised by the following line
     fig = wing_geometry_plot(filename, name="First plot")
 
-    # Adding a plot to the previous fig
+    # Adding plots to the previous fig
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = wing_geometry_plot(filename, name="Second plot", fig=fig)
+    for i in range(20):
+        fig = wing_geometry_plot(filename, name=f"Plot {i}", fig=fig)
 
 
 def test_aircraft_geometry_plot():
@@ -67,10 +68,11 @@ def test_aircraft_geometry_plot():
     # The test will fail if an error is raised by the following line
     fig = aircraft_geometry_plot(filename, name="First plot")
 
-    # Adding a plot to the previous fig
+    # Adding plots to the previous fig
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = aircraft_geometry_plot(filename, name="Second plot", fig=fig)
+    for i in range(20):
+        fig = aircraft_geometry_plot(filename, name=f"Plot {i}", fig=fig)
 
 
 def test_mass_breakdown_bar_plot():
@@ -90,10 +92,11 @@ def test_mass_breakdown_bar_plot():
     # The test will fail if an error is raised by the following line
     fig = mass_breakdown_bar_plot(filename, name="First plot")
 
-    # Adding a plot to the previous fig
+    # Adding plots to the previous fig
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    _ = mass_breakdown_bar_plot(filename, name="Second plot", fig=fig)
+    for i in range(20):
+        _ = mass_breakdown_bar_plot(filename, name=f"Plot {i}", fig=fig)
 
 
 def test_drag_polar_plot():
