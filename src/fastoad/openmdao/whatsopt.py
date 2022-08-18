@@ -18,6 +18,7 @@ import openmdao.api as om
 import whatsopt.whatsopt_client as wop
 
 from fastoad._utils.files import make_parent_dir
+from fastoad import __version__ as fastoad_version
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -50,4 +51,4 @@ def write_xdsm(
     xdsm = wop_session.push_mda(
         problem, {"--xdsm": True, "--name": None, "--depth": depth, "--dry-run": dry_run}
     )
-    wop.generate_xdsm_html(problem, xdsm=xdsm, outfilename=xdsm_file_path)
+    wop.generate_xdsm_html(f"FAST-OAD {fastoad_version}", xdsm=xdsm, outfilename=xdsm_file_path)
