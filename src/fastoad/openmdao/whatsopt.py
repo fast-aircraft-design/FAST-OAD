@@ -45,7 +45,7 @@ def write_xdsm(
     if not wop_server_url:
         wop_server_url = wop.EXTRANET_SERVER_URL
 
-    wop_session = wop.WhatsOpt(url=wop_server_url, login=False)
+    wop_session = wop.WhatsOpt(url=wop_server_url)
 
     xdsm = wop_session.push_mda(
         problem, {"--xdsm": True, "--name": None, "--depth": depth, "--dry-run": dry_run}
