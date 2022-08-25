@@ -27,8 +27,8 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_allclose
 
-from fastoad.cmd import api
-from fastoad.io import DataFile
+import fastoad.api as oad
+import fastoad.cmd.api
 from fastoad.io.configuration.configuration import (
     FASTOADProblemConfigurator,
     _IConfigurationModifier,
@@ -152,7 +152,7 @@ def run_non_regression_test(
     configuration_file_path = pth.join(results_folder_path, conf_file)
 
     # Copy of configuration file and generation of problem instance ------------------
-    api.generate_configuration_file(configuration_file_path)  # just ensure folders are created...
+    oad.generate_configuration_file(configuration_file_path)  # just ensure folders are created...
     shutil.copy(pth.join(DATA_FOLDER_PATH, conf_file), configuration_file_path)
     configurator = FASTOADProblemConfigurator(configuration_file_path)
     configurator._set_configuration_modifier(XFOILConfigurator(use_xfoil, xfoil_path))
@@ -176,7 +176,7 @@ def run_non_regression_test(
     if check_weight_perfo_loop:
         _check_weight_performance_loop(problem)
 
-    ref_data = DataFile(pth.join(DATA_FOLDER_PATH, legacy_result_file))
+    ref_data = oad.DataFile(pth.join(DATA_FOLDER_PATH, legacy_result_file))
 
     row_list = []
     for ref_var in ref_data:
@@ -218,15 +218,15 @@ def test_api_eval_breguet(cleanup):
     configuration_file_path = pth.join(results_folder_path, "oad_process.yml")
 
     # Generation of configuration file ----------------------------------------
-    api.generate_configuration_file(configuration_file_path, True)
+    oad.generate_configuration_file(configuration_file_path, True)
 
     # Generation of inputs ----------------------------------------------------
     # We get the same inputs as in tutorial notebook
     source_xml = pth.join(DATA_FOLDER_PATH, "CeRAS01_notebooks.xml")
-    api.generate_inputs(configuration_file_path, source_xml, overwrite=True)
+    oad.generate_inputs(configuration_file_path, source_xml, overwrite=True)
 
     # Run model ---------------------------------------------------------------
-    problem = api.evaluate_problem(configuration_file_path, True)
+    problem = oad.evaluate_problem(configuration_file_path, True)
 
     # Check that weight-performances loop correctly converged
     _check_weight_performance_loop(problem)
@@ -254,19 +254,19 @@ class MissionConfigurator(_IConfigurationModifier):
 def test_api_eval_mission(cleanup):
     results_folder_path = pth.join(RESULTS_FOLDER_PATH, "api_eval_mission")
     configuration_file_path = pth.join(results_folder_path, "oad_process.yml")
-    api._PROBLEM_CONFIGURATOR = MissionConfigurator()
+    fastoad.cmd.api._PROBLEM_CONFIGURATOR = MissionConfigurator()
 
     # Generation of configuration file ----------------------------------------
-    api.generate_configuration_file(configuration_file_path, True)
+    oad.generate_configuration_file(configuration_file_path, True)
 
     # Generation of inputs ----------------------------------------------------
     # We get the same inputs as in tutorial notebook
     source_xml = pth.join(DATA_FOLDER_PATH, "CeRAS01_notebooks.xml")
-    api.generate_inputs(configuration_file_path, source_xml, overwrite=True)
+    oad.generate_inputs(configuration_file_path, source_xml, overwrite=True)
 
     # Run model ---------------------------------------------------------------
-    problem = api.evaluate_problem(configuration_file_path, True)
-    api._PROBLEM_CONFIGURATOR = None
+    problem = oad.evaluate_problem(configuration_file_path, True)
+    fastoad.cmd.api._PROBLEM_CONFIGURATOR = None
 
     # Check that weight-performances loop correctly converged
     _check_weight_performance_loop(problem)
@@ -285,15 +285,15 @@ def test_api_optim(cleanup):
     configuration_file_path = pth.join(results_folder_path, "oad_process.yml")
 
     # Generation of configuration file ----------------------------------------
-    api.generate_configuration_file(configuration_file_path, True)
+    oad.generate_configuration_file(configuration_file_path, True)
 
     # Generation of inputs ----------------------------------------------------
     # We get the same inputs as in tutorial notebook
     source_xml = pth.join(DATA_FOLDER_PATH, "CeRAS01_notebooks.xml")
-    api.generate_inputs(configuration_file_path, source_xml, overwrite=True)
+    oad.generate_inputs(configuration_file_path, source_xml, overwrite=True)
 
     # Run optim ---------------------------------------------------------------
-    problem = api.optimize_problem(configuration_file_path, True)
+    problem = oad.optimize_problem(configuration_file_path, True)
     assert not problem.optim_failed
 
     # Check that weight-performances loop correctly converged
