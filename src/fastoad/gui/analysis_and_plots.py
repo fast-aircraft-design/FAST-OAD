@@ -2,7 +2,7 @@
 Defines the analysis and plotting functions for postprocessing
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -30,7 +30,7 @@ COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 
 # pylint: disable-msg=too-many-locals
 def wing_geometry_plot(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+    aircraft_file_path: str, name=None, fig=None, *, file_formatter=None
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the top view of the wing.
@@ -102,7 +102,7 @@ def wing_geometry_plot(
 
 # pylint: disable-msg=too-many-locals
 def aircraft_geometry_plot(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+    aircraft_file_path: str, name=None, fig=None, *, file_formatter=None
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the top view of the wing.
@@ -227,7 +227,7 @@ def aircraft_geometry_plot(
 
 
 def drag_polar_plot(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+    aircraft_file_path: str, name=None, fig=None, *, file_formatter=None
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the aircraft drag polar.
@@ -267,7 +267,12 @@ def drag_polar_plot(
 
 
 def mass_breakdown_bar_plot(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+    aircraft_file_path: str,
+    name=None,
+    fig=None,
+    *,
+    file_formatter=None,
+    input_mass_name="data:weight:aircraft:MTOW",
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the aircraft mass breakdown using bar plots.
@@ -279,15 +284,17 @@ def mass_breakdown_bar_plot(
     :param fig: existing figure to which add the plot
     :param file_formatter: the formatter that defines the format of data file. If not provided,
                            default format will be assumed.
+    :param input_mass_name: the variable name for the mass input as defined in the mission
+                            definition file.
     :return: bar plot figure
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
     var_names_and_new_units = {
-        "data:weight:aircraft:MTOW": "kg",
+        input_mass_name: "kg",
         "data:weight:aircraft:OWE": "kg",
         "data:weight:aircraft:payload": "kg",
-        "data:weight:aircraft:sizing_onboard_fuel_at_takeoff": "kg",
+        "data:weight:aircraft:sizing_onboard_fuel_at_input_weight": "kg",
     }
 
     # pylint: disable=unbalanced-tuple-unpacking # It is balanced for the parameters provided
@@ -326,7 +333,12 @@ def mass_breakdown_bar_plot(
     return fig
 
 
-def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
+def mass_breakdown_sun_plot(
+    aircraft_file_path: str,
+    *,
+    file_formatter=None,
+    input_mass_name="data:weight:aircraft:MTOW",
+):
     """
     Returns a figure sunburst plot of the mass breakdown.
     On the left a MTOW sunburst and on the right a OWE sunburst.
@@ -336,15 +348,17 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
     :param aircraft_file_path: path of data file
     :param file_formatter: the formatter that defines the format of data file. If not provided,
                            default format will be assumed.
+    :param input_mass_name: the variable name for the mass input as defined in the mission
+                            definition file.
     :return: sunburst plot figure
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
     var_names_and_new_units = {
-        "data:weight:aircraft:MTOW": "kg",
+        input_mass_name: "kg",
         "data:weight:aircraft:OWE": "kg",
         "data:weight:aircraft:payload": "kg",
-        "data:weight:aircraft:sizing_onboard_fuel_at_takeoff": "kg",
+        "data:weight:aircraft:sizing_onboard_fuel_at_input_weight": "kg",
     }
 
     # pylint: disable=unbalanced-tuple-unpacking # It is balanced for the parameters provided
