@@ -239,6 +239,8 @@ def test_api_eval_breguet(cleanup):
     assert_allclose(problem["data:geometry:horizontal_tail:area"], 35.884, atol=1e-2)
     assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 19527, atol=1)
 
+    _run_plots(problem.output_file_path)
+
 
 class MissionConfigurator(_IConfigurationModifier):
     """Modifies configuration to activate mission computation."""
@@ -278,6 +280,8 @@ def test_api_eval_mission(cleanup):
     assert_allclose(problem["data:geometry:vertical_tail:area"], 27.437, atol=1e-2)
     assert_allclose(problem["data:geometry:horizontal_tail:area"], 35.731, atol=1e-2)
     assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 19390, atol=10)
+
+    _run_plots(problem.output_file_path)
 
 
 def test_api_optim(cleanup):
@@ -331,3 +335,11 @@ def _check_weight_performance_loop(problem):
         + problem["data:weight:aircraft:sizing_onboard_fuel_at_input_weight"],
         atol=1,
     )
+
+
+def _run_plots(xml_file_path: str):
+    oad.wing_geometry_plot(xml_file_path)
+    oad.aircraft_geometry_plot(xml_file_path)
+    oad.mass_breakdown_bar_plot(xml_file_path)
+    oad.mass_breakdown_sun_plot(xml_file_path)
+    oad.drag_polar_plot(xml_file_path)
