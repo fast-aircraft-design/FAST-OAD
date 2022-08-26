@@ -25,7 +25,7 @@ def polar() -> Polar:
     """Returns a dummy polar where max L/D ratio is around 16."""
     cl = np.arange(0.0, 1.5, 0.01)
     cd = 0.5e-1 * cl ** 2 + 0.01
-    return Polar(cl, cd)
+    return Polar({"CL": cl, "CD": cd})
 
 
 def print_dataframe(df):
