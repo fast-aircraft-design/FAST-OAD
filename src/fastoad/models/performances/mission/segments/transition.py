@@ -14,18 +14,17 @@
 
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import List, Tuple
 
 import pandas as pd
 
 from fastoad.model_base import FlightPoint
-from fastoad.model_base.propulsion import IPropulsion
-from fastoad.models.performances.mission.polar import Polar
-from fastoad.models.performances.mission.segments.base import FlightSegment
+from fastoad.models.performances.mission.segments.base import (
+    AbstractFlightSegment,
+)
 
 
 @dataclass
-class DummyTransitionSegment(FlightSegment, mission_file_keyword="transition"):
+class DummyTransitionSegment(AbstractFlightSegment, mission_file_keyword="transition"):
     """
     Computes a transient flight part in a very quick and dummy way.
 
@@ -51,20 +50,14 @@ class DummyTransitionSegment(FlightSegment, mission_file_keyword="transition"):
     #: of segment.
     reserve_mass_ratio: float = 0.0
 
-    #: Unused
-    propulsion: IPropulsion = None
-
-    #: Unused
-    reference_area: float = 1.0
-
-    #: Unused
-    polar: Polar = None
-
-    def _compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        end = deepcopy(self.target)
+    def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+        end = deepcopy(target)
         end.name = self.name
-        if not end.mass:
+
+        if end.mass is None:
             end.mass = start.mass * self.mass_ratio
+
+        self.complete_flight_point_from(end, start)
         self.complete_flight_point(end)
 
         flight_points = [start, end]
@@ -75,14 +68,3 @@ class DummyTransitionSegment(FlightSegment, mission_file_keyword="transition"):
             flight_points.append(reserve)
 
         return pd.DataFrame(flight_points)
-
-    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
-        return 0.0, 0.0
-
-    # As we overloaded self.compute_from(), next abstract method are not used.
-    # We just need to implement them for Python to be happy.
-    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
-        pass
-
-    def compute_propulsion(self, flight_point: FlightPoint):
-        pass

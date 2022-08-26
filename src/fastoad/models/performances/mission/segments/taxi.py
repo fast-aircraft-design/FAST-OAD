@@ -12,22 +12,23 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from copy import deepcopy
 from dataclasses import dataclass
 from typing import Tuple
 
 import pandas as pd
 
 from fastoad.model_base import FlightPoint
-from fastoad.models.performances.mission.segments.base import FixedDurationSegment
-from .base import ManualThrustSegment
+from fastoad.models.performances.mission.segments.base import (
+    AbstractFixedDurationSegment,
+)
+from .base import AbstractManualThrustSegment
 from ..polar import Polar
 
 
 @dataclass
 class TaxiSegment(
-    ManualThrustSegment,
-    FixedDurationSegment,
+    AbstractManualThrustSegment,
+    AbstractFixedDurationSegment,
     mission_file_keyword="taxi",
     attribute_units=dict(true_airspeed="m/s"),
 ):
@@ -46,18 +47,10 @@ class TaxiSegment(
     def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
         return 0.0, 0.0
 
-    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        new_start = deepcopy(start)
-        if self.target.mass:
-            new_start.mass = self.target.mass
-        new_start.mach = None
-        new_start.equivalent_airspeed = None
-        new_start.true_airspeed = self.true_airspeed
+    def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+        start.mach = None
+        start.equivalent_airspeed = None
+        start.true_airspeed = self.true_airspeed
+        self.complete_flight_point(start)
 
-        flight_points = super().compute_from(new_start)
-
-        if self.target.mass:
-            consumed_fuel = new_start.mass - flight_points.mass.iloc[-1]
-            flight_points.mass += consumed_fuel
-
-        return flight_points
+        return super().compute_from_start_to_target(start, target)

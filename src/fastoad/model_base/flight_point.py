@@ -90,7 +90,6 @@ class FlightPoint:
     CL: float = None  # pylint: disable=invalid-name
     #: Drag coefficient.
     CD: float = None  # pylint: disable=invalid-name
-    lift : float = None #: Aircraft lift in Newtons
     drag: float = None  #: Aircraft drag in Newtons.
     thrust: float = None  #: Thrust in Newtons.
     thrust_rate: float = None  #: Thrust rate (between 0. and 1.)
@@ -102,8 +101,6 @@ class FlightPoint:
     sfc: float = None  #: Specific Fuel Consumption in kg/N/s.
     slope_angle: float = None  #: Slope angle in radians.
     acceleration: float = None  #: Acceleration value in m/s**2.
-    alpha: float = None #: angle of attack in rad
-    slop_angle_derivative: float = None #: slope angle derivative in rad/s
     name: str = None  #: Name of current phase.
 
     _units = dict(
@@ -128,18 +125,36 @@ class FlightPoint:
         self._relative_parameters = {"ground_distance", "time"}
 
     def set_as_relative(self, field_names: Union[Sequence[str], str]):
+        """
+        Makes that values for given field_names will be considered as relative when
+        calling :meth:`make_absolute`.
+
+        :param field_names:
+        """
         if isinstance(field_names, str):
             self._relative_parameters.add(field_names)
         else:
             self._relative_parameters |= set(field_names)
 
     def set_as_absolute(self, field_names: Union[Sequence[str], str]):
+        """
+        Makes that values for given field_names will be considered as absolute when
+        calling :meth:`make_absolute`.
+
+        :param field_names:
+        """
         if isinstance(field_names, str):
             self._relative_parameters.remove(field_names)
         else:
             self._relative_parameters -= set(field_names)
 
     def is_relative(self, field_name) -> bool:
+        """
+        Tells if given field is considered as relative or absolut
+
+        :param field_name:
+        :return: True if it is relative
+        """
         return field_name in self._relative_parameters
 
     def make_absolute(self, reference_point: "FlightPoint") -> "FlightPoint":
@@ -155,12 +170,15 @@ class FlightPoint:
             target_value = getattr(new_point, field.name)
             if isinstance(target_value, Number) and new_point.is_relative(field.name):
                 setattr(new_point, field.name, reference_value + target_value)
-                new_point._relative_parameters.remove(field.name)
+                new_point.set_as_absolute(field.name)
         new_point.scalarize()
         return new_point
 
     @classmethod
     def get_field_names(cls):
+        """
+        :return: names of all fields of the flight point.
+        """
         return [field.name for field in fields(cls) if not field.name.startswith("_")]
 
     @classmethod

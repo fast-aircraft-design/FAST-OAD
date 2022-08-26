@@ -1,0 +1,61 @@
+
+
+title = "Sellar"
+
+module_folders = [
+  "conf_sellar_example",
+  "d:/path/does/not/exist" # will only trigger a warning
+]
+
+input_file = "../results/inputs.xml"
+output_file = "../results/outputs.xml"
+
+driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
+[model]
+    [model.indep]
+        id = "configuration_test.sellar.indeps"
+    [[model.connections]]
+        source = "system:x"
+        target = "x"
+    [[model.connections]]
+        source = "y1"
+        target = "yy1"
+    [[model.connections]]
+        source = "y2"
+        target = "yy2"
+    [model.cycle]
+        nonlinear_solver = "om.NonlinearBlockGS(iprint=1)"
+        linear_solver = "om.ScipyKrylov()"
+        [model.cycle.disc1]
+            id = "configuration_test.sellar.disc1"
+        [model.cycle.disc2]
+            id = "configuration_test.sellar.disc2"
+    [model.functions]
+        id = "configuration_test.sellar.functions"
+
+[submodels]
+    "service.function.f" = "function.f.default"
+    "service.function.g1" = "function.g1.default"
+    "service.function.g2" = "function.g2.default"
+
+[optimization]
+    [[optimization.design_variables]]
+      name = "x"
+      lower = 0
+      upper = 10
+    [[optimization.design_variables]]
+      name = "z"
+      lower = 0
+      upper = 10
+
+    [[optimization.constraints]]
+      name = "g1"
+      lower = -100
+      upper = 0
+    [[optimization.constraints]]
+      name = "g2"
+      upper = 0
+
+    [[optimization.objective]]
+      name = "f"
+

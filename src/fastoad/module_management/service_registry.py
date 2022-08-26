@@ -1,6 +1,6 @@
 """Module for registering services."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -486,3 +486,10 @@ class RegisterSubmodel(_RegisterOpenMDAOService):
             instance = om.Group()
 
         return instance
+
+    @classmethod
+    def cancel_submodel_deactivations(cls):
+        """Reactivates all submodels that have been deactivated."""
+        deactivated_submodel_ids = [k for k, v in cls.active_models.items() if not v]
+        for submodel_id in deactivated_submodel_ids:
+            del cls.active_models[submodel_id]

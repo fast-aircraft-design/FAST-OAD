@@ -21,10 +21,10 @@ non-regression tests).
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
-from abc import ABC
+from dataclasses import InitVar, dataclass, field
 from os import mkdir
 from shutil import rmtree
-from typing import List, Union
+from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -34,8 +34,9 @@ from scipy.constants import foot, knot
 
 from fastoad.constants import EngineSetting, FlightPhase
 from fastoad.model_base import FlightPoint
+from fastoad.model_base.datacls import MANDATORY_FIELD
 from fastoad.model_base.propulsion import AbstractFuelPropulsion, FuelEngineSet, IPropulsion
-from fastoad.models.performances.mission.base import IFlightPart
+from fastoad.models.performances.mission.base import FlightSequence
 from fastoad.models.performances.mission.polar import Polar
 from fastoad.models.performances.mission.routes import RangedRoute
 from fastoad.models.performances.mission.segments.altitude_change import AltitudeChangeSegment
@@ -212,25 +213,28 @@ def test_ranged_route(low_speed_polar, high_speed_polar, cleanup):
 
 
 # We define here in Python the flight phases that feed the test of RangedRoute ============
-
-
-class AbstractManualThrustFlightPhase(ABC):
+@dataclass
+class AbstractManualThrustFlightPhase(FlightSequence):
     """
     Base class for climb and descent phases.
     """
 
-    def __init__(
+    propulsion: InitVar[IPropulsion] = MANDATORY_FIELD
+    reference_area: InitVar[float] = MANDATORY_FIELD
+    polar: InitVar[Polar] = MANDATORY_FIELD
+    thrust_rate: InitVar[float] = 1.0
+    time_step: InitVar[float] = None
+    segment_kwargs: dict = field(default_factory=dict, init=False)
+
+    def __post_init__(
         self,
-        *,
         propulsion: IPropulsion,
         reference_area: float,
         polar: Polar,
         thrust_rate: float = 1.0,
-        name="",
-        time_step=None
+        time_step=None,
     ):
         """
-        Initialization is done only with keyword arguments.
 
         :param propulsion:
         :param reference_area:
@@ -238,14 +242,13 @@ class AbstractManualThrustFlightPhase(ABC):
         :param thrust_rate:
         :param time_step: if provided, this time step will be applied for all segments.
         """
-
-        super().__init__()
+        super().__post_init__()
         self.segment_kwargs = {
             "propulsion": propulsion,
             "reference_area": reference_area,
             "polar": polar,
             "thrust_rate": thrust_rate,
-            "name": name,
+            "name": self.name,
             "time_step": time_step,
         }
 
@@ -269,6 +272,7 @@ class AbstractManualThrustFlightPhase(ABC):
             return pd.concat(parts).reset_index(drop=True)
 
 
+@dataclass
 class InitialClimbPhase(AbstractManualThrustFlightPhase):
     """
     Preset for initial climb phase.
@@ -278,9 +282,10 @@ class InitialClimbPhase(AbstractManualThrustFlightPhase):
     - Climbs up to 1500ft at constant EAS
     """
 
-    @property
-    def flight_sequence(self) -> List[Union[IFlightPart, str]]:
-        return [
+    def __post_init__(self, *args, **kwargs):
+        super().__post_init__(*args, **kwargs)
+
+        self.flight_sequence = [
             AltitudeChangeSegment(
                 target=FlightPoint(equivalent_airspeed="constant", altitude=400.0 * foot),
                 engine_setting=EngineSetting.TAKEOFF,
@@ -299,6 +304,7 @@ class InitialClimbPhase(AbstractManualThrustFlightPhase):
         ]
 
 
+@dataclass
 class ClimbPhase(AbstractManualThrustFlightPhase):
     """
     Preset for climb phase.
@@ -308,27 +314,14 @@ class ClimbPhase(AbstractManualThrustFlightPhase):
     - Climbs up to target altitude at constant EAS
     """
 
-    def __init__(self, **kwargs):
-        """
-        Uses keyword arguments as for :meth:`AbstractManualThrustFlightPhase` with
-        these additional keywords:
+    maximum_mach: float = field(default=5.0)
+    target_altitude: Union[float, str] = MANDATORY_FIELD
 
-        :param maximum_mach: Mach number that won't be exceeded during climb
-        :param target_altitude: target altitude in meters, can be a float or
-                                AltitudeChangeSegment.OPTIMAL_ALTITUDE to target
-                                altitude with maximum lift/drag ratio
-        """
+    def __post_init__(self, *args, **kwargs):
+        super().__post_init__(*args, **kwargs)
 
-        if "maximum_mach" in kwargs:
-            self.maximum_mach = kwargs.pop("maximum_mach")
-        self.target_altitude = kwargs.pop("target_altitude")
-        super().__init__(**kwargs)
-
-    @property
-    def flight_sequence(self) -> List[Union[IFlightPart, str]]:
         self.segment_kwargs["engine_setting"] = EngineSetting.CLIMB
-
-        return [
+        self.flight_sequence = [
             AltitudeChangeSegment(
                 target=FlightPoint(equivalent_airspeed="constant", altitude=10000.0 * foot),
                 **self.segment_kwargs,
@@ -347,6 +340,7 @@ class ClimbPhase(AbstractManualThrustFlightPhase):
         ]
 
 
+@dataclass
 class DescentPhase(AbstractManualThrustFlightPhase):
     """
     Preset for descent phase.
@@ -357,21 +351,13 @@ class DescentPhase(AbstractManualThrustFlightPhase):
     - Descends down to target altitude at constant EAS
     """
 
-    def __init__(self, **kwargs):
-        """
-        Uses keyword arguments as for :meth:`AbstractManualThrustFlightPhase` with
-        this additional keyword:
+    target_altitude: Union[float, str] = MANDATORY_FIELD
 
-        :param target_altitude: target altitude in meters
-        """
-
-        self.target_altitude = kwargs.pop("target_altitude")
-        super().__init__(**kwargs)
-
-    @property
-    def flight_sequence(self) -> List[Union[IFlightPart, str]]:
+    def __post_init__(self, *args, **kwargs):
+        super().__post_init__(*args, **kwargs)
         self.segment_kwargs["engine_setting"] = EngineSetting.IDLE
-        return [
+
+        self.flight_sequence = [
             AltitudeChangeSegment(
                 target=FlightPoint(equivalent_airspeed=300.0 * knot, mach="constant"),
                 **self.segment_kwargs,

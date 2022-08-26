@@ -1,5 +1,21 @@
 phases:
+  start:
+    parts:
+      - segment: start
+        target:
+          altitude:
+            value: ~
+            unit: ft
+            default: 0.0
+          true_airspeed:
+            value: ~
+            unit: m/s
+            default: 0.0
   taxi_out:
+    time_step:
+      value: settings:mission~
+      default: 60
+      unit: s
     parts:
       - segment: taxi
         thrust_rate: ~
@@ -8,7 +24,6 @@ phases:
           default: 0.
         target:
           time: ~duration
-          mass: data:mission:sizing:TOW
   takeoff:
     parts:
       - segment: transition
@@ -20,6 +35,9 @@ phases:
           delta_mass: -~fuel
           time: ~duration
           true_airspeed: ~V2
+      - segment: mass_input
+        target:
+          mass: data:mission:sizing:TOW
 
   initial_climb:
     engine_setting: takeoff
@@ -27,7 +45,10 @@ phases:
     thrust_rate:
       value: data:mission:sizing:initial_climb:thrust_rate
       default: 1.0
-    time_step: 0.2
+    time_step:
+      value: settings:mission~
+      default: 0.2
+      unit: s
     parts:
       - segment: altitude_change
         target:
@@ -54,7 +75,10 @@ phases:
     thrust_rate:
       value: data:mission:sizing:climb:thrust_rate
       default: 0.93
-    time_step: 5.0
+    time_step:
+      value: settings:mission~
+      default: 5.0
+      unit: s
     parts:
       - segment: altitude_change
         target:
@@ -81,7 +105,10 @@ phases:
     engine_setting: climb
     polar: data:aerodynamics:aircraft:cruise
     thrust_rate: data:mission:sizing:climb:thrust_rate
-    time_step: 5.0
+    time_step:
+      value: settings:mission~
+      default: 5.0
+      unit: s
     parts:
       - segment: altitude_change
         target:
@@ -105,7 +132,10 @@ phases:
     engine_setting: idle
     polar: data:aerodynamics:aircraft:cruise
     thrust_rate: data:mission:sizing:descent:thrust_rate
-    time_step: 5.0
+    time_step:
+      value: settings:mission~
+      default: 5.0
+      unit: s
     parts:
       - segment: altitude_change
         target:
@@ -131,12 +161,20 @@ phases:
             value: 1500.
             unit: ft
   holding:
+    time_step:
+      value: settings:mission~
+      default: 60.0
+      unit: s
     parts:
       - segment: holding
         polar: data:aerodynamics:aircraft:cruise
         target:
           delta_time: ~duration
   taxi_in:
+    time_step:
+      value: settings:mission~
+      default: 60.0
+      unit: s
     parts:
       - segment: taxi
         thrust_rate: ~
@@ -187,6 +225,7 @@ missions:
       unit: degK
       default: 0.0
     parts:
+      - phase: start
       - phase: taxi_out
       - phase: takeoff
       - route: main_route

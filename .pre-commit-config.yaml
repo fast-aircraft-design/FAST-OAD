@@ -20,3 +20,10 @@ repos:
         language: python
         pass_filenames: false
         files: 'poetry.lock'
+
+      - id: nbstripout
+        name: nbstripout
+        description: 'nbstripout: strip output from Jupyter and IPython notebooks'
+        entry: nbstripout
+        language: python
+        types: [ jupyter ]

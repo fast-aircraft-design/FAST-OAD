@@ -4,13 +4,15 @@ name: Watchman Tests
 # It will warn developers if any update of a dependency broke something.
 
 on:
+  workflow_dispatch:
+  workflow_call:
   push:
     branches: [ master ]
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [ master ]
   schedule:
-    - cron: '12 5 * * *'
+    - cron: '12 4 * * *'
 
 
 jobs:
@@ -22,9 +24,9 @@ jobs:
         os: [ ubuntu-latest, windows-latest, macos-latest ]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -36,6 +38,16 @@ jobs:
           pip install .
           pip install pytest pytest-cov nbval
         shell: bash
+
+      - name: List installed packages
+        # List packages and versions for postmortem analysis.
+        run: pip list --format=freeze | tee requirements.txt
+        shell: bash
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: pip package list
+          path: requirements.txt
 
       - name: Unit tests
         run: pytest --no-cov src

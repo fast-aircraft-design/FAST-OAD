@@ -7,6 +7,9 @@ phases:
     thrust_rate:
       value: data:propulsion:initial_climb:thrust_rate
       default: 1.0
+    time_step:
+      value: settings:mission:~
+      unit: s
     parts:
       - segment: altitude_change
         target:
@@ -35,6 +38,9 @@ phases:
     engine_setting: climb
     polar: data:aerodynamics:aircraft:cruise
     thrust_rate: data:propulsion:climb:thrust_rate
+    time_step:
+      value:
+      unit: s
     parts:
       - segment: altitude_change
         target:
@@ -62,7 +68,7 @@ phases:
     polar: data:aerodynamics:aircraft:cruise
     thrust_rate: 0.93
     time_step:
-      value: 5.0
+      value: settings:mission~t_step
       unit: s
     parts:
       - segment: altitude_change
@@ -111,7 +117,7 @@ phases:
         target:
           equivalent_airspeed:
             value: constant
-          altitude: ~final_altitude
+          altitude: ~:final_altitude
   holding:
     parts:
       - segment: holding
@@ -124,7 +130,10 @@ phases:
         thrust_rate: ~
         true_airspeed: 0.
         target:
-          delta_time: ~duration
+          delta_time: ~:duration
+          mass:
+            value: ~TOW
+            unit: kg
   taxi_in:
     thrust_rate: ~
     parts:

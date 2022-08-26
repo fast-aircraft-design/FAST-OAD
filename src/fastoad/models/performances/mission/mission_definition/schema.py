@@ -20,14 +20,11 @@ from importlib.resources import open_text
 from os import PathLike
 from typing import Union
 
-import numpy as np
 from ensure import Ensure
 from jsonschema import validate
 from ruamel.yaml import YAML
 
 from . import resources
-from ..polar import Polar
-
 
 JSON_SCHEMA_NAME = "mission_schema.json"
 
@@ -44,7 +41,6 @@ MISSION_DEFINITION_TAG = "missions"
 ROUTE_DEFINITIONS_TAG = "routes"
 PHASE_DEFINITIONS_TAG = "phases"
 POLAR_TAG = "polar"
-GROUND_EFFECT_TAG = "ground_effect"
 
 
 class MissionDefinition(OrderedDict):
@@ -101,17 +97,10 @@ class MissionDefinition(OrderedDict):
         """
         phase_names = set(content[PHASE_DEFINITIONS_TAG].keys())
 
-        for phase_definition in content[PHASE_DEFINITIONS_TAG].values():
-            cls._process_polar_definition(phase_definition)
-            for segment_definition in phase_definition[PARTS_TAG]:
-                cls._process_polar_definition(segment_definition)
-
         for route_definition in content[ROUTE_DEFINITIONS_TAG].values():
-            cls._process_polar_definition(route_definition[CRUISE_PART_TAG])
             for part in list(route_definition[CLIMB_PARTS_TAG]) + list(
                 route_definition[DESCENT_PARTS_TAG]
             ):
-                cls._process_polar_definition(part)
                 Ensure(part[PHASE_TAG]).is_in(phase_names)
 
         for mission_definition in content[MISSION_DEFINITION_TAG].values():
@@ -131,28 +120,6 @@ class MissionDefinition(OrderedDict):
                 Ensure(part_type).equals(RESERVE_TAG)
 
         cls._convert_none_values(content)
-
-    @staticmethod
-    def _process_polar_definition(struct: dict):
-        """
-        If "foo:bar:baz" is provided as value for the "polar" key in provided dictionary, it is
-        replaced by the dict {"CL":"foo:bar:baz:CL", "CD":"foo:bar:baz:CD"}
-        """
-        if POLAR_TAG in struct:
-            polar_def = struct[POLAR_TAG]
-            if isinstance(polar_def, str) and ":" in polar_def:
-                struct[POLAR_TAG] = OrderedDict({"CL": polar_def + ":CL", "CD": polar_def + ":CD"})
-
-            # If ground_effect tag, call the variables needed for the ground effect model declared
-            if isinstance(polar_def, dict):
-                keys = list(polar_def.keys())
-                if GROUND_EFFECT_TAG in keys:
-                    gnd_effect = polar_def[GROUND_EFFECT_TAG]
-                    polar = Polar()
-                    for value, name in polar.get_gnd_effect_model(gnd_effect).items():
-                        struct[POLAR_TAG][value] = name
-
-
 
     @classmethod
     def _convert_none_values(cls, struct: Union[dict, list]):

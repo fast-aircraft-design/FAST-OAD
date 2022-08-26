@@ -177,6 +177,7 @@ class FASTOADProblemConfigurator:
                     RegisterOpenMDAOSystem.explore_folder(folder_path)
 
         # Settings submodels
+        RegisterSubmodel.cancel_submodel_deactivations()
         submodel_specs = self._serializer.data.get(KEY_SUBMODELS, {})
         for submodel_requirement, submodel_id in submodel_specs.items():
             RegisterSubmodel.active_models[submodel_requirement] = submodel_id

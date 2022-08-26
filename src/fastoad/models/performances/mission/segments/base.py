@@ -14,21 +14,23 @@
 
 import logging
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import Dict, List, Tuple, Type
+from copy import deepcopy
+from dataclasses import dataclass, field
+from typing import Dict, List, Optional, Tuple, Type
 
 import numpy as np
 import pandas as pd
 from aenum import Enum, extend_enum
+from deprecated import deprecated
 from scipy.constants import g
 from scipy.optimize import root_scalar
 from stdatm import AtmosphereSI
 
 from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
+from fastoad.model_base.datacls import MANDATORY_FIELD
 from fastoad.model_base.propulsion import IPropulsion
 from fastoad.models.performances.mission.polar import Polar
-from fastoad.utils.datacls import BaseDataClass
 from ..base import IFlightPart
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
 
@@ -43,53 +45,49 @@ class SegmentDefinitions(Enum):
     """
 
     @classmethod
-    def add_segment(cls, segment_name: str, segment_class: Type["FlightSegment"]):
+    def add_segment(cls, segment_name: str, segment_class: Type["AbstractFlightSegment"]):
         """
         Adds a segment definition.
 
         :param segment_name: segment names (mission file keyword)
         :param segment_class: segment implementation (derived of :class:`~FlightSegment`)
         """
-        if issubclass(segment_class, FlightSegment):
+        if issubclass(segment_class, AbstractFlightSegment):
             extend_enum(cls, segment_name, segment_class)
         else:
             raise RuntimeWarning(
-                '"%s" is ignored as segment name because its associated class '
-                "does not derive from FlightSegment." % segment_name
+                f'"{segment_name}" is ignored as segment name because its associated class '
+                "does not derive from FlightSegment."
             )
 
     @classmethod
-    def get_segment_class(cls, segment_name) -> Type["FlightSegment"]:
+    def get_segment_class(cls, segment_name) -> Optional[Type["AbstractFlightSegment"]]:
         """
         Provides the segment implementation for provided name.
 
         :param segment_name:
-        :return: the segment implementation (derived of :class:`~FlightSegment`)
+        :return: the segment implementation (derived of :class:`~FlightSegment`),
+                 or None if segment_name is not known
         """
         try:
             enum = cls[segment_name]
         except KeyError:
             enum = None
 
-        if enum:
-            return enum.value
+        return enum.value if enum else None
 
 
 @dataclass
-class FlightSegment(IFlightPart):
+class AbstractFlightSegment(IFlightPart, ABC):
     """
     Base class for flight path segment.
 
     As a dataclass, attributes can be set at instantiation.
 
-    This class implements the time computation. For this computation to work, subclasses must
-    implement abstract methods :meth:`get_get_distance_to_target`,
-    :meth:`get_gamma_and_acceleration` and :meth:`compute_propulsion`.
-
     When subclassing this class, the attribute "mission_file_keyword" can be set,
     so that the segment can be used in mission file definition with this keyword:
 
-        >>> class NewSegment(FlightSegment, mission_file_keyword="new_segment")
+        >>> class NewSegment(AbstractFlightSegment, mission_file_keyword="new_segment")
         >>>     ...
 
     Then in mission definition:
@@ -103,10 +101,11 @@ class FlightSegment(IFlightPart):
 
     .. Important::
 
-        When subclassing, if you intend to overload :meth:`compute_from` without calling the
-        super method, you should consider overriding :meth:`_compute_from` instead. Therefore,
-        you will take benefit of the preprocessing of start and target flight points that is
-        done in :meth:`compute_from`
+        :meth:`compute_from` is the method to call to achieve the segment computation.
+
+        However, when subclassing, the method to overload is :meth:`compute_from_start_to_target`.
+        Generic reprocessing of start and target flight points is done in :meth:`compute_from`
+        before calling :meth:`compute_from_start_to_target`
 
     """
 
@@ -115,47 +114,31 @@ class FlightSegment(IFlightPart):
     #: Possible parameters depend on the current segment. A parameter can also be set to
     #: :attr:`~fastoad.models.performances.mission.segments.base.FlightSegment.CONSTANT_VALUE`
     #: to tell that initial value should be kept during all segment.
-    target: FlightPoint = BaseDataClass.no_default
+    target: FlightPoint = MANDATORY_FIELD
 
-    #: A IPropulsion instance that will be called at each time step.
-    propulsion: IPropulsion = BaseDataClass.no_default
-
-    #: The Polar instance that will provide drag data.
-    polar: Polar = BaseDataClass.no_default
-
-    #: The reference area, in m**2.
-    reference_area: float = BaseDataClass.no_default
+    # the `target` field above will be overloaded by a property, using the hidden value below:
+    _target: FlightPoint = field(default=MANDATORY_FIELD, init=False)
 
     #: The temperature offset for ISA atmosphere model.
     isa_offset: float = 0.0
 
-    #: Used time step for computation (actual time step can be lower at some particular times of
-    #: the flight path).
-    time_step: float = DEFAULT_TIME_STEP
-
-    #: The EngineSetting value associated to the segment. Can be used in the propulsion
-    #: model.
-    engine_setting: EngineSetting = EngineSetting.CLIMB
-
-    #: Minimum and maximum authorized altitude values. If computed altitude gets beyond these
-    #: limits, computation will be interrupted and a warning message will be issued in logger.
-    altitude_bounds: tuple = (-500.0, 40000.0)
-
-    #: Minimum and maximum authorized mach values. If computed Mach gets beyond these limits,
-    #: computation will be interrupted and a warning message will be issued in logger.
-    mach_bounds: tuple = (0.0, 5.0)
-
-    #: The name of the current flight sequence.
-    name: str = ""
-
-    #: If True, computation will be interrupted if a parameter stops getting closer to target
-    #: between two iterations (which can mean the provided thrust rate is not adapted).
-    interrupt_if_getting_further_from_target: bool = True
-
     #: Using this value will tell to keep the associated parameter constant.
     CONSTANT_VALUE = "constant"  # pylint: disable=invalid-name # used as constant
 
+    # To be noted: this one is not a dataclass field, but an actual class attribute
     _attribute_units = dict(reference_area="m**2", time_step="s")
+
+    @abstractmethod
+    def compute_from_start_to_target(self, start, target) -> pd.DataFrame:
+        """
+        Here should come the implementation for computing flight points
+        between start and target flight points.
+
+        :param start:
+        :param target: Definition of segment target
+        :return: a pandas DataFrame where column names match fields of
+                 :class:`~fastoad.model_base.flight_point.FlightPoint`
+        """
 
     @classmethod
     def __init_subclass__(cls, *, mission_file_keyword="", attribute_units: Dict[str, str] = None):
@@ -198,31 +181,228 @@ class FlightSegment(IFlightPart):
         For instance, a climb computation with too low thrust will only return one
         flight point, that is the provided start point.
 
+        .. Important::
+
+            When subclasssing, if you need to overload :meth:`compute_from`, you should consider
+            overriding :meth:`_compute_from` instead. Therefore, you will take benefit of the
+            preprocessing of start and target flight points that is done in :meth:`compute_from`
+
+
         :param start: the initial flight point, defined for `altitude`, `mass` and speed
                       (`true_airspeed`, `equivalent_airspeed` or `mach`). Can also be
                       defined for `time` and/or `ground_distance`.
         :return: a pandas DataFrame where column names match fields of
-                 :meth:`~fastoad.model_base.flight_point.FlightPoint`
+                 :class:`~fastoad.model_base.flight_point.FlightPoint`
         """
-        start.scalarize()
-        if start.time is None:
-            start.time = 0.0
-        if start.ground_distance is None:
-            start.ground_distance = 0.0
+        # Let's ensure we do not modify the original definitions of start and target
+        # during the process
+        start_copy = deepcopy(start)
+        if start_copy.altitude is not None:
+            try:
+                self.complete_flight_point(start_copy)
+            except FastFlightSegmentIncompleteFlightPoint:
+                pass
+        start_copy.scalarize()
 
-        self._target = self._target.make_absolute(start)
+        target_copy = self._target.make_absolute(start_copy)
+        target_copy.scalarize()
 
-        self.complete_flight_point(start)
+        if start_copy.time is None:
+            start_copy.time = 0.0
+        if start_copy.ground_distance is None:
+            start_copy.ground_distance = 0.0
 
-        return self._compute_from(start)
+        flight_points = self.compute_from_start_to_target(start_copy, target_copy)
 
-    def _compute_from(self, start: FlightPoint) -> pd.DataFrame:
+        return flight_points
+
+    def complete_flight_point(self, flight_point: FlightPoint):
+        """
+        Computes data for provided flight point.
+
+        Assumes that it is already defined for time, altitude, mass,
+        ground distance and speed (TAS, EAS, or Mach).
+
+        :param flight_point: the flight point that will be completed in-place
+        """
+
+        self._complete_speed_values(flight_point)
+
+    @staticmethod
+    def complete_flight_point_from(flight_point: FlightPoint, source: FlightPoint):
+        """
+        Sets undefined values in `flight_point` using the ones from `source`.
+
+        The particular case of speeds is taken into account: if at least one speed parameter is
+        defined, all other speed parameters are considered defined, because they will be
+        deduced when needed.
+
+        :param flight_point:
+        :param source:
+        """
+        speed_fields = {
+            "true_airspeed",
+            "equivalent_airspeed",
+            "calibrated_airspeed",
+            "mach",
+            "unitary_reynolds",
+        }.intersection(flight_point.get_field_names())
+        other_fields = list(set(flight_point.get_field_names()) - speed_fields)
+
+        speeds_are_missing = np.all([getattr(flight_point, name) is None for name in speed_fields])
+
+        for field_name in other_fields + speeds_are_missing * list(speed_fields):
+            if getattr(flight_point, field_name) is None and not source.is_relative(field_name):
+                setattr(flight_point, field_name, getattr(source, field_name))
+
+    def _complete_speed_values(
+        self, flight_point: FlightPoint, raise_error_on_missing_speeds=True
+    ) -> bool:
+        """
+        Computes consistent values between TAS, EAS and Mach, assuming one of them is defined.
+        """
+        atm = self._get_atmosphere_point(flight_point.altitude)
+
+        if flight_point.true_airspeed is None:
+            if flight_point.mach is not None:
+                atm.mach = flight_point.mach
+            elif flight_point.equivalent_airspeed is not None:
+                atm.equivalent_airspeed = flight_point.equivalent_airspeed
+            elif raise_error_on_missing_speeds:
+                raise FastFlightSegmentIncompleteFlightPoint(
+                    "Flight point should be defined for true_airspeed, "
+                    "equivalent_airspeed, or mach."
+                )
+            else:
+                return False
+            flight_point.true_airspeed = atm.true_airspeed
+        else:
+            atm.true_airspeed = flight_point.true_airspeed
+
+        flight_point.mach = atm.mach
+        flight_point.equivalent_airspeed = atm.equivalent_airspeed
+        return True
+
+    def _get_atmosphere_point(self, altitude: float) -> AtmosphereSI:
+        """
+        Convenience method to ensure used atmosphere model is initiated with :attr:`delta_isa`.
+
+        :param altitude: in meters
+        :return: AtmosphereSI instantiated from provided altitude and :attr:`delta_isa`
+        """
+        return AtmosphereSI(altitude, self.isa_offset)
+
+
+@dataclass
+class AbstractTimeStepFlightSegment(
+    AbstractFlightSegment,
+    ABC,
+):
+    """
+    Base class for time step computation flight segments.
+
+    This class implements the time computation. For this computation to work, subclasses must
+    implement abstract methods :meth:`get_distance_to_target`,
+    :meth:`get_gamma_and_acceleration` and :meth:`compute_propulsion`.
+    """
+
+    #: A IPropulsion instance that will be called at each time step.
+    propulsion: IPropulsion = MANDATORY_FIELD
+
+    #: The Polar instance that will provide drag data.
+    polar: Polar = MANDATORY_FIELD
+
+    #: The reference area, in m**2.
+    reference_area: float = MANDATORY_FIELD
+
+    #: Used time step for computation (actual time step can be lower at some particular times of
+    #: the flight path).
+    time_step: float = DEFAULT_TIME_STEP
+
+    #: Minimum and maximum authorized altitude values. If computed altitude gets beyond these
+    #: limits, computation will be interrupted and a warning message will be issued in logger.
+    altitude_bounds: tuple = (-500.0, 40000.0)
+
+    #: Minimum and maximum authorized mach values. If computed Mach gets beyond these limits,
+    #: computation will be interrupted and a warning message will be issued in logger.
+    mach_bounds: tuple = (0.0, 5.0)
+
+    #: If True, computation will be interrupted if a parameter stops getting closer to target
+    #: between two iterations (which can mean the provided thrust rate is not adapted).
+    interrupt_if_getting_further_from_target: bool = True
+
+    #: The EngineSetting value associated to the segment. Can be used in the
+    #: propulsion model.
+    engine_setting: EngineSetting = EngineSetting.CLIMB
+
+    @abstractmethod
+    def get_distance_to_target(
+        self, flight_points: List[FlightPoint], target: FlightPoint
+    ) -> float:
+        """
+        Computes a "distance" from last flight point to target.
+
+        Computed does not need to have a real meaning.
+        The important point is that it must be signed so that algorithm knows on
+        which "side" of the target we are.
+        And of course, it should be 0. if flight point is on target.
+
+        :param flight_points: list of all currently computed flight_points
+        :param target: segment target (will not contain relative values)
+        :return: O. if target is attained, a non-null value otherwise
+        """
+
+    @abstractmethod
+    def compute_propulsion(self, flight_point: FlightPoint):
+        """
+        Computes propulsion data.
+
+        Provided flight point is modified in place.
+
+        Generally, this method should end with::
+
+            self.propulsion.compute_flight_points(flight_point)
+
+        :param flight_point:
+        """
+
+    @abstractmethod
+    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
+        """
+        Computes slope angle (gamma) and acceleration.
+
+        :param flight_point: parameters after propulsion model has been called
+                             (i.e. mass, thrust and drag are available)
+        :return: slope angle in radians and acceleration in m**2/s
+        """
+
+    def complete_flight_point(self, flight_point: FlightPoint):
+        super().complete_flight_point(flight_point)
+        if flight_point.altitude is not None:
+            atm = self._get_atmosphere_point(flight_point.altitude)
+            reference_force = (
+                0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_area
+            )
+
+            if self.polar:
+                flight_point.CL = flight_point.mass * g / reference_force
+                flight_point.CD = self.polar.cd(flight_point.CL)
+            else:
+                flight_point.CL = flight_point.CD = 0.0
+            flight_point.drag = flight_point.CD * reference_force
+        flight_point.engine_setting = self.engine_setting
+        self.compute_propulsion(flight_point)
+        flight_point.slope_angle, flight_point.acceleration = self.get_gamma_and_acceleration(
+            flight_point
+        )
+
+    def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
         flight_points = [start]
-        previous_point_to_target = self.get_distance_to_target(flight_points)
+        previous_point_to_target = self.get_distance_to_target(flight_points, target)
         tol = 1.0e-5  # Such accuracy is not needed, but ensures reproducibility of results.
         while np.abs(previous_point_to_target) > tol:
             self._add_new_flight_point(flight_points, self.time_step)
-            last_point_to_target = self.get_distance_to_target(flight_points)
+            last_point_to_target = self.get_distance_to_target(flight_points, target)
 
             if last_point_to_target * previous_point_to_target < 0.0:
 
@@ -242,12 +422,12 @@ class FlightSegment(IFlightPart):
                         time_step = time_step.item()
                     del flight_points[-1]
                     self._add_new_flight_point(flight_points, time_step)
-                    return self.get_distance_to_target(flight_points)
+                    return self.get_distance_to_target(flight_points, target)
 
                 root_scalar(
                     replace_last_point, x0=self.time_step, x1=self.time_step / 2.0, rtol=tol
                 )
-                last_point_to_target = self.get_distance_to_target(flight_points)
+                last_point_to_target = self.get_distance_to_target(flight_points, target)
             elif (
                 np.abs(last_point_to_target) > np.abs(previous_point_to_target)
                 # If self.target.CL is defined, it means that we look for an optimal altitude and
@@ -272,34 +452,6 @@ class FlightSegment(IFlightPart):
 
         flight_points_df = pd.DataFrame(flight_points)
         return flight_points_df
-
-    def _check_values(self, flight_point: FlightPoint) -> str:
-        """
-        Checks that computed values are consistent.
-
-        May be overloaded for doing specific additional checks at each time step.
-
-        :param flight_point:
-        :return: None if Ok, or an error message otherwise
-        """
-
-        if not self.mach_bounds[0] <= flight_point.mach <= self.mach_bounds[1]:
-            return "true_airspeed value %f.1m/s is out of bound." % flight_point.true_airspeed
-        if not self.altitude_bounds[0] <= flight_point.altitude <= self.altitude_bounds[1]:
-            return "Altitude value %.0fm is out of bound." % flight_point.altitude
-        if flight_point.mass <= 0.0:
-            return "Negative mass value."
-
-    def _add_new_flight_point(self, flight_points: List[FlightPoint], time_step):
-        """
-        Appends a new flight point to provided flight point list.
-
-        :param flight_points: list of previous flight points, modified in place.
-        :param time_step: time step for new computed flight point.
-        """
-        new_point = self.compute_next_flight_point(flight_points, time_step)
-        self.complete_flight_point(new_point)
-        flight_points.append(new_point)
 
     def compute_next_flight_point(
         self, flight_points: List[FlightPoint], time_step: float
@@ -336,65 +488,33 @@ class FlightSegment(IFlightPart):
         next_point.name = self.name
         return next_point
 
-    def complete_flight_point(self, flight_point: FlightPoint):
+    def _check_values(self, flight_point: FlightPoint) -> str:
         """
-        Computes data for provided flight point.
+        Checks that computed values are consistent.
 
-        Assumes that it is already defined for time, altitude, mass,
-        ground distance and speed (TAS, EAS, or Mach).
+        May be overloaded for doing specific additional checks at each time step.
 
-        :param flight_point: the flight point that will be completed in-place
+        :param flight_point:
+        :return: None if Ok, or an error message otherwise
         """
-        flight_point.engine_setting = self.engine_setting
 
-        self._complete_speed_values(flight_point)
+        if not self.mach_bounds[0] <= flight_point.mach <= self.mach_bounds[1]:
+            return f"true_airspeed value {flight_point.true_airspeed:.1f}m/s is out of bound."
+        if not self.altitude_bounds[0] <= flight_point.altitude <= self.altitude_bounds[1]:
+            return f"Altitude value {flight_point.altitude:.0f}m is out of bound."
+        if flight_point.mass <= 0.0:
+            return "Negative mass value."
 
-        atm = self._get_atmosphere_point(flight_point.altitude)
-        reference_force = 0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_area
-
-        if self.polar:
-            flight_point.CL = flight_point.mass * g / reference_force
-            flight_point.CD = self.polar.cd(flight_point.CL)
-        else:
-            flight_point.CL = flight_point.CD = 0.0
-        flight_point.drag = flight_point.CD * reference_force
-
-        self.compute_propulsion(flight_point)
-        flight_point.slope_angle, flight_point.acceleration = self.get_gamma_and_acceleration(
-            flight_point
-        )
-
-    def _get_atmosphere_point(self, altitude: float) -> AtmosphereSI:
+    def _add_new_flight_point(self, flight_points: List[FlightPoint], time_step):
         """
-        Convenience method to ensure used atmosphere model is initiated with :attr:`delta_isa`.
+        Appends a new flight point to provided flight point list.
 
-        :param altitude: in meters
-        :return: AtmosphereSI instantiated from provided altitude and :attr:`delta_isa`
+        :param flight_points: list of previous flight points, modified in place.
+        :param time_step: time step for new computed flight point.
         """
-        return AtmosphereSI(altitude, self.isa_offset)
-
-    def _complete_speed_values(self, flight_point: FlightPoint):
-        """
-        Computes consistent values between TAS, EAS and Mach, assuming one of them is defined.
-        """
-        atm = self._get_atmosphere_point(flight_point.altitude)
-
-        if flight_point.true_airspeed is None:
-            if flight_point.mach is not None:
-                atm.mach = flight_point.mach
-            elif flight_point.equivalent_airspeed is not None:
-                atm.equivalent_airspeed = flight_point.equivalent_airspeed
-            else:
-                raise FastFlightSegmentIncompleteFlightPoint(
-                    "Flight point should be defined for true_airspeed, "
-                    "equivalent_airspeed, or mach."
-                )
-            flight_point.true_airspeed = atm.true_airspeed
-        else:
-            atm.true_airspeed = flight_point.true_airspeed
-
-        flight_point.mach = atm.mach
-        flight_point.equivalent_airspeed = atm.equivalent_airspeed
+        new_point = self.compute_next_flight_point(flight_points, time_step)
+        self.complete_flight_point(new_point)
+        flight_points.append(new_point)
 
     @staticmethod
     def _compute_next_altitude(next_point: FlightPoint, previous_point: FlightPoint):
@@ -432,47 +552,24 @@ class FlightSegment(IFlightPart):
 
         return optimal_altitude
 
-    @abstractmethod
-    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
-        """
-        Computes a "distance" from last flight point to target.
 
-        Computed does not need to have a real meaning.
-        The important point is that it must be signed so that algorithm knows on
-        which "side" of the target we are.
-        And of course, it should be 0. if flight point is on target.
+@deprecated(
+    "Class FlightSegment will be removed in version 2.0. "
+    "It is replaced by class AbstractTimeStepFlightSegment."
+)
+@dataclass
+class FlightSegment(AbstractTimeStepFlightSegment, ABC):
+    """
+    Base class for time step computation flight segments.
 
-        :param flight_points: list of all currently computed flight_points
-        :return: O. if target is attained, a non-null value otherwise
-        """
-
-    @abstractmethod
-    def compute_propulsion(self, flight_point: FlightPoint):
-        """
-        Computes propulsion data.
-
-        Provided flight point is modified in place.
-
-        Generally, this method should end with::
-
-            self.propulsion.compute_flight_points(flight_point)
-
-        :param flight_point:
-        """
-
-    @abstractmethod
-    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
-        """
-        Computes slope angle (gamma) and acceleration.
-
-        :param flight_point: parameters after propulsion model has been called
-                             (i.e. mass, thrust and drag are available)
-        :return: slope angle in radians and acceleration in m**2/s
-        """
+    This class implements the time computation. For this computation to work, subclasses must
+    implement abstract methods :meth:`get_get_distance_to_target`,
+    :meth:`get_gamma_and_acceleration` and :meth:`compute_propulsion`.
+    """
 
 
 @dataclass
-class ManualThrustSegment(FlightSegment, ABC):
+class AbstractManualThrustSegment(AbstractTimeStepFlightSegment, ABC):
     """
     Base class for computing flight segment where thrust rate is imposed.
 
@@ -488,7 +585,7 @@ class ManualThrustSegment(FlightSegment, ABC):
 
 
 @dataclass
-class RegulatedThrustSegment(FlightSegment, ABC):
+class AbstractRegulatedThrustSegment(AbstractTimeStepFlightSegment, ABC):
     """
     Base class for computing flight segment where thrust rate is adjusted on drag.
     """
@@ -509,25 +606,15 @@ class RegulatedThrustSegment(FlightSegment, ABC):
 
 
 @dataclass
-class FixedDurationSegment(FlightSegment, ABC):
+class AbstractFixedDurationSegment(AbstractTimeStepFlightSegment, ABC):
     """
-    Class for computing phases where duration is fixed.
+    Base class for computing a fixed-duration segment.
     """
 
     time_step: float = 60.0
 
-    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
+    def get_distance_to_target(
+        self, flight_points: List[FlightPoint], target: FlightPoint
+    ) -> float:
         current = flight_points[-1]
-        return self.target.time - current.time
-
-
-@dataclass
-class GroundSegment(ManualThrustSegment, ABC):
-    """
-    Class for computing accelerated segments on the ground with wheel friction.
-    """
-
-    # Friction coefficient considered for acceleration at take-off.
-    # The default value is representative of dry concrete/asphalte
-    wheels_friction: float = 0.03
-    time_step: float = 0.1
+        return target.time - current.time

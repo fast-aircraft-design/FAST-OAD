@@ -13,52 +13,34 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass
-from typing import List, Tuple
 
 import pandas as pd
 
 from fastoad.model_base import FlightPoint
-from fastoad.model_base.propulsion import IPropulsion
-from .base import FlightSegment
+from .base import AbstractFlightSegment
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
-from ..polar import Polar
 
 
 @dataclass
-class Start(FlightSegment, mission_file_keyword="start"):
+class Start(AbstractFlightSegment, mission_file_keyword="start"):
     """
     Provides a starting point for a mission.
 
     :meth:`compute_from` will return only 1 flight points that matches the target.
     """
 
-    #: Unused
-    propulsion: IPropulsion = None
+    def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+        target.name = self.name
 
-    #: Unused
-    reference_area: float = 1.0
+        if target.mass is None:
+            # If not setting the mass in the start point, the default value set in
+            # mission component will be used.
+            target.mass = start.mass
 
-    #: Unused
-    polar: Polar = None
-
-    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
-
-        self.target.name = self.name
         try:
-            self.complete_flight_point(self.target)
+            self.complete_flight_point(target)
         except FastFlightSegmentIncompleteFlightPoint:
-            self.target.true_airspeed = 0.0
-            self.complete_flight_point(self.target)
+            target.true_airspeed = 0.0
+            self.complete_flight_point(target)
 
-        return pd.DataFrame([self.target])
-
-    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
-        return 0.0, 0.0
-
-    # As we overloaded self.compute_from(), next abstract method are not used.
-    # We just need to implement them for Python to be happy.
-    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
-        pass
-
-    def compute_propulsion(self, flight_point: FlightPoint):
-        pass
+        return pd.DataFrame([target])

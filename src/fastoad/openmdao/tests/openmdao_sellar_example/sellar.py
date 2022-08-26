@@ -16,7 +16,7 @@
 import abc
 from typing import Type
 
-from openmdao.api import Group, IndepVarComp, NonlinearBlockGS
+import openmdao.api as om
 
 from .disc1 import Disc1
 from .disc2 import Disc2
@@ -62,7 +62,7 @@ class StandardSellarFactory(ISellarFactory):
         return Functions()
 
 
-class Sellar(Group):
+class Sellar(om.Group):
     """An OpenMDAO base component to encapsulate Sellar MDA"""
 
     def __init__(self, sellar_factory: Type[ISellarFactory] = StandardSellarFactory, **kwargs):
@@ -75,15 +75,14 @@ class Sellar(Group):
         super(Sellar, self).__init__(**kwargs)
 
         self._sellar_factory = sellar_factory
-        self.nonlinear_solver = NonlinearBlockGS()
-        self.nonlinear_solver.options["atol"] = 1.0e-10
-        self.nonlinear_solver.options["rtol"] = 1.0e-10
-        self.nonlinear_solver.options["maxiter"] = 10
-        self.nonlinear_solver.options["err_on_non_converge"] = True
-        self.nonlinear_solver.options["iprint"] = 1
+
+        # This combination of solvers is specifically chosen because it creates some
+        # non-pickle-able object that will cause problems in case of deepcopy (see issue #431)
+        self.nonlinear_solver = om.NewtonSolver(solve_subsystems=False, maxiter=50)
+        self.linear_solver = om.DirectSolver()
 
     def setup(self):
-        indeps = self.add_subsystem("indeps", IndepVarComp(), promotes=["*"])
+        indeps = self.add_subsystem("indeps", om.IndepVarComp(), promotes=["*"])
         indeps.add_output("x", 2)
         self.add_subsystem("Disc1", self._sellar_factory.create_disc1(), promotes=["x", "z", "y2"])
         self.add_subsystem("Disc2", self._sellar_factory.create_disc2(), promotes=["z", "y2"])

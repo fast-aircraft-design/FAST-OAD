@@ -12,10 +12,20 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .base import FixedDurationSegment, RegulatedThrustSegment
+from dataclasses import dataclass
+
+from .base import (
+    AbstractFixedDurationSegment,
+    AbstractRegulatedThrustSegment,
+)
 
 
-class HoldSegment(RegulatedThrustSegment, FixedDurationSegment, mission_file_keyword="holding"):
+@dataclass
+class HoldSegment(
+    AbstractRegulatedThrustSegment,
+    AbstractFixedDurationSegment,
+    mission_file_keyword="holding",
+):
     """
     Class for computing hold flight segment.
 
@@ -24,5 +34,3 @@ class HoldSegment(RegulatedThrustSegment, FixedDurationSegment, mission_file_key
     Target is a specified time. The target definition indicates
     the time duration of the segment, independently of the initial time value.
     """
-
-    pass

@@ -66,6 +66,10 @@ stdatm = "0.*"
 Deprecated = "^1.2.13"
 click = "^8.0.3"
 importlib-metadata = { version = "^4.2", python = "<3.10" }
+mpi4py = {version = "^3", optional = true}
+
+[tool.poetry.extras]
+mpi4py = ["mpi4py"]
 
 [tool.poetry.dev-dependencies]
 fast-oad-cs25 = "0.*"
@@ -81,6 +85,7 @@ sphinx-rtd-theme = "^1.0"
 sphinxcontrib-bibtex = "^2.3.0"
 flake8 = "^4.0.1"
 matplotlib = "^3.1.2"
+nbstripout = "^0.5.0"
 
 [tool.poetry.scripts]
 fastoad = "fastoad.cmd.cli:fast_oad"
@@ -100,7 +105,7 @@ line-length = 100
 minversion = "6.0"
 addopts = "--cov fastoad --cov-report term-missing --cov-report html --verbose"
 testpaths = ["src", "tests"]
-norecursedirs = ["dist", "build", ".tox"]
+norecursedirs = ["dist", "build", ".tox", ".ipynb_checkpoints"]
 
 [tool.coverage.run]
 branch = true

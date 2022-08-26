@@ -36,10 +36,10 @@ from .exceptions import (
 )
 from .._utils.resource_management.contents import PackageReader
 
-if sys.version_info < (3, 10):
-    from importlib_metadata import entry_points, EntryPoint
+if sys.version_info >= (3, 10):
+    import importlib.metadata as importlib_metadata
 else:
-    from importlib.metadata import entry_points, EntryPoint
+    import importlib_metadata
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -114,7 +114,7 @@ class DistributionPluginDefinition(dict):
 
     dist_name: str = None
 
-    def read_entry_point(self, entry_point: EntryPoint, group: str):
+    def read_entry_point(self, entry_point: importlib_metadata.EntryPoint, group: str):
         """
         Adds plugin definition from provided entry point to
 
@@ -337,8 +337,14 @@ class FastoadLoader(BundleLoader):
         """
         Reads definitions of declared plugins.
         """
+        # Dev note: in src/conftest.py, wrapt is used to monkey patch
+        # importlib_metadata.entry_points when unit testing plugin-related feature.
+        # This will not work if `from importlib_metadata import entry_points`
+        # is done at beginning of the file, because then, we will use a reference
+        # to original `entry_points`, before it is patched by conftest.py
+
         for group in [OLD_MODEL_PLUGIN_ID, MODEL_PLUGIN_ID]:
-            for entry_point in entry_points(group=group):
+            for entry_point in importlib_metadata.entry_points(group=group):
                 if entry_point.dist.name not in cls._dist_plugin_definitions:
                     cls._dist_plugin_definitions[
                         entry_point.dist.name

@@ -22,10 +22,10 @@ import pandas as pd
 from scipy.optimize import root_scalar
 
 from fastoad.model_base import FlightPoint
+from fastoad.model_base.datacls import MANDATORY_FIELD
 from fastoad.models.performances.mission.base import FlightSequence, IFlightPart
-from fastoad.models.performances.mission.segments.base import FlightSegment
+from fastoad.models.performances.mission.segments.base import AbstractFlightSegment
 from fastoad.models.performances.mission.segments.cruise import CruiseSegment
-from fastoad.utils.datacls import BaseDataClass
 
 
 @dataclass
@@ -40,13 +40,13 @@ class SimpleRoute(FlightSequence):
     """
 
     #: Any number of flight phases that will occur before cruise.
-    climb_phases: List[FlightSequence] = BaseDataClass.no_default
+    climb_phases: List[FlightSequence] = MANDATORY_FIELD
 
     #: The cruise phase.
-    cruise_segment: CruiseSegment = BaseDataClass.no_default
+    cruise_segment: CruiseSegment = MANDATORY_FIELD
 
     #: Any number of flight phases that will occur after cruise.
-    descent_phases: List[FlightSequence] = BaseDataClass.no_default
+    descent_phases: List[FlightSequence] = MANDATORY_FIELD
 
     def __post_init__(self):
         super().__post_init__()
@@ -61,7 +61,8 @@ class SimpleRoute(FlightSequence):
 
     @cruise_distance.setter
     def cruise_distance(self, cruise_distance):
-        self.cruise_segment.target.ground_distance = cruise_distance
+        self.cruise_segment.target.ground_distance = float(cruise_distance)
+        self.cruise_segment.target.set_as_relative("ground_distance")
 
     @property
     def cruise_speed(self) -> Optional[Tuple[str, float]]:
@@ -76,7 +77,7 @@ class SimpleRoute(FlightSequence):
         for segment in climb_segments:
             for speed_param in ["true_airspeed", "equivalent_airspeed", "mach"]:
                 speed_value = getattr(segment.target, speed_param)
-                if speed_value and speed_value != FlightSegment.CONSTANT_VALUE:
+                if speed_value and speed_value != AbstractFlightSegment.CONSTANT_VALUE:
                     return speed_param, speed_value
 
         return None
@@ -99,7 +100,7 @@ class RangedRoute(SimpleRoute):
     """
 
     #: Target ground distance for whole route
-    flight_distance: float = BaseDataClass.no_default
+    flight_distance: float = MANDATORY_FIELD
 
     #: Accuracy on actual total ground distance for the solver. In meters
     distance_accuracy: float = 0.5e3
@@ -129,7 +130,7 @@ class RangedRoute(SimpleRoute):
     def _get_ground_distances(cls, phase: FlightSequence) -> list:
         ground_distances = []
         for flight_part in phase.flight_sequence:
-            if isinstance(flight_part, FlightSegment):
+            if isinstance(flight_part, AbstractFlightSegment):
                 ground_distances.append(flight_part.target.ground_distance)
             else:
                 ground_distances.extend(cls._get_ground_distances(flight_part))
