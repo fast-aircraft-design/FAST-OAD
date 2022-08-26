@@ -14,6 +14,8 @@ phases:
           default: 0.
         target:
           time: data:mission:operational:taxi_out:duration
+      - segment: mass_input
+        target:
           mass: data:mission:operational:TOW
   takeoff:
     engine_setting: takeoff

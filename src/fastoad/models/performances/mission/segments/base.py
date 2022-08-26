@@ -325,7 +325,7 @@ class AbstractTimeStepFlightSegment(
 
     #: Minimum and maximum authorized mach values. If computed Mach gets beyond these limits,
     #: computation will be interrupted and a warning message will be issued in logger.
-    mach_bounds: tuple = (0.0, 5.0)
+    mach_bounds: tuple = (-1.0e-6, 5.0)
 
     #: If True, computation will be interrupted if a parameter stops getting closer to target
     #: between two iterations (which can mean the provided thrust rate is not adapted).

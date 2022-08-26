@@ -215,8 +215,8 @@ def test_mission_group_without_loop(cleanup, with_dummy_plugin_2):
         ),
         ivc,
     )
-    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6302, atol=1.0)
-    assert_allclose(problem["data:mission:operational:block_fuel"], 15000.0, atol=1.0)
+    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6505, atol=1.0)
+    assert_allclose(problem["data:mission:operational:block_fuel"], 15100.0, atol=1.0)
 
 
 def test_mission_group_with_loop(cleanup, with_dummy_plugin_2):
@@ -243,22 +243,20 @@ def test_mission_group_with_loop(cleanup, with_dummy_plugin_2):
 
     # check loop
     assert_allclose(
-        problem["data:mission:operational:TOW"],
-        problem["data:mission:operational:OWE"]
-        + problem["data:mission:operational:payload"]
-        + problem["data:mission:operational:onboard_fuel_at_takeoff"],
+        problem["data:mission:operational:ZFW"],
+        problem["data:mission:operational:OWE"] + problem["data:mission:operational:payload"],
         atol=1.0,
     )
     assert_allclose(
-        problem["data:mission:operational:needed_onboard_fuel_at_takeoff"],
-        problem["data:mission:operational:onboard_fuel_at_takeoff"],
+        problem["data:mission:operational:block_fuel"] + problem["data:mission:operational:ZFW"],
+        problem["data:mission:operational:TOW"]
+        + problem["data:mission:operational:consumed_fuel_before_input_weight"],
         atol=1.0,
     )
     assert_allclose(
         problem["data:mission:operational:needed_block_fuel"],
-        problem["data:mission:operational:needed_onboard_fuel_at_takeoff"]
-        + problem["data:mission:operational:taxi_out:fuel"]
-        + problem["data:mission:operational:takeoff:fuel"],
+        problem["data:mission:operational:block_fuel"],
         atol=1.0,
     )
-    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 5464, atol=1.0)
+
+    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 5597, atol=1.0)
