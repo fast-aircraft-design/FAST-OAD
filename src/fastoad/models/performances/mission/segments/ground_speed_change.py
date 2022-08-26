@@ -72,16 +72,18 @@ class GroundSpeedChangeSegment(GroundSegment, mission_file_keyword="ground_speed
             flight_point
         )
 
-    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
+    def get_distance_to_target(
+        self, flight_points: List[FlightPoint], target: FlightPoint
+    ) -> float:
         """
         It is interesting to set equivalent speed or Mach target for non isa conditions
         """
-        if self.target.true_airspeed is not None:
-            return self.target.true_airspeed - flight_points[-1].true_airspeed
-        if self.target.equivalent_airspeed is not None:
-            return self.target.equivalent_airspeed - flight_points[-1].equivalent_airspeed
-        if self.target.mach is not None:
-            return self.target.mach - flight_points[-1].mach
+        if target.true_airspeed is not None:
+            return target.true_airspeed - flight_points[-1].true_airspeed
+        if target.equivalent_airspeed is not None:
+            return target.equivalent_airspeed - flight_points[-1].equivalent_airspeed
+        if target.mach is not None:
+            return target.mach - flight_points[-1].mach
 
         raise FastFlightSegmentIncompleteFlightPoint(
             "No valid target definition for airspeed change at takeoff."

@@ -90,7 +90,9 @@ class RotationSegment(GroundSegment, mission_file_keyword="rotation"):
             flight_point
         )
 
-    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
+    def get_distance_to_target(
+        self, flight_points: List[FlightPoint], target: FlightPoint
+    ) -> float:
 
         # compute lift, including thrust projection, compare with weight
         current = flight_points[-1]

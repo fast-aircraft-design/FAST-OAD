@@ -618,3 +618,15 @@ class AbstractFixedDurationSegment(AbstractTimeStepFlightSegment, ABC):
     ) -> float:
         current = flight_points[-1]
         return target.time - current.time
+
+
+@dataclass
+class GroundSegment(AbstractManualThrustSegment, ABC):
+    """
+    Class for computing accelerated segments on the ground with wheel friction.
+    """
+
+    # Friction coefficient considered for acceleration at take-off.
+    # The default value is representative of dry concrete/asphalte
+    wheels_friction: float = 0.03
+    time_step: float = 0.1

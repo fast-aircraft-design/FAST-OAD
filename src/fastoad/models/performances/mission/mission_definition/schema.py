@@ -41,6 +41,7 @@ MISSION_DEFINITION_TAG = "missions"
 ROUTE_DEFINITIONS_TAG = "routes"
 PHASE_DEFINITIONS_TAG = "phases"
 POLAR_TAG = "polar"
+GROUND_EFFECT_TAG = "ground_effect"
 
 
 class MissionDefinition(OrderedDict):

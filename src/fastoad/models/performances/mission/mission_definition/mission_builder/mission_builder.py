@@ -347,7 +347,10 @@ class MissionBuilder:
         part_kwargs.update(self._base_kwargs)
         for key, value in part_kwargs.items():
             if key == "polar":
-                value = Polar(value["CL"].value, value["CD"].value)
+                polar_dict = {}
+                for kkey, vval in value.items():
+                    polar_dict[kkey] = vval.value
+                value = Polar(polar_dict)
             elif key == "target":
                 if not isinstance(value, FlightPoint):
                     target_parameters = {
