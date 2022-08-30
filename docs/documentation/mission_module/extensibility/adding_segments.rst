@@ -153,7 +153,7 @@ The instantiation in FAST-OAD will be like this::
 
     import fastoad.api as oad
 
-    segment = NewSegment( target=oad.FlightPoint(altitude=5000.0, true_airspeed=200.0,
+    segment = NewSegment( target=oad.FlightPoint(altitude=5000.0, true_airspeed=200.0),
                           my_float=4.2,
                          ...
                         )
