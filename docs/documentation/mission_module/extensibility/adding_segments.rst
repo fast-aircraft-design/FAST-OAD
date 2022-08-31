@@ -84,7 +84,7 @@ Given this implementation::
     from typing import List
 
     @dataclass
-    class NewSegment(AbstractFlightSegment, mission_file_keyword="new_segment"):
+    class NewSegment(oad.AbstractFlightSegment, mission_file_keyword="new_segment"):
         my_float: float = 0.0
         my_bool: bool = True
         my_array: List[float] = field(default_factory=list)
@@ -115,7 +115,7 @@ Given this implementation::
         from dataclasses import dataclass
 
         @dataclass
-        class NewSegment(AbstractFlightSegment, mission_file_keyword="new_segment"):
+        class NewSegment(oad.AbstractFlightSegment, mission_file_keyword="new_segment"):
             my_mandatory_float: float = oad.MANDATORY_FIELD
             ...
 
@@ -140,7 +140,7 @@ and will be implemented like this::
     from typing import List
 
     @dataclass
-    class NewSegment(AbstractFlightSegment, mission_file_keyword="new_segment"):
+    class NewSegment(oad.AbstractFlightSegment, mission_file_keyword="new_segment"):
         my_float: float = 0.0
         ...
 
