@@ -382,8 +382,7 @@
     }
   },
   "required": [
-    "missions",
-    "routes"
+    "missions"
   ],
   "additionalProperties": false
 }
