@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "DELBECQ"
+  given-names: "Scott"
+  orcid: "https://orcid.org/0000-0001-5078-4913"
+- family-names: "DAVID"
+  given-names: "Christophe"
+  orcid: "https://orcid.org/0000-0002-0643-3400"
+title: "FAST-OAD: Future Aircraft Sizing Tool - Overall Aircraft Design"
+version: 1.3.5
+date-released: 2022-07-30
+url: "https://github.com/fast-aircraft-design/FAST-OAD"
