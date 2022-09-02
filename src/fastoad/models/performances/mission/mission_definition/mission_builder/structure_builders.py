@@ -142,7 +142,9 @@ class AbstractStructureBuilder(ABC):
             name += f":{self.name}"
         return name
 
-    def _parse_inputs(self, structure, input_definitions, parent=None, part_identifier=""):
+    def _parse_inputs(
+        self, structure, input_definitions, parent=None, part_identifier="", segment_class=None
+    ):
         """
         Returns the `definition` structure where all inputs (string/numeric values, numeric lists,
         dicts with a "value key"), have been converted to an InputDefinition instance.
@@ -179,30 +181,39 @@ class AbstractStructureBuilder(ABC):
                     CRUISE_PART_TAG,
                 ]:
                     continue
-                if segment_class:
-                    self._process_shape_by_conn(key, value, segment_class)
+                if (
+                    segment_class
+                    and isinstance(value, dict)
+                    and isinstance(value.get("value"), str)
+                    and self._is_shape_by_conn(key, segment_class)
+                ):
+                    value["shape_by_conn"] = True
 
                 structure[key] = self._parse_inputs(
                     value,
                     input_definitions,
                     parent=key,
                     part_identifier=part_identifier,
+                    segment_class=segment_class,
                 )
             return structure
 
-        input_definition = InputDefinition(parent, structure, part_identifier=part_identifier)
+        # Here structure is not a dict, hence a directly given value.
+        key, value = parent, structure
+        input_definition = InputDefinition(key, value, part_identifier=part_identifier)
+        if segment_class and isinstance(value, str):
+            input_definition.shape_by_conn = self._is_shape_by_conn(key, segment_class)
         input_definitions.append(input_definition)
         return input_definition
 
     @staticmethod
-    def _process_shape_by_conn(key, value, segment_class):
+    def _is_shape_by_conn(key, segment_class) -> bool:
         """
         Here variables that are expected to be arrays or lists in the provided segment class are
         attributed the "shape_by_conn=True" property.
         """
         segment_fields = [fld for fld in fields(segment_class) if fld.name == key]
-        if len(segment_fields) == 1 and isinstance(value, dict) and "value" in value:
-            value["shape_by_conn"] = segment_fields[0].type in [list, np.ndarray]
+        return len(segment_fields) == 1 and issubclass(segment_fields[0].type, (list, np.ndarray))
 
     @staticmethod
     def _process_polar(polar_structure):

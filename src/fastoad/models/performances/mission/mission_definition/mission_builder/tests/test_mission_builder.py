@@ -40,10 +40,12 @@ DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 
 
 @dataclass
-class TestSegment(AbstractFlightSegment, mission_file_keyword="test_segment"):
+class TestSegment(AbstractFlightSegment, mission_file_keyword="test_segment_B"):
     scalar_parameter: float = MANDATORY_FIELD
     vector_parameter_1: np.ndarray = MANDATORY_FIELD
     vector_parameter_2: np.ndarray = MANDATORY_FIELD
+    vector_parameter_3: np.ndarray = MANDATORY_FIELD
+    vector_parameter_4: np.ndarray = MANDATORY_FIELD
 
     def compute_from_start_to_target(self, start, target) -> pd.DataFrame:
         return pd.DataFrame([start])
@@ -247,17 +249,8 @@ def test_build():
     assert isinstance(segment, TestSegment)
     assert segment.scalar_parameter == 42.0
     assert_allclose(segment.vector_parameter_1, [1.0, 2.0, 3.0])
-    assert_allclose(
-        segment.vector_parameter_2,
-        [
-            0.0,
-            1.0,
-            2.0,
-            3.0,
-            4.0,
-            5.0,
-        ],
-    )
+    assert_allclose(segment.vector_parameter_2, [0.0, 1.0, 2.0, 3.0, 4.0, 5.0])
+    assert_allclose(segment.vector_parameter_3, [10.0, 20.0, 30.0])
 
 
 def test_get_route_ranges():
@@ -2152,7 +2145,7 @@ def _get_expected_structure():
                                         use_opposite=False,
                                         variable_name=None,
                                     ),
-                                    "segment_type": "test_segment",
+                                    "segment_type": "test_segment_B",
                                     "type": "segment",
                                     "vector_parameter_1": InputDefinition(
                                         parameter_name="vector_parameter_1",
@@ -2163,6 +2156,7 @@ def _get_expected_structure():
                                         part_identifier="test:test_phase",
                                         use_opposite=False,
                                         variable_name="some:static:array",
+                                        shape_by_conn=True,
                                     ),
                                     "vector_parameter_2": InputDefinition(
                                         parameter_name="vector_parameter_2",
@@ -2173,6 +2167,27 @@ def _get_expected_structure():
                                         part_identifier="test:test_phase",
                                         use_opposite=False,
                                         variable_name="some:dynamic:array",
+                                        shape_by_conn=True,
+                                    ),
+                                    "vector_parameter_3": InputDefinition(
+                                        parameter_name="vector_parameter_3",
+                                        input_value=[10.0, 20.0, 30.0],
+                                        input_unit=None,
+                                        default_value=np.nan,
+                                        is_relative=False,
+                                        part_identifier="test:test_phase",
+                                        use_opposite=False,
+                                        variable_name=None,
+                                    ),
+                                    "vector_parameter_4": InputDefinition(
+                                        parameter_name="vector_parameter_4",
+                                        input_value=[100.0, 200.0, 300.0],
+                                        input_unit=None,
+                                        default_value=np.nan,
+                                        is_relative=False,
+                                        part_identifier="test:test_phase",
+                                        use_opposite=False,
+                                        variable_name=None,
                                     ),
                                     "target": {
                                         "altitude": InputDefinition(
