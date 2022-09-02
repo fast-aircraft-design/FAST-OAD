@@ -1,3 +1,9 @@
+<p align="center">
+  <img src="docs/img/FAST_OAD_logo2.jpg" alt="FAST-OAD logo" width="600">
+</p>
+Future Aircraft Sizing Tool - Overall Aircraft Design
+===============================================================
+
 ![Tests](https://github.com/fast-aircraft-design/FAST-OAD/workflows/Tests/badge.svg)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/9691f1d1430c45cf9c94bc342b4c6122)](https://www.codacy.com/gh/fast-aircraft-design/FAST-OAD?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=fast-aircraft-design/FAST-OAD&amp;utm_campaign=Badge_Grade)
 [![codecov](https://codecov.io/gh/fast-aircraft-design/FAST-OAD/branch/master/graph/badge.svg)](https://codecov.io/gh/fast-aircraft-design/FAST-OAD)
@@ -6,10 +12,11 @@
 
 [![Documentation Status](https://readthedocs.org/projects/fast-oad/badge/?version=stable)](https://fast-oad.readthedocs.io/)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/fast-aircraft-design/FAST-OAD.git/latest-release?urlpath=lab%2Ftree%2Fsrc%2Ffastoad%2Fnotebooks)
+[![DOI](https://zenodo.org/badge/186570813.svg)](https://zenodo.org/badge/latestdoi/186570813)
 
 
-FAST-OAD: Future Aircraft Sizing Tool - Overall Aircraft Design
-===============================================================
+
+
 
 FAST-OAD is a framework for performing rapid Overall Aircraft Design.
 
