@@ -175,7 +175,7 @@ Example
 **Example 1**
 
 :code:`route_A` contains the parameter :code:`range` where a contextual variable name is affected,
-that will used the default prefix (:code:`data:mission:`) and the customized suffix
+that will use the default prefix (:code:`data:mission:`) and the customized suffix
 (:code:`distance`).
 
 :code:`route_A` is used as a step by both :code:`mission_1` and :code:`mission_2`.
