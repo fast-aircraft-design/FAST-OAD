@@ -132,7 +132,7 @@ The AbstractFlightSegment class
 
 As :ref:`previously said <adding-segments-links-with-mission-file>`, a segment class has to
 inherit from :class:`~fastoad.models.performances.mission.segments.base.AbstractFlightSegment`
-(and specify the `mission_file_keyword` if its usage if intended in mission definition files)
+(and specify the `mission_file_keyword` if its usage is intended in mission definition files)
 and will be implemented like this::
 
     import fastoad.api as oad
