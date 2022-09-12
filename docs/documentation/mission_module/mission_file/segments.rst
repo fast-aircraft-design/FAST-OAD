@@ -315,6 +315,8 @@ parameter.
 
 **Example:**
 
+.. code-block:: yaml
+
     segment: transition # Rough climb simulation
     mass_ratio: 0.97            # Aircraft end mass will be 97% of total start mass
     target:
