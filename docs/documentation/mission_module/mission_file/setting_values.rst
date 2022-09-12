@@ -209,7 +209,7 @@ Then the mission computation has among its inputs:
 variable names are affected.
 For :code:`thrust_rate`, default prefix (:code:`data:mission:`) and suffix (:code:`thrust_rate`)
 will be used.
-For :code:`time_step`, prefix is customized (:code:`settings:mission`) and default prefix
+For :code:`time_step`, prefix is customized (:code:`settings:mission`) and default suffix
 (:code:`time_step`) will be used.
 
 
