@@ -2,6 +2,12 @@
 Changelog
 =========
 
+Version 1.3.5
+=============
+- Fixed:
+    - Deactivated automatic reports from OpenMDAO 3.17+ (can still be driven by environment variable OPENMDAO_REPORTS). (#449)
+    - Mass breakdown bar plot now accepts more than 5 datasets. The used color map is now consistent with othe FAST-OAD plots. (#451)
+
 Version 1.3.4
 =============
 - Fixed:

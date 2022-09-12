@@ -17,7 +17,7 @@ Defines the analysis and plotting functions for postprocessing
 from typing import Dict
 
 import numpy as np
-import plotly
+import plotly.express as px
 import plotly.graph_objects as go
 from openmdao.utils.units import convert_units
 from plotly.subplots import make_subplots
@@ -25,7 +25,7 @@ from plotly.subplots import make_subplots
 from fastoad.io import VariableIO
 from fastoad.openmdao.variables import VariableList
 
-COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
+COLS = px.colors.qualitative.Plotly
 
 
 # pylint: disable-msg=too-many-locals
@@ -310,7 +310,7 @@ def mass_breakdown_bar_plot(
         )
 
     # Same color for each aircraft configuration
-    i = len(fig.data)
+    i = int(len(fig.data) / 2) % 10
 
     weight_labels = ["MTOW", "OWE", "Fuel - Mission", "Payload"]
     weight_values = [mtow, owe, fuel_mission, payload]
