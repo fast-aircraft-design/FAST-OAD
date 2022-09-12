@@ -189,17 +189,9 @@ The mission name is used when configuring the mission module in the FAST-OAD con
 **If there is only one mission defined in the file, naming it in the configuration file is
 optional.**
 
-About mission start:
+.. note::
 
-    - Each mission begins by default by taxi-out and takeoff phases, but these phases are not
-      defined in the mission file. One reason for that is that the mass input for the mission is
-      the TakeOff Weight, which is the aircraft weight at the end of takeoff phase.
-    - A taxi-out phase is automatically computed at begin of the mission. To ignore this phase,
-      simply put its duration to 0. in the input data file.
-    - The takeoff data are simple inputs of the mission model. They have to be computed in a
-      dedicated takeoff model (available soon), or provided in the input data file.
-
-About reserve:
+    **About reserve**
 
     The :code:`reserve` keyword is typically designed to define fuel reserve as stated in
     EU-OPS 1.255.
