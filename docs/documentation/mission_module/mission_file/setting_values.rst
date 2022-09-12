@@ -200,7 +200,7 @@ Then the mission computation has among its inputs:
       - \data:mission
       - mission_2:route_A
       - distance
-      - \data:mission:mission_1:route_A:distance
+      - \data:mission:mission_2:route_A:distance
 
 
 **Examples 2 & 3**
