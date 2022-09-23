@@ -115,21 +115,21 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
         problem["data:mission:operational:main_route:initial_climb:fuel"], 121.0, atol=1.0
     )
     assert_allclose(
-        problem["data:mission:operational:main_route:initial_climb:distance"], 3594.0, atol=1.0
+        problem["data:mission:operational:main_route:initial_climb:distance"], 3600.0, atol=1.0
     )
 
     assert_allclose(problem["data:mission:operational:main_route:climb:duration"], 236.0, atol=1.0)
     assert_allclose(problem["data:mission:operational:main_route:climb:fuel"], 727.0, atol=1.0)
     assert_allclose(
-        problem["data:mission:operational:main_route:climb:distance"], 42995.0, atol=1.0
+        problem["data:mission:operational:main_route:climb:distance"], 43065.0, atol=1.0
     )
 
     assert_allclose(
         problem["data:mission:operational:main_route:cruise:duration"], 14736.0, atol=10.0
     )
-    assert_allclose(problem["data:mission:operational:main_route:cruise:fuel"], 5161.0, atol=1.0)
+    assert_allclose(problem["data:mission:operational:main_route:cruise:fuel"], 5167.0, atol=1.0)
     assert_allclose(
-        problem["data:mission:operational:main_route:cruise:distance"], 3392995.0, atol=500.0
+        problem["data:mission:operational:main_route:cruise:distance"], 3392590.0, atol=500.0
     )
 
     assert_allclose(
@@ -137,10 +137,10 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
     )
     assert_allclose(problem["data:mission:operational:main_route:descent:fuel"], 192.0, atol=1.0)
     assert_allclose(
-        problem["data:mission:operational:main_route:descent:distance"], 264416.0, atol=500.0
+        problem["data:mission:operational:main_route:descent:distance"], 264451.0, atol=500.0
     )
 
-    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6581.0, atol=1.0)
+    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6590.0, atol=1.0)
     assert_allclose(
         problem["data:mission:operational:distance"], 2000.0 * nautical_mile, atol=500.0
     )
@@ -150,7 +150,9 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
 def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
-    ivc = DataFile(input_file_path).to_ivc()
+    vars = DataFile(input_file_path)
+    del vars["data:mission:operational:takeoff:duration"]
+    ivc = vars.to_ivc()
     ivc.add_output("data:mission:operational:ramp_weight", 70100.0, units="kg")
 
     problem = run_system(
@@ -224,11 +226,11 @@ def test_mission_group_without_fuel_adjustment(cleanup, with_dummy_plugin_2):
         ivc,
     )
     assert_allclose(
-        problem["data:mission:operational:consumed_fuel_before_input_weight"], 100.4, atol=0.1
+        problem["data:mission:operational:consumed_fuel_before_input_weight"], 195.4, atol=0.1
     )
     assert_allclose(problem["data:mission:operational:ZFW"], 55000.0, atol=1.0)
-    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6581.0, atol=1.0)
-    assert_allclose(problem["data:mission:operational:block_fuel"], 15100.0, atol=1.0)
+    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6590.0, atol=1.0)
+    assert_allclose(problem["data:mission:operational:block_fuel"], 15195.0, atol=1.0)
 
 
 def test_mission_group_breguet_without_fuel_adjustment(cleanup, with_dummy_plugin_2):
@@ -256,7 +258,7 @@ def test_mission_group_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
     vars = DataFile(input_file_path)
-    del vars["data:mission:operational:TOW"]
+    del vars["data:mission:TOW"]
     ivc = vars.to_ivc()
 
     problem = run_system(
@@ -280,7 +282,7 @@ def test_mission_group_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
     )
     assert_allclose(
         problem["data:mission:operational:block_fuel"] + problem["data:mission:operational:ZFW"],
-        problem["data:mission:operational:TOW"]
+        problem["data:mission:TOW"]
         + problem["data:mission:operational:consumed_fuel_before_input_weight"],
         atol=1.0,
     )

@@ -21,9 +21,6 @@ phases:
           default: 0.
         target:
           time: data:mission:operational:taxi_out:duration
-      - segment: mass_input
-        target:
-          mass: data:mission:operational:TOW
   takeoff:
     parts:
       - segment: transition
@@ -34,6 +31,10 @@ phases:
             unit: ft
           delta_mass: -data:mission:operational:takeoff:fuel
           true_airspeed: data:mission:operational:takeoff:V2
+          time: ~duration
+      - segment: mass_input
+        target:
+          mass: data:mission:TOW
   initial_climb:
     engine_setting: takeoff
     polar: data:aerodynamics:aircraft:takeoff
