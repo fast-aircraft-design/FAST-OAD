@@ -228,6 +228,7 @@ class VariableViewer:
         self._filter_widgets = []
         modules_item = sorted(self._find_submodules(self.dataframe))
         if modules_item:
+            modules_item.insert(0, TAG_ALL)
             w = widgets.Dropdown(options=modules_item)
             self._filter_widgets.append(w)
         return self._render_ui()
@@ -249,6 +250,7 @@ class VariableViewer:
                 if modules_item:
                     # Check if the item exists already
                     if i == len(self._filter_widgets):
+                        # print(i, modules_item)
                         if len(modules_item) > 1:
                             modules_item.insert(0, TAG_ALL)
                         widget = widgets.Dropdown(options=modules_item)
@@ -423,7 +425,7 @@ class VariableViewer:
             else:
                 path = ":".join(modules)
 
-        path_filter = [True] * len(df) if path == "" else df.Name.str.startswith(path)
+        path_filter = [True] * len(df) if path == ("" or TAG_ALL) else df.Name.str.startswith(path)
         io_filter = [True] * len(df) if var_io_type == TAG_ALL else df["I/O"] == var_io_type
 
         filtered_df = df[path_filter & io_filter]
