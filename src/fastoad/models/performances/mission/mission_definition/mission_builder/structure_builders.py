@@ -143,13 +143,18 @@ class AbstractStructureBuilder(ABC):
         return name
 
     def _parse_inputs(
-        self, structure, input_definitions, parent=None, part_identifier="", segment_class=None
+        self,
+        structure,
+        input_definitions: List[InputDefinition],
+        parent=None,
+        part_identifier="",
+        segment_class=None,
     ):
         """
         Returns the `definition` structure where all inputs (string/numeric values, numeric lists,
         dicts with a "value key"), have been converted to an InputDefinition instance.
 
-        Created InputDefinition instances are stored in self._input_definitions.
+        Created InputDefinition instances are stored in provided input_definitions.
 
         :param structure:
         :param parent:
