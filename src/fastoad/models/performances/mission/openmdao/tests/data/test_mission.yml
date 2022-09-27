@@ -136,9 +136,9 @@ missions:
       - route: main_route
   operational:
     parts:
-      - phase: start
-      - phase: taxi_out
-      - phase: takeoff
+#      - phase: start
+#      - phase: taxi_out
+#      - phase: takeoff
       - route: main_route
       - reserve:
           ref: main_route
