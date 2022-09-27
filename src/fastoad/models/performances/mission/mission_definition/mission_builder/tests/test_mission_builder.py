@@ -28,8 +28,11 @@ from fastoad.models.performances.mission.base import FlightSequence
 from fastoad.models.performances.mission.segments.altitude_change import AltitudeChangeSegment
 from fastoad.models.performances.mission.segments.base import AbstractFlightSegment
 from fastoad.models.performances.mission.segments.hold import HoldSegment
+from fastoad.models.performances.mission.segments.mass_input import MassTargetSegment
 from fastoad.models.performances.mission.segments.speed_change import SpeedChangeSegment
+from fastoad.models.performances.mission.segments.start import Start
 from fastoad.models.performances.mission.segments.taxi import TaxiSegment
+from fastoad.models.performances.mission.segments.transition import DummyTransitionSegment
 from fastoad.openmdao.variables import Variable
 from ..input_definition import InputDefinition
 from ..mission_builder import MissionBuilder
@@ -96,11 +99,13 @@ def test_get_input_weight_variable_name():
         propulsion=Mock(IPropulsion),
         reference_area=100.0,
     )
-    assert mission_builder.get_input_weight_variable_name("sizing") is None
     assert (
         mission_builder.get_input_weight_variable_name("operational")
         == "data:mission:operational:taxi_out:TOW"
     )
+
+    # No mass input defined in "sizing", so it is completed by the default taxi_out & takeoff phase
+    assert mission_builder.get_input_weight_variable_name("sizing") == "data:mission:TOW"
 
 
 def test_inputs():
@@ -112,26 +117,41 @@ def test_inputs():
     with pytest.raises(FastMissionFileMissingMissionNameError):
         mission_builder.get_input_variables()
 
-    assert set(mission_builder.get_input_variables("sizing")) == {
-        Variable("data:TLAR:cruise_mach", val=np.nan),
-        Variable("data:aerodynamics:aircraft:cruise:CD", val=np.nan, shape_by_conn=True),
-        Variable("data:aerodynamics:aircraft:cruise:CL", val=np.nan, shape_by_conn=True),
-        Variable("data:aerodynamics:aircraft:takeoff:CD", val=np.nan, shape_by_conn=True),
-        Variable("data:aerodynamics:aircraft:takeoff:CL", val=np.nan, shape_by_conn=True),
-        Variable("data:mission:sizing:diversion:descent:final_altitude", val=np.nan, units="m"),
-        Variable("data:mission:sizing:diversion:range", val=np.nan, units="m"),
-        Variable("data:mission:sizing:holding:duration", val=np.nan, units="s"),
-        Variable("data:mission:sizing:main:descent:final_altitude", val=np.nan, units="m"),
-        Variable("data:mission:sizing:main:range", val=np.nan, units="m"),
-        Variable("data:mission:sizing:taxi_in:duration", val=np.nan, units="s"),
-        Variable("data:mission:sizing:taxi_in:thrust_rate", val=np.nan),
-        Variable("data:propulsion:initial_climb:thrust_rate", val=1.0),
-        Variable("data:propulsion:climb:thrust_rate", val=np.nan),
-        Variable("data:propulsion:descent:thrust_rate", val=np.nan),
-        Variable("data:mission:sizing:main:climb:time_step", val=np.nan, units="s"),
-        Variable("settings:mission:sizing:main:initial_climb:time_step", val=np.nan, units="s"),
-        Variable("settings:mission:sizing:diversion:diversion_climb:t_step", val=np.nan, units="s"),
-    }
+    assert sorted(mission_builder.get_input_variables("sizing"), key=lambda v: v.name) == sorted(
+        [
+            Variable("data:mission:sizing:taxi_out:altitude", val=0.0, units="ft"),
+            Variable("data:mission:sizing:taxi_out:true_airspeed", val=0.0, units="m/s"),
+            Variable("data:mission:sizing:taxi_out:duration", val=np.nan, units="s"),
+            Variable("settings:mission:sizing:taxi_out:time_step", val=60.0, units="s"),
+            Variable("data:mission:sizing:taxi_out:thrust_rate", val=np.nan),
+            Variable("data:mission:sizing:takeoff:safety_altitude", val=35.0, units="ft"),
+            Variable("data:mission:sizing:takeoff:fuel", val=np.nan, units="kg"),
+            Variable("data:mission:sizing:takeoff:duration", val=0.0, units="s"),
+            Variable("data:mission:sizing:takeoff:V2", val=np.nan, units="m/s"),
+            Variable("data:mission:TOW", val=np.nan, units="kg"),
+            Variable("data:TLAR:cruise_mach", val=np.nan),
+            Variable("data:aerodynamics:aircraft:cruise:CD", val=np.nan, shape_by_conn=True),
+            Variable("data:aerodynamics:aircraft:cruise:CL", val=np.nan, shape_by_conn=True),
+            Variable("data:aerodynamics:aircraft:takeoff:CD", val=np.nan, shape_by_conn=True),
+            Variable("data:aerodynamics:aircraft:takeoff:CL", val=np.nan, shape_by_conn=True),
+            Variable("data:mission:sizing:diversion:descent:final_altitude", val=np.nan, units="m"),
+            Variable("data:mission:sizing:diversion:range", val=np.nan, units="m"),
+            Variable("data:mission:sizing:holding:duration", val=np.nan, units="s"),
+            Variable("data:mission:sizing:main:descent:final_altitude", val=np.nan, units="m"),
+            Variable("data:mission:sizing:main:range", val=np.nan, units="m"),
+            Variable("data:mission:sizing:taxi_in:duration", val=np.nan, units="s"),
+            Variable("data:mission:sizing:taxi_in:thrust_rate", val=np.nan),
+            Variable("data:propulsion:initial_climb:thrust_rate", val=1.0),
+            Variable("data:propulsion:climb:thrust_rate", val=np.nan),
+            Variable("data:propulsion:descent:thrust_rate", val=np.nan),
+            Variable("data:mission:sizing:main:climb:time_step", val=np.nan, units="s"),
+            Variable("settings:mission:sizing:main:initial_climb:time_step", val=np.nan, units="s"),
+            Variable(
+                "settings:mission:sizing:diversion:diversion_climb:t_step", val=np.nan, units="s"
+            ),
+        ],
+        key=lambda v: v.name,
+    )
 
     assert set(mission_builder.get_input_variables("operational")) == {
         Variable("data:TLAR:cruise_mach", val=np.nan),
@@ -162,6 +182,7 @@ def test_build():
         mission_definition, propulsion=Mock(IPropulsion), reference_area=100.0
     )
 
+    # Check of "sizing" mission ################################################
     cl = np.linspace(0.0, 1.0, 11)
     cd = 0.5 * cl ** 2
 
@@ -183,15 +204,47 @@ def test_build():
         "data:mission:sizing:taxi_in:duration": 300.0,
         "data:mission:sizing:taxi_in:thrust_rate": 0.5,
     }
+
     mission = mission_builder.build(inputs, mission_name="sizing")
+    # "sizing" mission defines no input mass variable, so it is automatically completed
+    # with default taxi_out and takeoff phases, hence the 2 additional elements
+    # in mission.flight_sequence (total of 6 instead of 4).
+    assert len(mission.flight_sequence) == 6
+    assert mission.flight_sequence[0].name == "sizing:taxi_out"
+    assert mission.flight_sequence[1].name == "sizing:takeoff"
+    assert mission.flight_sequence[2].name == "sizing:main"
+    assert mission.flight_sequence[3].name == "sizing:diversion"
+    assert mission.flight_sequence[4].name == "sizing:holding"
+    assert mission.flight_sequence[5].name == "sizing:taxi_in"
 
-    assert len(mission.flight_sequence) == 4
-    assert mission.flight_sequence[0].name == "sizing:main"
-    assert mission.flight_sequence[1].name == "sizing:diversion"
-    assert mission.flight_sequence[2].name == "sizing:holding"
-    assert mission.flight_sequence[3].name == "sizing:taxi_in"
+    # Taxi-out phase -----------------------------------------------------------
+    taxi_out_phase = mission.flight_sequence[0]
+    assert isinstance(taxi_out_phase, FlightSequence)
+    assert taxi_out_phase.name == "sizing:taxi_out"
+    assert len(taxi_out_phase.flight_sequence) == 2
 
-    main_route = mission.flight_sequence[0]
+    start = taxi_out_phase.flight_sequence[0]
+    assert start.name == "sizing:taxi_out"
+    assert isinstance(start, Start)
+    taxi_out = taxi_out_phase.flight_sequence[1]
+    assert start.name == "sizing:taxi_out"
+    assert isinstance(taxi_out, TaxiSegment)
+
+    # Takeoff phase -----------------------------------------------------------
+    takeoff_phase = mission.flight_sequence[1]
+    assert isinstance(takeoff_phase, FlightSequence)
+    assert takeoff_phase.name == "sizing:takeoff"
+    assert len(takeoff_phase.flight_sequence) == 2
+
+    takeoff = takeoff_phase.flight_sequence[0]
+    assert takeoff.name == "sizing:takeoff"
+    assert isinstance(takeoff, DummyTransitionSegment)
+    mass_input = takeoff_phase.flight_sequence[1]
+    assert mass_input.name == "sizing:takeoff"
+    assert isinstance(mass_input, MassTargetSegment)
+
+    # Main route phase ---------------------------------------------------------
+    main_route = mission.flight_sequence[2]
     assert isinstance(main_route, FlightSequence)
     assert len(main_route.flight_sequence) == 4
     assert main_route.distance_accuracy == 500.0
@@ -225,18 +278,20 @@ def test_build():
     assert_allclose(climb2.polar.definition_cl, cl)
     assert_allclose(climb2.polar.cd(), cd)
 
-    holding_phase = mission.flight_sequence[2]
+    # Holding phase ------------------------------------------------------------
+    holding_phase = mission.flight_sequence[4]
     assert isinstance(holding_phase, FlightSequence)
     assert len(holding_phase.flight_sequence) == 1
     holding = holding_phase.flight_sequence[0]
     assert isinstance(holding, HoldSegment)
 
-    taxi_in_phase = mission.flight_sequence[3]
+    taxi_in_phase = mission.flight_sequence[5]
     assert isinstance(taxi_in_phase, FlightSequence)
     assert len(taxi_in_phase.flight_sequence) == 1
     taxi_in = taxi_in_phase.flight_sequence[0]
     assert isinstance(taxi_in, TaxiSegment)
 
+    # Check of "test" mission ##################################################
     test_inputs = {
         "some:static:array": [1.0, 2.0, 3.0],
         "some:dynamic:array": np.linspace(0.0, 5.0, 6),
@@ -244,7 +299,7 @@ def test_build():
     test_mission = mission_builder.build(test_inputs, mission_name="test")
     assert len(test_mission.flight_sequence) == 1
     assert isinstance(test_mission.flight_sequence[0], FlightSequence)
-    assert len(test_mission.flight_sequence[0].flight_sequence) == 1
+    assert len(test_mission.flight_sequence[0].flight_sequence) == 2
     segment = test_mission.flight_sequence[0].flight_sequence[0]
     assert isinstance(segment, TestSegment)
     assert segment.scalar_parameter == 42.0
@@ -1044,6 +1099,188 @@ def _get_expected_structure():
                 (
                     "parts",
                     [
+                        OrderedDict(
+                            [
+                                (
+                                    "parts",
+                                    [
+                                        {
+                                            "name": "sizing:taxi_out",
+                                            "segment_type": "start",
+                                            "target": {
+                                                "altitude": InputDefinition(
+                                                    parameter_name="altitude",
+                                                    input_value=None,
+                                                    input_unit="ft",
+                                                    default_value=0.0,
+                                                    is_relative=False,
+                                                    part_identifier="sizing:taxi_out",
+                                                    shape=None,
+                                                    shape_by_conn=False,
+                                                    use_opposite=False,
+                                                    variable_name="data:mission:sizing:taxi_out:altitude",
+                                                ),
+                                                "true_airspeed": InputDefinition(
+                                                    parameter_name="true_airspeed",
+                                                    input_value=None,
+                                                    input_unit="m/s",
+                                                    default_value=0.0,
+                                                    is_relative=False,
+                                                    part_identifier="sizing:taxi_out",
+                                                    shape=None,
+                                                    shape_by_conn=False,
+                                                    use_opposite=False,
+                                                    variable_name="data:mission:sizing:taxi_out:true_airspeed",
+                                                ),
+                                            },
+                                            "type": "segment",
+                                        },
+                                        {
+                                            "name": "sizing:taxi_out",
+                                            "segment_type": "taxi",
+                                            "target": {
+                                                "time": InputDefinition(
+                                                    parameter_name="time",
+                                                    input_value=None,
+                                                    input_unit="s",
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="sizing:taxi_out",
+                                                    shape=None,
+                                                    shape_by_conn=False,
+                                                    use_opposite=False,
+                                                    variable_name="data:mission:sizing:taxi_out:duration",
+                                                )
+                                            },
+                                            "thrust_rate": InputDefinition(
+                                                parameter_name="thrust_rate",
+                                                input_value=None,
+                                                input_unit=None,
+                                                default_value=np.nan,
+                                                is_relative=False,
+                                                part_identifier="sizing:taxi_out",
+                                                shape=None,
+                                                shape_by_conn=False,
+                                                use_opposite=False,
+                                                variable_name="data:mission:sizing:taxi_out:thrust_rate",
+                                            ),
+                                            "time_step": InputDefinition(
+                                                parameter_name="time_step",
+                                                input_value=None,
+                                                input_unit="s",
+                                                default_value=60,
+                                                is_relative=False,
+                                                part_identifier="sizing:taxi_out",
+                                                shape=None,
+                                                shape_by_conn=False,
+                                                use_opposite=False,
+                                                variable_name="settings:mission:sizing:taxi_out:time_step",
+                                            ),
+                                            "true_airspeed": InputDefinition(
+                                                parameter_name="true_airspeed",
+                                                input_value=None,
+                                                input_unit="m/s",
+                                                default_value=0.0,
+                                                is_relative=False,
+                                                part_identifier="sizing:taxi_out",
+                                                shape=None,
+                                                shape_by_conn=False,
+                                                use_opposite=False,
+                                                variable_name="data:mission:sizing:taxi_out:true_airspeed",
+                                            ),
+                                            "type": "segment",
+                                        },
+                                    ],
+                                ),
+                                ("name", "sizing:taxi_out"),
+                                ("type", "phase"),
+                            ]
+                        ),
+                        OrderedDict(
+                            [
+                                (
+                                    "parts",
+                                    [
+                                        {
+                                            "name": "sizing:takeoff",
+                                            "segment_type": "transition",
+                                            "target": {
+                                                "delta_altitude": InputDefinition(
+                                                    parameter_name="altitude",
+                                                    input_value=None,
+                                                    input_unit="ft",
+                                                    default_value=35,
+                                                    is_relative=True,
+                                                    part_identifier="sizing:takeoff",
+                                                    shape=None,
+                                                    shape_by_conn=False,
+                                                    use_opposite=False,
+                                                    variable_name="data:mission:sizing:takeoff:safety_altitude",
+                                                ),
+                                                "delta_mass": InputDefinition(
+                                                    parameter_name="mass",
+                                                    input_value=None,
+                                                    input_unit="kg",
+                                                    default_value=np.nan,
+                                                    is_relative=True,
+                                                    part_identifier="sizing:takeoff",
+                                                    shape=None,
+                                                    shape_by_conn=False,
+                                                    use_opposite=True,
+                                                    variable_name="data:mission:sizing:takeoff:fuel",
+                                                ),
+                                                "time": InputDefinition(
+                                                    parameter_name="time",
+                                                    input_value=None,
+                                                    input_unit="s",
+                                                    default_value=0.0,
+                                                    is_relative=False,
+                                                    part_identifier="sizing:takeoff",
+                                                    shape=None,
+                                                    shape_by_conn=False,
+                                                    use_opposite=False,
+                                                    variable_name="data:mission:sizing:takeoff:duration",
+                                                ),
+                                                "true_airspeed": InputDefinition(
+                                                    parameter_name="true_airspeed",
+                                                    input_value=None,
+                                                    input_unit="m/s",
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="sizing:takeoff",
+                                                    shape=None,
+                                                    shape_by_conn=False,
+                                                    use_opposite=False,
+                                                    variable_name="data:mission:sizing:takeoff:V2",
+                                                ),
+                                            },
+                                            "type": "segment",
+                                        },
+                                        {
+                                            "name": "sizing:takeoff",
+                                            "segment_type": "mass_input",
+                                            "target": {
+                                                "mass": InputDefinition(
+                                                    parameter_name="mass",
+                                                    input_value=None,
+                                                    input_unit="kg",
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="sizing:takeoff",
+                                                    shape=None,
+                                                    shape_by_conn=False,
+                                                    use_opposite=False,
+                                                    variable_name="data:mission:TOW",
+                                                )
+                                            },
+                                            "type": "segment",
+                                        },
+                                    ],
+                                ),
+                                ("name", "sizing:takeoff"),
+                                ("type", "phase"),
+                            ]
+                        ),
                         {
                             "climb_parts": [
                                 {
@@ -2201,10 +2438,29 @@ def _get_expected_structure():
                                             variable_name=None,
                                         )
                                     },
-                                }
+                                },
+                                {
+                                    "name": "test:test_phase",
+                                    "segment_type": "mass_input",
+                                    "target": {
+                                        "mass": InputDefinition(
+                                            parameter_name="mass",
+                                            input_value=None,
+                                            input_unit="kg",
+                                            default_value=np.nan,
+                                            is_relative=False,
+                                            part_identifier="test:test_phase",
+                                            shape=None,
+                                            shape_by_conn=False,
+                                            use_opposite=False,
+                                            variable_name="data:mission:test:test_phase:mass",
+                                        )
+                                    },
+                                    "type": "segment",
+                                },
                             ],
                             "type": "phase",
-                        }
+                        },
                     ],
                 ),
                 ("name", "test"),

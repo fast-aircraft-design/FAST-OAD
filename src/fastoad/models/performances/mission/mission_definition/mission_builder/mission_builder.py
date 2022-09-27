@@ -24,7 +24,11 @@ from fastoad.model_base.propulsion import IPropulsion
 from fastoad.openmdao.variables import VariableList
 from .constants import NAME_TAG, SEGMENT_TYPE_TAG, TYPE_TAG
 from .input_definition import InputDefinition
-from .structure_builders import AbstractStructureBuilder, MissionStructureBuilder
+from .structure_builders import (
+    AbstractStructureBuilder,
+    MissionStructureBuilder,
+    PhaseStructureBuilder,
+)
 from ..exceptions import FastMissionFileMissingMissionNameError
 from ..schema import (
     CLIMB_PARTS_TAG,
@@ -88,6 +92,9 @@ class MissionBuilder:
                 self._definition, mission_name
             )
 
+            if self.get_input_weight_variable_name(mission_name) is None:
+                self._add_default_taxi_takeoff(mission_name)
+
     @property
     def propulsion(self) -> IPropulsion:
         """Propulsion model for performance computation."""
@@ -115,6 +122,9 @@ class MissionBuilder:
         :param mission_name: mission name (can be omitted if only one mission is defined)
         :return:
         """
+        if self.get_input_weight_variable_name(mission_name) is None:
+            self._add_default_taxi_takeoff(mission_name)
+
         for input_def in self._structure_builders[mission_name].get_input_definitions():
             input_def.set_variable_value(inputs)
         if mission_name is None:
@@ -418,3 +428,62 @@ class MissionBuilder:
                     return name
 
         return None
+
+    def _add_default_taxi_takeoff(self, mission_name):
+        definition = {
+            "phases": {
+                "taxi_out": {
+                    "parts": [
+                        {
+                            "segment": "start",
+                            "target": {
+                                "altitude": {"value": "~", "unit": "ft", "default": 0.0},
+                                "true_airspeed": {"value": "~", "unit": "m/s", "default": 0.0},
+                            },
+                        },
+                        {
+                            "segment": "taxi",
+                            "time_step": {
+                                "value": "settings:mission~",
+                                "default": 60.0,
+                                "unit": "s",
+                            },
+                            "thrust_rate": "~",
+                            "true_airspeed": {"value": "~", "unit": "m/s", "default": 0.0},
+                            "target": {"time": "~duration"},
+                        },
+                    ],
+                },
+                "takeoff": {
+                    "parts": [
+                        {
+                            "segment": "transition",
+                            "target": {
+                                "delta_altitude": {
+                                    "value": "~safety_altitude",
+                                    "unit": "ft",
+                                    "default": 35.0,
+                                },
+                                "delta_mass": {"value": "-~fuel", "unit": "kg"},
+                                "time": {"value": "~duration", "default": 0.0, "unit": "s"},
+                                "true_airspeed": {"value": "~V2", "unit": "m/s"},
+                            },
+                        },
+                        {
+                            "segment": "mass_input",
+                            "target": {"mass": {"value": "data:mission:TOW", "unit": "kg"}},
+                        },
+                    ]
+                },
+            }
+        }
+
+        taxi_out = PhaseStructureBuilder(definition, "taxi_out", mission_name)
+        taxi_out_structure = {}
+        self._structure_builders[mission_name]._insert_builder(taxi_out, taxi_out_structure)
+        self._structure_builders[mission_name].structure[PARTS_TAG].insert(0, taxi_out_structure)
+
+        takeoff = PhaseStructureBuilder(definition, "takeoff", mission_name)
+        takeoff_structure = {}
+        self._structure_builders[mission_name]._insert_builder(takeoff, takeoff_structure)
+        self._structure_builders[mission_name].structure[PARTS_TAG].insert(1, takeoff_structure)
