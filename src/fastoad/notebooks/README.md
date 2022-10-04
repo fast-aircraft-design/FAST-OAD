@@ -3,7 +3,7 @@ FAST-OAD notebooks
 
 This folder contains two sets of notebook tutorials to help the user get more familiar with FAST-OAD.
 
-[01_custom_modules](./01_custom_modules/beam_problem.ipynb)
+[01) Quick start](01_Quick_start/beam_problem.ipynb)
 -----------------
 
 This tutorial presents how to manage and solve a problem using FAST-OAD. It introduces the specifics of FAST-OAD compared to OpenMDAO and explains the module registration mechanic. It is best suited for user already familiar with Python and with a basic knowledge of the features of the OpenMDAO framework.
