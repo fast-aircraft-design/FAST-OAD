@@ -14,4 +14,5 @@ This tutorial presents how to manage and solve a problem using FAST-OAD. It intr
 The aim of this set of tutorials is to gradually introduce the user to the solving of a multidisciplinary problem using OpenMDAO and FAST-OAD. The same aircraft sizing problem is presented under different formats - from very basic Python to FAST-OAD syntax - and the pros and cons are highlighted along the way. It is aimed at starting users.
 
 > **Note**
+> 
 > Both tutorials contain the same level of informations on the specifics of FAST-OAD. The first tutorial, however, is meant for a direct introduction of the features of the framework. The second one, on the other hand, is better suited for a step-by-step introduction to the features of OpenMDAO and FAST-OAD.
