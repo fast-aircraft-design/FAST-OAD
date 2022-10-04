@@ -226,11 +226,9 @@ class VariableViewer:
         :return display of the user interface
         """
         self._filter_widgets = []
-        modules_item = sorted(self._find_submodules(self.dataframe))
-        if modules_item:
-            modules_item.insert(0, TAG_ALL)
-            w = widgets.Dropdown(options=modules_item)
-            self._filter_widgets.append(w)
+        modules_item = [TAG_ALL] + sorted(self._find_submodules(self.dataframe))
+        w = widgets.Dropdown(options=modules_item)
+        self._filter_widgets.append(w)
         return self._render_ui()
 
     # pylint: disable=unused-argument  # args has to be there for observe() to work
