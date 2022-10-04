@@ -8,7 +8,7 @@ This folder contains two sets of notebook tutorials to help the user get more fa
 
 This tutorial presents how to manage and solve a problem using FAST-OAD. It introduces the specifics of FAST-OAD compared to OpenMDAO and explains the module registration mechanic. It is best suited for user already familiar with Python and with a basic knowledge of the features of the OpenMDAO framework.
 
-[02_explanation](./02_explanation/01_summary.ipynb)
+[02) From Python to FAST-OAD](02_From_Python_to_FAST-OAD/01_summary.ipynb)
 -----------------
 
 The aim of this set of tutorials is to gradually introduce the user to the solving of a multidisciplinary problem using OpenMDAO and FAST-OAD. The same aircraft sizing problem is presented under different formats - from very basic Python to FAST-OAD syntax - and the pros and cons are highlighted along the way. It is aimed at starting users.
