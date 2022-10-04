@@ -421,8 +421,7 @@ class VariableViewer:
                 path = ":".join(modules[:-1])
             else:
                 path = ":".join(modules)
-
-        path_filter = [True] * len(df) if path == ("" or TAG_ALL) else df.Name.str.startswith(path)
+        path_filter = df.Name.str.startswith(path)
         io_filter = [True] * len(df) if var_io_type == TAG_ALL else df["I/O"] == var_io_type
 
         filtered_df = df[path_filter & io_filter]
