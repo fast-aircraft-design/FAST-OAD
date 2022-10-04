@@ -250,7 +250,6 @@ class VariableViewer:
                 if modules_item:
                     # Check if the item exists already
                     if i == len(self._filter_widgets):
-                        # print(i, modules_item)
                         if len(modules_item) > 1:
                             modules_item.insert(0, TAG_ALL)
                         widget = widgets.Dropdown(options=modules_item)
