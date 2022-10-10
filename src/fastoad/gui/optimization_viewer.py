@@ -199,11 +199,11 @@ class OptimizationViewer:
             optim_definition[section_name] = {}
         if name not in optim_definition[section_name]:
             optim_definition[section_name][name] = {}
-        if meta["lower"] and not isnan(meta["lower"]):
+        if meta["lower"] is not None and not isnan(meta["lower"]):
             optim_definition[section_name][name].update({"lower": meta["lower"]})
         else:
             optim_definition[section_name][name].pop("lower", None)
-        if meta["upper"] and not isnan(meta["upper"]):
+        if meta["upper"] is not None and not isnan(meta["upper"]):
             optim_definition[section_name][name].update({"upper": meta["upper"]})
         else:
             optim_definition[section_name][name].pop("upper", None)
