@@ -471,7 +471,7 @@ class MissionBuilder:
                         },
                         {
                             "segment": "mass_input",
-                            "target": {"mass": {"value": "data:mission:TOW", "unit": "kg"}},
+                            "target": {"mass": {"value": "~~:TOW", "unit": "kg"}},
                         },
                     ]
                 },

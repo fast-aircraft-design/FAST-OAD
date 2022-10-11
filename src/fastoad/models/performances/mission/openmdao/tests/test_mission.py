@@ -151,7 +151,6 @@ def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
     vars = DataFile(input_file_path)
-    del vars["data:mission:operational:takeoff:duration"]
     ivc = vars.to_ivc()
     ivc.add_output("data:mission:operational:ramp_weight", 70100.0, units="kg")
 
@@ -258,7 +257,7 @@ def test_mission_group_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
     vars = DataFile(input_file_path)
-    del vars["data:mission:TOW"]
+    del vars["data:mission:operational:TOW"]
     ivc = vars.to_ivc()
 
     problem = run_system(
@@ -282,7 +281,7 @@ def test_mission_group_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
     )
     assert_allclose(
         problem["data:mission:operational:block_fuel"] + problem["data:mission:operational:ZFW"],
-        problem["data:mission:TOW"]
+        problem["data:mission:operational:TOW"]
         + problem["data:mission:operational:consumed_fuel_before_input_weight"],
         atol=1.0,
     )

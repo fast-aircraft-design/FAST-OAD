@@ -105,7 +105,7 @@ def test_get_input_weight_variable_name():
     )
 
     # No mass input defined in "sizing", so it is completed by the default taxi_out & takeoff phase
-    assert mission_builder.get_input_weight_variable_name("sizing") == "data:mission:TOW"
+    assert mission_builder.get_input_weight_variable_name("sizing") == "data:mission:sizing:TOW"
 
 
 def test_inputs():
@@ -128,7 +128,7 @@ def test_inputs():
             Variable("data:mission:sizing:takeoff:fuel", val=np.nan, units="kg"),
             Variable("data:mission:sizing:takeoff:duration", val=0.0, units="s"),
             Variable("data:mission:sizing:takeoff:V2", val=np.nan, units="m/s"),
-            Variable("data:mission:TOW", val=np.nan, units="kg"),
+            Variable("data:mission:sizing:TOW", val=np.nan, units="kg"),
             Variable("data:TLAR:cruise_mach", val=np.nan),
             Variable("data:aerodynamics:aircraft:cruise:CD", val=np.nan, shape_by_conn=True),
             Variable("data:aerodynamics:aircraft:cruise:CL", val=np.nan, shape_by_conn=True),
@@ -1270,7 +1270,7 @@ def _get_expected_structure():
                                                     shape=None,
                                                     shape_by_conn=False,
                                                     use_opposite=False,
-                                                    variable_name="data:mission:TOW",
+                                                    variable_name="data:mission:sizing:TOW",
                                                 )
                                             },
                                             "type": "segment",
