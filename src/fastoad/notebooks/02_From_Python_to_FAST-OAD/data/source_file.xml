@@ -1,0 +1,9 @@
+<FASTOAD_model>
+  <aspect_ratio is_input="True">10.0</aspect_ratio>
+  <cruise_altitude units="m" is_input="True">2500.0</cruise_altitude>
+  <cruise_speed units="m/s" is_input="True">80.0</cruise_speed>
+  <mission_range units="NM" is_input="True">750.0</mission_range>
+  <payload units="kg" is_input="True">320.0</payload>
+  <tsfc units="kg/N/s" is_input="True">7.3e-6</tsfc>
+  <wing_loading units="kg/m**2" is_input="True">115.0</wing_loading>
+</FASTOAD_model>
