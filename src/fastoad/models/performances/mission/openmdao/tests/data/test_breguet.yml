@@ -1,4 +1,28 @@
 phases:
+  start:
+    parts:
+      - segment: start
+        target:
+          altitude:
+            value: ~
+            unit: ft
+            default: 0.0
+          true_airspeed:
+            value: ~
+            unit: m/s
+            default: 0.0
+          mass:
+            value: data:mission:operational:ramp_weight
+            unit: kg
+  takeoff:
+    parts:
+      - segment: transition
+        target:
+          delta_altitude:
+            value: 35
+            unit: ft
+          delta_mass: -data:mission:operational:takeoff:fuel
+          true_airspeed: data:mission:operational:takeoff:V2
   climb:
     parts:
       - segment: transition
@@ -40,4 +64,6 @@ routes:
 missions:
   operational:
     parts:
+      - phase: start
+      - phase: takeoff
       - route: main_route

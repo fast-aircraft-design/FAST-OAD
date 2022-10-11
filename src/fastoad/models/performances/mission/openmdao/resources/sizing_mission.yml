@@ -1,9 +1,54 @@
 phases:
+  start:
+    parts:
+      - segment: start
+        target:
+          altitude:
+            value: ~
+            unit: ft
+            default: 0.0
+          true_airspeed:
+            value: ~
+            unit: m/s
+            default: 0.0
+  taxi_out:
+    time_step:
+      value: settings:mission~
+      default: 60
+      unit: s
+    parts:
+      - segment: taxi
+        thrust_rate: ~
+        true_airspeed:
+          value: ~
+          default: 0.
+        target:
+          time: ~duration
+  takeoff:
+    parts:
+      - segment: transition
+        target:
+          delta_altitude:
+            value: ~safety_altitude
+            unit: ft
+            default: 35
+          delta_mass: -~fuel
+          time: ~duration
+          true_airspeed: ~V2
+      - segment: mass_input
+        target:
+          mass: data:mission:sizing:TOW
+
   initial_climb:
     engine_setting: takeoff
     polar: data:aerodynamics:aircraft:takeoff
-    thrust_rate: 1.0
-    time_step: 0.2
+    thrust_rate:
+      value: data:mission:sizing:initial_climb:thrust_rate
+      default: 1.0
+    time_step:
+      value: settings:mission~
+      default: 0.2
+      unit: s
     parts:
       - segment: altitude_change
         target:
@@ -14,7 +59,8 @@ phases:
       - segment: speed_change
         target:
           equivalent_airspeed:
-            value: 250
+            value: data:mission:sizing:climb:first_segment:CAS
+            default: 250
             unit: kn
       - segment: altitude_change
         #        polar: data:aerodynamics:aircraft:low_speed
@@ -26,8 +72,13 @@ phases:
   climb:
     engine_setting: climb
     polar: data:aerodynamics:aircraft:cruise
-    thrust_rate: data:mission:sizing:climb:thrust_rate
-    time_step: 5.0
+    thrust_rate:
+      value: data:mission:sizing:climb:thrust_rate
+      default: 0.93
+    time_step:
+      value: settings:mission~
+      default: 5.0
+      unit: s
     parts:
       - segment: altitude_change
         target:
@@ -38,7 +89,8 @@ phases:
       - segment: speed_change
         target:
           equivalent_airspeed:
-            value: 300.
+            value: data:mission:sizing:climb:second_segment:CAS
+            default: 300.
             unit: kn
       - segment: altitude_change
         target:
@@ -53,7 +105,10 @@ phases:
     engine_setting: climb
     polar: data:aerodynamics:aircraft:cruise
     thrust_rate: data:mission:sizing:climb:thrust_rate
-    time_step: 5.0
+    time_step:
+      value: settings:mission~
+      default: 5.0
+      unit: s
     parts:
       - segment: altitude_change
         target:
@@ -64,7 +119,8 @@ phases:
       - segment: speed_change
         target:
           equivalent_airspeed:
-            value: 300.
+            value: data:mission:sizing:climb:second_segment:CAS
+            default: 300.
             unit: kn
       - segment: altitude_change
         target:
@@ -76,7 +132,10 @@ phases:
     engine_setting: idle
     polar: data:aerodynamics:aircraft:cruise
     thrust_rate: data:mission:sizing:descent:thrust_rate
-    time_step: 5.0
+    time_step:
+      value: settings:mission~
+      default: 5.0
+      unit: s
     parts:
       - segment: altitude_change
         target:
@@ -102,22 +161,36 @@ phases:
             value: 1500.
             unit: ft
   holding:
+    time_step:
+      value: settings:mission~
+      default: 60.0
+      unit: s
     parts:
       - segment: holding
         polar: data:aerodynamics:aircraft:cruise
         target:
-          time: data:mission:sizing:holding:duration
+          delta_time: ~duration
   taxi_in:
+    time_step:
+      value: settings:mission~
+      default: 60.0
+      unit: s
     parts:
       - segment: taxi
-        thrust_rate: data:mission:sizing:taxi_in:thrust_rate
-        true_airspeed: 0.
+        thrust_rate: ~
+        true_airspeed:
+          value: ~
+          default: 0.
         target:
-          time: data:mission:sizing:taxi_in:duration
+          delta_time: ~duration
 
 routes:
   main_route:
     range: data:TLAR:range
+    distance_accuracy:
+      value: settings:mission:sizing:main_route:distance_accuracy
+      default: 0.5
+      unit: km
     climb_parts:
       - phase: initial_climb
       - phase: climb
@@ -131,7 +204,11 @@ routes:
     descent_parts:
       - phase: descent
   diversion:
-    range: data:mission:sizing:diversion:distance
+    distance_accuracy:
+      value: settings:mission:sizing:diversion:distance_accuracy
+      default: 0.5
+      unit: km
+    range: ~distance
     climb_parts:
       - phase: diversion_climb
     cruise_part:
@@ -143,11 +220,20 @@ routes:
 
 missions:
   sizing:
+    isa_offset:
+      value: ~ISA_offset
+      unit: degK
+      default: 0.0
     parts:
+      - phase: start
+      - phase: taxi_out
+      - phase: takeoff
       - route: main_route
       - route: diversion
       - phase: holding
       - phase: taxi_in
       - reserve:
           ref: main_route
-          multiplier: 0.03
+          multiplier:
+            value: data:mission:sizing:reserve_coefficient
+            default: 0.03

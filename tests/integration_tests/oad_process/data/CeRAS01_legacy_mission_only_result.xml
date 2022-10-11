@@ -101,15 +101,16 @@
           <V2 units="m/s" is_input="True">86.1<!--takeoff safety speed for mission "sizing"--></V2>
           <altitude units="m" is_input="True">0.0<!--altitude of airport for mission "sizing"--></altitude>
           <fuel units="kg" is_input="True">93.6891205669<!--burned fuel during takeoff phase of mission "sizing"--></fuel>
+          <duration units="min">0.668666666667<!--duration of takeoff phase in sizing mission--></duration>
         </takeoff>
         <taxi_in>
-          <distance units="m" is_input="False">0.0<!--covered ground distance during phase "taxi_in" in mission "sizing"--></distance>
+          <distance units="km" is_input="False">0.0<!--covered ground distance during phase "taxi_in" in mission "sizing"--></distance>
           <duration units="s" is_input="True">300.0<!--Input defined by the mission.--></duration>
           <fuel units="kg" is_input="False">421.1999999999898<!--burned fuel during phase "taxi_in" in mission "sizing"--></fuel>
           <thrust_rate is_input="True">0.3<!--Input defined by the mission.--></thrust_rate>
         </taxi_in>
         <taxi_out>
-          <distance units="m" is_input="False">0.0<!--distance during taxi-out of mission "sizing"--></distance>
+          <distance units="km" is_input="False">0.0<!--distance during taxi-out of mission "sizing"--></distance>
           <duration units="s" is_input="True">540.0<!--duration of taxi-out in mission "sizing"--></duration>
           <fuel units="kg" is_input="False">758.1600000000471<!--burned fuel during taxi-out of mission "sizing"--></fuel>
           <thrust_rate is_input="True">0.3<!--thrust rate during taxi-out in mission "sizing"--></thrust_rate>

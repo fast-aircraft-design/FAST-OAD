@@ -5,7 +5,7 @@ General documentation
 Here you will find the first things to know about FAST-OAD.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
 
     Installation <install>
     Process overview <overview>

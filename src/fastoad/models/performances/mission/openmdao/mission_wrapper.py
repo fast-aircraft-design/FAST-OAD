@@ -34,15 +34,6 @@ from ..mission_definition.schema import (
     ROUTE_TAG,
 )
 
-BASE_UNITS = {
-    "altitude": "m",
-    "true_airspeed": "m/s",
-    "equivalent_airspeed": "m/s",
-    "range": "m",
-    "time": "s",
-    "ground_distance": "m",
-}
-
 
 class MissionWrapper(MissionBuilder):
     """
@@ -54,6 +45,7 @@ class MissionWrapper(MissionBuilder):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.mission_name = None
+        self.consumed_fuel_before_input_weight = 0.0
 
     def setup(self, component: om.ExplicitComponent, mission_name: str = None):
         """
@@ -71,19 +63,18 @@ class MissionWrapper(MissionBuilder):
         input_definition = self.get_input_variables(mission_name)
         output_definition = self._identify_outputs()
         output_definition = {
-            name: value for name, value in output_definition.items() if name not in input_definition
+            name: value
+            for name, value in output_definition.items()
+            if name not in input_definition.names()
         }
-        for name, (units, desc) in input_definition.items():
-            if name.endswith(":CD") or name.endswith(":CL"):
-                component.add_input(name, np.nan, shape_by_conn=True, desc=desc)
-            else:
-                component.add_input(name, np.nan, units=units, desc=desc)
+        for variable in input_definition:
+            component.add_input(**variable.get_openmdao_kwargs())
 
         for name, (units, desc) in output_definition.items():
-            component.add_output(name, units=units, desc=desc)
+            component.add_output(name, 0.0, units=units, desc=desc)
 
     def compute(
-        self, inputs: Vector, outputs: Vector, start_flight_point: FlightPoint
+        self, start_flight_point: FlightPoint, inputs: Vector, outputs: Vector
     ) -> pd.DataFrame:
         """
         To be used during compute() of an OpenMDAO component.
@@ -92,10 +83,10 @@ class MissionWrapper(MissionBuilder):
         filled with duration, burned fuel and covered ground distance for each
         part of the flight.
 
+        :param start_flight_point: starting point of mission
         :param inputs: the input vector of the OpenMDAO component
         :param outputs: the output vector of the OpenMDAO component
-        :param start_flight_point: the starting flight point just after takeoff
-        :return: a pandas DataFrame where columns names match fields of
+        :return: a pandas DataFrame where column names match fields of
                  :class:`~fastoad.model_base.flight_point.FlightPoint`
         """
         mission = self.build(inputs, self.mission_name)
@@ -130,7 +121,7 @@ class MissionWrapper(MissionBuilder):
             )
 
         del flight_points["name2"]
-
+        self.consumed_fuel_before_input_weight = mission.consumed_mass_before_input_weight
         return flight_points
 
     def get_reserve_variable_name(self) -> str:
@@ -138,7 +129,7 @@ class MissionWrapper(MissionBuilder):
         :return: the name of OpenMDAO variable for fuel reserve. This name is among the declared
                  outputs in :meth:`setup`.
         """
-        return "data:mission:%s:reserve:fuel" % self.mission_name
+        return f"{self._variable_prefix}:reserve:fuel"
 
     def _identify_outputs(self) -> Dict[str, Tuple[str, str]]:
         """
@@ -169,7 +160,7 @@ class MissionWrapper(MissionBuilder):
             elif RESERVE_TAG in part:
                 output_definition[self.get_reserve_variable_name()] = (
                     "kg",
-                    'reserve fuel for mission "%s"' % self.mission_name,
+                    f'reserve fuel for mission "{self.mission_name}"',
                 )
 
         return output_definition
@@ -190,23 +181,26 @@ class MissionWrapper(MissionBuilder):
             name for name in ["data:mission", mission_name, route_name, phase_name] if name
         )
         if route_name and phase_name:
-            flight_part_desc = 'phase "%s" of route "%s" in mission "%s"' % (
-                phase_name,
-                route_name,
-                mission_name,
+            flight_part_desc = (
+                f'phase "{phase_name}" of route "{route_name}" in mission "{mission_name}"'
             )
-        elif route_name:
-            flight_part_desc = 'route "%s" in mission "%s"' % (route_name, mission_name)
-        elif phase_name:
-            flight_part_desc = 'phase "%s" in mission "%s"' % (phase_name, mission_name)
-        else:
-            flight_part_desc = 'mission "%s"' % (mission_name,)
 
-        output_definition[name_root + ":duration"] = ("s", "duration of %s" % flight_part_desc)
-        output_definition[name_root + ":fuel"] = ("kg", "burned fuel during %s" % flight_part_desc)
+        elif route_name:
+            flight_part_desc = f'route "{route_name}" in mission "{mission_name}"'
+        elif phase_name:
+            flight_part_desc = f'phase "{phase_name}" in mission "{mission_name}"'
+        else:
+            flight_part_desc = f'mission "{mission_name}"'
+
+        output_definition[name_root + ":duration"] = ("s", f"duration of {flight_part_desc}")
+        output_definition[name_root + ":fuel"] = ("kg", f"burned fuel during {flight_part_desc}")
         output_definition[name_root + ":distance"] = (
             "m",
-            "covered ground distance during %s" % flight_part_desc,
+            f"covered ground distance during {flight_part_desc}",
         )
 
         return output_definition
+
+    @property
+    def _variable_prefix(self):
+        return f"data:mission:{self.mission_name}"

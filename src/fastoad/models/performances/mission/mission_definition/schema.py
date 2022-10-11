@@ -2,7 +2,7 @@
 Schema for mission definition files.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -43,7 +43,7 @@ PHASE_DEFINITIONS_TAG = "phases"
 POLAR_TAG = "polar"
 
 
-class MissionDefinition(dict):
+class MissionDefinition(OrderedDict):
     def __init__(self, file_path: Union[str, PathLike] = None):
         """
         Class for reading a mission definition from a YAML file.
@@ -66,7 +66,7 @@ class MissionDefinition(dict):
         :param file_path: path of YAML file to read.
         """
         self.clear()
-        yaml = YAML()
+        yaml = YAML(typ="safe", pure=True)
 
         with open(file_path) as yaml_file:
             data = yaml.load(yaml_file)
@@ -83,12 +83,13 @@ class MissionDefinition(dict):
         """
         Does a second pass validation of file content.
 
-        Also applies this feature:
-                - polar: foo:bar
-            is translated to:
-                - polar:
-                    CL: foo:bar:CL
-                    CD: foo:bar:CD
+        Also applies thess features:
+            * None values are set back to "~".
+            *       - polar: foo:bar
+                is translated to:
+                    - polar:
+                        CL: foo:bar:CL
+                        CD: foo:bar:CD
 
         Errors are raised if file content is incorrect.
 
@@ -96,18 +97,12 @@ class MissionDefinition(dict):
         """
         phase_names = set(content[PHASE_DEFINITIONS_TAG].keys())
 
-        for phase_definition in content[PHASE_DEFINITIONS_TAG].values():
-            cls._process_polar_definition(phase_definition)
-            for segment_definition in phase_definition[PARTS_TAG]:
-                cls._process_polar_definition(segment_definition)
-
-        for route_definition in content[ROUTE_DEFINITIONS_TAG].values():
-            cls._process_polar_definition(route_definition[CRUISE_PART_TAG])
-            for part in list(route_definition[CLIMB_PARTS_TAG]) + list(
-                route_definition[DESCENT_PARTS_TAG]
-            ):
-                cls._process_polar_definition(part)
-                Ensure(part[PHASE_TAG]).is_in(phase_names)
+        if ROUTE_DEFINITIONS_TAG in content:
+            for route_definition in content[ROUTE_DEFINITIONS_TAG].values():
+                for part in list(route_definition[CLIMB_PARTS_TAG]) + list(
+                    route_definition[DESCENT_PARTS_TAG]
+                ):
+                    Ensure(part[PHASE_TAG]).is_in(phase_names)
 
         for mission_definition in content[MISSION_DEFINITION_TAG].values():
             reserve_count = 0
@@ -125,13 +120,19 @@ class MissionDefinition(dict):
                 # reserve definition should be the last part
                 Ensure(part_type).equals(RESERVE_TAG)
 
-    @staticmethod
-    def _process_polar_definition(struct: dict):
+        cls._convert_none_values(content)
+
+    @classmethod
+    def _convert_none_values(cls, struct: Union[dict, list]):
         """
-        If "foo:bar:baz" is provided as value for the "polar" key in provided dictionary, it is
-        replaced by the dict {"CL":"foo:bar:baz:CL", "CD":"foo:bar:baz:CD"}
+        Recursively transforms any None value in struct to "~"
         """
-        if POLAR_TAG in struct:
-            polar_def = struct[POLAR_TAG]
-            if isinstance(polar_def, str) and ":" in polar_def:
-                struct[POLAR_TAG] = OrderedDict({"CL": polar_def + ":CL", "CD": polar_def + ":CD"})
+        if isinstance(struct, dict):
+            for key, value in struct.items():
+                if value is None:
+                    struct[key] = "~"
+                else:
+                    cls._convert_none_values(value)
+        elif isinstance(struct, list):
+            for item in struct:
+                cls._convert_none_values(item)

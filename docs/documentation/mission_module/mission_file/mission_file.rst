@@ -4,22 +4,22 @@
 Mission file
 ############
 
+.. contents::
+   :local:
+   :depth: 2
+
+*******************
+General description
+*******************
 A mission file describes precisely one or several missions that could be computed by
 the performance model :code:`fastoad.performances.mission` of FAST-OAD.
 
 The file format of mission files is the `YAML <https://yaml.org>`_  format.
-A quick tutorial for YAML (among many ones) is available `here <https://www.cloudbees.com/blog/yaml-tutorial-everything-you-need-get-started/>`_
+A quick tutorial for YAML (among many ones) is available
+`here <https://www.cloudbees.com/blog/yaml-tutorial-everything-you-need-get-started/>`_.
 
-
-.. contents::
-   :local:
-   :depth: 1
-
-
-***************************
-mission description
-***************************
-
+The mission definition relies on 4 concepts that are, from lowest level to the highest one:
+segments, phases, routes and missions. They are summarized in this table:
 
 .. list-table:: Mission elements
     :widths: 3 10 30
@@ -31,29 +31,42 @@ mission description
       - Description
     * - :ref:`segment <flight-segments>`
       - N/A
-      - The basic bricks that are provided by FAST-OAD.
+      - | The basic bricks that are provided by FAST-OAD. They are
+        | described in this :ref:`specific page <flight-segments>`.
     * - :ref:`phase <phase-section>`
-      - segment(s)
-      - A free assembly of one or more segments.
+      - | segment(s) and/or
+        | phase(s)
+      - A free assembly of one or more segments and/or other phases.
     * - :ref:`route <route-section>`
       - | zero or more phase(s)
         | **one cruise segment**
         | zero or more phase(s)
-      - | A route is a climb/cruise/descent sequence with a fixed range. The
-        | range is achieved by adjusting the distance covered during the
-        | cruise part.
+      - | A route is a climb/cruise/descent sequence with a fixed range.
+        | The range is achieved by adjusting the distance covered during
+        | the cruise part.
     * - :ref:`mission <mission-section>`
-      - routes and/or phases
+      - | routes and/or phases
+        | and/or segments
       - | A mission is what is computed by :code:`fastoad.performances.mission`.
         | Generally, it begins when engine starts and ends when engine
         | stops.
 
+*************
+File sections
+*************
+
+The organization of a mission definition file is organized in sections according to
+above-defined concepts.
+
+.. contents::
+   :local:
+   :depth: 1
+
 
 .. _phase-section:
 
-***************
-Phase section
-***************
+Phase definition section
+************************
 
 This section, identified by the :code:`phases` keyword, defines flight phases. A flight phase is
 defined as an assembly of one or more :ref:`flight segment(s) <flight-segments>`.
@@ -67,44 +80,50 @@ The phase section only defines flight phases, but not their usage, that is defin
 in :ref:`route <route-section>` and :ref:`mission <mission-section>` sections. Therefore, the
 definition order of flight phases has no importance.
 
+.. note::
+
+    Some parameters may be more conveniently set at an upper level than segment-level. See
+    section :ref:`factorizing-parameters` to see how.
+
+
 Example:
 
 .. code-block:: yaml
 
     phases:
-      initial_climb:                                # Phase name
-        engine_setting: takeoff                         # ---------------
-        polar: data:aerodynamics:aircraft:takeoff       #   Common segment
-        thrust_rate: 1.0                                #   parameters
-        time_step: 0.2                                  # ---------------
-        parts:                                          # Definition of segment list
-          - segment: altitude_change                    # 1st segment (climb)
+      initial_climb:                               # Phase name
+        parts:                                         # Definition of segment list
+          - segment: altitude_change                   # 1st segment (climb)
+            polar: data:aerodynamics:aircraft:takeoff
+            thrust_rate: 1.0
             target:
               altitude:
                 value: 400.
                 unit: ft
               equivalent_airspeed: constant
-          - segment: speed_change                       # 2nd segment (acceleration)
+          - segment: speed_change                      # 2nd segment (acceleration)
+            polar: data:aerodynamics:aircraft:takeoff
+            thrust_rate: 1.0
             target:
               equivalent_airspeed:
                 value: 250
                 unit: kn
-          - segment: altitude_change                    # 3rd segment (climb)
-            thrust_rate: 0.95                           # phase thrust rate value is overwritten
+          - segment: altitude_change                   # 3rd segment (climb)
+            polar: data:aerodynamics:aircraft:takeoff
+            thrust_rate: 0.95
             target:
               altitude:
                 value: 1500.
                 unit: ft
               equivalent_airspeed: constant
         climb:                                    # Phase name
-          ...                                       # Definition of the phase...
+          ...                                          # Definition of the phase...
 
 
 .. _route-section:
 
-*************
-Route section
-*************
+Route definition section
+************************
 
 This section, identified by the :code:`routes` keyword, defines flight routes. A flight route is
 defined as climb/cruise/descent sequence with a fixed range. The range is achieved by
@@ -121,7 +140,7 @@ A route is identified by its name and has 4 attributes:
 
 Example:
 
-.. code-block::         yaml
+.. code-block:: yaml
 
   routes:
     main_route:
@@ -155,9 +174,8 @@ Example:
 
 .. _mission-section:
 
-***************
-Mission section
-***************
+Mission definition section
+**************************
 
 This is the main section. It allows to define one or several missions, that will be computed
 by the mission module.
@@ -171,17 +189,9 @@ The mission name is used when configuring the mission module in the FAST-OAD con
 **If there is only one mission defined in the file, naming it in the configuration file is
 optional.**
 
-About mission start:
+.. note::
 
-    - Each mission begins by default by taxi-out and takeoff phases, but these phases are not
-      defined in the mission file. One reason for that is that the mass input for the mission is
-      the TakeOff Weight, which is the aircraft weight at the end of takeoff phase.
-    - A taxi-out phase is automatically computed at begin of the mission. To ignore this phase,
-      simply put its duration to 0. in the input data file.
-    - The takeoff data are simple inputs of the mission model. They have to be computed in a
-      dedicated takeoff model (available soon), or provided in the input data file.
-
-About reserve:
+    **About reserve**
 
     The :code:`reserve` keyword is typically designed to define fuel reserve as stated in
     EU-OPS 1.255.
@@ -212,4 +222,60 @@ Example:
           - phase: landing
           - phase: taxi_in
 
+
+
+.. _factorizing-parameters:
+
+**********************
+Factorizing parameters
+**********************
+
+Some parameters may be common to several segments and have same value across all of them.
+In such case, it is possible to define them at higher level (i.e. phase, route or mission)
+to avoid repeating them.
+
+For example, to specify a temperature increment at mission level, the mission section could be:
+
+.. code-block:: yaml
+
+    missions:
+      operational:
+        isa_offset: 15.0            # It will apply to the whole mission
+        parts:
+          - route: main_route
+          - phase: landing
+          - phase: taxi_in
+
+
+A high-level parameter definition will be overloaded by a lower-level definition, as illustrated
+in this example of phase definition:
+
+.. code-block:: yaml
+
+    phases:
+      initial_climb:                               # Phase name
+        engine_setting: takeoff                        # ---------------
+        polar: data:aerodynamics:aircraft:takeoff      #   Common segment
+        thrust_rate: 1.0                               #   parameters
+        time_step: 0.2                                 # ---------------
+
+        parts:                                         # Definition of segment list
+          - segment: altitude_change                     # 1st segment (climb)
+            target:
+              altitude:
+                value: 400.
+                unit: ft
+              equivalent_airspeed: constant
+          - segment: speed_change                        # 2nd segment (acceleration)
+            target:
+              equivalent_airspeed:
+                value: 250
+                unit: kn
+          - segment: altitude_change                     # 3rd segment (climb)
+            thrust_rate: 0.95        # --> PHASE THRUST RATE VALUE IS OVERWRITTEN
+            target:
+              altitude:
+                value: 1500.
+                unit: ft
+              equivalent_airspeed: constant
 

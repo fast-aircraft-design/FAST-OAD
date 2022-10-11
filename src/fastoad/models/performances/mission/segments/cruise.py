@@ -1,6 +1,6 @@
 """Classes for simulating cruise segments."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -22,12 +22,12 @@ from scipy.constants import foot, g
 
 from fastoad.model_base import FlightPoint
 from .altitude_change import AltitudeChangeSegment
-from .base import FlightSegment, RegulatedThrustSegment
+from .base import AbstractRegulatedThrustSegment, AbstractTimeStepFlightSegment
 from ..util import get_closest_flight_level
 
 
 @dataclass
-class CruiseSegment(RegulatedThrustSegment):
+class CruiseSegment(AbstractRegulatedThrustSegment):
     """
     Class for computing cruise flight segment at constant altitude and speed.
 
@@ -39,23 +39,21 @@ class CruiseSegment(RegulatedThrustSegment):
     """
 
     def __post_init__(self):
+        super().__post_init__()
         # Constant speed at constant altitude is necessarily constant Mach, but
         # subclasses can be at variable altitude, so Mach is considered constant
         # if no other constant speed parameter is set to "constant".
-        if (
-            self.target.true_airspeed != FlightSegment.CONSTANT_VALUE
-            and self.target.equivalent_airspeed != FlightSegment.CONSTANT_VALUE
-        ):
-            self.target.mach = FlightSegment.CONSTANT_VALUE
+        if AbstractTimeStepFlightSegment.CONSTANT_VALUE not in [
+            self.target.true_airspeed,
+            self.target.equivalent_airspeed,
+        ]:
+            self.target.mach = AbstractTimeStepFlightSegment.CONSTANT_VALUE
 
-    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        if start.ground_distance:
-            self.target.ground_distance = self.target.ground_distance + start.ground_distance
-        return super().compute_from(start)
-
-    def get_distance_to_target(self, flight_points: List[FlightPoint]) -> float:
+    def get_distance_to_target(
+        self, flight_points: List[FlightPoint], target: FlightPoint
+    ) -> float:
         current = flight_points[-1]
-        return self.target.ground_distance - current.ground_distance
+        return target.ground_distance - current.ground_distance
 
 
 @dataclass
@@ -71,9 +69,10 @@ class OptimalCruiseSegment(CruiseSegment, mission_file_keyword="optimal_cruise")
     `true_airspeed` and `equivalent_airspeed`. If not, Mach will be assumed constant.
     """
 
-    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
+    def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
         start.altitude = self._get_optimal_altitude(start.mass, start.mach)
-        return super().compute_from(start)
+        self.complete_flight_point(start)
+        return super().compute_from_start_to_target(start, target)
 
     def _compute_next_altitude(self, next_point: FlightPoint, previous_point: FlightPoint):
         next_point.altitude = self._get_optimal_altitude(
@@ -110,21 +109,18 @@ class ClimbAndCruiseSegment(CruiseSegment, mission_file_keyword="cruise"):
     #: The maximum allowed flight level (i.e. multiple of 100 feet).
     maximum_flight_level: float = 500.0
 
-    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
+    def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
         climb_segment = deepcopy(self.climb_segment)
-        climb_segment.target = deepcopy(self.target)
+        climb_segment.target = target
 
         cruise_segment = CruiseSegment(
-            target=deepcopy(self.target),
+            target=deepcopy(target),  # deepcopy needed because altitude will be modified.
             propulsion=self.propulsion,
             reference_area=self.reference_area,
             polar=self.polar,
             name=self.name,
             engine_setting=self.engine_setting,
         )
-
-        if start.ground_distance:
-            self.target.ground_distance = self.target.ground_distance + start.ground_distance
 
         if (
             self.target.altitude == AltitudeChangeSegment.OPTIMAL_FLIGHT_LEVEL
@@ -156,17 +152,17 @@ class ClimbAndCruiseSegment(CruiseSegment, mission_file_keyword="cruise"):
                 if go_to_next_level:
                     results = new_results
 
-        elif self.target.altitude is not None:
+        elif target.altitude is not None:
             results = self._climb_to_altitude_and_cruise(
-                start, self.target.altitude, climb_segment, cruise_segment
+                start, target.altitude, climb_segment, cruise_segment
             )
         else:
-            results = super().compute_from(start)
+            results = super().compute_from_start_to_target(start, target)
 
         return results
 
+    @staticmethod
     def _climb_to_altitude_and_cruise(
-        self,
         start: FlightPoint,
         cruise_altitude: float,
         climb_segment: AltitudeChangeSegment,
@@ -191,16 +187,17 @@ class ClimbAndCruiseSegment(CruiseSegment, mission_file_keyword="cruise"):
         climb_points = climb_segment.compute_from(start)
 
         cruise_start = FlightPoint.create(climb_points.iloc[-1])
-        cruise_segment.target.ground_distance = (
-            self.target.ground_distance - cruise_start.ground_distance
-        )
         cruise_points = cruise_segment.compute_from(cruise_start)
 
         return pd.concat([climb_points, cruise_points]).reset_index(drop=True)
 
 
 @dataclass
-class BreguetCruiseSegment(CruiseSegment, mission_file_keyword="breguet"):
+class BreguetCruiseSegment(
+    CruiseSegment,
+    mission_file_keyword="breguet",
+    attribute_units=dict(climb_and_descent_distance="m"),
+):
     """
     Class for computing cruise flight segment at constant altitude using Breguet-Leduc formula.
 
@@ -216,21 +213,14 @@ class BreguetCruiseSegment(CruiseSegment, mission_file_keyword="breguet"):
     #: The reference area, in m**2. Used only if use_max_lift_drag_ratio is False.
     reference_area: float = 1.0
 
-    #:
-    climb_and_descent_distance: float = 0.0
-
-    def __post_init__(self):
-        super().__post_init__()
-        self.target.ground_distance = self.target.ground_distance - self.climb_and_descent_distance
-
-    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        self.complete_flight_point(start)
-
-        cruise_mass_ratio = self._compute_cruise_mass_ratio(start, self.target.ground_distance)
+    def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+        cruise_mass_ratio = self._compute_cruise_mass_ratio(
+            start, target.ground_distance - start.ground_distance
+        )
 
         end = deepcopy(start)
         end.mass = start.mass * cruise_mass_ratio
-        end.ground_distance = start.ground_distance + self.target.ground_distance
+        end.ground_distance = target.ground_distance
         end.time = start.time + (end.ground_distance - start.ground_distance) / end.true_airspeed
         end.name = self.name
         self.complete_flight_point(end)

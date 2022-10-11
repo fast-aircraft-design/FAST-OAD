@@ -1,0 +1,27 @@
+phases:
+  test_phase:
+    parts:
+      - segment: start
+        target:
+          altitude: 0.0
+          true_airspeed: 0.0
+          mass:
+            value: data:input_mass
+            unit: kg
+      - segment: test_segment_A
+        scalar_parameter: 42.0
+        vector_parameter_1:
+          value: data:array1
+          unit: g
+        vector_parameter_2: data:array2
+        vector_parameter_3:
+          value: [10.0, 20.0, 30.0]
+          unit: km
+        target:
+          altitude: 0.0
+          true_airspeed: 10.0
+
+missions:
+  test:
+    parts:
+      - phase: test_phase

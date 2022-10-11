@@ -94,6 +94,9 @@
               "properties": {
                 "value": {
                   "$ref": "#/definitions/inline_number_value"
+                },
+                "default": {
+                  "type": "number"
                 }
               },
               "required": [
@@ -122,6 +125,9 @@
                 },
                 "unit": {
                   "type": "string"
+                },
+                "default": {
+                  "type": "number"
                 }
               },
               "required": [
@@ -234,7 +240,14 @@
             "parts": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/segment"
+                "oneOf": [
+                  {
+                    "$ref": "#/definitions/mission_phase"
+                  },
+                  {
+                    "$ref": "#/definitions/segment"
+                  }
+                ]
               }
             }
           },
@@ -263,6 +276,9 @@
       "type": "object",
       "properties": {
         "range": {
+          "$ref": "#/definitions/parameter_value_with_unit"
+        },
+        "distance_accuracy": {
           "$ref": "#/definitions/parameter_value_with_unit"
         },
         "climb_parts": {
@@ -312,10 +328,7 @@
               "type": "string"
             },
             "multiplier": {
-              "type": [
-                "number",
-                "string"
-              ]
+              "$ref": "#/definitions/parameter_value_without_unit"
             }
           }
         }
@@ -369,8 +382,7 @@
     }
   },
   "required": [
-    "missions",
-    "routes"
+    "missions"
   ],
   "additionalProperties": false
 }

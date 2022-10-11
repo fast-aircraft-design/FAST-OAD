@@ -1,9 +1,45 @@
 phases:
+  start:
+    parts:
+      - segment: start
+        target:
+          altitude:
+            value: ~
+            unit: ft
+            default: 0.0
+          true_airspeed:
+            value: ~
+            unit: m/s
+            default: 0.0
+  taxi_out:
+    parts:
+      - segment: taxi
+        isa_offset: 0.0
+        thrust_rate: data:mission:operational:taxi_out:thrust_rate
+        true_airspeed:
+          value: data:mission:operational:taxi_out:true_airspeed
+          default: 0.
+        target:
+          time: data:mission:operational:taxi_out:duration
+      - segment: mass_input
+        target:
+          mass: data:mission:operational:TOW
+  takeoff:
+    parts:
+      - segment: transition
+        target:
+          delta_altitude:
+            value: data:mission:operational:takeoff:safety_altitude
+            default: 35
+            unit: ft
+          delta_mass: -data:mission:operational:takeoff:fuel
+          true_airspeed: data:mission:operational:takeoff:V2
   initial_climb:
     engine_setting: takeoff
     polar: data:aerodynamics:aircraft:takeoff
     thrust_rate: 1.0
     time_step: 0.2
+    isa_offset: 0.0
     parts:
       - segment: altitude_change
         target:
@@ -99,6 +135,9 @@ missions:
       - route: main_route
   operational:
     parts:
+      - phase: start
+      - phase: taxi_out
+      - phase: takeoff
       - route: main_route
       - reserve:
           ref: main_route

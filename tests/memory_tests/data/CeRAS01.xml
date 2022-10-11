@@ -281,6 +281,7 @@
         </main_route>
         <takeoff>
           <V2 units="m/s" is_input="True">79.3<!--takeoff safety speed for mission "sizing"--></V2>
+          <duration units="s" is_input="True">0.<!--Input defined by the mission.--></duration>
           <altitude units="m" is_input="True">0.0<!--altitude of airport for mission "sizing"--></altitude>
           <fuel units="kg" is_input="True">82.4<!--burned fuel during takeoff phase of mission "sizing"--></fuel>
         </takeoff>

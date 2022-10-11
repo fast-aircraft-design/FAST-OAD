@@ -1,6 +1,6 @@
 """Classes for Taxi sequences."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -12,20 +12,26 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from copy import deepcopy
 from dataclasses import dataclass
 from typing import Tuple
 
 import pandas as pd
 
 from fastoad.model_base import FlightPoint
-from fastoad.models.performances.mission.segments.base import FixedDurationSegment
-from .base import ManualThrustSegment
+from fastoad.models.performances.mission.segments.base import (
+    AbstractFixedDurationSegment,
+)
+from .base import AbstractManualThrustSegment
 from ..polar import Polar
 
 
 @dataclass
-class TaxiSegment(ManualThrustSegment, FixedDurationSegment, mission_file_keyword="taxi"):
+class TaxiSegment(
+    AbstractManualThrustSegment,
+    AbstractFixedDurationSegment,
+    mission_file_keyword="taxi",
+    attribute_units=dict(true_airspeed="m/s"),
+):
     """
     Class for computing Taxi phases.
 
@@ -41,10 +47,10 @@ class TaxiSegment(ManualThrustSegment, FixedDurationSegment, mission_file_keywor
     def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
         return 0.0, 0.0
 
-    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        new_start = deepcopy(start)
-        new_start.mach = None
-        new_start.equivalent_airspeed = None
-        new_start.true_airspeed = self.true_airspeed
+    def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+        start.mach = None
+        start.equivalent_airspeed = None
+        start.true_airspeed = self.true_airspeed
+        self.complete_flight_point(start)
 
-        return super().compute_from(new_start)
+        return super().compute_from_start_to_target(start, target)

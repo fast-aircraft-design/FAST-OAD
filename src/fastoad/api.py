@@ -48,6 +48,15 @@ from fastoad.module_management.service_registry import (
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 
+from fastoad.model_base.datacls import MANDATORY_FIELD
+from fastoad.models.performances.mission.segments.base import (
+    AbstractFlightSegment,
+    AbstractTimeStepFlightSegment,
+    AbstractManualThrustSegment,
+    AbstractFixedDurationSegment,
+    AbstractRegulatedThrustSegment,
+)
+
 from fastoad.gui.mission_viewer import MissionViewer
 from fastoad.gui.optimization_viewer import OptimizationViewer
 from fastoad.gui.variable_viewer import VariableViewer
