@@ -51,6 +51,29 @@ segments, phases, routes and missions. They are summarized in this table:
         | Generally, it begins when engine starts and ends when engine
         | stops.
 
+.. important::
+
+    Starting with version 1.4.0 of FAST-OAD, any mission has to use a variable for mass input. This
+    variable can be defined using the :ref:`start segment <segment-start>`, if it provides the mass at
+    mission start (typically a ramp-up weight), or using the :ref:`mass_input segment <segment-mass_input>`
+    otherwise (typically a takeoff weight, achieved after the taxi-out).
+
+    In the case no variable is defined for input mass, FAST-OAD will automatically add, at the
+    beginning of the mission, a taxi-out and a very simple takeoff phase
+    (:ref:`transition segment <segment-transition>`) with a
+    :ref:`mass_input segment <segment-mass_input>`. In that case, the input
+    mass is given by the :code:`data:mission:<mission_name>:TOW` variable, which represents the
+    aircraft mass just **after** takeoff.
+
+    This addition of taxi-out, takeoff and mass input allows to keep compatibility with
+    mission definitions for FAST-OAD versions earlier than 1.4.
+
+    (Please note that takeoff weight should be actually considered as
+    the mass just **before** takeoff, but this way of doing is kept for maximum
+    backward-compatibility)
+
+
+
 *************
 File sections
 *************
@@ -208,6 +231,8 @@ Example:
     missions:
       sizing:
         parts:
+          - phase: taxi_out
+          - phase: takeoff
           - route: main_route
           - route: diversion
           - phase: holding
@@ -218,6 +243,8 @@ Example:
               multiplier: 0.03
       operational:
         parts:
+          - phase: taxi_out
+          - phase: takeoff
           - route: main_route
           - phase: landing
           - phase: taxi_in
