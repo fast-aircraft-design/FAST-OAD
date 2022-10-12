@@ -479,11 +479,9 @@ class MissionBuilder:
         }
 
         taxi_out = PhaseStructureBuilder(definition, "taxi_out", mission_name)
-        taxi_out_structure = {}
-        self._structure_builders[mission_name]._insert_builder(taxi_out, taxi_out_structure)
+        taxi_out_structure = self._structure_builders[mission_name].process_builder(taxi_out)
         self._structure_builders[mission_name].structure[PARTS_TAG].insert(0, taxi_out_structure)
 
         takeoff = PhaseStructureBuilder(definition, "takeoff", mission_name)
-        takeoff_structure = {}
-        self._structure_builders[mission_name]._insert_builder(takeoff, takeoff_structure)
+        takeoff_structure = self._structure_builders[mission_name].process_builder(takeoff)
         self._structure_builders[mission_name].structure[PARTS_TAG].insert(1, takeoff_structure)
