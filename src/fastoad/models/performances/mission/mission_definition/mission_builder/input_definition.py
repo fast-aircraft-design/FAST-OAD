@@ -192,7 +192,20 @@ class InputDefinition:
             if "~" in var_name:
                 # We authorize colons next to "~", but we do as they were not present.
                 var_name = var_name.replace(":~", "~").replace("~:", "~")
-                prefix, suffix = var_name.replace(":~", "~").split("~")
+                parts = var_name.replace(":~", "~").split("~")
+                if len(parts) > 2:
+                    # Hidden feature for now: using a double tilda (~~) will trigger
+                    # a replacement by the mission name only
+                    # (useful for backward compatibility since we need to provide
+                    #  "data:mission:<mission_name>:TOW" as variable
+                    prefix = parts[0]
+                    suffix = parts[-1]
+                    part_identifier = self.part_identifier.split(":")[0]
+                else:
+                    # Standard case with simple tilda
+                    prefix, suffix = var_name.replace(":~", "~").split("~")
+                    part_identifier = self.part_identifier
+
                 if not prefix:
                     # If nothing before "~", a default value is used
                     prefix = "data:mission"
@@ -200,7 +213,7 @@ class InputDefinition:
                     # If nothing after "~", the parameter name is used
                     suffix = self.parameter_name
 
-                var_name = ":".join([prefix, self.part_identifier, suffix])
+                var_name = ":".join([prefix, part_identifier, suffix])
 
             self._variable_name = var_name
         else:

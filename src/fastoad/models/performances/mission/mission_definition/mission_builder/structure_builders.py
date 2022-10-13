@@ -89,8 +89,8 @@ class AbstractStructureBuilder(ABC):
     @property
     def structure(self) -> OrderedDict:
         """A dictionary that is ready to be translated to the matching implementation."""
-        for builder, place_holder in self._builders:
-            place_holder.update(builder.structure)
+        for builder, placeholder in self._builders:
+            placeholder.update(builder.structure)
             self._input_definitions += builder.get_input_definitions()
         self._builders = []  # Builders have been used and can be forgotten.
         return self._structure
@@ -101,19 +101,26 @@ class AbstractStructureBuilder(ABC):
             chain(*[builder.get_input_definitions() for builder, _ in self._builders])
         )
 
-    def _insert_builder(self, builder: "AbstractStructureBuilder", place_holder: dict):
+    def process_builder(self, builder: "AbstractStructureBuilder") -> dict:
         """
-        Method to be used when another StructureBuilder object is needed in :meth:`build`.
+        Method to be used when another StructureBuilder object should be inserted in
+        :attr:`structure`.
 
         Not using this method will prevent a correct processing of :attr:`input_definitions`.
 
-        At location where the builder result should be used, an empty dict should be put, and this
-        empty dict should be provided as `place_holder` argument.
+        .. note::
 
-        :param builder:
-        :param place_holder:
+            The returned object is always an empty dict. It is actually a memory reference that
+            will allow to fill this "placeholder" later with the final result of the builder, that
+            cannot be completely known when builder is created from read definition.
+
+        :param builder: the builder object
+        :return: the object that has to be put at location where the builder result should be used
         """
-        self._builders.append((builder, place_holder))
+
+        placeholder = {}
+        self._builders.append((builder, placeholder))
+        return placeholder
 
     @abstractmethod
     def _build(self, definition: dict) -> OrderedDict:
@@ -143,13 +150,18 @@ class AbstractStructureBuilder(ABC):
         return name
 
     def _parse_inputs(
-        self, structure, input_definitions, parent=None, part_identifier="", segment_class=None
+        self,
+        structure,
+        input_definitions: List[InputDefinition],
+        parent=None,
+        part_identifier="",
+        segment_class=None,
     ):
         """
         Returns the `definition` structure where all inputs (string/numeric values, numeric lists,
         dicts with a "value key"), have been converted to an InputDefinition instance.
 
-        Created InputDefinition instances are stored in self._input_definitions.
+        Created InputDefinition instances are stored in provided input_definitions.
 
         :param structure:
         :param parent:
@@ -291,7 +303,7 @@ class PhaseStructureBuilder(AbstractStructureBuilder, structure_type=PHASE_TAG):
                 raise RuntimeError(f"Unexpected structure in definition of phase {self.name}")
 
             phase_structure[PARTS_TAG][i] = {}
-            self._insert_builder(builder, phase_structure[PARTS_TAG][i])
+            phase_structure[PARTS_TAG][i] = self.process_builder(builder)
 
         return phase_structure
 
@@ -314,8 +326,7 @@ class RouteStructureBuilder(AbstractStructureBuilder, structure_type=ROUTE_TAG):
         builder = SegmentStructureBuilder(
             route_definition[CRUISE_PART_TAG], "cruise", self.qualified_name
         )
-        route_structure[CRUISE_PART_TAG] = {}
-        self._insert_builder(builder, route_structure[CRUISE_PART_TAG])
+        route_structure[CRUISE_PART_TAG] = self.process_builder(builder)
 
         route_structure[DESCENT_PARTS_TAG] = self._get_route_climb_or_descent_structure(
             definition, route_definition[DESCENT_PARTS_TAG]
@@ -328,8 +339,7 @@ class RouteStructureBuilder(AbstractStructureBuilder, structure_type=ROUTE_TAG):
         for part_definition in parts_definition:
             phase_name = part_definition["phase"]
             builder = PhaseStructureBuilder(global_definition, phase_name, self.qualified_name)
-            phase_structure = {}
-            self._insert_builder(builder, phase_structure)
+            phase_structure = self.process_builder(builder)
             parts.append(phase_structure)
         return parts
 
@@ -358,8 +368,7 @@ class MissionStructureBuilder(AbstractStructureBuilder, structure_type="mission"
             else:
                 builder = DefaultStructureBuilder(part_definition, "", self.qualified_name)
 
-            part_structure = {}
-            self._insert_builder(builder, part_structure)
+            part_structure = self.process_builder(builder)
             mission_parts.append(part_structure)
 
         mission_structure[PARTS_TAG] = mission_parts

@@ -7,10 +7,13 @@ phases:
           value: some:static:array
         vector_parameter_2: some:dynamic:array
         vector_parameter_3:
-          value: [10.0, 20.0, 30.0]
-        vector_parameter_4: [100.0, 200.0, 300.0]
+          value: [ 10.0, 20.0, 30.0 ]
+        vector_parameter_4: [ 100.0, 200.0, 300.0 ]
         target:
           altitude: 0.0
+      - segment: mass_input # Settings a mass input variable to prevent the "taxi_out-takeoff" autocompletion
+        target:
+          mass: ~
   initial_climb:
     engine_setting: takeoff
     polar:
