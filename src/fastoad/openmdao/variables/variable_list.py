@@ -301,7 +301,10 @@ class VariableList(list):
             "output", metadata_keys=metadata_keys, excludes="_auto_ivc.*"
         )
         indep_outputs = problem.model.get_io_metadata(
-            "output", metadata_keys=metadata_keys, tags="indep_var"
+            "output",
+            metadata_keys=metadata_keys,
+            tags=["indep_var", "openmdao:indep_var"],
+            excludes="_auto_ivc.*",
         )
         # Move outputs from IndepVarComps into inputs
         for abs_name, metadata in indep_outputs.items():

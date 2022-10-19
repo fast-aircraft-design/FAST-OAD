@@ -193,7 +193,9 @@ class FASTOADProblem(om.Problem):
             # create the "shaper" IVC, but we ignore it because we need to redefine these variables
             # in input file.
             ivc_vars = tmp_prob.model.get_io_metadata(
-                "output", tags="indep_var", excludes=f"{SHAPER_SYSTEM_NAME}.*"
+                "output",
+                tags=["indep_var", "openmdao:indep_var"],
+                excludes=f"{SHAPER_SYSTEM_NAME}.*",
             )
         for meta in ivc_vars.values():
             try:
