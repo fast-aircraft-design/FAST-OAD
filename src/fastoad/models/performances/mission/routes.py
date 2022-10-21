@@ -160,7 +160,7 @@ class RangedRoute(SimpleRoute):
 
         :param cruise_distance:
         :param start:
-        :return: difference between computes distance and self.flight_distance
+        :return: difference between computed distance and self.flight_distance
         """
         self.cruise_distance = cruise_distance
         self._flight_points = super().compute_from(start)

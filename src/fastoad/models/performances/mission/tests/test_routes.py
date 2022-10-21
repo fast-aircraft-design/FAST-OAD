@@ -35,7 +35,7 @@ from scipy.constants import foot, knot
 from fastoad.constants import EngineSetting, FlightPhase
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.datacls import MANDATORY_FIELD
-from fastoad.model_base.propulsion import AbstractFuelPropulsion, FuelEngineSet, IPropulsion
+from fastoad.model_base.propulsion import FuelEngineSet, IPropulsion
 from fastoad.models.performances.mission.base import FlightSequence
 from fastoad.models.performances.mission.polar import Polar
 from fastoad.models.performances.mission.routes import RangedRoute
@@ -47,40 +47,17 @@ DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
 
 
-class DummyEngine(AbstractFuelPropulsion):
-    def __init__(self, max_thrust, max_sfc):
-        """
-        Dummy engine model.
-
-        Max thrust does not depend on flight conditions.
-        SFC varies linearly with thrust_rate, from max_sfc/2. when thrust rate is 0.,
-        to max_sfc when thrust_rate is 1.0
-
-        :param max_thrust: thrust when thrust rate = 1.0
-        :param max_sfc: SFC when thrust rate = 1.0
-        """
-        self.max_thrust = max_thrust
-        self.max_sfc = max_sfc
-
-    def compute_flight_points(self, flight_point: FlightPoint):
-
-        if flight_point.thrust_is_regulated or flight_point.thrust_rate is None:
-            flight_point.thrust_rate = flight_point.thrust / self.max_thrust
-        else:
-            flight_point.thrust = self.max_thrust * flight_point.thrust_rate
-
-        flight_point.sfc = self.max_sfc * (1.0 + flight_point.thrust_rate) / 2.0
-
-
-@pytest.fixture(scope="module")
-def cleanup():
-    rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
-
-
 @pytest.fixture(scope="module")
 def cleanup():
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
     mkdir(RESULTS_FOLDER_PATH)
+
+
+@pytest.fixture(scope="module")
+def propulsion():
+    from tests.dummy_plugins.dist_2.dummy_plugin_2.models.subpackage.dummy_engine import DummyEngine
+
+    return FuelEngineSet(DummyEngine(1.0e5, 1.0e-4), 2)
 
 
 def print_dataframe(df, max_rows=20):
@@ -154,10 +131,7 @@ def plot_flight(flight_points, fig_filename):
     plt.close()
 
 
-def test_ranged_route(low_speed_polar, high_speed_polar, cleanup):
-
-    engine = DummyEngine(1e5, 2.0e-5)
-    propulsion = FuelEngineSet(engine, 2)
+def test_ranged_route(low_speed_polar, high_speed_polar, propulsion, cleanup):
 
     total_distance = 2.0e6
 
