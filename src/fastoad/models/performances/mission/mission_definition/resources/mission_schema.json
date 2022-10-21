@@ -352,6 +352,9 @@
               }
             ]
           }
+        },
+        "target_fuel_consumption": {
+          "$ref": "#/definitions/parameter_value_with_unit"
         }
       },
       "required": [

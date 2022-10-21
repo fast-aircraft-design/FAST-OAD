@@ -43,6 +43,7 @@ from ..schema import (
     SEGMENT_TAG,
 )
 from ...base import FlightSequence
+from ...mission import Mission
 from ...polar import Polar
 from ...routes import RangedRoute
 from ...segments.base import AbstractFlightSegment, SegmentDefinitions
@@ -113,7 +114,7 @@ class MissionBuilder:
     def reference_area(self, reference_area: float):
         self._base_kwargs["reference_area"] = reference_area
 
-    def build(self, inputs: Optional[Mapping] = None, mission_name: str = None) -> FlightSequence:
+    def build(self, inputs: Optional[Mapping] = None, mission_name: str = None) -> Mission:
         """
         Builds the flight sequence from definition file.
 
@@ -215,16 +216,17 @@ class MissionBuilder:
             self._get_mission_part_structures(mission_name)
         )
 
-    def _build_mission(self, mission_structure: OrderedDict) -> FlightSequence:
+    def _build_mission(self, mission_structure: OrderedDict) -> Mission:
         """
         Builds mission instance from provided structure.
 
         :param mission_structure: structure of the mission to build
         :return: the mission instance
         """
-        mission = FlightSequence()
 
         part_kwargs = self._get_part_kwargs({}, mission_structure)
+
+        mission = Mission(target_fuel_consumption=part_kwargs.get("target_fuel_consumption"))
 
         mission.name = mission_structure[NAME_TAG]
         for part_spec in mission_structure[PARTS_TAG]:
@@ -232,10 +234,15 @@ class MissionBuilder:
                 continue
             if part_spec[TYPE_TAG] == SEGMENT_TAG:
                 part = self._build_segment(part_spec, part_kwargs)
-            if part_spec[TYPE_TAG] == ROUTE_TAG:
+            elif part_spec[TYPE_TAG] == ROUTE_TAG:
                 part = self._build_route(part_spec, part_kwargs)
             elif part_spec[TYPE_TAG] == PHASE_TAG:
                 part = self._build_phase(part_spec, part_kwargs)
+            else:
+                raise RuntimeError(
+                    "Unknown part type. This error should have been prevented "
+                    "by the JSON schema validation."
+                )
             mission.append(part)
 
         return mission
