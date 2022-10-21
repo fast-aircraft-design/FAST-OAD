@@ -32,7 +32,7 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 @RegisterOpenMDAOSystem("fastoad.performances.mission", domain=ModelDomain.PERFORMANCE)
-class Mission(om.Group):
+class OMMission(om.Group):
     """
     Computes a mission as specified in mission input file.
     """

@@ -28,6 +28,7 @@ from fastoad.models.performances.mission.base import FlightSequence
 from ..polar import Polar
 from ..segments.altitude_change import AltitudeChangeSegment
 from ..segments.speed_change import SpeedChangeSegment
+from ..segments.taxi import TaxiSegment
 
 
 @pytest.fixture(scope="module")
@@ -152,7 +153,7 @@ class AbstractManualThrustFlightPhase(FlightSequence):
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         parts = []
         part_start = start
-        for part in self.flight_sequence:
+        for part in self:
             flight_points = part.compute_from(part_start)
             if len(parts) > 0:
                 # First point of the segment is omitted, as it is the
@@ -170,6 +171,28 @@ class AbstractManualThrustFlightPhase(FlightSequence):
 
 
 @dataclass
+class TaxiPhase(FlightSequence):
+    time: InitVar[float] = MANDATORY_FIELD
+    propulsion: InitVar[IPropulsion] = MANDATORY_FIELD
+    thrust_rate: InitVar[float] = 0.3
+    true_airspeed: InitVar[float] = 80.0
+
+    def __post_init__(self, time, propulsion, thrust_rate, true_airspeed):
+        super().__post_init__()
+        self.extend(
+            [
+                TaxiSegment(
+                    target=FlightPoint(time=time),
+                    engine_setting=EngineSetting.TAKEOFF,
+                    propulsion=propulsion,
+                    thrust_rate=thrust_rate,
+                    true_airspeed=true_airspeed,
+                )
+            ]
+        )
+
+
+@dataclass
 class InitialClimbPhase(AbstractManualThrustFlightPhase):
     """
     Preset for initial climb phase.
@@ -181,24 +204,25 @@ class InitialClimbPhase(AbstractManualThrustFlightPhase):
 
     def __post_init__(self, *args, **kwargs):
         super().__post_init__(*args, **kwargs)
-
-        self.flight_sequence = [
-            AltitudeChangeSegment(
-                target=FlightPoint(equivalent_airspeed="constant", altitude=400.0 * foot),
-                engine_setting=EngineSetting.TAKEOFF,
-                **self.segment_kwargs,
-            ),
-            SpeedChangeSegment(
-                target=FlightPoint(equivalent_airspeed=250.0 * knot),
-                engine_setting=EngineSetting.TAKEOFF,
-                **self.segment_kwargs,
-            ),
-            AltitudeChangeSegment(
-                target=FlightPoint(equivalent_airspeed="constant", altitude=1500.0 * foot),
-                engine_setting=EngineSetting.TAKEOFF,
-                **self.segment_kwargs,
-            ),
-        ]
+        self.extend(
+            [
+                AltitudeChangeSegment(
+                    target=FlightPoint(equivalent_airspeed="constant", altitude=400.0 * foot),
+                    engine_setting=EngineSetting.TAKEOFF,
+                    **self.segment_kwargs,
+                ),
+                SpeedChangeSegment(
+                    target=FlightPoint(equivalent_airspeed=250.0 * knot),
+                    engine_setting=EngineSetting.TAKEOFF,
+                    **self.segment_kwargs,
+                ),
+                AltitudeChangeSegment(
+                    target=FlightPoint(equivalent_airspeed="constant", altitude=1500.0 * foot),
+                    engine_setting=EngineSetting.TAKEOFF,
+                    **self.segment_kwargs,
+                ),
+            ]
+        )
 
 
 @dataclass
@@ -218,23 +242,25 @@ class ClimbPhase(AbstractManualThrustFlightPhase):
         super().__post_init__(*args, **kwargs)
 
         self.segment_kwargs["engine_setting"] = EngineSetting.CLIMB
-        self.flight_sequence = [
-            AltitudeChangeSegment(
-                target=FlightPoint(equivalent_airspeed="constant", altitude=10000.0 * foot),
-                **self.segment_kwargs,
-            ),
-            SpeedChangeSegment(
-                target=FlightPoint(equivalent_airspeed=300.0 * knot), **self.segment_kwargs
-            ),
-            AltitudeChangeSegment(
-                target=FlightPoint(equivalent_airspeed="constant", mach=self.maximum_mach),
-                **self.segment_kwargs,
-            ),
-            AltitudeChangeSegment(
-                target=FlightPoint(mach="constant", altitude=self.target_altitude),
-                **self.segment_kwargs,
-            ),
-        ]
+        self.extend(
+            [
+                AltitudeChangeSegment(
+                    target=FlightPoint(equivalent_airspeed="constant", altitude=10000.0 * foot),
+                    **self.segment_kwargs,
+                ),
+                SpeedChangeSegment(
+                    target=FlightPoint(equivalent_airspeed=300.0 * knot), **self.segment_kwargs
+                ),
+                AltitudeChangeSegment(
+                    target=FlightPoint(equivalent_airspeed="constant", mach=self.maximum_mach),
+                    **self.segment_kwargs,
+                ),
+                AltitudeChangeSegment(
+                    target=FlightPoint(mach="constant", altitude=self.target_altitude),
+                    **self.segment_kwargs,
+                ),
+            ]
+        )
 
 
 @dataclass
@@ -254,20 +280,24 @@ class DescentPhase(AbstractManualThrustFlightPhase):
         super().__post_init__(*args, **kwargs)
         self.segment_kwargs["engine_setting"] = EngineSetting.IDLE
 
-        self.flight_sequence = [
-            AltitudeChangeSegment(
-                target=FlightPoint(equivalent_airspeed=300.0 * knot, mach="constant"),
-                **self.segment_kwargs,
-            ),
-            AltitudeChangeSegment(
-                target=FlightPoint(altitude=10000.0 * foot, equivalent_airspeed="constant"),
-                **self.segment_kwargs,
-            ),
-            SpeedChangeSegment(
-                target=FlightPoint(equivalent_airspeed=250.0 * knot), **self.segment_kwargs
-            ),
-            AltitudeChangeSegment(
-                target=FlightPoint(altitude=self.target_altitude, equivalent_airspeed="constant"),
-                **self.segment_kwargs,
-            ),
-        ]
+        self.extend(
+            [
+                AltitudeChangeSegment(
+                    target=FlightPoint(equivalent_airspeed=300.0 * knot, mach="constant"),
+                    **self.segment_kwargs,
+                ),
+                AltitudeChangeSegment(
+                    target=FlightPoint(altitude=10000.0 * foot, equivalent_airspeed="constant"),
+                    **self.segment_kwargs,
+                ),
+                SpeedChangeSegment(
+                    target=FlightPoint(equivalent_airspeed=250.0 * knot), **self.segment_kwargs
+                ),
+                AltitudeChangeSegment(
+                    target=FlightPoint(
+                        altitude=self.target_altitude, equivalent_airspeed="constant"
+                    ),
+                    **self.segment_kwargs,
+                ),
+            ]
+        )

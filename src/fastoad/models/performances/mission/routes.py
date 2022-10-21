@@ -55,6 +55,9 @@ class RangedRoute(FlightSequence):
     #: Accuracy on actual total ground distance for the solver. In meters
     distance_accuracy: float = 0.5e3
 
+    #: If True, cruise distance will be adjusted to match :attr:`flight_distance`
+    solve_distance: bool = True
+
     def __post_init__(self, *args, **kwargs):
         super().__post_init__(*args, **kwargs)
         self.extend(self._get_flight_sequence())
@@ -101,9 +104,15 @@ class RangedRoute(FlightSequence):
         for phase in self.climb_phases + self.descent_phases:
             climb_descent_distances.extend(self._get_ground_distances(phase))
 
+        # Using the input target distance for cruise
+        if not self.solve_distance:
+            return super().compute_from(start)
+
+        # Solving the needed cruise distance to get target flight distance
         if 0.0 in climb_descent_distances:
             return self._solve_cruise_distance(start)
 
+        # climb and descent distances are provided, cruise distance can be obtained easily.
         self.cruise_distance = self.flight_distance - np.sum(climb_descent_distances)
         return super().compute_from(start)
 

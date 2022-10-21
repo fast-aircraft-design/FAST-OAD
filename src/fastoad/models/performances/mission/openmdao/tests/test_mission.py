@@ -21,7 +21,7 @@ from scipy.constants import foot, knot, nautical_mile
 
 from fastoad._utils.testing import run_system
 from fastoad.io import DataFile
-from ..mission import Mission
+from ..mission import OMMission
 from ..mission_component import MissionComponent
 from ..mission_wrapper import MissionWrapper
 from ...mission_definition.exceptions import FastMissionFileMissingMissionNameError
@@ -199,7 +199,7 @@ def test_mission_group_without_fuel_adjustment(cleanup, with_dummy_plugin_2):
 
     with pytest.raises(FastMissionFileMissingMissionNameError):
         run_system(
-            Mission(
+            OMMission(
                 propulsion_id="test.wrapper.propulsion.dummy_engine",
                 out_file=pth.join(RESULTS_FOLDER_PATH, "unlooped_mission_group.csv"),
                 use_initializer_iteration=False,
@@ -212,7 +212,7 @@ def test_mission_group_without_fuel_adjustment(cleanup, with_dummy_plugin_2):
         )
 
     problem = run_system(
-        Mission(
+        OMMission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
             out_file=pth.join(RESULTS_FOLDER_PATH, "unlooped_mission_group.csv"),
             use_initializer_iteration=False,
@@ -237,7 +237,7 @@ def test_mission_group_breguet_without_fuel_adjustment(cleanup, with_dummy_plugi
     ivc = DataFile(input_file_path).to_ivc()
 
     problem = run_system(
-        Mission(
+        OMMission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
             out_file=pth.join(RESULTS_FOLDER_PATH, "unlooped_breguet_mission_group.csv"),
             use_initializer_iteration=False,
@@ -261,7 +261,7 @@ def test_mission_group_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
     ivc = vars.to_ivc()
 
     problem = run_system(
-        Mission(
+        OMMission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
             out_file=pth.join(RESULTS_FOLDER_PATH, "looped_mission_group.csv"),
             use_initializer_iteration=True,
@@ -302,7 +302,7 @@ def test_mission_group_breguet_with_fuel_adjustment(cleanup, with_dummy_plugin_2
     ivc = vars.to_ivc()
 
     problem = run_system(
-        Mission(
+        OMMission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
             out_file=pth.join(RESULTS_FOLDER_PATH, "looped_breguet_mission_group.csv"),
             use_initializer_iteration=True,
