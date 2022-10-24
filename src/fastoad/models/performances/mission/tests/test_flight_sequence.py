@@ -20,13 +20,6 @@ from ..segments.mass_input import MassTargetSegment
 from ..segments.taxi import TaxiSegment
 
 
-@pytest.fixture(scope="module")
-def propulsion():
-    from tests.dummy_plugins.dist_2.dummy_plugin_2.models.subpackage.dummy_engine import DummyEngine
-
-    return DummyEngine(1.0e5, 1.0e-4)
-
-
 def get_taxi_definition(propulsion, target_mass=None):
     return TaxiSegment(
         "taxi_out",
