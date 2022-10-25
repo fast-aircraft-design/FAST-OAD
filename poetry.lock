@@ -1981,7 +1981,7 @@ mpi4py = ["mpi4py"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "322e58c98719a43d766c76c515b64de02b2ed3b718a1bbedb6383ffe080c2130"
+content-hash = "3a357901a4edccd961bf88a15813f3cdd436ef2ab83385ab3bb600b5953c76ae"
 
 [metadata.files]
 aenum = [
