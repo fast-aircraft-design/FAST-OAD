@@ -38,11 +38,11 @@ def taxi_consumption(propulsion):
 
 
 def get_sequence_without_target_mass(propulsion):
-    return [get_taxi_definition(propulsion), get_taxi_definition(propulsion)]
+    return FlightSequence() + [get_taxi_definition(propulsion), get_taxi_definition(propulsion)]
 
 
 def get_sequence_with_target_mass(propulsion):
-    return [
+    return FlightSequence() + [
         get_taxi_definition(propulsion),
         get_taxi_definition(propulsion),
         MassTargetSegment(target=FlightPoint(mass=70000.0)),
@@ -50,24 +50,23 @@ def get_sequence_with_target_mass(propulsion):
 
 
 def get_nested_flight_sequence_without_target_mass(propulsion):
-    return [
+    return FlightSequence() + [
         get_taxi_definition(propulsion),
-        FlightSequence(flight_sequence=get_sequence_without_target_mass(propulsion)),
-        FlightSequence(flight_sequence=get_sequence_without_target_mass(propulsion)),
+        FlightSequence() + get_sequence_without_target_mass(propulsion),
+        FlightSequence() + get_sequence_without_target_mass(propulsion),
     ]
 
 
 def get_nested_flight_sequence_with_target_mass(propulsion):
-    return [
+    return FlightSequence() + [
         get_taxi_definition(propulsion),
-        FlightSequence(flight_sequence=get_sequence_with_target_mass(propulsion)),
-        FlightSequence(flight_sequence=get_sequence_without_target_mass(propulsion)),
+        FlightSequence() + get_sequence_with_target_mass(propulsion),
+        FlightSequence() + get_sequence_without_target_mass(propulsion),
     ]
 
 
 def test_flight_sequence_without_target_mass(propulsion, taxi_consumption):
-    sequence = FlightSequence()
-    sequence.flight_sequence = get_sequence_without_target_mass(propulsion)
+    sequence = get_sequence_without_target_mass(propulsion)
     flight_points = sequence.compute_from(FlightPoint(altitude=0.0, mass=50000.0))
 
     assert_allclose(flight_points.mass.iloc[0] - flight_points.mass.iloc[-1], taxi_consumption * 2)
@@ -77,7 +76,7 @@ def test_flight_sequence_without_target_mass(propulsion, taxi_consumption):
 
 def test_flight_sequence_with_target_mass(propulsion, taxi_consumption):
     sequence = FlightSequence()
-    sequence.flight_sequence = get_sequence_with_target_mass(propulsion)
+    sequence.extend(get_sequence_with_target_mass(propulsion))
     flight_points = sequence.compute_from(FlightPoint(altitude=0.0, mass=50000.0))
 
     assert_allclose(flight_points.mass.iloc[0] - flight_points.mass.iloc[-1], taxi_consumption * 2)
@@ -86,8 +85,7 @@ def test_flight_sequence_with_target_mass(propulsion, taxi_consumption):
 
 
 def test_nested_flight_sequence_without_target_mass(propulsion, taxi_consumption):
-    sequence = FlightSequence()
-    sequence.flight_sequence = get_nested_flight_sequence_without_target_mass(propulsion)
+    sequence = get_nested_flight_sequence_without_target_mass(propulsion)
     flight_points = sequence.compute_from(FlightPoint(altitude=0.0, mass=50000.0))
 
     assert_allclose(flight_points.mass.iloc[0] - flight_points.mass.iloc[-1], taxi_consumption * 5)
@@ -97,7 +95,7 @@ def test_nested_flight_sequence_without_target_mass(propulsion, taxi_consumption
 
 def test_nested_flight_sequence_with_target_mass(propulsion, taxi_consumption):
     sequence = FlightSequence()
-    sequence.flight_sequence = get_nested_flight_sequence_with_target_mass(propulsion)
+    sequence.extend(get_nested_flight_sequence_with_target_mass(propulsion))
     flight_points = sequence.compute_from(FlightPoint(altitude=0.0, mass=50000.0))
 
     assert_allclose(flight_points.mass.iloc[0] - flight_points.mass.iloc[-1], taxi_consumption * 5)

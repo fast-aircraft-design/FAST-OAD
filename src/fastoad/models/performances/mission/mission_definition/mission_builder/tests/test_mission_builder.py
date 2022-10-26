@@ -209,86 +209,86 @@ def test_build():
     # "sizing" mission defines no input mass variable, so it is automatically completed
     # with default taxi_out and takeoff phases, hence the 2 additional elements
     # in mission.flight_sequence (total of 6 instead of 4).
-    assert len(mission.flight_sequence) == 6
-    assert mission.flight_sequence[0].name == "sizing:taxi_out"
-    assert mission.flight_sequence[1].name == "sizing:takeoff"
-    assert mission.flight_sequence[2].name == "sizing:main"
-    assert mission.flight_sequence[3].name == "sizing:diversion"
-    assert mission.flight_sequence[4].name == "sizing:holding"
-    assert mission.flight_sequence[5].name == "sizing:taxi_in"
+    assert len(mission) == 6
+    assert mission[0].name == "sizing:taxi_out"
+    assert mission[1].name == "sizing:takeoff"
+    assert mission[2].name == "sizing:main"
+    assert mission[3].name == "sizing:diversion"
+    assert mission[4].name == "sizing:holding"
+    assert mission[5].name == "sizing:taxi_in"
 
     # Taxi-out phase -----------------------------------------------------------
-    taxi_out_phase = mission.flight_sequence[0]
+    taxi_out_phase = mission[0]
     assert isinstance(taxi_out_phase, FlightSequence)
     assert taxi_out_phase.name == "sizing:taxi_out"
-    assert len(taxi_out_phase.flight_sequence) == 2
+    assert len(taxi_out_phase) == 2
 
-    start = taxi_out_phase.flight_sequence[0]
+    start = taxi_out_phase[0]
     assert start.name == "sizing:taxi_out"
     assert isinstance(start, Start)
-    taxi_out = taxi_out_phase.flight_sequence[1]
+    taxi_out = taxi_out_phase[1]
     assert start.name == "sizing:taxi_out"
     assert isinstance(taxi_out, TaxiSegment)
 
     # Takeoff phase -----------------------------------------------------------
-    takeoff_phase = mission.flight_sequence[1]
+    takeoff_phase = mission[1]
     assert isinstance(takeoff_phase, FlightSequence)
     assert takeoff_phase.name == "sizing:takeoff"
-    assert len(takeoff_phase.flight_sequence) == 2
+    assert len(takeoff_phase) == 2
 
-    takeoff = takeoff_phase.flight_sequence[0]
+    takeoff = takeoff_phase[0]
     assert takeoff.name == "sizing:takeoff"
     assert isinstance(takeoff, DummyTransitionSegment)
-    mass_input = takeoff_phase.flight_sequence[1]
+    mass_input = takeoff_phase[1]
     assert mass_input.name == "sizing:takeoff"
     assert isinstance(mass_input, MassTargetSegment)
 
     # Main route phase ---------------------------------------------------------
-    main_route = mission.flight_sequence[2]
+    main_route = mission[2]
     assert isinstance(main_route, FlightSequence)
-    assert len(main_route.flight_sequence) == 4
+    assert len(main_route) == 4
     assert main_route.distance_accuracy == 500.0
-    assert main_route.flight_sequence[0].name == "sizing:main:initial_climb"
-    assert main_route.flight_sequence[1].name == "sizing:main:climb"
-    assert main_route.flight_sequence[2].name == "sizing:main:cruise"
-    assert main_route.flight_sequence[3].name == "sizing:main:descent"
+    assert main_route[0].name == "sizing:main:initial_climb"
+    assert main_route[1].name == "sizing:main:climb"
+    assert main_route[2].name == "sizing:main:cruise"
+    assert main_route[3].name == "sizing:main:descent"
 
-    initial_climb = main_route.flight_sequence[0]
+    initial_climb = main_route[0]
     assert isinstance(initial_climb, FlightSequence)
-    assert len(initial_climb.flight_sequence) == 3
+    assert len(initial_climb) == 3
     # Here we test that phase parameter is distributed among segments AND that default
     # value of variable is used.
-    assert_allclose([segment.thrust_rate for segment in initial_climb.flight_sequence], 1.0)
+    assert_allclose([segment.thrust_rate for segment in initial_climb], 1.0)
 
-    climb1 = initial_climb.flight_sequence[0]
+    climb1 = initial_climb[0]
     assert isinstance(climb1, AltitudeChangeSegment)
     assert climb1.target.altitude == pytest.approx(400 * foot)
     assert climb1.target.equivalent_airspeed == "constant"
     assert_allclose(climb1.polar.definition_cl, [0.0, 0.5, 1.0])
     assert_allclose(climb1.polar.cd(), [0.0, 0.03, 0.12])
 
-    acceleration = initial_climb.flight_sequence[1]
+    acceleration = initial_climb[1]
     assert isinstance(acceleration, SpeedChangeSegment)
     assert acceleration.target.equivalent_airspeed == pytest.approx(250 * knot)
     assert_allclose(acceleration.polar.definition_cl, cl)
     assert_allclose(acceleration.polar.cd(), cd)
 
-    climb2 = initial_climb.flight_sequence[2]
+    climb2 = initial_climb[2]
     assert isinstance(climb2, AltitudeChangeSegment)
     assert_allclose(climb2.polar.definition_cl, cl)
     assert_allclose(climb2.polar.cd(), cd)
 
     # Holding phase ------------------------------------------------------------
-    holding_phase = mission.flight_sequence[4]
+    holding_phase = mission[4]
     assert isinstance(holding_phase, FlightSequence)
-    assert len(holding_phase.flight_sequence) == 1
-    holding = holding_phase.flight_sequence[0]
+    assert len(holding_phase) == 1
+    holding = holding_phase[0]
     assert isinstance(holding, HoldSegment)
 
-    taxi_in_phase = mission.flight_sequence[5]
+    taxi_in_phase = mission[5]
     assert isinstance(taxi_in_phase, FlightSequence)
-    assert len(taxi_in_phase.flight_sequence) == 1
-    taxi_in = taxi_in_phase.flight_sequence[0]
+    assert len(taxi_in_phase) == 1
+    taxi_in = taxi_in_phase[0]
     assert isinstance(taxi_in, TaxiSegment)
 
     # Check of "test" mission ##################################################
@@ -297,10 +297,10 @@ def test_build():
         "some:dynamic:array": np.linspace(0.0, 5.0, 6),
     }
     test_mission = mission_builder.build(test_inputs, mission_name="test")
-    assert len(test_mission.flight_sequence) == 1
-    assert isinstance(test_mission.flight_sequence[0], FlightSequence)
-    assert len(test_mission.flight_sequence[0].flight_sequence) == 2
-    segment = test_mission.flight_sequence[0].flight_sequence[0]
+    assert len(test_mission) == 1
+    assert isinstance(test_mission[0], FlightSequence)
+    assert len(test_mission[0]) == 2
+    segment = test_mission[0][0]
     assert isinstance(segment, TestSegment)
     assert segment.scalar_parameter == 42.0
     assert_allclose(segment.vector_parameter_1, [1.0, 2.0, 3.0])

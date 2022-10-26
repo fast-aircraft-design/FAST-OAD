@@ -55,9 +55,9 @@ class RangedRoute(FlightSequence):
     #: Accuracy on actual total ground distance for the solver. In meters
     distance_accuracy: float = 0.5e3
 
-    def __post_init__(self):
-        super().__post_init__()
-        self.flight_sequence.extend(self._get_flight_sequence())
+    def __post_init__(self, *args, **kwargs):
+        super().__post_init__(*args, **kwargs)
+        self.extend(self._get_flight_sequence())
 
         # We will use this to keep data along root_scalar process (see _solve_cruise_distance() )
         self._flight_points = None
@@ -81,7 +81,7 @@ class RangedRoute(FlightSequence):
         """
         climb_segments = []
         for phase in self.climb_phases:
-            climb_segments += phase.flight_sequence
+            climb_segments += phase
 
         climb_segments.reverse()
         for segment in climb_segments:
@@ -112,7 +112,7 @@ class RangedRoute(FlightSequence):
         # last segment before cruise.
         cruise_climb = self.climb_phases[-1]
         while isinstance(cruise_climb, FlightSequence):
-            cruise_climb = cruise_climb.flight_sequence[-1]
+            cruise_climb = cruise_climb[-1]
         self.cruise_segment.climb_segment = cruise_climb
 
         return self.climb_phases + [self.cruise_segment] + self.descent_phases
@@ -120,7 +120,7 @@ class RangedRoute(FlightSequence):
     @classmethod
     def _get_ground_distances(cls, phase: FlightSequence) -> list:
         ground_distances = []
-        for flight_part in phase.flight_sequence:
+        for flight_part in phase:
             if isinstance(flight_part, AbstractFlightSegment):
                 ground_distances.append(flight_part.target.ground_distance)
             else:

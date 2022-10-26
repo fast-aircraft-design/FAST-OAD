@@ -142,7 +142,7 @@ class MissionBuilder:
         :param mission_name: mission name (can be omitted if only one mission is defined)
         :return: list of flight ranges for each element of the flight sequence that is a route
         """
-        routes = self.build(inputs, mission_name).flight_sequence
+        routes = self.build(inputs, mission_name)
         return [route.flight_distance for route in routes if isinstance(route, RangedRoute)]
 
     def get_reserve(self, flight_points: pd.DataFrame, mission_name: str = None) -> float:
@@ -236,7 +236,7 @@ class MissionBuilder:
                 part = self._build_route(part_spec, part_kwargs)
             elif part_spec[TYPE_TAG] == PHASE_TAG:
                 part = self._build_phase(part_spec, part_kwargs)
-            mission.flight_sequence.append(part)
+            mission.append(part)
 
         return mission
 
@@ -308,7 +308,7 @@ class MissionBuilder:
                 flight_part = self._build_phase(part_structure, part_kwargs)
             else:
                 flight_part = self._build_segment(part_structure, part_kwargs)
-            phase.flight_sequence.append(flight_part)
+            phase.append(flight_part)
 
         return phase
 

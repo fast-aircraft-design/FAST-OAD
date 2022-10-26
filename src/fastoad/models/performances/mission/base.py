@@ -15,7 +15,7 @@
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import Optional
 
 import pandas as pd
 
@@ -46,16 +46,18 @@ class IFlightPart(ABC, BaseDataClass):
 
 
 @dataclass
-class FlightSequence(IFlightPart):
+class FlightSequence(IFlightPart, list):
     """
     Defines and computes a flight sequence.
-    """
 
-    #: List of IFlightPart instances that should be run sequentially.
-    flight_sequence: List[IFlightPart] = field(default_factory=list)
+    Use .extend() method to add a list of parts in the sequence.
+    """
 
     #: Consumed mass between sequence start and target mass, if any defined
     consumed_mass_before_input_weight: float = field(default=0.0, init=False)
+
+    def __post_init__(self):
+        super().__post_init__()
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         parts = []
@@ -64,7 +66,7 @@ class FlightSequence(IFlightPart):
 
         self.consumed_mass_before_input_weight = 0.0
         consumed_mass = 0.0
-        for part in self.flight_sequence:
+        for part in self:
             # This check has to be done first because relative target parameters
             # will be made absolute during compute_from()
             part_has_target_mass = not (part.target.mass is None or part.target.is_relative("mass"))
@@ -113,7 +115,12 @@ class FlightSequence(IFlightPart):
     @property
     def target(self) -> Optional[FlightPoint]:
         """Target of the last element of current sequence."""
-        if len(self.flight_sequence) > 0:
-            return self.flight_sequence[-1].target
+        if len(self) > 0:
+            return self[-1].target
 
         return None
+
+    def __add__(self, other):
+        result = self.__class__()
+        result.extend(other)
+        return result
