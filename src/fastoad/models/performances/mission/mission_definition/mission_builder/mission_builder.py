@@ -215,36 +215,6 @@ class MissionBuilder:
             self._get_mission_part_structures(mission_name)
         )
 
-    def get_mission_start_mass_input(self, mission_name: str) -> Optional[str]:
-        """
-
-        :param mission_name:
-        :return: Target mass variable of first segment, if any.
-        """
-        part = self._get_first_segment_structure(mission_name)
-        if "mass" in part["target"]:
-            return part["target"]["mass"].variable_name
-
-        return None
-
-    def _get_first_segment_structure(self, mission_name: str):
-        part = self._get_mission_part_structures(mission_name)[0]
-        while PARTS_TAG in part:
-            part = part[PARTS_TAG][0]
-        return part
-
-    def get_mission_part_names(self, mission_name: str) -> List[str]:
-        """
-
-        :param mission_name:
-        :return: list of names of parts (phase or route) for specified mission.
-        """
-        return [
-            part[NAME_TAG]
-            for part in self._get_mission_part_structures(mission_name)
-            if part.get(TYPE_TAG) in [ROUTE_TAG, PHASE_TAG]
-        ]
-
     def _build_mission(self, mission_structure: OrderedDict) -> FlightSequence:
         """
         Builds mission instance from provided structure.
