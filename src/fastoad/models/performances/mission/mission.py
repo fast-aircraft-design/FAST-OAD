@@ -34,6 +34,9 @@ class Mission(FlightSequence):
     #: If not None, the mission will adjust the first
     target_fuel_consumption: Optional[float] = None
 
+    reserve_ratio: Optional[float] = 0.0
+    reserve_base_route_name: Optional[str] = None
+
     #: Accuracy on actual consumed fuel for the solver. In kg
     fuel_accuracy: float = 10.0
 
@@ -64,9 +67,29 @@ class Mission(FlightSequence):
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         if self.target_fuel_consumption is None:
-            return super().compute_from(start)
+            return self._compute_from(start)
         else:
             return self._solve_cruise_distance(start)
+
+    def _compute_from(self, start: FlightPoint) -> pd.DataFrame:
+        flight_points = super().compute_from(start)
+        if self.reserve_ratio > 0.0:
+            if self.reserve_base_route_name is None:
+                base_route_name = self.first_route.name
+            else:
+                base_route_name = self.reserve_base_route_name
+
+            reserve_fuel = self.reserve_ratio * self._get_consumed_mass_in_route(base_route_name)
+            last_flight_point = flight_points.iloc[-1].deepcopy()
+            last_flight_point.mass -= reserve_fuel
+            last_flight_point.name = f"{self.name}:reserve"
+            flight_points.append(last_flight_point)
+
+        return flight_points
+
+    def _get_consumed_mass_in_route(self, flight_points: pd.DataFrame, route_name: str) -> float:
+        route_points = flight_points.loc[flight_points.name.str.contains(f":{route_name}:")]
+        return route_points.mass.iloc[0] - route_points.mass.iloc[-1]
 
     def _solve_cruise_distance(self, start: FlightPoint) -> pd.DataFrame:
         """
@@ -97,5 +120,5 @@ class Mission(FlightSequence):
         :return: difference between computed fuel and self.target_fuel_consumption
         """
         self.first_route.cruise_distance = cruise_distance
-        self._flight_points = super().compute_from(start)
+        self._flight_points = self._compute_from(start)
         return self.target_fuel_consumption - self.consumed_fuel
