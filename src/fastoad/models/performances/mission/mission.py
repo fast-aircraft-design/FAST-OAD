@@ -11,6 +11,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -49,7 +50,11 @@ class Mission(FlightSequence):
         if self._flight_points is None:
             return None
 
-        return self._flight_points.mass.iloc[0] - self._flight_points.mass.iloc[-1]
+        return (
+            self._flight_points.mass.iloc[0]
+            - self._flight_points.mass.iloc[-1]
+            + self.get_reserve_fuel()
+        )
 
     @property
     def first_route(self) -> RangedRoute:
@@ -73,6 +78,8 @@ class Mission(FlightSequence):
 
     def _compute_from(self, start: FlightPoint) -> pd.DataFrame:
         flight_points = super().compute_from(start)
+        flight_points.name.loc[flight_points.name.isnull()] = ""
+
         if self.reserve_ratio > 0.0:
             if self.reserve_base_route_name is None:
                 base_route_name = self.first_route.name
@@ -80,16 +87,36 @@ class Mission(FlightSequence):
                 base_route_name = self.reserve_base_route_name
 
             reserve_fuel = self.reserve_ratio * self._get_consumed_mass_in_route(base_route_name)
-            last_flight_point = flight_points.iloc[-1].deepcopy()
-            last_flight_point.mass -= reserve_fuel
-            last_flight_point.name = f"{self.name}:reserve"
-            flight_points.append(last_flight_point)
+            reserve_points = pd.DataFrame(
+                [
+                    deepcopy(flight_points.iloc[-1]),
+                    deepcopy(flight_points.iloc[-1]),
+                ]
+            )
+
+            # We are not using -= here because it would operate last_flight_point.mass can be
+            # an array. The operator would operate element-wise and would modify the original
+            # flight point, despite the deepcopy.
+            reserve_points.mass.iloc[-1] = reserve_points.mass.iloc[0] - reserve_fuel
+            reserve_points["name"] = f"{self.name}:reserve"
+
+            self.part_flight_points.append(reserve_points)
 
         return flight_points
 
-    def _get_consumed_mass_in_route(self, flight_points: pd.DataFrame, route_name: str) -> float:
-        route_points = flight_points.loc[flight_points.name.str.contains(f":{route_name}:")]
+    def _get_consumed_mass_in_route(self, route_name: str) -> float:
+        route = [part for part in self if part.name == route_name][0]
+        route_idx = self.index(route)
+        route_points = self.part_flight_points[route_idx]
         return route_points.mass.iloc[0] - route_points.mass.iloc[-1]
+
+    def get_reserve_fuel(self):
+        if not self.reserve_ratio:
+            return 0.0
+
+        reserve_points = self.part_flight_points[-1]
+
+        return reserve_points.iloc[0].mass - reserve_points.iloc[-1].mass
 
     def _solve_cruise_distance(self, start: FlightPoint) -> pd.DataFrame:
         """

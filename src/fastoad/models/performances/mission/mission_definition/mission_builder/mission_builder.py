@@ -245,6 +245,15 @@ class MissionBuilder:
                 )
             mission.append(part)
 
+        last_part = mission_structure[PARTS_TAG][-1]
+        if RESERVE_TAG in last_part:
+            mission.reserve_ratio = last_part[RESERVE_TAG]["multiplier"].value
+            base_route_name_definition = last_part[RESERVE_TAG].get("ref")
+            if base_route_name_definition:
+                mission.reserve_base_route_name = (
+                    f"{mission.name}:{base_route_name_definition.value}"
+                )
+
         return mission
 
     def _build_route(self, route_structure: OrderedDict, kwargs: Mapping = None):

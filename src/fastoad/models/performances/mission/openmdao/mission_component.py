@@ -206,14 +206,8 @@ class MissionComponent(om.ExplicitComponent):
         # Final ================================================================
         start_of_mission = FlightPoint.create(self.flight_points.iloc[0])
         end_of_mission = FlightPoint.create(self.flight_points.iloc[-1])
-        reserve = self._mission_wrapper.get_reserve(
-            self.flight_points, self.options["mission_name"]
-        )
-        reserve_name = self._mission_wrapper.get_reserve_variable_name()
-        if reserve_name in outputs:
-            outputs[reserve_name] = reserve
         outputs[self._name_provider.NEEDED_BLOCK_FUEL.value] = (
-            start_of_mission.mass - end_of_mission.mass + reserve
+            start_of_mission.mass - end_of_mission.mass
         )
 
         outputs[

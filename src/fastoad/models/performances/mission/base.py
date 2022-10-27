@@ -15,7 +15,7 @@
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import List, Optional
 
 import pandas as pd
 
@@ -56,11 +56,15 @@ class FlightSequence(IFlightPart, list):
     #: Consumed mass between sequence start and target mass, if any defined
     consumed_mass_before_input_weight: float = field(default=0.0, init=False)
 
+    #: List of flight points for each part of the sequence, obtained after
+    #  running :meth:`compute_from`
+    part_flight_points: List[pd.DataFrame] = field(default_factory=list, init=False)
+
     def __post_init__(self):
         super().__post_init__()
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        parts = []
+        self.part_flight_points = []
         part_start = deepcopy(start)
         part_start.scalarize()
 
@@ -83,34 +87,34 @@ class FlightSequence(IFlightPart, list):
             # (mass consumption of previous parts is assumed independent of aircraft mass)
             if part_has_target_mass:
                 mass_offset = flight_points.iloc[0].mass - part_start.mass
-                for previous_flight_points in parts:
+                for previous_flight_points in self.part_flight_points:
                     previous_flight_points.mass += mass_offset
                 self.consumed_mass_before_input_weight = float(consumed_mass)
 
-            if len(parts) > 0 and len(flight_points) > 1:
+            if len(self.part_flight_points) > 0 and len(flight_points) > 1:
                 # First point of the segment is omitted, as it is the last of previous segment.
                 #
                 # But sometimes (especially in the case of simplistic segments), the new first
                 # point may contain more information than the previous last one. In such case,
                 # it is interesting to complete the previous last one.
-                last_flight_points = parts[-1]
+                last_flight_points = self.part_flight_points[-1]
                 last_index = last_flight_points.index[-1]
                 for name in flight_points.columns:
                     value = last_flight_points.loc[last_index, name]
                     if not value:
                         last_flight_points.loc[last_index, name] = flight_points.loc[0, name]
 
-                parts.append(flight_points.iloc[1:])
+                self.part_flight_points.append(flight_points.iloc[1:])
 
             else:
                 # But it is kept if the computed segment is the first one.
-                parts.append(flight_points)
+                self.part_flight_points.append(flight_points)
 
             part_start = FlightPoint.create(flight_points.iloc[-1])
             part_start.scalarize()
 
-        if parts:
-            return pd.concat(parts).reset_index(drop=True)
+        if self.part_flight_points:
+            return pd.concat(self.part_flight_points).reset_index(drop=True)
 
     @property
     def target(self) -> Optional[FlightPoint]:

@@ -35,6 +35,7 @@ def test_mission(low_speed_polar, high_speed_polar, propulsion):
     )
 
     first_route = RangedRoute(
+        name="route_1",
         climb_phases=[
             InitialClimbPhase(
                 **kwargs,
@@ -74,6 +75,7 @@ def test_mission(low_speed_polar, high_speed_polar, propulsion):
     )
 
     second_route = RangedRoute(
+        name="route_2",
         climb_phases=[
             ClimbPhase(
                 **kwargs,
@@ -106,7 +108,10 @@ def test_mission(low_speed_polar, high_speed_polar, propulsion):
     )
 
     start = FlightPoint(
-        true_airspeed=150.0 * knot, altitude=100.0 * foot, mass=70000.0, ground_distance=100000.0
+        true_airspeed=150.0 * knot,
+        altitude=100.0 * foot,
+        mass=70000.0,
+        ground_distance=100000.0,
     )
 
     # Test mission with fixed route distances
@@ -128,25 +133,44 @@ def test_mission(low_speed_polar, high_speed_polar, propulsion):
         atol=1.0,
     )
 
+    # Test mission with fixed route distances and reserve
+    mission_2 = Mission(name="mission2", reserve_ratio=0.03)
+    mission_2.extend([first_route, second_route])
+
+    flight_points = mission_2.compute_from(start)
+
+    # plot_flight(flight_points, "test_ranged_flight.png")
+
+    assert_allclose(
+        flight_points.iloc[-1].ground_distance,
+        first_route_distance + second_route_distance + start.ground_distance,
+        atol=first_route.distance_accuracy,
+    )
+    assert_allclose(
+        flight_points.mass.iloc[0] - flight_points.mass.iloc[-1] + mission_2.get_reserve_fuel(),
+        27593.0,
+        atol=1.0,
+    )
+
     # Test with objective fuel, with 2 routes
-    mission_2 = Mission(
-        name="mission2",
+    mission_3 = Mission(
+        name="mission3",
         target_fuel_consumption=20000.0,
     )
-    mission_2.extend([first_route, second_route])
-    flight_points = mission_2.compute_from(start)
-    assert_allclose(
-        flight_points.mass.iloc[0] - flight_points.mass.iloc[-1],
-        20000.0,
-        mission_2.fuel_accuracy,
-    )
-    # Test with objective fuel, when mission does not start with a route
-    mission_3 = Mission(name="mission3", target_fuel_consumption=20000.0)
-    mission_3.extend([taxi_out, first_route, second_route])
-
+    mission_3.extend([first_route, second_route])
     flight_points = mission_3.compute_from(start)
     assert_allclose(
         flight_points.mass.iloc[0] - flight_points.mass.iloc[-1],
         20000.0,
         mission_3.fuel_accuracy,
+    )
+    # Test with objective fuel, when mission does not start with a route
+    mission_4 = Mission(name="mission4", target_fuel_consumption=20000.0)
+    mission_4.extend([taxi_out, first_route, second_route])
+
+    flight_points = mission_4.compute_from(start)
+    assert_allclose(
+        flight_points.mass.iloc[0] - flight_points.mass.iloc[-1],
+        20000.0,
+        mission_4.fuel_accuracy,
     )
