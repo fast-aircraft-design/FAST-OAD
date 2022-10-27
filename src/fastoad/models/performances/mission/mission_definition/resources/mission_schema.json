@@ -353,8 +353,8 @@
             ]
           }
         },
-        "target_fuel_consumption": {
-          "$ref": "#/definitions/parameter_value_with_unit"
+        "use_all_block_fuel": {
+          "$ref": "#/definitions/boolean_parameter_value"
         }
       },
       "required": [

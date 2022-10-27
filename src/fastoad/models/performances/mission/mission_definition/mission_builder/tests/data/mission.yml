@@ -211,7 +211,7 @@ missions:
       - reserve:
           ref: main
           multiplier: 0.02
-    target_fuel_consumption: ~:fuel
+    use_all_block_fuel: true
   test:
     parts:
       - phase: test_phase
