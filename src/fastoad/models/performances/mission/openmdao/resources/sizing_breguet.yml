@@ -29,7 +29,10 @@ phases:
             unit: ft
             default: 35
           delta_mass: -~fuel
-          time: ~duration
+          time:
+            value: ~duration
+            unit: s
+            default: 0.0
           true_airspeed: ~V2
       - segment: mass_input
         target:
