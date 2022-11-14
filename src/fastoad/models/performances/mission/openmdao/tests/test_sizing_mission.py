@@ -42,7 +42,6 @@ def test_sizing_mission(cleanup, with_dummy_plugin_2):
     ivc.add_output("data:mission:sizing:takeoff:altitude", 0.0)
     ivc.add_output("data:mission:sizing:takeoff:V2", 80.0, units="m/s")
     ivc.add_output("data:mission:sizing:takeoff:fuel", 80.0, units="kg")
-    ivc.add_output("data:mission:sizing:takeoff:duration", 0, units="s")
     ivc.add_output("data:mission:sizing:taxi_out:thrust_rate", 0.3)
     ivc.add_output("data:mission:sizing:climb:thrust_rate", 0.9)
     ivc.add_output("data:mission:sizing:descent:thrust_rate", 0.05)

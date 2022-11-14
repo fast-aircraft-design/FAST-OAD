@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 1.4.1
+=============
+- Fixed:
+    - Fixed backward compatibility of bundled missions. (#466)
+
 Version 1.4.0
 =============
 
