@@ -15,6 +15,7 @@ FAST-OAD model for mission computation.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import warnings
 from importlib.resources import path
 
 import openmdao.api as om
@@ -97,7 +98,7 @@ class Mission(om.Group):
         )
         self.options.declare(
             "compute_TOW",
-            default=False,
+            default=None,
             types=bool,
             desc="(Deprecated. Replaced by compute_input_weight)\n"
             "If True, TakeOff Weight will be computed from onboard fuel at takeoff and ZFW.\n"
@@ -129,7 +130,12 @@ class Mission(om.Group):
         )
 
     def setup(self):
-        self.options["compute_input_weight"] = self.options["compute_TOW"]
+        if self.options["compute_TOW"] is not None:
+            warnings.warn(
+                'Option "compute_TOW" is deprecated for mission module. '
+                'Please use "compute_input_weight" instead.'
+            )
+            self.options["compute_input_weight"] = self.options["compute_TOW"]
 
         if "::" in self.options["mission_file_path"]:
             # The configuration file parser will have added the working directory before
