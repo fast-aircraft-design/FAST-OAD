@@ -1,3 +1,5 @@
+"""Definition of aircraft mission."""
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -61,7 +63,9 @@ class Mission(FlightSequence):
         """First route in the mission."""
         return self._get_first_route_in_sequence(self)
 
-    def _get_first_route_in_sequence(self, flight_sequence: FlightSequence) -> RangedRoute:
+    def _get_first_route_in_sequence(
+        self, flight_sequence: FlightSequence
+    ) -> Optional[RangedRoute]:
         for part in flight_sequence:
             if isinstance(part, RangedRoute):
                 return part
@@ -70,11 +74,22 @@ class Mission(FlightSequence):
                 if route:
                     return route
 
+        return None
+
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         if self.target_fuel_consumption is None:
             return self._compute_from(start)
-        else:
-            return self._solve_cruise_distance(start)
+
+        return self._solve_cruise_distance(start)
+
+    def get_reserve_fuel(self):
+        """:returns: the fuel quantity for reserve, obtained after mission computation."""
+        if not self.reserve_ratio:
+            return 0.0
+
+        reserve_points = self.part_flight_points[-1]
+
+        return reserve_points.iloc[0].mass - reserve_points.iloc[-1].mass
 
     def _compute_from(self, start: FlightPoint) -> pd.DataFrame:
         flight_points = super().compute_from(start)
@@ -109,14 +124,6 @@ class Mission(FlightSequence):
         route_idx = self.index(route)
         route_points = self.part_flight_points[route_idx]
         return route_points.mass.iloc[0] - route_points.mass.iloc[-1]
-
-    def get_reserve_fuel(self):
-        if not self.reserve_ratio:
-            return 0.0
-
-        reserve_points = self.part_flight_points[-1]
-
-        return reserve_points.iloc[0].mass - reserve_points.iloc[-1].mass
 
     def _solve_cruise_distance(self, start: FlightPoint) -> pd.DataFrame:
         """

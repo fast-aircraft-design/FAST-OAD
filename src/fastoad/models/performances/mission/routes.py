@@ -58,8 +58,8 @@ class RangedRoute(FlightSequence):
     #: If True, cruise distance will be adjusted to match :attr:`flight_distance`
     solve_distance: bool = True
 
-    def __post_init__(self, *args, **kwargs):
-        super().__post_init__(*args, **kwargs)
+    def __post_init__(self):
+        super().__post_init__()
         self.extend(self._get_flight_sequence())
 
         # We will use this to keep data along root_scalar process (see _solve_cruise_distance() )

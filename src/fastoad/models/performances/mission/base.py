@@ -60,9 +60,6 @@ class FlightSequence(IFlightPart, list):
     #  running :meth:`compute_from`
     part_flight_points: List[pd.DataFrame] = field(default_factory=list, init=False)
 
-    def __post_init__(self):
-        super().__post_init__()
-
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         self.part_flight_points = []
         part_start = deepcopy(start)
