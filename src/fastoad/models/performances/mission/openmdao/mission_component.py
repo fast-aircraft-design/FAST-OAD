@@ -209,6 +209,11 @@ class MissionComponent(om.ExplicitComponent):
         outputs[self._name_provider.NEEDED_BLOCK_FUEL.value] = (
             start_of_mission.mass - end_of_mission.mass
         )
+        reserve_var_name = self._mission_wrapper.get_reserve_variable_name()
+        if reserve_var_name in outputs:
+            outputs[self._name_provider.NEEDED_BLOCK_FUEL.value] += outputs[
+                self._mission_wrapper.get_reserve_variable_name()
+            ]
 
         outputs[
             self._name_provider.CONSUMED_FUEL_BEFORE_INPUT_WEIGHT.value

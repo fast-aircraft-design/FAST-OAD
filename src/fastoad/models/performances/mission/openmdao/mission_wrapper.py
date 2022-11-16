@@ -119,9 +119,12 @@ class MissionWrapper(MissionBuilder):
             _compute_vars(
                 f"data:mission:{start_part_name}", start_part.iloc[0], start_part.iloc[-1]
             )
-
         del flight_points["name2"]
+
         self.consumed_fuel_before_input_weight = mission.consumed_mass_before_input_weight
+        if mission.reserve_ratio:
+            outputs[self.get_reserve_variable_name()] = mission.get_reserve_fuel()
+
         return flight_points
 
     def get_reserve_variable_name(self) -> str:

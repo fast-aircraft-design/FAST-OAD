@@ -332,3 +332,42 @@ def test_mission_group_breguet_with_fuel_adjustment(cleanup, with_dummy_plugin_2
         atol=1.0,
     )
     assert_allclose(problem["data:mission:operational:needed_block_fuel"], 5525.0, atol=1.0)
+
+
+def test_mission_group_with_fuel_objective(cleanup, with_dummy_plugin_2):
+
+    input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
+    vars = DataFile(input_file_path)
+    ivc = vars.to_ivc()
+
+    problem = run_system(
+        OMMission(
+            propulsion_id="test.wrapper.propulsion.dummy_engine",
+            out_file=pth.join(RESULTS_FOLDER_PATH, "fuel_as_objective.csv"),
+            use_initializer_iteration=False,
+            mission_file_path=pth.join(DATA_FOLDER_PATH, "test_mission.yml"),
+            mission_name="fuel_as_objective",
+            add_solver=True,
+            adjust_fuel=False,
+            compute_input_weight=True,
+            reference_area_variable="data:geometry:aircraft:reference_area",
+        ),
+        ivc,
+    )
+
+    # check loop
+    assert_allclose(
+        problem["data:mission:fuel_as_objective:ZFW"],
+        problem["data:mission:fuel_as_objective:OWE"]
+        + problem["data:mission:fuel_as_objective:payload"],
+        atol=1.0,
+    )
+
+    assert_allclose(
+        problem["data:mission:fuel_as_objective:needed_block_fuel"],
+        problem["data:mission:fuel_as_objective:block_fuel"],
+        atol=1.0,
+    )
+
+    assert_allclose(problem["data:mission:fuel_as_objective:needed_block_fuel"], 10000.0, atol=1.0)
+    assert_allclose(problem["data:mission:fuel_as_objective:reserve:fuel"], 260.0, atol=1.0)
