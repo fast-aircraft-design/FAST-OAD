@@ -203,9 +203,16 @@ Mission definition section
 This is the main section. It allows to define one or several missions, that will be computed
 by the mission module.
 
-A mission is identified by its name and has only the :code:`parts` attribute that lists the
-:ref:`phase<phase-section>` and/or :ref:`route<route-section>` names that compose the mission, with
-optionally a last item that is the :code:`reserve` (see below).
+A mission is identified by its name and has 3 attributes:
+
+    - :code:`parts`: list of the :ref:`phase<phase-section>` and/or :ref:`route<route-section>`
+      names that compose the mission, with optionally a last item that is the :code:`reserve`
+      (see below).
+    - :code:`use_all_block_fuel`: if True, the range of the main :ref:`route <route-section>`
+      of the mission will be adjusted so that all block fuel (provided as input
+      `data:mission:<mission_name>:block_fuel`) will be consumed for the mission, excepted the
+      reserve, if defined. The provided range for first route is then used as a first guess
+      to initiate the iterative process.
 
 
 The mission name is used when configuring the mission module in the FAST-OAD configuration file.
@@ -248,6 +255,14 @@ Example:
           - route: main_route
           - phase: landing
           - phase: taxi_in
+      fuel_driven:
+        parts:
+          - phase: taxi_out
+          - phase: takeoff
+          - route: main_route
+          - phase: landing
+          - phase: taxi_in
+        use_all_block_fuel: true
 
 
 
