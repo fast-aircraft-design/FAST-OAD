@@ -78,7 +78,10 @@ class Mission(FlightSequence):
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         if self.target_fuel_consumption is None:
-            return self._compute_from(start)
+            flight_points = super().compute_from(start)
+            flight_points.name.loc[flight_points.name.isnull()] = ""
+            self._compute_reserve(flight_points)
+            return flight_points
 
         return self._solve_cruise_distance(start)
 
@@ -91,10 +94,14 @@ class Mission(FlightSequence):
 
         return reserve_points.iloc[0].mass - reserve_points.iloc[-1].mass
 
-    def _compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        flight_points = super().compute_from(start)
-        flight_points.name.loc[flight_points.name.isnull()] = ""
+    def _get_consumed_mass_in_route(self, route_name: str) -> float:
+        route = [part for part in self if part.name == route_name][0]
+        route_idx = self.index(route)
+        route_points = self.part_flight_points[route_idx]
+        return route_points.mass.iloc[0] - route_points.mass.iloc[-1]
 
+    def _compute_reserve(self, flight_points):
+        """Adds a "reserve part" in self.part_flight_points."""
         if self.reserve_ratio > 0.0:
             if self.reserve_base_route_name is None:
                 base_route_name = self.first_route.name
@@ -116,14 +123,6 @@ class Mission(FlightSequence):
             reserve_points["name"] = f"{self.name}:reserve"
 
             self.part_flight_points.append(reserve_points)
-
-        return flight_points
-
-    def _get_consumed_mass_in_route(self, route_name: str) -> float:
-        route = [part for part in self if part.name == route_name][0]
-        route_idx = self.index(route)
-        route_points = self.part_flight_points[route_idx]
-        return route_points.mass.iloc[0] - route_points.mass.iloc[-1]
 
     def _solve_cruise_distance(self, start: FlightPoint) -> pd.DataFrame:
         """
@@ -154,5 +153,8 @@ class Mission(FlightSequence):
         :return: difference between computed fuel and self.target_fuel_consumption
         """
         self.first_route.cruise_distance = cruise_distance
-        self._flight_points = self._compute_from(start)
+        flight_points = super().compute_from(start)
+        flight_points.name.loc[flight_points.name.isnull()] = ""
+        self._compute_reserve(flight_points)
+        self._flight_points = flight_points
         return self.target_fuel_consumption - self.consumed_fuel
