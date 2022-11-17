@@ -20,7 +20,6 @@ import os.path as pth
 from abc import ABC, abstractmethod
 from importlib.resources import open_text
 from typing import Dict
-import warnings
 
 import numpy as np
 import openmdao.api as om
@@ -235,11 +234,12 @@ class FASTOADProblemConfigurator:
             nan_variable_names = []
             for var in variables:
                 var.is_input = True
+                # Checking if variables have NaN values
                 if np.all(np.isnan(var.value)):
                     nan_variable_names.append(var.name)
             if nan_variable_names:
                 msg = "The following variables have NaN values: %s" % nan_variable_names
-                warnings.warn(msg)
+                _LOGGER.warning(msg)
         variables.save()
 
     def get_optimization_definition(self) -> Dict:
