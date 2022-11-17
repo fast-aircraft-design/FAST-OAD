@@ -115,7 +115,7 @@ def test_problem_definition_correct_configuration(cleanup):
         assert conf.output_file_path == pth.join(RESULTS_FOLDER_PATH, "outputs.xml")
 
 
-def test_problem_definition_with_xml_ref(cleanup):
+def test_problem_definition_with_xml_ref(cleanup, caplog):
     """Tests what happens when writing inputs using data from existing XML file"""
     for extension in ["toml", "yml"]:
         clear_openmdao_registry()
@@ -124,7 +124,15 @@ def test_problem_definition_with_xml_ref(cleanup):
         result_folder_path = pth.join(RESULTS_FOLDER_PATH, "problem_definition_with_xml_ref")
         conf.input_file_path = pth.join(result_folder_path, "inputs.xml")
         conf.output_file_path = pth.join(result_folder_path, "outputs.xml")
+        ref_input_data_path_with_nan = pth.join(DATA_FOLDER_PATH, "ref_inputs_with_nan.xml")
         ref_input_data_path = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
+
+        # Test that the presence of NaN values in inputs logs a warning
+        conf.write_needed_inputs(ref_input_data_path_with_nan)
+        for record in caplog.records:
+            assert record.levelname == "WARNING"
+
+        # Test normal process without NaN in inputs
         conf.write_needed_inputs(ref_input_data_path)
         input_data = DataFile(conf.input_file_path)
         assert len(input_data) == 2
