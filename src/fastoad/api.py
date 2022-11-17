@@ -60,10 +60,27 @@ from fastoad.models.performances.mission.segments.base import (
 from fastoad.gui.mission_viewer import MissionViewer
 from fastoad.gui.optimization_viewer import OptimizationViewer
 from fastoad.gui.variable_viewer import VariableViewer
+
 from fastoad.gui.analysis_and_plots import (
     aircraft_geometry_plot,
     drag_polar_plot,
     mass_breakdown_bar_plot,
     mass_breakdown_sun_plot,
     wing_geometry_plot,
+    flaps_and_slats_drawing,
+    wing_drawing,
+    aircraft_drawing_top_view,
+    aircraft_drawing_side_view,
+    aircraft_drawing_front_view,
+    payload_range_simple,
+    payload_range_full,
+    payload_range_grid_plot,
+    payload_range_loop_computation,
+    drag_distribution_plot,
+    stability_diagram_plot,
+    v_n_diagram_drawing_plot,
+    speed_altitude_diagram_drawing_plot,
+    ceiling_mass_diagram_drawing_plot,
+    thrust_diagram_drawing_plot,
+    available_power_diagram_drawing_plot,
 )

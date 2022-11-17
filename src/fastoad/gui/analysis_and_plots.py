@@ -14,6 +14,7 @@ Defines the analysis and plotting functions for postprocessing
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+
 from typing import Dict
 
 import numpy as np
@@ -26,6 +27,28 @@ from fastoad.io import VariableIO
 from fastoad.openmdao.variables import VariableList
 
 COLS = px.colors.qualitative.Plotly
+
+from .geometry_drawing.full_aircraft_drawing import flaps_and_slats_drawing
+from .geometry_drawing.full_aircraft_drawing import wing_drawing
+from .geometry_drawing.full_aircraft_drawing import aircraft_drawing_top_view
+from .geometry_drawing.full_aircraft_drawing import aircraft_drawing_side_view
+from .geometry_drawing.full_aircraft_drawing import aircraft_drawing_front_view
+
+from .payload_range.payload_range_file import payload_range_simple
+from .payload_range.payload_range_file import payload_range_full
+from .payload_range.payload_range_file import payload_range_grid_plot
+from .payload_range.payload_range_file import payload_range_loop_computation
+from .drag_distribution.drag_distribution_file import drag_distribution_plot
+from .v_n.v_n_diagram_drawing import v_n_diagram_drawing_plot
+from .available_power.available_power_diagram_drawing import available_power_diagram_drawing_plot
+
+from .speed_altitude.speed_altitude_diagram_drawing import speed_altitude_diagram_drawing_plot
+from .ceiling_mass.ceiling_mass_diagram_drawing import ceiling_mass_diagram_drawing_plot
+
+
+from .stability_diagram.stability_diagram_file import stability_diagram_plot
+
+from .thrust.thrust_diagram_drawing import thrust_diagram_drawing_plot
 
 
 # pylint: disable-msg=too-many-locals
