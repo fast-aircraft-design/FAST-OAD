@@ -238,8 +238,7 @@ class FASTOADProblemConfigurator:
                 if np.any(np.isnan(var.value)):
                     nan_variable_names.append(var.name)
             if nan_variable_names:
-                msg = "The following variables have NaN values: %s" % nan_variable_names
-                _LOGGER.warning(msg)
+                _LOGGER.warning("The following variables have NaN values: %s", nan_variable_names)
         variables.save()
 
     def get_optimization_definition(self) -> Dict:
