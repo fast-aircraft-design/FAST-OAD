@@ -128,9 +128,12 @@ def test_problem_definition_with_xml_ref(cleanup, caplog):
         ref_input_data_path = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
 
         # Test that the presence of NaN values in inputs logs a warning
+        caplog.clear()
         conf.write_needed_inputs(ref_input_data_path_with_nan)
-        for record in caplog.records:
-            assert record.levelname == "WARNING"
+        assert len(caplog.records) == 1
+        record = caplog.records[0]
+        assert record.levelname == "WARNING"
+        assert record.message == "The following variables have NaN values: ['x']"
 
         # Test normal process without NaN in inputs
         conf.write_needed_inputs(ref_input_data_path)
