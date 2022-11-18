@@ -112,12 +112,14 @@ class MissionWrapper(MissionBuilder):
             for part_name1, part_name2 in zip(part_names[:-1], part_names[1:]):
                 part1 = grouped_points.get_group(part_name1)
                 part2 = grouped_points.get_group(part_name2)
-                _compute_vars(f"data:mission:{part_name2}", part1.iloc[-1], part2.iloc[-1])
+                _compute_vars(
+                    f"{self.variable_prefix}:{part_name2}", part1.iloc[-1], part2.iloc[-1]
+                )
 
             start_part_name = part_names[0]
             start_part = grouped_points.get_group(start_part_name)
             _compute_vars(
-                f"data:mission:{start_part_name}", start_part.iloc[0], start_part.iloc[-1]
+                f"{self.variable_prefix}:{start_part_name}", start_part.iloc[0], start_part.iloc[-1]
             )
         del flight_points["name2"]
 
@@ -132,7 +134,7 @@ class MissionWrapper(MissionBuilder):
         :return: the name of OpenMDAO variable for fuel reserve. This name is among the declared
                  outputs in :meth:`setup`.
         """
-        return f"{self._variable_prefix}:reserve:fuel"
+        return f"{self.variable_prefix}:{self.mission_name}:reserve:fuel"
 
     def _identify_outputs(self) -> Dict[str, Tuple[str, str]]:
         """
@@ -168,8 +170,7 @@ class MissionWrapper(MissionBuilder):
 
         return output_definition
 
-    @staticmethod
-    def _add_vars(mission_name, route_name=None, phase_name=None) -> dict:
+    def _add_vars(self, mission_name, route_name=None, phase_name=None) -> dict:
         """
         Builds names of OpenMDAO outputs for provided mission, route and phase names.
 
@@ -181,7 +182,9 @@ class MissionWrapper(MissionBuilder):
         output_definition = {}
 
         name_root = ":".join(
-            name for name in ["data:mission", mission_name, route_name, phase_name] if name
+            name
+            for name in [f"{self.variable_prefix}", mission_name, route_name, phase_name]
+            if name
         )
         if route_name and phase_name:
             flight_part_desc = (
@@ -203,7 +206,3 @@ class MissionWrapper(MissionBuilder):
         )
 
         return output_definition
-
-    @property
-    def _variable_prefix(self):
-        return f"data:mission:{self.mission_name}"

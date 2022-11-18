@@ -55,18 +55,18 @@ class TestSegment(AbstractFlightSegment, mission_file_keyword="test_segment_B"):
 
 
 def test_input_definition_units():
-    inp1 = InputDefinition("anything", 1.0, input_unit="km")
+    inp1 = InputDefinition("anything", 1.0, input_unit="km", prefix="data:mission")
     assert inp1.value == 1.0
 
     inp1.output_unit = "m"
     assert inp1.value == 1000.0
 
     # When parameter name is known, its default unit is automatically set.
-    inp2 = InputDefinition("ground_distance", 1.0, input_unit="km")
+    inp2 = InputDefinition("ground_distance", 1.0, input_unit="km", prefix="data:mission")
     assert inp2.value == 1000.0
     assert not inp2.is_relative
 
-    inp3 = InputDefinition("delta_time", 1.0, input_unit="h")
+    inp3 = InputDefinition("delta_time", 1.0, input_unit="h", prefix="data:mission")
     assert inp3.parameter_name == "time"
     assert inp3.is_relative
 
@@ -405,6 +405,7 @@ def _get_expected_structure():
                                             part_identifier="operational:taxi_out",
                                             use_opposite=False,
                                             variable_name="data:mission:operational:taxi_out:duration",
+                                            prefix="data:mission",
                                         ),
                                         "mass": InputDefinition(
                                             parameter_name="mass",
@@ -415,6 +416,7 @@ def _get_expected_structure():
                                             part_identifier="operational:taxi_out",
                                             use_opposite=False,
                                             variable_name="data:mission:operational:taxi_out:TOW",
+                                            prefix="data:mission",
                                         ),
                                     },
                                     "thrust_rate": InputDefinition(
@@ -426,6 +428,7 @@ def _get_expected_structure():
                                         part_identifier="operational:taxi_out",
                                         use_opposite=False,
                                         variable_name="data:mission:operational:taxi_out:thrust_rate",
+                                        prefix="data:mission",
                                     ),
                                     "true_airspeed": InputDefinition(
                                         parameter_name="true_airspeed",
@@ -436,6 +439,7 @@ def _get_expected_structure():
                                         part_identifier="operational:taxi_out",
                                         use_opposite=False,
                                         variable_name=None,
+                                        prefix="data:mission",
                                     ),
                                     "type": "segment",
                                 }
@@ -454,6 +458,7 @@ def _get_expected_structure():
                                         part_identifier="operational:main:initial_climb",
                                         use_opposite=False,
                                         variable_name=None,
+                                        prefix="data:mission",
                                     ),
                                     "name": "operational:main:initial_climb",
                                     "parts": [
@@ -470,6 +475,7 @@ def _get_expected_structure():
                                                     part_identifier="operational:main:initial_climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                                 "equivalent_airspeed": InputDefinition(
                                                     parameter_name="equivalent_airspeed",
@@ -480,6 +486,7 @@ def _get_expected_structure():
                                                     part_identifier="operational:main:initial_climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -500,6 +507,7 @@ def _get_expected_structure():
                                                             use_opposite=False,
                                                             variable_name="data:aerodynamics:aircraft:takeoff:CL",
                                                             shape_by_conn=True,
+                                                            prefix="data:mission",
                                                         ),
                                                     ),
                                                     (
@@ -514,6 +522,7 @@ def _get_expected_structure():
                                                             use_opposite=False,
                                                             variable_name="data:aerodynamics:aircraft:takeoff:CD",
                                                             shape_by_conn=True,
+                                                            prefix="data:mission",
                                                         ),
                                                     ),
                                                 ]
@@ -529,6 +538,7 @@ def _get_expected_structure():
                                                     part_identifier="operational:main:initial_climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 )
                                             },
                                             "type": "segment",
@@ -546,6 +556,7 @@ def _get_expected_structure():
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:takeoff:CD",
                                                     shape_by_conn=True,
+                                                    prefix="data:mission",
                                                 ),
                                                 "CL": InputDefinition(
                                                     parameter_name="CL",
@@ -557,6 +568,7 @@ def _get_expected_structure():
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:takeoff:CL",
                                                     shape_by_conn=True,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "segment_type": "altitude_change",
@@ -570,6 +582,7 @@ def _get_expected_structure():
                                                     part_identifier="operational:main:initial_climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                                 "equivalent_airspeed": InputDefinition(
                                                     parameter_name="equivalent_airspeed",
@@ -580,6 +593,7 @@ def _get_expected_structure():
                                                     part_identifier="operational:main:initial_climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -595,6 +609,7 @@ def _get_expected_structure():
                                             part_identifier="operational:main:initial_climb",
                                             use_opposite=False,
                                             variable_name=None,
+                                            prefix="data:mission",
                                         ),
                                         "CL": InputDefinition(
                                             parameter_name="CL",
@@ -605,6 +620,7 @@ def _get_expected_structure():
                                             part_identifier="operational:main:initial_climb",
                                             use_opposite=False,
                                             variable_name=None,
+                                            prefix="data:mission",
                                         ),
                                     },
                                     "thrust_rate": InputDefinition(
@@ -616,6 +632,7 @@ def _get_expected_structure():
                                         part_identifier="operational:main:initial_climb",
                                         use_opposite=False,
                                         variable_name="data:propulsion:initial_climb:thrust_rate",
+                                        prefix="data:mission",
                                     ),
                                     "time_step": InputDefinition(
                                         parameter_name="time_step",
@@ -626,6 +643,7 @@ def _get_expected_structure():
                                         part_identifier="operational:main:initial_climb",
                                         use_opposite=False,
                                         variable_name="settings:mission:operational:main:initial_climb:time_step",
+                                        prefix="data:mission",
                                     ),
                                     "type": "phase",
                                 },
@@ -639,6 +657,7 @@ def _get_expected_structure():
                                         part_identifier="operational:main:climb",
                                         use_opposite=False,
                                         variable_name=None,
+                                        prefix="data:mission",
                                     ),
                                     "name": "operational:main:climb",
                                     "parts": [
@@ -655,6 +674,7 @@ def _get_expected_structure():
                                                     part_identifier="operational:main:climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                                 "equivalent_airspeed": InputDefinition(
                                                     parameter_name="equivalent_airspeed",
@@ -665,6 +685,7 @@ def _get_expected_structure():
                                                     part_identifier="operational:main:climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -682,6 +703,7 @@ def _get_expected_structure():
                                                     part_identifier="operational:main:climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 )
                                             },
                                             "type": "segment",
@@ -699,6 +721,7 @@ def _get_expected_structure():
                                                     part_identifier="operational:main:climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                                 "mach": InputDefinition(
                                                     parameter_name="mach",
@@ -709,6 +732,7 @@ def _get_expected_structure():
                                                     part_identifier="operational:main:climb",
                                                     use_opposite=False,
                                                     variable_name="data:TLAR:cruise_mach",
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -726,6 +750,7 @@ def _get_expected_structure():
                                                     part_identifier="operational:main:climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                                 "mach": InputDefinition(
                                                     parameter_name="mach",
@@ -736,6 +761,7 @@ def _get_expected_structure():
                                                     part_identifier="operational:main:climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -755,6 +781,7 @@ def _get_expected_structure():
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CL",
                                                     shape_by_conn=True,
+                                                    prefix="data:mission",
                                                 ),
                                             ),
                                             (
@@ -769,6 +796,7 @@ def _get_expected_structure():
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CD",
                                                     shape_by_conn=True,
+                                                    prefix="data:mission",
                                                 ),
                                             ),
                                         ]
@@ -782,6 +810,7 @@ def _get_expected_structure():
                                         part_identifier="operational:main:climb",
                                         use_opposite=False,
                                         variable_name="data:propulsion:climb:thrust_rate",
+                                        prefix="data:mission",
                                     ),
                                     "time_step": InputDefinition(
                                         parameter_name="time_step",
@@ -792,6 +821,7 @@ def _get_expected_structure():
                                         part_identifier="operational:main:climb",
                                         use_opposite=False,
                                         variable_name="data:mission:operational:main:climb:time_step",
+                                        prefix="data:mission",
                                     ),
                                     "type": "phase",
                                 },
@@ -806,6 +836,7 @@ def _get_expected_structure():
                                     part_identifier="operational:main:cruise",
                                     use_opposite=False,
                                     variable_name=None,
+                                    prefix="data:mission",
                                 ),
                                 "name": "operational:main:cruise",
                                 "polar": OrderedDict(
@@ -822,6 +853,7 @@ def _get_expected_structure():
                                                 use_opposite=False,
                                                 variable_name="data:aerodynamics:aircraft:cruise:CL",
                                                 shape_by_conn=True,
+                                                prefix="data:mission",
                                             ),
                                         ),
                                         (
@@ -836,6 +868,7 @@ def _get_expected_structure():
                                                 use_opposite=False,
                                                 variable_name="data:aerodynamics:aircraft:cruise:CD",
                                                 shape_by_conn=True,
+                                                prefix="data:mission",
                                             ),
                                         ),
                                     ]
@@ -854,6 +887,7 @@ def _get_expected_structure():
                                         part_identifier="operational:main:descent",
                                         use_opposite=False,
                                         variable_name=None,
+                                        prefix="data:mission",
                                     ),
                                     "name": "operational:main:descent",
                                     "parts": [
@@ -870,6 +904,7 @@ def _get_expected_structure():
                                                     part_identifier="operational:main:descent",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                                 "mach": InputDefinition(
                                                     parameter_name="mach",
@@ -880,6 +915,7 @@ def _get_expected_structure():
                                                     part_identifier="operational:main:descent",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -897,6 +933,7 @@ def _get_expected_structure():
                                                     part_identifier="operational:main:descent",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                                 "equivalent_airspeed": InputDefinition(
                                                     parameter_name="equivalent_airspeed",
@@ -907,6 +944,7 @@ def _get_expected_structure():
                                                     part_identifier="operational:main:descent",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -924,6 +962,7 @@ def _get_expected_structure():
                                                     part_identifier="operational:main:descent",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 )
                                             },
                                             "type": "segment",
@@ -941,6 +980,7 @@ def _get_expected_structure():
                                                     part_identifier="operational:main:descent",
                                                     use_opposite=False,
                                                     variable_name="data:mission:operational:main:descent:final_altitude",
+                                                    prefix="data:mission",
                                                 ),
                                                 "equivalent_airspeed": InputDefinition(
                                                     parameter_name="equivalent_airspeed",
@@ -951,6 +991,7 @@ def _get_expected_structure():
                                                     part_identifier="operational:main:descent",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -970,6 +1011,7 @@ def _get_expected_structure():
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CL",
                                                     shape_by_conn=True,
+                                                    prefix="data:mission",
                                                 ),
                                             ),
                                             (
@@ -984,6 +1026,7 @@ def _get_expected_structure():
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CD",
                                                     shape_by_conn=True,
+                                                    prefix="data:mission",
                                                 ),
                                             ),
                                         ]
@@ -997,6 +1040,7 @@ def _get_expected_structure():
                                         part_identifier="operational:main:descent",
                                         use_opposite=False,
                                         variable_name="data:propulsion:descent:thrust_rate",
+                                        prefix="data:mission",
                                     ),
                                     "type": "phase",
                                 }
@@ -1010,6 +1054,7 @@ def _get_expected_structure():
                                 part_identifier="operational:main",
                                 use_opposite=False,
                                 variable_name=None,
+                                prefix="data:mission",
                             ),
                             "name": "operational:main",
                             "range": InputDefinition(
@@ -1021,6 +1066,7 @@ def _get_expected_structure():
                                 part_identifier="operational:main",
                                 use_opposite=False,
                                 variable_name="data:mission:operational:main:range",
+                                prefix="data:mission",
                             ),
                             "type": "route",
                         },
@@ -1040,6 +1086,7 @@ def _get_expected_structure():
                                             part_identifier="operational:taxi_in",
                                             use_opposite=False,
                                             variable_name="data:mission:operational:taxi_in:duration",
+                                            prefix="data:mission",
                                         )
                                     },
                                     "true_airspeed": InputDefinition(
@@ -1051,6 +1098,7 @@ def _get_expected_structure():
                                         part_identifier="operational:taxi_in",
                                         use_opposite=False,
                                         variable_name=None,
+                                        prefix="data:mission",
                                     ),
                                     "type": "segment",
                                 }
@@ -1064,6 +1112,7 @@ def _get_expected_structure():
                                 part_identifier="operational:taxi_in",
                                 use_opposite=False,
                                 variable_name="data:mission:operational:taxi_in:thrust_rate",
+                                prefix="data:mission",
                             ),
                             "type": "phase",
                         },
@@ -1079,6 +1128,7 @@ def _get_expected_structure():
                                     part_identifier="operational",
                                     use_opposite=False,
                                     variable_name=None,
+                                    prefix="data:mission",
                                 ),
                                 "ref": InputDefinition(
                                     parameter_name="ref",
@@ -1089,6 +1139,7 @@ def _get_expected_structure():
                                     part_identifier="operational",
                                     use_opposite=False,
                                     variable_name=None,
+                                    prefix="data:mission",
                                 ),
                             },
                         },
@@ -1123,6 +1174,7 @@ def _get_expected_structure():
                                                     shape_by_conn=False,
                                                     use_opposite=False,
                                                     variable_name="data:mission:sizing:taxi_out:altitude",
+                                                    prefix="data:mission",
                                                 ),
                                                 "true_airspeed": InputDefinition(
                                                     parameter_name="true_airspeed",
@@ -1135,6 +1187,7 @@ def _get_expected_structure():
                                                     shape_by_conn=False,
                                                     use_opposite=False,
                                                     variable_name="data:mission:sizing:taxi_out:true_airspeed",
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -1154,6 +1207,7 @@ def _get_expected_structure():
                                                     shape_by_conn=False,
                                                     use_opposite=False,
                                                     variable_name="data:mission:sizing:taxi_out:duration",
+                                                    prefix="data:mission",
                                                 )
                                             },
                                             "thrust_rate": InputDefinition(
@@ -1167,6 +1221,7 @@ def _get_expected_structure():
                                                 shape_by_conn=False,
                                                 use_opposite=False,
                                                 variable_name="data:mission:sizing:taxi_out:thrust_rate",
+                                                prefix="data:mission",
                                             ),
                                             "time_step": InputDefinition(
                                                 parameter_name="time_step",
@@ -1179,6 +1234,7 @@ def _get_expected_structure():
                                                 shape_by_conn=False,
                                                 use_opposite=False,
                                                 variable_name="settings:mission:sizing:taxi_out:time_step",
+                                                prefix="data:mission",
                                             ),
                                             "true_airspeed": InputDefinition(
                                                 parameter_name="true_airspeed",
@@ -1191,6 +1247,7 @@ def _get_expected_structure():
                                                 shape_by_conn=False,
                                                 use_opposite=False,
                                                 variable_name="data:mission:sizing:taxi_out:true_airspeed",
+                                                prefix="data:mission",
                                             ),
                                             "type": "segment",
                                         },
@@ -1220,6 +1277,7 @@ def _get_expected_structure():
                                                     shape_by_conn=False,
                                                     use_opposite=False,
                                                     variable_name="data:mission:sizing:takeoff:safety_altitude",
+                                                    prefix="data:mission",
                                                 ),
                                                 "delta_mass": InputDefinition(
                                                     parameter_name="mass",
@@ -1232,6 +1290,7 @@ def _get_expected_structure():
                                                     shape_by_conn=False,
                                                     use_opposite=True,
                                                     variable_name="data:mission:sizing:takeoff:fuel",
+                                                    prefix="data:mission",
                                                 ),
                                                 "time": InputDefinition(
                                                     parameter_name="time",
@@ -1244,6 +1303,7 @@ def _get_expected_structure():
                                                     shape_by_conn=False,
                                                     use_opposite=False,
                                                     variable_name="data:mission:sizing:takeoff:duration",
+                                                    prefix="data:mission",
                                                 ),
                                                 "true_airspeed": InputDefinition(
                                                     parameter_name="true_airspeed",
@@ -1256,6 +1316,7 @@ def _get_expected_structure():
                                                     shape_by_conn=False,
                                                     use_opposite=False,
                                                     variable_name="data:mission:sizing:takeoff:V2",
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -1275,6 +1336,7 @@ def _get_expected_structure():
                                                     shape_by_conn=False,
                                                     use_opposite=False,
                                                     variable_name="data:mission:sizing:TOW",
+                                                    prefix="data:mission",
                                                 )
                                             },
                                             "type": "segment",
@@ -1297,6 +1359,7 @@ def _get_expected_structure():
                                         part_identifier="sizing:main:initial_climb",
                                         use_opposite=False,
                                         variable_name=None,
+                                        prefix="data:mission",
                                     ),
                                     "name": "sizing:main:initial_climb",
                                     "parts": [
@@ -1313,6 +1376,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:main:initial_climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                                 "equivalent_airspeed": InputDefinition(
                                                     parameter_name="equivalent_airspeed",
@@ -1323,6 +1387,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:main:initial_climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -1343,6 +1408,7 @@ def _get_expected_structure():
                                                             use_opposite=False,
                                                             variable_name="data:aerodynamics:aircraft:takeoff:CL",
                                                             shape_by_conn=True,
+                                                            prefix="data:mission",
                                                         ),
                                                     ),
                                                     (
@@ -1357,6 +1423,7 @@ def _get_expected_structure():
                                                             use_opposite=False,
                                                             variable_name="data:aerodynamics:aircraft:takeoff:CD",
                                                             shape_by_conn=True,
+                                                            prefix="data:mission",
                                                         ),
                                                     ),
                                                 ]
@@ -1372,6 +1439,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:main:initial_climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 )
                                             },
                                             "type": "segment",
@@ -1389,6 +1457,7 @@ def _get_expected_structure():
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:takeoff:CD",
                                                     shape_by_conn=True,
+                                                    prefix="data:mission",
                                                 ),
                                                 "CL": InputDefinition(
                                                     parameter_name="CL",
@@ -1400,6 +1469,7 @@ def _get_expected_structure():
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:takeoff:CL",
                                                     shape_by_conn=True,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "segment_type": "altitude_change",
@@ -1413,6 +1483,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:main:initial_climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                                 "equivalent_airspeed": InputDefinition(
                                                     parameter_name="equivalent_airspeed",
@@ -1423,6 +1494,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:main:initial_climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -1438,6 +1510,7 @@ def _get_expected_structure():
                                             part_identifier="sizing:main:initial_climb",
                                             use_opposite=False,
                                             variable_name=None,
+                                            prefix="data:mission",
                                         ),
                                         "CL": InputDefinition(
                                             parameter_name="CL",
@@ -1448,6 +1521,7 @@ def _get_expected_structure():
                                             part_identifier="sizing:main:initial_climb",
                                             use_opposite=False,
                                             variable_name=None,
+                                            prefix="data:mission",
                                         ),
                                     },
                                     "thrust_rate": InputDefinition(
@@ -1459,6 +1533,7 @@ def _get_expected_structure():
                                         part_identifier="sizing:main:initial_climb",
                                         use_opposite=False,
                                         variable_name="data:propulsion:initial_climb:thrust_rate",
+                                        prefix="data:mission",
                                     ),
                                     "time_step": InputDefinition(
                                         parameter_name="time_step",
@@ -1469,6 +1544,7 @@ def _get_expected_structure():
                                         part_identifier="sizing:main:initial_climb",
                                         use_opposite=False,
                                         variable_name="settings:mission:sizing:main:initial_climb:time_step",
+                                        prefix="data:mission",
                                     ),
                                     "type": "phase",
                                 },
@@ -1482,6 +1558,7 @@ def _get_expected_structure():
                                         part_identifier="sizing:main:climb",
                                         use_opposite=False,
                                         variable_name=None,
+                                        prefix="data:mission",
                                     ),
                                     "name": "sizing:main:climb",
                                     "parts": [
@@ -1498,6 +1575,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:main:climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                                 "equivalent_airspeed": InputDefinition(
                                                     parameter_name="equivalent_airspeed",
@@ -1508,6 +1586,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:main:climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -1525,6 +1604,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:main:climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 )
                                             },
                                             "type": "segment",
@@ -1542,6 +1622,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:main:climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                                 "mach": InputDefinition(
                                                     parameter_name="mach",
@@ -1552,6 +1633,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:main:climb",
                                                     use_opposite=False,
                                                     variable_name="data:TLAR:cruise_mach",
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -1569,6 +1651,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:main:climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                                 "mach": InputDefinition(
                                                     parameter_name="mach",
@@ -1579,6 +1662,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:main:climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -1598,6 +1682,7 @@ def _get_expected_structure():
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CL",
                                                     shape_by_conn=True,
+                                                    prefix="data:mission",
                                                 ),
                                             ),
                                             (
@@ -1612,6 +1697,7 @@ def _get_expected_structure():
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CD",
                                                     shape_by_conn=True,
+                                                    prefix="data:mission",
                                                 ),
                                             ),
                                         ]
@@ -1625,6 +1711,7 @@ def _get_expected_structure():
                                         part_identifier="sizing:main:climb",
                                         use_opposite=False,
                                         variable_name="data:propulsion:climb:thrust_rate",
+                                        prefix="data:mission",
                                     ),
                                     "time_step": InputDefinition(
                                         parameter_name="time_step",
@@ -1635,6 +1722,7 @@ def _get_expected_structure():
                                         part_identifier="sizing:main:climb",
                                         use_opposite=False,
                                         variable_name="data:mission:sizing:main:climb:time_step",
+                                        prefix="data:mission",
                                     ),
                                     "type": "phase",
                                 },
@@ -1649,6 +1737,7 @@ def _get_expected_structure():
                                     part_identifier="sizing:main:cruise",
                                     use_opposite=False,
                                     variable_name=None,
+                                    prefix="data:mission",
                                 ),
                                 "name": "sizing:main:cruise",
                                 "polar": OrderedDict(
@@ -1665,6 +1754,7 @@ def _get_expected_structure():
                                                 use_opposite=False,
                                                 variable_name="data:aerodynamics:aircraft:cruise:CL",
                                                 shape_by_conn=True,
+                                                prefix="data:mission",
                                             ),
                                         ),
                                         (
@@ -1679,6 +1769,7 @@ def _get_expected_structure():
                                                 use_opposite=False,
                                                 variable_name="data:aerodynamics:aircraft:cruise:CD",
                                                 shape_by_conn=True,
+                                                prefix="data:mission",
                                             ),
                                         ),
                                     ]
@@ -1697,6 +1788,7 @@ def _get_expected_structure():
                                         part_identifier="sizing:main:descent",
                                         use_opposite=False,
                                         variable_name=None,
+                                        prefix="data:mission",
                                     ),
                                     "name": "sizing:main:descent",
                                     "parts": [
@@ -1713,6 +1805,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:main:descent",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                                 "mach": InputDefinition(
                                                     parameter_name="mach",
@@ -1723,6 +1816,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:main:descent",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -1740,6 +1834,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:main:descent",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                                 "equivalent_airspeed": InputDefinition(
                                                     parameter_name="equivalent_airspeed",
@@ -1750,6 +1845,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:main:descent",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -1767,6 +1863,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:main:descent",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 )
                                             },
                                             "type": "segment",
@@ -1784,6 +1881,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:main:descent",
                                                     use_opposite=False,
                                                     variable_name="data:mission:sizing:main:descent:final_altitude",
+                                                    prefix="data:mission",
                                                 ),
                                                 "equivalent_airspeed": InputDefinition(
                                                     parameter_name="equivalent_airspeed",
@@ -1794,6 +1892,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:main:descent",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -1813,6 +1912,7 @@ def _get_expected_structure():
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CL",
                                                     shape_by_conn=True,
+                                                    prefix="data:mission",
                                                 ),
                                             ),
                                             (
@@ -1827,6 +1927,7 @@ def _get_expected_structure():
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CD",
                                                     shape_by_conn=True,
+                                                    prefix="data:mission",
                                                 ),
                                             ),
                                         ]
@@ -1840,6 +1941,7 @@ def _get_expected_structure():
                                         part_identifier="sizing:main:descent",
                                         use_opposite=False,
                                         variable_name="data:propulsion:descent:thrust_rate",
+                                        prefix="data:mission",
                                     ),
                                     "type": "phase",
                                 }
@@ -1853,6 +1955,7 @@ def _get_expected_structure():
                                 part_identifier="sizing:main",
                                 use_opposite=False,
                                 variable_name=None,
+                                prefix="data:mission",
                             ),
                             "name": "sizing:main",
                             "range": InputDefinition(
@@ -1864,6 +1967,7 @@ def _get_expected_structure():
                                 part_identifier="sizing:main",
                                 use_opposite=False,
                                 variable_name="data:mission:sizing:main:range",
+                                prefix="data:mission",
                             ),
                             "type": "route",
                         },
@@ -1879,6 +1983,7 @@ def _get_expected_structure():
                                         part_identifier="sizing:diversion:diversion_climb",
                                         use_opposite=False,
                                         variable_name=None,
+                                        prefix="data:mission",
                                     ),
                                     "name": "sizing:diversion:diversion_climb",
                                     "parts": [
@@ -1895,6 +2000,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:diversion:diversion_climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                                 "equivalent_airspeed": InputDefinition(
                                                     parameter_name="equivalent_airspeed",
@@ -1905,6 +2011,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:diversion:diversion_climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -1922,6 +2029,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:diversion:diversion_climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 )
                                             },
                                             "type": "segment",
@@ -1939,6 +2047,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:diversion:diversion_climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                                 "equivalent_airspeed": InputDefinition(
                                                     parameter_name="equivalent_airspeed",
@@ -1949,6 +2058,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:diversion:diversion_climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -1968,6 +2078,7 @@ def _get_expected_structure():
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CL",
                                                     shape_by_conn=True,
+                                                    prefix="data:mission",
                                                 ),
                                             ),
                                             (
@@ -1982,6 +2093,7 @@ def _get_expected_structure():
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CD",
                                                     shape_by_conn=True,
+                                                    prefix="data:mission",
                                                 ),
                                             ),
                                         ]
@@ -1995,6 +2107,7 @@ def _get_expected_structure():
                                         part_identifier="sizing:diversion:diversion_climb",
                                         use_opposite=False,
                                         variable_name=None,
+                                        prefix="data:mission",
                                     ),
                                     "time_step": InputDefinition(
                                         parameter_name="time_step",
@@ -2005,6 +2118,7 @@ def _get_expected_structure():
                                         part_identifier="sizing:diversion:diversion_climb",
                                         use_opposite=False,
                                         variable_name="settings:mission:sizing:diversion:diversion_climb:t_step",
+                                        prefix="data:mission",
                                     ),
                                     "type": "phase",
                                 }
@@ -2019,6 +2133,7 @@ def _get_expected_structure():
                                     part_identifier="sizing:diversion:cruise",
                                     use_opposite=False,
                                     variable_name=None,
+                                    prefix="data:mission",
                                 ),
                                 "name": "sizing:diversion:cruise",
                                 "polar": OrderedDict(
@@ -2035,6 +2150,7 @@ def _get_expected_structure():
                                                 use_opposite=False,
                                                 variable_name="data:aerodynamics:aircraft:cruise:CL",
                                                 shape_by_conn=True,
+                                                prefix="data:mission",
                                             ),
                                         ),
                                         (
@@ -2049,6 +2165,7 @@ def _get_expected_structure():
                                                 use_opposite=False,
                                                 variable_name="data:aerodynamics:aircraft:cruise:CD",
                                                 shape_by_conn=True,
+                                                prefix="data:mission",
                                             ),
                                         ),
                                     ]
@@ -2067,6 +2184,7 @@ def _get_expected_structure():
                                         part_identifier="sizing:diversion:descent",
                                         use_opposite=False,
                                         variable_name=None,
+                                        prefix="data:mission",
                                     ),
                                     "name": "sizing:diversion:descent",
                                     "parts": [
@@ -2083,6 +2201,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:diversion:descent",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                                 "mach": InputDefinition(
                                                     parameter_name="mach",
@@ -2093,6 +2212,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:diversion:descent",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -2110,6 +2230,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:diversion:descent",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                                 "equivalent_airspeed": InputDefinition(
                                                     parameter_name="equivalent_airspeed",
@@ -2120,6 +2241,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:diversion:descent",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -2137,6 +2259,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:diversion:descent",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 )
                                             },
                                             "type": "segment",
@@ -2154,6 +2277,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:diversion:descent",
                                                     use_opposite=False,
                                                     variable_name="data:mission:sizing:diversion:descent:final_altitude",
+                                                    prefix="data:mission",
                                                 ),
                                                 "equivalent_airspeed": InputDefinition(
                                                     parameter_name="equivalent_airspeed",
@@ -2164,6 +2288,7 @@ def _get_expected_structure():
                                                     part_identifier="sizing:diversion:descent",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -2183,6 +2308,7 @@ def _get_expected_structure():
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CL",
                                                     shape_by_conn=True,
+                                                    prefix="data:mission",
                                                 ),
                                             ),
                                             (
@@ -2197,6 +2323,7 @@ def _get_expected_structure():
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CD",
                                                     shape_by_conn=True,
+                                                    prefix="data:mission",
                                                 ),
                                             ),
                                         ]
@@ -2210,6 +2337,7 @@ def _get_expected_structure():
                                         part_identifier="sizing:diversion:descent",
                                         use_opposite=False,
                                         variable_name="data:propulsion:descent:thrust_rate",
+                                        prefix="data:mission",
                                     ),
                                     "type": "phase",
                                 }
@@ -2223,6 +2351,7 @@ def _get_expected_structure():
                                 part_identifier="sizing:diversion",
                                 use_opposite=False,
                                 variable_name=None,
+                                prefix="data:mission",
                             ),
                             "name": "sizing:diversion",
                             "range": InputDefinition(
@@ -2234,6 +2363,7 @@ def _get_expected_structure():
                                 part_identifier="sizing:diversion",
                                 use_opposite=False,
                                 variable_name="data:mission:sizing:diversion:range",
+                                prefix="data:mission",
                             ),
                             "type": "route",
                         },
@@ -2256,6 +2386,7 @@ def _get_expected_structure():
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CL",
                                                     shape_by_conn=True,
+                                                    prefix="data:mission",
                                                 ),
                                             ),
                                             (
@@ -2270,6 +2401,7 @@ def _get_expected_structure():
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CD",
                                                     shape_by_conn=True,
+                                                    prefix="data:mission",
                                                 ),
                                             ),
                                         ]
@@ -2285,6 +2417,7 @@ def _get_expected_structure():
                                             part_identifier="sizing:holding",
                                             use_opposite=False,
                                             variable_name="data:mission:sizing:holding:duration",
+                                            prefix="data:mission",
                                         )
                                     },
                                     "type": "segment",
@@ -2308,6 +2441,7 @@ def _get_expected_structure():
                                             part_identifier="sizing:taxi_in",
                                             use_opposite=False,
                                             variable_name="data:mission:sizing:taxi_in:duration",
+                                            prefix="data:mission",
                                         )
                                     },
                                     "true_airspeed": InputDefinition(
@@ -2319,6 +2453,7 @@ def _get_expected_structure():
                                         part_identifier="sizing:taxi_in",
                                         use_opposite=False,
                                         variable_name=None,
+                                        prefix="data:mission",
                                     ),
                                     "type": "segment",
                                 }
@@ -2332,6 +2467,7 @@ def _get_expected_structure():
                                 part_identifier="sizing:taxi_in",
                                 use_opposite=False,
                                 variable_name="data:mission:sizing:taxi_in:thrust_rate",
+                                prefix="data:mission",
                             ),
                             "type": "phase",
                         },
@@ -2347,6 +2483,7 @@ def _get_expected_structure():
                                     part_identifier="sizing",
                                     use_opposite=False,
                                     variable_name=None,
+                                    prefix="data:mission",
                                 ),
                                 "ref": InputDefinition(
                                     parameter_name="ref",
@@ -2357,6 +2494,7 @@ def _get_expected_structure():
                                     part_identifier="sizing",
                                     use_opposite=False,
                                     variable_name=None,
+                                    prefix="data:mission",
                                 ),
                             },
                         },
@@ -2387,6 +2525,7 @@ def _get_expected_structure():
                                             part_identifier="fuel_as_objective:taxi_out",
                                             use_opposite=False,
                                             variable_name="data:mission:fuel_as_objective:taxi_out:duration",
+                                            prefix="data:mission",
                                         ),
                                         "mass": InputDefinition(
                                             parameter_name="mass",
@@ -2397,6 +2536,7 @@ def _get_expected_structure():
                                             part_identifier="fuel_as_objective:taxi_out",
                                             use_opposite=False,
                                             variable_name="data:mission:fuel_as_objective:taxi_out:TOW",
+                                            prefix="data:mission",
                                         ),
                                     },
                                     "thrust_rate": InputDefinition(
@@ -2408,6 +2548,7 @@ def _get_expected_structure():
                                         part_identifier="fuel_as_objective:taxi_out",
                                         use_opposite=False,
                                         variable_name="data:mission:fuel_as_objective:taxi_out:thrust_rate",
+                                        prefix="data:mission",
                                     ),
                                     "true_airspeed": InputDefinition(
                                         parameter_name="true_airspeed",
@@ -2418,6 +2559,7 @@ def _get_expected_structure():
                                         part_identifier="fuel_as_objective:taxi_out",
                                         use_opposite=False,
                                         variable_name=None,
+                                        prefix="data:mission",
                                     ),
                                     "type": "segment",
                                 }
@@ -2436,6 +2578,7 @@ def _get_expected_structure():
                                         part_identifier="fuel_as_objective:main:initial_climb",
                                         use_opposite=False,
                                         variable_name=None,
+                                        prefix="data:mission",
                                     ),
                                     "name": "fuel_as_objective:main:initial_climb",
                                     "parts": [
@@ -2452,6 +2595,7 @@ def _get_expected_structure():
                                                     part_identifier="fuel_as_objective:main:initial_climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                                 "equivalent_airspeed": InputDefinition(
                                                     parameter_name="equivalent_airspeed",
@@ -2462,6 +2606,7 @@ def _get_expected_structure():
                                                     part_identifier="fuel_as_objective:main:initial_climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -2482,6 +2627,7 @@ def _get_expected_structure():
                                                             use_opposite=False,
                                                             variable_name="data:aerodynamics:aircraft:takeoff:CL",
                                                             shape_by_conn=True,
+                                                            prefix="data:mission",
                                                         ),
                                                     ),
                                                     (
@@ -2496,6 +2642,7 @@ def _get_expected_structure():
                                                             use_opposite=False,
                                                             variable_name="data:aerodynamics:aircraft:takeoff:CD",
                                                             shape_by_conn=True,
+                                                            prefix="data:mission",
                                                         ),
                                                     ),
                                                 ]
@@ -2511,6 +2658,7 @@ def _get_expected_structure():
                                                     part_identifier="fuel_as_objective:main:initial_climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 )
                                             },
                                             "type": "segment",
@@ -2528,6 +2676,7 @@ def _get_expected_structure():
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:takeoff:CD",
                                                     shape_by_conn=True,
+                                                    prefix="data:mission",
                                                 ),
                                                 "CL": InputDefinition(
                                                     parameter_name="CL",
@@ -2539,6 +2688,7 @@ def _get_expected_structure():
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:takeoff:CL",
                                                     shape_by_conn=True,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "segment_type": "altitude_change",
@@ -2552,6 +2702,7 @@ def _get_expected_structure():
                                                     part_identifier="fuel_as_objective:main:initial_climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                                 "equivalent_airspeed": InputDefinition(
                                                     parameter_name="equivalent_airspeed",
@@ -2562,6 +2713,7 @@ def _get_expected_structure():
                                                     part_identifier="fuel_as_objective:main:initial_climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -2577,6 +2729,7 @@ def _get_expected_structure():
                                             part_identifier="fuel_as_objective:main:initial_climb",
                                             use_opposite=False,
                                             variable_name=None,
+                                            prefix="data:mission",
                                         ),
                                         "CL": InputDefinition(
                                             parameter_name="CL",
@@ -2587,6 +2740,7 @@ def _get_expected_structure():
                                             part_identifier="fuel_as_objective:main:initial_climb",
                                             use_opposite=False,
                                             variable_name=None,
+                                            prefix="data:mission",
                                         ),
                                     },
                                     "thrust_rate": InputDefinition(
@@ -2598,6 +2752,7 @@ def _get_expected_structure():
                                         part_identifier="fuel_as_objective:main:initial_climb",
                                         use_opposite=False,
                                         variable_name="data:propulsion:initial_climb:thrust_rate",
+                                        prefix="data:mission",
                                     ),
                                     "time_step": InputDefinition(
                                         parameter_name="time_step",
@@ -2608,6 +2763,7 @@ def _get_expected_structure():
                                         part_identifier="fuel_as_objective:main:initial_climb",
                                         use_opposite=False,
                                         variable_name="settings:mission:fuel_as_objective:main:initial_climb:time_step",
+                                        prefix="data:mission",
                                     ),
                                     "type": "phase",
                                 },
@@ -2621,6 +2777,7 @@ def _get_expected_structure():
                                         part_identifier="fuel_as_objective:main:climb",
                                         use_opposite=False,
                                         variable_name=None,
+                                        prefix="data:mission",
                                     ),
                                     "name": "fuel_as_objective:main:climb",
                                     "parts": [
@@ -2637,6 +2794,7 @@ def _get_expected_structure():
                                                     part_identifier="fuel_as_objective:main:climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                                 "equivalent_airspeed": InputDefinition(
                                                     parameter_name="equivalent_airspeed",
@@ -2647,6 +2805,7 @@ def _get_expected_structure():
                                                     part_identifier="fuel_as_objective:main:climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -2664,6 +2823,7 @@ def _get_expected_structure():
                                                     part_identifier="fuel_as_objective:main:climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 )
                                             },
                                             "type": "segment",
@@ -2681,6 +2841,7 @@ def _get_expected_structure():
                                                     part_identifier="fuel_as_objective:main:climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                                 "mach": InputDefinition(
                                                     parameter_name="mach",
@@ -2691,6 +2852,7 @@ def _get_expected_structure():
                                                     part_identifier="fuel_as_objective:main:climb",
                                                     use_opposite=False,
                                                     variable_name="data:TLAR:cruise_mach",
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -2708,6 +2870,7 @@ def _get_expected_structure():
                                                     part_identifier="fuel_as_objective:main:climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                                 "mach": InputDefinition(
                                                     parameter_name="mach",
@@ -2718,6 +2881,7 @@ def _get_expected_structure():
                                                     part_identifier="fuel_as_objective:main:climb",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -2737,6 +2901,7 @@ def _get_expected_structure():
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CL",
                                                     shape_by_conn=True,
+                                                    prefix="data:mission",
                                                 ),
                                             ),
                                             (
@@ -2751,6 +2916,7 @@ def _get_expected_structure():
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CD",
                                                     shape_by_conn=True,
+                                                    prefix="data:mission",
                                                 ),
                                             ),
                                         ]
@@ -2764,6 +2930,7 @@ def _get_expected_structure():
                                         part_identifier="fuel_as_objective:main:climb",
                                         use_opposite=False,
                                         variable_name="data:propulsion:climb:thrust_rate",
+                                        prefix="data:mission",
                                     ),
                                     "time_step": InputDefinition(
                                         parameter_name="time_step",
@@ -2774,6 +2941,7 @@ def _get_expected_structure():
                                         part_identifier="fuel_as_objective:main:climb",
                                         use_opposite=False,
                                         variable_name="data:mission:fuel_as_objective:main:climb:time_step",
+                                        prefix="data:mission",
                                     ),
                                     "type": "phase",
                                 },
@@ -2788,6 +2956,7 @@ def _get_expected_structure():
                                     part_identifier="fuel_as_objective:main:cruise",
                                     use_opposite=False,
                                     variable_name=None,
+                                    prefix="data:mission",
                                 ),
                                 "name": "fuel_as_objective:main:cruise",
                                 "polar": OrderedDict(
@@ -2804,6 +2973,7 @@ def _get_expected_structure():
                                                 use_opposite=False,
                                                 variable_name="data:aerodynamics:aircraft:cruise:CL",
                                                 shape_by_conn=True,
+                                                prefix="data:mission",
                                             ),
                                         ),
                                         (
@@ -2818,6 +2988,7 @@ def _get_expected_structure():
                                                 use_opposite=False,
                                                 variable_name="data:aerodynamics:aircraft:cruise:CD",
                                                 shape_by_conn=True,
+                                                prefix="data:mission",
                                             ),
                                         ),
                                     ]
@@ -2836,6 +3007,7 @@ def _get_expected_structure():
                                         part_identifier="fuel_as_objective:main:descent",
                                         use_opposite=False,
                                         variable_name=None,
+                                        prefix="data:mission",
                                     ),
                                     "name": "fuel_as_objective:main:descent",
                                     "parts": [
@@ -2852,6 +3024,7 @@ def _get_expected_structure():
                                                     part_identifier="fuel_as_objective:main:descent",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                                 "mach": InputDefinition(
                                                     parameter_name="mach",
@@ -2862,6 +3035,7 @@ def _get_expected_structure():
                                                     part_identifier="fuel_as_objective:main:descent",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -2879,6 +3053,7 @@ def _get_expected_structure():
                                                     part_identifier="fuel_as_objective:main:descent",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                                 "equivalent_airspeed": InputDefinition(
                                                     parameter_name="equivalent_airspeed",
@@ -2889,6 +3064,7 @@ def _get_expected_structure():
                                                     part_identifier="fuel_as_objective:main:descent",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -2906,6 +3082,7 @@ def _get_expected_structure():
                                                     part_identifier="fuel_as_objective:main:descent",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 )
                                             },
                                             "type": "segment",
@@ -2923,6 +3100,7 @@ def _get_expected_structure():
                                                     part_identifier="fuel_as_objective:main:descent",
                                                     use_opposite=False,
                                                     variable_name="data:mission:fuel_as_objective:main:descent:final_altitude",
+                                                    prefix="data:mission",
                                                 ),
                                                 "equivalent_airspeed": InputDefinition(
                                                     parameter_name="equivalent_airspeed",
@@ -2933,6 +3111,7 @@ def _get_expected_structure():
                                                     part_identifier="fuel_as_objective:main:descent",
                                                     use_opposite=False,
                                                     variable_name=None,
+                                                    prefix="data:mission",
                                                 ),
                                             },
                                             "type": "segment",
@@ -2952,6 +3131,7 @@ def _get_expected_structure():
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CL",
                                                     shape_by_conn=True,
+                                                    prefix="data:mission",
                                                 ),
                                             ),
                                             (
@@ -2966,6 +3146,7 @@ def _get_expected_structure():
                                                     use_opposite=False,
                                                     variable_name="data:aerodynamics:aircraft:cruise:CD",
                                                     shape_by_conn=True,
+                                                    prefix="data:mission",
                                                 ),
                                             ),
                                         ]
@@ -2979,6 +3160,7 @@ def _get_expected_structure():
                                         part_identifier="fuel_as_objective:main:descent",
                                         use_opposite=False,
                                         variable_name="data:propulsion:descent:thrust_rate",
+                                        prefix="data:mission",
                                     ),
                                     "type": "phase",
                                 }
@@ -2992,6 +3174,7 @@ def _get_expected_structure():
                                 part_identifier="fuel_as_objective:main",
                                 use_opposite=False,
                                 variable_name=None,
+                                prefix="data:mission",
                             ),
                             "name": "fuel_as_objective:main",
                             "range": InputDefinition(
@@ -3003,6 +3186,7 @@ def _get_expected_structure():
                                 part_identifier="fuel_as_objective:main",
                                 use_opposite=False,
                                 variable_name="data:mission:fuel_as_objective:main:range",
+                                prefix="data:mission",
                             ),
                             "type": "route",
                         },
@@ -3022,6 +3206,7 @@ def _get_expected_structure():
                                             part_identifier="fuel_as_objective:taxi_in",
                                             use_opposite=False,
                                             variable_name="data:mission:fuel_as_objective:taxi_in:duration",
+                                            prefix="data:mission",
                                         )
                                     },
                                     "true_airspeed": InputDefinition(
@@ -3033,6 +3218,7 @@ def _get_expected_structure():
                                         part_identifier="fuel_as_objective:taxi_in",
                                         use_opposite=False,
                                         variable_name=None,
+                                        prefix="data:mission",
                                     ),
                                     "type": "segment",
                                 }
@@ -3046,6 +3232,7 @@ def _get_expected_structure():
                                 part_identifier="fuel_as_objective:taxi_in",
                                 use_opposite=False,
                                 variable_name="data:mission:fuel_as_objective:taxi_in:thrust_rate",
+                                prefix="data:mission",
                             ),
                             "type": "phase",
                         },
@@ -3061,6 +3248,7 @@ def _get_expected_structure():
                                     part_identifier="fuel_as_objective",
                                     use_opposite=False,
                                     variable_name=None,
+                                    prefix="data:mission",
                                 ),
                                 "ref": InputDefinition(
                                     parameter_name="ref",
@@ -3071,6 +3259,7 @@ def _get_expected_structure():
                                     part_identifier="fuel_as_objective",
                                     use_opposite=False,
                                     variable_name=None,
+                                    prefix="data:mission",
                                 ),
                             },
                         },
@@ -3089,6 +3278,7 @@ def _get_expected_structure():
                         shape_by_conn=False,
                         use_opposite=False,
                         variable_name=None,
+                        prefix="data:mission",
                     ),
                 ),
                 (
@@ -3104,6 +3294,7 @@ def _get_expected_structure():
                         shape_by_conn=False,
                         use_opposite=False,
                         variable_name="data:mission:fuel_as_objective:block_fuel",
+                        prefix="data:mission",
                     ),
                 ),
                 ("name", "fuel_as_objective"),
@@ -3129,6 +3320,7 @@ def _get_expected_structure():
                                         part_identifier="test:test_phase",
                                         use_opposite=False,
                                         variable_name=None,
+                                        prefix="data:mission",
                                     ),
                                     "segment_type": "test_segment_B",
                                     "type": "segment",
@@ -3142,6 +3334,7 @@ def _get_expected_structure():
                                         use_opposite=False,
                                         variable_name="some:static:array",
                                         shape_by_conn=True,
+                                        prefix="data:mission",
                                     ),
                                     "vector_parameter_2": InputDefinition(
                                         parameter_name="vector_parameter_2",
@@ -3153,6 +3346,7 @@ def _get_expected_structure():
                                         use_opposite=False,
                                         variable_name="some:dynamic:array",
                                         shape_by_conn=True,
+                                        prefix="data:mission",
                                     ),
                                     "vector_parameter_3": InputDefinition(
                                         parameter_name="vector_parameter_3",
@@ -3163,6 +3357,7 @@ def _get_expected_structure():
                                         part_identifier="test:test_phase",
                                         use_opposite=False,
                                         variable_name=None,
+                                        prefix="data:mission",
                                     ),
                                     "vector_parameter_4": InputDefinition(
                                         parameter_name="vector_parameter_4",
@@ -3173,6 +3368,7 @@ def _get_expected_structure():
                                         part_identifier="test:test_phase",
                                         use_opposite=False,
                                         variable_name=None,
+                                        prefix="data:mission",
                                     ),
                                     "target": {
                                         "altitude": InputDefinition(
@@ -3184,6 +3380,7 @@ def _get_expected_structure():
                                             part_identifier="test:test_phase",
                                             use_opposite=False,
                                             variable_name=None,
+                                            prefix="data:mission",
                                         )
                                     },
                                 },
@@ -3202,6 +3399,7 @@ def _get_expected_structure():
                                             shape_by_conn=False,
                                             use_opposite=False,
                                             variable_name="data:mission:test:test_phase:mass",
+                                            prefix="data:mission",
                                         )
                                     },
                                     "type": "segment",

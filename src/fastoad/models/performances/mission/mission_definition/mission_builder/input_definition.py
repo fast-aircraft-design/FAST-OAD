@@ -62,6 +62,9 @@ class InputDefinition:
     #: Value of the "shape_by_conn" openMDAO flag for input declaration.
     shape_by_conn: bool = False
 
+    #: Prefix used when replacement of "~" is needed.
+    prefix: str = ""
+
     #: Used only for tests
     variable_name: InitVar[Optional[str]] = None
 
@@ -118,7 +121,7 @@ class InputDefinition:
             return self.input_value
 
     @classmethod
-    def from_dict(cls, parameter_name, definition_dict: dict, part_identifier=None):
+    def from_dict(cls, parameter_name, definition_dict: dict, part_identifier=None, prefix=None):
         """
         Instantiates InputDefinition from definition_dict.
 
@@ -129,6 +132,7 @@ class InputDefinition:
         :param definition_dict: dict with keys ("value", "unit", "default"). "unit" and "default"
                                 are optional.
         :param part_identifier: used if "~" is in definition_dict["value"]
+        :param prefix: used if "~" is in definition_dict["value"]
         """
         if "value" not in definition_dict:
             return None
@@ -140,6 +144,7 @@ class InputDefinition:
             default_value=definition_dict.get("default", np.nan),
             shape_by_conn=definition_dict.get("shape_by_conn", False),
             part_identifier=part_identifier,
+            prefix=prefix,
         )
         return input_def
 
@@ -208,7 +213,7 @@ class InputDefinition:
 
                 if not prefix:
                     # If nothing before "~", a default value is used
-                    prefix = "data:mission"
+                    prefix = self.prefix
                 if not suffix:
                     # If nothing after "~", the parameter name is used
                     suffix = self.parameter_name
