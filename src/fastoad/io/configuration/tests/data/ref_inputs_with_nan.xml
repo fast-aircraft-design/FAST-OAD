@@ -14,7 +14,7 @@
   -->
 
 <aircraft>
-    <x>nan</x>
+    <x>nan</x><!-- This variable should appear in the warning for nan values -->
     <z units="m**2">5.0 2.0</z>
     <y1>nan</y1><!-- If this variable is kept in the input IVC, OpenMDAO will raise an exception because it is an output of a component
                      As it should be ignored, its NaN value should bring no harm.-->
