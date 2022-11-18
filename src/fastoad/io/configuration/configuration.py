@@ -235,7 +235,7 @@ class FASTOADProblemConfigurator:
             for var in variables:
                 var.is_input = True
                 # Checking if variables have NaN values
-                if np.all(np.isnan(var.value)):
+                if np.any(np.isnan(var.value)):
                     nan_variable_names.append(var.name)
             if nan_variable_names:
                 msg = "The following variables have NaN values: %s" % nan_variable_names
