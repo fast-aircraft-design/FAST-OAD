@@ -60,6 +60,7 @@ class MissionBuilder:
         *,
         propulsion: IPropulsion = None,
         reference_area: float = None,
+        variable_prefix: str = "data:mission",
     ):
         """
         :param mission_definition: a file path or MissionDefinition instance
@@ -69,6 +70,7 @@ class MissionBuilder:
                                set before calling :meth:`build`
         """
         self._structure_builders: Dict[str, AbstractStructureBuilder] = {}
+        self.variable_prefix = variable_prefix
         self.definition = mission_definition
         self._base_kwargs = {"reference_area": reference_area, "propulsion": propulsion}
 
@@ -90,7 +92,7 @@ class MissionBuilder:
 
         for mission_name in self._definition[MISSION_DEFINITION_TAG]:
             self._structure_builders[mission_name] = MissionStructureBuilder(
-                self._definition, mission_name
+                self._definition, mission_name, variable_prefix=self.variable_prefix
             )
 
             if self.get_input_weight_variable_name(mission_name) is None:
@@ -464,10 +466,10 @@ class MissionBuilder:
             }
         }
 
-        taxi_out = PhaseStructureBuilder(definition, "taxi_out", mission_name)
+        taxi_out = PhaseStructureBuilder(definition, "taxi_out", mission_name, self.variable_prefix)
         taxi_out_structure = self._structure_builders[mission_name].process_builder(taxi_out)
         self._structure_builders[mission_name].structure[PARTS_TAG].insert(0, taxi_out_structure)
 
-        takeoff = PhaseStructureBuilder(definition, "takeoff", mission_name)
+        takeoff = PhaseStructureBuilder(definition, "takeoff", mission_name, self.variable_prefix)
         takeoff_structure = self._structure_builders[mission_name].process_builder(takeoff)
         self._structure_builders[mission_name].structure[PARTS_TAG].insert(1, takeoff_structure)
