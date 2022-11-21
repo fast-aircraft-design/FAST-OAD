@@ -159,7 +159,7 @@ class FASTOADProblem(om.Problem):
         for name in unused_variables.names():
             del input_variables[name]
 
-        nan_variable_names = [var.name for var in input_variables if np.all(np.isnan(var.value))]
+        nan_variable_names = [var.name for var in input_variables if np.any(np.isnan(var.value))]
         if nan_variable_names:
             raise FASTOpenMDAONanInInputFile(self.input_file_path, nan_variable_names)
 

@@ -1,0 +1,23 @@
+<!--
+  ~ This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
+  ~ Copyright (C) 2021 ONERA & ISAE-SUPAERO
+  ~ FAST is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<aircraft>
+    <x>nan</x><!-- This variable should appear in the warning for nan values -->
+    <z units="m**2">5.0 2.0</z>
+    <y1>nan</y1><!-- If this variable is kept in the input IVC, OpenMDAO will raise an exception because it is an output of a component
+                     As it should be ignored, its NaN value should bring no harm.-->
+    <foo>nan</foo><!-- This totally unused variable is expected to be transferred in output file -->
+    <bar>42</bar><!-- This totally unused variable is expected to be transferred in output file -->
+</aircraft>
