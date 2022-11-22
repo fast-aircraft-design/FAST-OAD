@@ -26,9 +26,6 @@ from ..mission_component import MissionComponent
 from ..mission_wrapper import MissionWrapper
 from ...segments.base import AbstractFlightSegment
 
-# noinspection PyUnresolvedReferences
-from ...segments.start import Start
-
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
 
