@@ -89,6 +89,10 @@ def test_initialization():
         == _get_expected_structure()["operational"]
     )
     assert (
+        mission_builder._structure_builders["fuel_as_objective"].structure
+        == _get_expected_structure()["fuel_as_objective"]
+    )
+    assert (
         mission_builder._structure_builders["test"].structure == _get_expected_structure()["test"]
     )
 
@@ -209,86 +213,86 @@ def test_build():
     # "sizing" mission defines no input mass variable, so it is automatically completed
     # with default taxi_out and takeoff phases, hence the 2 additional elements
     # in mission.flight_sequence (total of 6 instead of 4).
-    assert len(mission.flight_sequence) == 6
-    assert mission.flight_sequence[0].name == "sizing:taxi_out"
-    assert mission.flight_sequence[1].name == "sizing:takeoff"
-    assert mission.flight_sequence[2].name == "sizing:main"
-    assert mission.flight_sequence[3].name == "sizing:diversion"
-    assert mission.flight_sequence[4].name == "sizing:holding"
-    assert mission.flight_sequence[5].name == "sizing:taxi_in"
+    assert len(mission) == 6
+    assert mission[0].name == "sizing:taxi_out"
+    assert mission[1].name == "sizing:takeoff"
+    assert mission[2].name == "sizing:main"
+    assert mission[3].name == "sizing:diversion"
+    assert mission[4].name == "sizing:holding"
+    assert mission[5].name == "sizing:taxi_in"
 
     # Taxi-out phase -----------------------------------------------------------
-    taxi_out_phase = mission.flight_sequence[0]
+    taxi_out_phase = mission[0]
     assert isinstance(taxi_out_phase, FlightSequence)
     assert taxi_out_phase.name == "sizing:taxi_out"
-    assert len(taxi_out_phase.flight_sequence) == 2
+    assert len(taxi_out_phase) == 2
 
-    start = taxi_out_phase.flight_sequence[0]
+    start = taxi_out_phase[0]
     assert start.name == "sizing:taxi_out"
     assert isinstance(start, Start)
-    taxi_out = taxi_out_phase.flight_sequence[1]
+    taxi_out = taxi_out_phase[1]
     assert start.name == "sizing:taxi_out"
     assert isinstance(taxi_out, TaxiSegment)
 
     # Takeoff phase -----------------------------------------------------------
-    takeoff_phase = mission.flight_sequence[1]
+    takeoff_phase = mission[1]
     assert isinstance(takeoff_phase, FlightSequence)
     assert takeoff_phase.name == "sizing:takeoff"
-    assert len(takeoff_phase.flight_sequence) == 2
+    assert len(takeoff_phase) == 2
 
-    takeoff = takeoff_phase.flight_sequence[0]
+    takeoff = takeoff_phase[0]
     assert takeoff.name == "sizing:takeoff"
     assert isinstance(takeoff, DummyTransitionSegment)
-    mass_input = takeoff_phase.flight_sequence[1]
+    mass_input = takeoff_phase[1]
     assert mass_input.name == "sizing:takeoff"
     assert isinstance(mass_input, MassTargetSegment)
 
     # Main route phase ---------------------------------------------------------
-    main_route = mission.flight_sequence[2]
+    main_route = mission[2]
     assert isinstance(main_route, FlightSequence)
-    assert len(main_route.flight_sequence) == 4
+    assert len(main_route) == 4
     assert main_route.distance_accuracy == 500.0
-    assert main_route.flight_sequence[0].name == "sizing:main:initial_climb"
-    assert main_route.flight_sequence[1].name == "sizing:main:climb"
-    assert main_route.flight_sequence[2].name == "sizing:main:cruise"
-    assert main_route.flight_sequence[3].name == "sizing:main:descent"
+    assert main_route[0].name == "sizing:main:initial_climb"
+    assert main_route[1].name == "sizing:main:climb"
+    assert main_route[2].name == "sizing:main:cruise"
+    assert main_route[3].name == "sizing:main:descent"
 
-    initial_climb = main_route.flight_sequence[0]
+    initial_climb = main_route[0]
     assert isinstance(initial_climb, FlightSequence)
-    assert len(initial_climb.flight_sequence) == 3
+    assert len(initial_climb) == 3
     # Here we test that phase parameter is distributed among segments AND that default
     # value of variable is used.
-    assert_allclose([segment.thrust_rate for segment in initial_climb.flight_sequence], 1.0)
+    assert_allclose([segment.thrust_rate for segment in initial_climb], 1.0)
 
-    climb1 = initial_climb.flight_sequence[0]
+    climb1 = initial_climb[0]
     assert isinstance(climb1, AltitudeChangeSegment)
     assert climb1.target.altitude == pytest.approx(400 * foot)
     assert climb1.target.equivalent_airspeed == "constant"
     assert_allclose(climb1.polar.definition_cl, [0.0, 0.5, 1.0])
     assert_allclose(climb1.polar.cd(), [0.0, 0.03, 0.12])
 
-    acceleration = initial_climb.flight_sequence[1]
+    acceleration = initial_climb[1]
     assert isinstance(acceleration, SpeedChangeSegment)
     assert acceleration.target.equivalent_airspeed == pytest.approx(250 * knot)
     assert_allclose(acceleration.polar.definition_cl, cl)
     assert_allclose(acceleration.polar.cd(), cd)
 
-    climb2 = initial_climb.flight_sequence[2]
+    climb2 = initial_climb[2]
     assert isinstance(climb2, AltitudeChangeSegment)
     assert_allclose(climb2.polar.definition_cl, cl)
     assert_allclose(climb2.polar.cd(), cd)
 
     # Holding phase ------------------------------------------------------------
-    holding_phase = mission.flight_sequence[4]
+    holding_phase = mission[4]
     assert isinstance(holding_phase, FlightSequence)
-    assert len(holding_phase.flight_sequence) == 1
-    holding = holding_phase.flight_sequence[0]
+    assert len(holding_phase) == 1
+    holding = holding_phase[0]
     assert isinstance(holding, HoldSegment)
 
-    taxi_in_phase = mission.flight_sequence[5]
+    taxi_in_phase = mission[5]
     assert isinstance(taxi_in_phase, FlightSequence)
-    assert len(taxi_in_phase.flight_sequence) == 1
-    taxi_in = taxi_in_phase.flight_sequence[0]
+    assert len(taxi_in_phase) == 1
+    taxi_in = taxi_in_phase[0]
     assert isinstance(taxi_in, TaxiSegment)
 
     # Check of "test" mission ##################################################
@@ -297,10 +301,10 @@ def test_build():
         "some:dynamic:array": np.linspace(0.0, 5.0, 6),
     }
     test_mission = mission_builder.build(test_inputs, mission_name="test")
-    assert len(test_mission.flight_sequence) == 1
-    assert isinstance(test_mission.flight_sequence[0], FlightSequence)
-    assert len(test_mission.flight_sequence[0].flight_sequence) == 2
-    segment = test_mission.flight_sequence[0].flight_sequence[0]
+    assert len(test_mission) == 1
+    assert isinstance(test_mission[0], FlightSequence)
+    assert len(test_mission[0]) == 2
+    segment = test_mission[0][0]
     assert isinstance(segment, TestSegment)
     assert segment.scalar_parameter == 42.0
     assert_allclose(segment.vector_parameter_1, [1.0, 2.0, 3.0])
@@ -2359,6 +2363,750 @@ def _get_expected_structure():
                     ],
                 ),
                 ("name", "sizing"),
+                ("type", "mission"),
+            ]
+        ),
+        "fuel_as_objective": OrderedDict(
+            [
+                (
+                    "parts",
+                    [
+                        {
+                            "name": "fuel_as_objective:taxi_out",
+                            "parts": [
+                                {
+                                    "name": "fuel_as_objective:taxi_out",
+                                    "segment_type": "taxi",
+                                    "target": {
+                                        "delta_time": InputDefinition(
+                                            parameter_name="time",
+                                            input_value=None,
+                                            input_unit="s",
+                                            default_value=np.nan,
+                                            is_relative=True,
+                                            part_identifier="fuel_as_objective:taxi_out",
+                                            use_opposite=False,
+                                            variable_name="data:mission:fuel_as_objective:taxi_out:duration",
+                                        ),
+                                        "mass": InputDefinition(
+                                            parameter_name="mass",
+                                            input_value=None,
+                                            input_unit="kg",
+                                            default_value=np.nan,
+                                            is_relative=False,
+                                            part_identifier="fuel_as_objective:taxi_out",
+                                            use_opposite=False,
+                                            variable_name="data:mission:fuel_as_objective:taxi_out:TOW",
+                                        ),
+                                    },
+                                    "thrust_rate": InputDefinition(
+                                        parameter_name="thrust_rate",
+                                        input_value=None,
+                                        input_unit=None,
+                                        default_value=np.nan,
+                                        is_relative=False,
+                                        part_identifier="fuel_as_objective:taxi_out",
+                                        use_opposite=False,
+                                        variable_name="data:mission:fuel_as_objective:taxi_out:thrust_rate",
+                                    ),
+                                    "true_airspeed": InputDefinition(
+                                        parameter_name="true_airspeed",
+                                        input_value=0.0,
+                                        input_unit="m/s",
+                                        default_value=np.nan,
+                                        is_relative=False,
+                                        part_identifier="fuel_as_objective:taxi_out",
+                                        use_opposite=False,
+                                        variable_name=None,
+                                    ),
+                                    "type": "segment",
+                                }
+                            ],
+                            "type": "phase",
+                        },
+                        {
+                            "climb_parts": [
+                                {
+                                    "engine_setting": InputDefinition(
+                                        parameter_name="engine_setting",
+                                        input_value="takeoff",
+                                        input_unit=None,
+                                        default_value=np.nan,
+                                        is_relative=False,
+                                        part_identifier="fuel_as_objective:main:initial_climb",
+                                        use_opposite=False,
+                                        variable_name=None,
+                                    ),
+                                    "name": "fuel_as_objective:main:initial_climb",
+                                    "parts": [
+                                        {
+                                            "name": "fuel_as_objective:main:initial_climb",
+                                            "segment_type": "altitude_change",
+                                            "target": {
+                                                "altitude": InputDefinition(
+                                                    parameter_name="altitude",
+                                                    input_value=400.0,
+                                                    input_unit="ft",
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="fuel_as_objective:main:initial_climb",
+                                                    use_opposite=False,
+                                                    variable_name=None,
+                                                ),
+                                                "equivalent_airspeed": InputDefinition(
+                                                    parameter_name="equivalent_airspeed",
+                                                    input_value="constant",
+                                                    input_unit="m/s",
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="fuel_as_objective:main:initial_climb",
+                                                    use_opposite=False,
+                                                    variable_name=None,
+                                                ),
+                                            },
+                                            "type": "segment",
+                                        },
+                                        {
+                                            "name": "fuel_as_objective:main:initial_climb",
+                                            "polar": OrderedDict(
+                                                [
+                                                    (
+                                                        "CL",
+                                                        InputDefinition(
+                                                            parameter_name="CL",
+                                                            input_value=None,
+                                                            input_unit=None,
+                                                            default_value=np.nan,
+                                                            is_relative=False,
+                                                            part_identifier="fuel_as_objective:main:initial_climb",
+                                                            use_opposite=False,
+                                                            variable_name="data:aerodynamics:aircraft:takeoff:CL",
+                                                            shape_by_conn=True,
+                                                        ),
+                                                    ),
+                                                    (
+                                                        "CD",
+                                                        InputDefinition(
+                                                            parameter_name="CD",
+                                                            input_value=None,
+                                                            input_unit=None,
+                                                            default_value=np.nan,
+                                                            is_relative=False,
+                                                            part_identifier="fuel_as_objective:main:initial_climb",
+                                                            use_opposite=False,
+                                                            variable_name="data:aerodynamics:aircraft:takeoff:CD",
+                                                            shape_by_conn=True,
+                                                        ),
+                                                    ),
+                                                ]
+                                            ),
+                                            "segment_type": "speed_change",
+                                            "target": {
+                                                "equivalent_airspeed": InputDefinition(
+                                                    parameter_name="equivalent_airspeed",
+                                                    input_value=250,
+                                                    input_unit="kn",
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="fuel_as_objective:main:initial_climb",
+                                                    use_opposite=False,
+                                                    variable_name=None,
+                                                )
+                                            },
+                                            "type": "segment",
+                                        },
+                                        {
+                                            "name": "fuel_as_objective:main:initial_climb",
+                                            "polar": {
+                                                "CD": InputDefinition(
+                                                    parameter_name="CD",
+                                                    input_value=None,
+                                                    input_unit=None,
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="fuel_as_objective:main:initial_climb",
+                                                    use_opposite=False,
+                                                    variable_name="data:aerodynamics:aircraft:takeoff:CD",
+                                                    shape_by_conn=True,
+                                                ),
+                                                "CL": InputDefinition(
+                                                    parameter_name="CL",
+                                                    input_value=None,
+                                                    input_unit=None,
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="fuel_as_objective:main:initial_climb",
+                                                    use_opposite=False,
+                                                    variable_name="data:aerodynamics:aircraft:takeoff:CL",
+                                                    shape_by_conn=True,
+                                                ),
+                                            },
+                                            "segment_type": "altitude_change",
+                                            "target": {
+                                                "altitude": InputDefinition(
+                                                    parameter_name="altitude",
+                                                    input_value=1500.0,
+                                                    input_unit="ft",
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="fuel_as_objective:main:initial_climb",
+                                                    use_opposite=False,
+                                                    variable_name=None,
+                                                ),
+                                                "equivalent_airspeed": InputDefinition(
+                                                    parameter_name="equivalent_airspeed",
+                                                    input_value="constant",
+                                                    input_unit="m/s",
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="fuel_as_objective:main:initial_climb",
+                                                    use_opposite=False,
+                                                    variable_name=None,
+                                                ),
+                                            },
+                                            "type": "segment",
+                                        },
+                                    ],
+                                    "polar": {
+                                        "CD": InputDefinition(
+                                            parameter_name="CD",
+                                            input_value=[0.0, 0.03, 0.12],
+                                            input_unit=None,
+                                            default_value=np.nan,
+                                            is_relative=False,
+                                            part_identifier="fuel_as_objective:main:initial_climb",
+                                            use_opposite=False,
+                                            variable_name=None,
+                                        ),
+                                        "CL": InputDefinition(
+                                            parameter_name="CL",
+                                            input_value=[0.0, 0.5, 1.0],
+                                            input_unit=None,
+                                            default_value=np.nan,
+                                            is_relative=False,
+                                            part_identifier="fuel_as_objective:main:initial_climb",
+                                            use_opposite=False,
+                                            variable_name=None,
+                                        ),
+                                    },
+                                    "thrust_rate": InputDefinition(
+                                        parameter_name="thrust_rate",
+                                        input_value=None,
+                                        input_unit=None,
+                                        default_value=1.0,
+                                        is_relative=False,
+                                        part_identifier="fuel_as_objective:main:initial_climb",
+                                        use_opposite=False,
+                                        variable_name="data:propulsion:initial_climb:thrust_rate",
+                                    ),
+                                    "time_step": InputDefinition(
+                                        parameter_name="time_step",
+                                        input_value=None,
+                                        input_unit="s",
+                                        default_value=np.nan,
+                                        is_relative=False,
+                                        part_identifier="fuel_as_objective:main:initial_climb",
+                                        use_opposite=False,
+                                        variable_name="settings:mission:fuel_as_objective:main:initial_climb:time_step",
+                                    ),
+                                    "type": "phase",
+                                },
+                                {
+                                    "engine_setting": InputDefinition(
+                                        parameter_name="engine_setting",
+                                        input_value="climb",
+                                        input_unit=None,
+                                        default_value=np.nan,
+                                        is_relative=False,
+                                        part_identifier="fuel_as_objective:main:climb",
+                                        use_opposite=False,
+                                        variable_name=None,
+                                    ),
+                                    "name": "fuel_as_objective:main:climb",
+                                    "parts": [
+                                        {
+                                            "name": "fuel_as_objective:main:climb",
+                                            "segment_type": "altitude_change",
+                                            "target": {
+                                                "altitude": InputDefinition(
+                                                    parameter_name="altitude",
+                                                    input_value=10000.0,
+                                                    input_unit="ft",
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="fuel_as_objective:main:climb",
+                                                    use_opposite=False,
+                                                    variable_name=None,
+                                                ),
+                                                "equivalent_airspeed": InputDefinition(
+                                                    parameter_name="equivalent_airspeed",
+                                                    input_value="constant",
+                                                    input_unit="m/s",
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="fuel_as_objective:main:climb",
+                                                    use_opposite=False,
+                                                    variable_name=None,
+                                                ),
+                                            },
+                                            "type": "segment",
+                                        },
+                                        {
+                                            "name": "fuel_as_objective:main:climb",
+                                            "segment_type": "speed_change",
+                                            "target": {
+                                                "equivalent_airspeed": InputDefinition(
+                                                    parameter_name="equivalent_airspeed",
+                                                    input_value=300.0,
+                                                    input_unit="kn",
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="fuel_as_objective:main:climb",
+                                                    use_opposite=False,
+                                                    variable_name=None,
+                                                )
+                                            },
+                                            "type": "segment",
+                                        },
+                                        {
+                                            "name": "fuel_as_objective:main:climb",
+                                            "segment_type": "altitude_change",
+                                            "target": {
+                                                "equivalent_airspeed": InputDefinition(
+                                                    parameter_name="equivalent_airspeed",
+                                                    input_value="constant",
+                                                    input_unit="m/s",
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="fuel_as_objective:main:climb",
+                                                    use_opposite=False,
+                                                    variable_name=None,
+                                                ),
+                                                "mach": InputDefinition(
+                                                    parameter_name="mach",
+                                                    input_value=None,
+                                                    input_unit=None,
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="fuel_as_objective:main:climb",
+                                                    use_opposite=False,
+                                                    variable_name="data:TLAR:cruise_mach",
+                                                ),
+                                            },
+                                            "type": "segment",
+                                        },
+                                        {
+                                            "name": "fuel_as_objective:main:climb",
+                                            "segment_type": "altitude_change",
+                                            "target": {
+                                                "altitude": InputDefinition(
+                                                    parameter_name="altitude",
+                                                    input_value=-20000.0,
+                                                    input_unit="m",
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="fuel_as_objective:main:climb",
+                                                    use_opposite=False,
+                                                    variable_name=None,
+                                                ),
+                                                "mach": InputDefinition(
+                                                    parameter_name="mach",
+                                                    input_value="constant",
+                                                    input_unit=None,
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="fuel_as_objective:main:climb",
+                                                    use_opposite=False,
+                                                    variable_name=None,
+                                                ),
+                                            },
+                                            "type": "segment",
+                                        },
+                                    ],
+                                    "polar": OrderedDict(
+                                        [
+                                            (
+                                                "CL",
+                                                InputDefinition(
+                                                    parameter_name="CL",
+                                                    input_value=None,
+                                                    input_unit=None,
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="fuel_as_objective:main:climb",
+                                                    use_opposite=False,
+                                                    variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                    shape_by_conn=True,
+                                                ),
+                                            ),
+                                            (
+                                                "CD",
+                                                InputDefinition(
+                                                    parameter_name="CD",
+                                                    input_value=None,
+                                                    input_unit=None,
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="fuel_as_objective:main:climb",
+                                                    use_opposite=False,
+                                                    variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                    shape_by_conn=True,
+                                                ),
+                                            ),
+                                        ]
+                                    ),
+                                    "thrust_rate": InputDefinition(
+                                        parameter_name="thrust_rate",
+                                        input_value=None,
+                                        input_unit=None,
+                                        default_value=np.nan,
+                                        is_relative=False,
+                                        part_identifier="fuel_as_objective:main:climb",
+                                        use_opposite=False,
+                                        variable_name="data:propulsion:climb:thrust_rate",
+                                    ),
+                                    "time_step": InputDefinition(
+                                        parameter_name="time_step",
+                                        input_value=None,
+                                        input_unit="s",
+                                        default_value=np.nan,
+                                        is_relative=False,
+                                        part_identifier="fuel_as_objective:main:climb",
+                                        use_opposite=False,
+                                        variable_name="data:mission:fuel_as_objective:main:climb:time_step",
+                                    ),
+                                    "type": "phase",
+                                },
+                            ],
+                            "cruise_part": {
+                                "engine_setting": InputDefinition(
+                                    parameter_name="engine_setting",
+                                    input_value="cruise",
+                                    input_unit=None,
+                                    default_value=np.nan,
+                                    is_relative=False,
+                                    part_identifier="fuel_as_objective:main:cruise",
+                                    use_opposite=False,
+                                    variable_name=None,
+                                ),
+                                "name": "fuel_as_objective:main:cruise",
+                                "polar": OrderedDict(
+                                    [
+                                        (
+                                            "CL",
+                                            InputDefinition(
+                                                parameter_name="CL",
+                                                input_value=None,
+                                                input_unit=None,
+                                                default_value=np.nan,
+                                                is_relative=False,
+                                                part_identifier="fuel_as_objective:main:cruise",
+                                                use_opposite=False,
+                                                variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                shape_by_conn=True,
+                                            ),
+                                        ),
+                                        (
+                                            "CD",
+                                            InputDefinition(
+                                                parameter_name="CD",
+                                                input_value=None,
+                                                input_unit=None,
+                                                default_value=np.nan,
+                                                is_relative=False,
+                                                part_identifier="fuel_as_objective:main:cruise",
+                                                use_opposite=False,
+                                                variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                shape_by_conn=True,
+                                            ),
+                                        ),
+                                    ]
+                                ),
+                                "segment_type": "optimal_cruise",
+                                "type": "segment",
+                            },
+                            "descent_parts": [
+                                {
+                                    "engine_setting": InputDefinition(
+                                        parameter_name="engine_setting",
+                                        input_value="idle",
+                                        input_unit=None,
+                                        default_value=np.nan,
+                                        is_relative=False,
+                                        part_identifier="fuel_as_objective:main:descent",
+                                        use_opposite=False,
+                                        variable_name=None,
+                                    ),
+                                    "name": "fuel_as_objective:main:descent",
+                                    "parts": [
+                                        {
+                                            "name": "fuel_as_objective:main:descent",
+                                            "segment_type": "altitude_change",
+                                            "target": {
+                                                "equivalent_airspeed": InputDefinition(
+                                                    parameter_name="equivalent_airspeed",
+                                                    input_value=300,
+                                                    input_unit="kn",
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="fuel_as_objective:main:descent",
+                                                    use_opposite=False,
+                                                    variable_name=None,
+                                                ),
+                                                "mach": InputDefinition(
+                                                    parameter_name="mach",
+                                                    input_value="constant",
+                                                    input_unit=None,
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="fuel_as_objective:main:descent",
+                                                    use_opposite=False,
+                                                    variable_name=None,
+                                                ),
+                                            },
+                                            "type": "segment",
+                                        },
+                                        {
+                                            "name": "fuel_as_objective:main:descent",
+                                            "segment_type": "altitude_change",
+                                            "target": {
+                                                "altitude": InputDefinition(
+                                                    parameter_name="altitude",
+                                                    input_value=10000.0,
+                                                    input_unit="ft",
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="fuel_as_objective:main:descent",
+                                                    use_opposite=False,
+                                                    variable_name=None,
+                                                ),
+                                                "equivalent_airspeed": InputDefinition(
+                                                    parameter_name="equivalent_airspeed",
+                                                    input_value="constant",
+                                                    input_unit="m/s",
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="fuel_as_objective:main:descent",
+                                                    use_opposite=False,
+                                                    variable_name=None,
+                                                ),
+                                            },
+                                            "type": "segment",
+                                        },
+                                        {
+                                            "name": "fuel_as_objective:main:descent",
+                                            "segment_type": "speed_change",
+                                            "target": {
+                                                "equivalent_airspeed": InputDefinition(
+                                                    parameter_name="equivalent_airspeed",
+                                                    input_value=250.0,
+                                                    input_unit="kn",
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="fuel_as_objective:main:descent",
+                                                    use_opposite=False,
+                                                    variable_name=None,
+                                                )
+                                            },
+                                            "type": "segment",
+                                        },
+                                        {
+                                            "name": "fuel_as_objective:main:descent",
+                                            "segment_type": "altitude_change",
+                                            "target": {
+                                                "altitude": InputDefinition(
+                                                    parameter_name="altitude",
+                                                    input_value=None,
+                                                    input_unit="m",
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="fuel_as_objective:main:descent",
+                                                    use_opposite=False,
+                                                    variable_name="data:mission:fuel_as_objective:main:descent:final_altitude",
+                                                ),
+                                                "equivalent_airspeed": InputDefinition(
+                                                    parameter_name="equivalent_airspeed",
+                                                    input_value="constant",
+                                                    input_unit="m/s",
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="fuel_as_objective:main:descent",
+                                                    use_opposite=False,
+                                                    variable_name=None,
+                                                ),
+                                            },
+                                            "type": "segment",
+                                        },
+                                    ],
+                                    "polar": OrderedDict(
+                                        [
+                                            (
+                                                "CL",
+                                                InputDefinition(
+                                                    parameter_name="CL",
+                                                    input_value=None,
+                                                    input_unit=None,
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="fuel_as_objective:main:descent",
+                                                    use_opposite=False,
+                                                    variable_name="data:aerodynamics:aircraft:cruise:CL",
+                                                    shape_by_conn=True,
+                                                ),
+                                            ),
+                                            (
+                                                "CD",
+                                                InputDefinition(
+                                                    parameter_name="CD",
+                                                    input_value=None,
+                                                    input_unit=None,
+                                                    default_value=np.nan,
+                                                    is_relative=False,
+                                                    part_identifier="fuel_as_objective:main:descent",
+                                                    use_opposite=False,
+                                                    variable_name="data:aerodynamics:aircraft:cruise:CD",
+                                                    shape_by_conn=True,
+                                                ),
+                                            ),
+                                        ]
+                                    ),
+                                    "thrust_rate": InputDefinition(
+                                        parameter_name="thrust_rate",
+                                        input_value=None,
+                                        input_unit=None,
+                                        default_value=np.nan,
+                                        is_relative=False,
+                                        part_identifier="fuel_as_objective:main:descent",
+                                        use_opposite=False,
+                                        variable_name="data:propulsion:descent:thrust_rate",
+                                    ),
+                                    "type": "phase",
+                                }
+                            ],
+                            "distance_accuracy": InputDefinition(
+                                parameter_name="distance_accuracy",
+                                input_value=500,
+                                input_unit="m",
+                                default_value=np.nan,
+                                is_relative=False,
+                                part_identifier="fuel_as_objective:main",
+                                use_opposite=False,
+                                variable_name=None,
+                            ),
+                            "name": "fuel_as_objective:main",
+                            "range": InputDefinition(
+                                parameter_name="range",
+                                input_value=None,
+                                input_unit="m",
+                                default_value=np.nan,
+                                is_relative=False,
+                                part_identifier="fuel_as_objective:main",
+                                use_opposite=False,
+                                variable_name="data:mission:fuel_as_objective:main:range",
+                            ),
+                            "type": "route",
+                        },
+                        {
+                            "name": "fuel_as_objective:taxi_in",
+                            "parts": [
+                                {
+                                    "name": "fuel_as_objective:taxi_in",
+                                    "segment_type": "taxi",
+                                    "target": {
+                                        "delta_time": InputDefinition(
+                                            parameter_name="time",
+                                            input_value=None,
+                                            input_unit="s",
+                                            default_value=np.nan,
+                                            is_relative=True,
+                                            part_identifier="fuel_as_objective:taxi_in",
+                                            use_opposite=False,
+                                            variable_name="data:mission:fuel_as_objective:taxi_in:duration",
+                                        )
+                                    },
+                                    "true_airspeed": InputDefinition(
+                                        parameter_name="true_airspeed",
+                                        input_value=0.0,
+                                        input_unit="m/s",
+                                        default_value=np.nan,
+                                        is_relative=False,
+                                        part_identifier="fuel_as_objective:taxi_in",
+                                        use_opposite=False,
+                                        variable_name=None,
+                                    ),
+                                    "type": "segment",
+                                }
+                            ],
+                            "thrust_rate": InputDefinition(
+                                parameter_name="thrust_rate",
+                                input_value=None,
+                                input_unit=None,
+                                default_value=np.nan,
+                                is_relative=False,
+                                part_identifier="fuel_as_objective:taxi_in",
+                                use_opposite=False,
+                                variable_name="data:mission:fuel_as_objective:taxi_in:thrust_rate",
+                            ),
+                            "type": "phase",
+                        },
+                        {
+                            "name": "fuel_as_objective",
+                            "reserve": {
+                                "multiplier": InputDefinition(
+                                    parameter_name="multiplier",
+                                    input_value=0.02,
+                                    input_unit=None,
+                                    default_value=np.nan,
+                                    is_relative=False,
+                                    part_identifier="fuel_as_objective",
+                                    use_opposite=False,
+                                    variable_name=None,
+                                ),
+                                "ref": InputDefinition(
+                                    parameter_name="ref",
+                                    input_value="main",
+                                    input_unit=None,
+                                    default_value=np.nan,
+                                    is_relative=False,
+                                    part_identifier="fuel_as_objective",
+                                    use_opposite=False,
+                                    variable_name=None,
+                                ),
+                            },
+                        },
+                    ],
+                ),
+                (
+                    "use_all_block_fuel",
+                    InputDefinition(
+                        parameter_name="use_all_block_fuel",
+                        input_value=True,
+                        input_unit=None,
+                        default_value=np.nan,
+                        is_relative=False,
+                        part_identifier="fuel_as_objective",
+                        shape=None,
+                        shape_by_conn=False,
+                        use_opposite=False,
+                        variable_name=None,
+                    ),
+                ),
+                (
+                    "target_fuel_consumption",
+                    InputDefinition(
+                        parameter_name="target_fuel_consumption",
+                        input_value=None,
+                        input_unit="kg",
+                        default_value=np.nan,
+                        is_relative=False,
+                        part_identifier="fuel_as_objective",
+                        shape=None,
+                        shape_by_conn=False,
+                        use_opposite=False,
+                        variable_name="data:mission:fuel_as_objective:block_fuel",
+                    ),
+                ),
+                ("name", "fuel_as_objective"),
                 ("type", "mission"),
             ]
         ),

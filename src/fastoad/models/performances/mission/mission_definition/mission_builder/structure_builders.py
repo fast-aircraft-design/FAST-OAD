@@ -355,6 +355,9 @@ class MissionStructureBuilder(AbstractStructureBuilder, structure_type="mission"
         mission_definition = definition[MISSION_DEFINITION_TAG][self.name]
         mission_structure = OrderedDict(deepcopy(mission_definition))
 
+        if mission_structure.get("use_all_block_fuel"):
+            mission_structure["target_fuel_consumption"] = {"value": "~:block_fuel", "unit": "kg"}
+
         mission_parts = []
         for part_definition in mission_definition[PARTS_TAG]:
             if ROUTE_TAG in part_definition:

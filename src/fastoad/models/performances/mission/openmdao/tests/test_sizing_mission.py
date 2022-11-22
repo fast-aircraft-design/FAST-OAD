@@ -20,7 +20,7 @@ import pytest
 from numpy.testing import assert_allclose
 
 from fastoad._utils.testing import run_system
-from ..mission import Mission
+from ..mission import OMMission
 
 RESULTS_FOLDER_PATH = pth.join(
     pth.dirname(__file__), "results", pth.splitext(pth.basename(__file__))[0]
@@ -64,7 +64,7 @@ def test_sizing_mission(cleanup, with_dummy_plugin_2):
 
     # With direct call to rubber engine
     problem = run_system(
-        Mission(
+        OMMission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
             out_file=pth.join(RESULTS_FOLDER_PATH, "sizing_mission.csv"),
             use_initializer_iteration=False,
