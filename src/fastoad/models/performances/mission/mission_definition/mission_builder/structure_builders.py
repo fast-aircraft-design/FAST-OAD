@@ -181,7 +181,10 @@ class AbstractStructureBuilder(ABC):
                 return input_definition
 
             part_identifier = structure.get(NAME_TAG, part_identifier)
-            segment_class = SegmentDefinitions.get_segment_class(structure.get(SEGMENT_TYPE_TAG))
+            if SEGMENT_TYPE_TAG in structure:
+                segment_class = SegmentDefinitions.get_segment_class(structure[SEGMENT_TYPE_TAG])
+            else:
+                segment_class = None
             for key, value in structure.items():
                 if key in [
                     NAME_TAG,
