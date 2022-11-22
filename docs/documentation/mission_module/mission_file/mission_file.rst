@@ -211,7 +211,7 @@ A mission is identified by its name and has 3 attributes:
     - :code:`use_all_block_fuel`: if True, the range of the main :ref:`route <route-section>`
       of the mission will be adjusted so that all block fuel (provided as input
       `data:mission:<mission_name>:block_fuel`) will be consumed for the mission, excepted the
-      reserve, if defined. The provided range for first route is then used as a first guess
+      reserve, if defined. The provided range for first route is overridden but used as a first guess
       to initiate the iterative process.
 
 
