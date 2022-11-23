@@ -20,9 +20,11 @@ from openmdao import api as om
 
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
-from fastoad.models.performances.mission.mission_definition.schema import MissionDefinition
-from fastoad.models.performances.mission.openmdao.mission_wrapper import MissionWrapper
 from fastoad.module_management.service_registry import RegisterPropulsion
+from .mission_wrapper import MissionWrapper
+from ..mission_definition.schema import MissionDefinition
+from ..polar import Polar
+from ..segments.cruise import BreguetCruiseSegment
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -207,3 +209,103 @@ class MissionRun(om.ExplicitComponent):
             )
 
         return VariableNames
+
+
+class MissionAdvancedRun(MissionRun):
+    """
+    Computes a mission as specified in mission input file
+    """
+
+    def initialize(self):
+        super().initialize()
+        self.options.declare("use_initializer_iteration", default=True, types=bool)
+        self.options.declare("is_sizing", default=False, types=bool)
+
+    def setup(self):
+        super().setup()
+
+        if self.options["is_sizing"]:
+            self.add_output("data:weight:aircraft:sizing_block_fuel", units="kg")
+            self.add_output("data:weight:aircraft:sizing_onboard_fuel_at_input_weight", units="kg")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        iter_count = self.iter_count_without_approx
+        message_prefix = f"Mission computation - iteration {iter_count:d} : "
+        if iter_count == 0 and self.options["use_initializer_iteration"]:
+            _LOGGER.info(
+                "%sUsing initializer computation. OTHER ITERATIONS NEEDED.", message_prefix
+            )
+            self._compute_breguet(inputs, outputs)
+        else:
+            _LOGGER.info("%sUsing mission definition.", message_prefix)
+            super().compute(inputs, outputs, discrete_inputs, discrete_outputs)
+            if self.options["is_sizing"]:
+                outputs["data:weight:aircraft:sizing_block_fuel"] = outputs[
+                    self._name_provider.NEEDED_BLOCK_FUEL.value
+                ]
+                outputs["data:weight:aircraft:sizing_onboard_fuel_at_input_weight"] = (
+                    outputs[self._name_provider.NEEDED_BLOCK_FUEL.value]
+                    - self._mission_wrapper.consumed_fuel_before_input_weight
+                )
+
+    def _compute_breguet(self, inputs, outputs):
+        """
+        Computes mission using simple Breguet formula at altitude==100m and Mach 0.1
+        (but max L/D ratio is assumed anyway)
+
+        Useful only for initiating the computation.
+
+        :param inputs: OpenMDAO input vector
+        :param outputs: OpenMDAO output vector
+        """
+        propulsion_model = self._engine_wrapper.get_model(inputs)
+
+        high_speed_polar = self._get_initial_polar(inputs)
+        distance = np.sum(
+            self._mission_wrapper.get_route_ranges(inputs, self.options["mission_name"])
+        ).item()
+
+        altitude = 100.0
+        cruise_mach = 0.1
+
+        breguet = BreguetCruiseSegment(
+            target=FlightPoint(ground_distance=distance),
+            propulsion=propulsion_model,
+            polar=high_speed_polar,
+            use_max_lift_drag_ratio=True,
+        )
+        start_point = FlightPoint(
+            mass=inputs[self._input_weight_variable_name],
+            altitude=altitude,
+            mach=cruise_mach,
+        )
+        flight_points = breguet.compute_from(start_point)
+        end_point = FlightPoint.create(flight_points.iloc[-1])
+        outputs[self._name_provider.NEEDED_BLOCK_FUEL.value] = start_point.mass - end_point.mass
+
+    @staticmethod
+    def _get_initial_polar(inputs) -> Polar:
+        """
+        At computation start, polar may be irrelevant and give a very low lift/drag ratio.
+
+        In that case, this method returns a fake polar that has 10.0 as max lift drag ratio.
+        Otherwise, the actual cruise polar is returned.
+        """
+        high_speed_polar = Polar(
+            inputs["data:aerodynamics:aircraft:cruise:CL"],
+            inputs["data:aerodynamics:aircraft:cruise:CD"],
+        )
+        use_minimum_l_d_ratio = False
+        try:
+            if (
+                high_speed_polar.optimal_cl / high_speed_polar.cd(high_speed_polar.optimal_cl)
+                < 10.0
+            ):
+                use_minimum_l_d_ratio = True
+        except ZeroDivisionError:
+            use_minimum_l_d_ratio = True
+        if use_minimum_l_d_ratio:
+            # We replace by a polar that has at least 10.0 as max L/D ratio
+            high_speed_polar = Polar(np.array([0.0, 0.5, 1.0]), np.array([0.1, 0.05, 1.0]))
+
+        return high_speed_polar

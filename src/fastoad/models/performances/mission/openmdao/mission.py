@@ -24,7 +24,7 @@ import pandas as pd
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from . import resources
-from .mission_component import MissionComponent, _get_variable_name_provider
+from .mission_run import MissionAdvancedRun
 from .mission_wrapper import MissionWrapper
 from ..mission_definition.schema import MissionDefinition
 
@@ -57,7 +57,7 @@ class OMMission(om.Group):
             types=(str, MissionDefinition),
             allow_none=True,
             desc="The path to file that defines the mission.\n"
-            'If can also begin with two colons "::" to use pre-defined missions:\n'
+            'It can also begin with two colons "::" to use pre-defined missions:\n'
             '  - "::sizing_mission" : design mission for CeRAS-01\n'
             '  - "::breguet" : a simple mission with Breguet formula for cruise, and input\n'
             "    coefficients for fuel reserve and fuel consumption during climb and descent",
@@ -130,6 +130,7 @@ class OMMission(om.Group):
         )
 
     def setup(self):
+
         if self.options["compute_TOW"] is not None:
             warnings.warn(
                 'Option "compute_TOW" is deprecated for mission module. '
@@ -150,7 +151,17 @@ class OMMission(om.Group):
             self.options["mission_name"] = self._mission_wrapper.get_unique_mission_name()
 
         mission_name = self.options["mission_name"]
-        self._name_provider = _get_variable_name_provider(mission_name)
+        mission_options = dict(self.options.items())
+        del mission_options["adjust_fuel"]
+        del mission_options["compute_input_weight"]
+        del mission_options["compute_TOW"]
+        del mission_options["add_solver"]
+        del mission_options["mission_file_path"]
+        mission_options["mission_file_path"] = self._mission_wrapper
+        mission_options["mission_name"] = mission_name
+        mission_component = MissionAdvancedRun(**mission_options)
+
+        self._name_provider = mission_component.get_variable_name_provider(mission_name)
 
         self.add_subsystem("ZFW_computation", self._get_zfw_component(mission_name), promotes=["*"])
 
@@ -171,18 +182,7 @@ class OMMission(om.Group):
                 promotes=["*"],
             )
 
-        mission_options = dict(self.options.items())
-        del mission_options["adjust_fuel"]
-        del mission_options["compute_input_weight"]
-        del mission_options["compute_TOW"]
-        del mission_options["add_solver"]
-        del mission_options["mission_file_path"]
-        mission_options["mission_wrapper"] = self._mission_wrapper
-        mission_options["mission_name"] = mission_name
-
-        self.add_subsystem(
-            "mission_computation", MissionComponent(**mission_options), promotes=["*"]
-        )
+        self.add_subsystem("mission_computation", mission_component, promotes=["*"])
         if not self.options["compute_input_weight"]:
             self.add_subsystem(
                 "block_fuel_computation",

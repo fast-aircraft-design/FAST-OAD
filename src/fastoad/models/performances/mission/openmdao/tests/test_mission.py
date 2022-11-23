@@ -22,7 +22,7 @@ from scipy.constants import foot, knot, nautical_mile
 from fastoad._utils.testing import run_system
 from fastoad.io import DataFile
 from ..mission import OMMission
-from ..mission_component import MissionComponent
+from ..mission_run import MissionAdvancedRun
 from ..mission_wrapper import MissionWrapper
 from ...mission_definition.exceptions import FastMissionFileMissingMissionNameError
 
@@ -94,11 +94,11 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
     ivc = DataFile(input_file_path).to_ivc()
 
     problem = run_system(
-        MissionComponent(
+        MissionAdvancedRun(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
             out_file=pth.join(RESULTS_FOLDER_PATH, "mission.csv"),
             use_initializer_iteration=False,
-            mission_wrapper=MissionWrapper(pth.join(DATA_FOLDER_PATH, "test_mission.yml")),
+            mission_file_path=MissionWrapper(pth.join(DATA_FOLDER_PATH, "test_mission.yml")),
             mission_name="operational",
             reference_area_variable="data:geometry:aircraft:reference_area",
         ),
@@ -155,11 +155,11 @@ def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
     ivc.add_output("data:mission:operational:ramp_weight", 70100.0, units="kg")
 
     problem = run_system(
-        MissionComponent(
+        MissionAdvancedRun(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
             out_file=pth.join(RESULTS_FOLDER_PATH, "breguet.csv"),
             use_initializer_iteration=False,
-            mission_wrapper=MissionWrapper(
+            mission_file_path=MissionWrapper(
                 pth.join(DATA_FOLDER_PATH, "test_breguet_from_block_fuel.yml")
             ),
             mission_name="operational",
