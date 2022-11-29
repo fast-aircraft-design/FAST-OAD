@@ -395,6 +395,65 @@ Typically, it will be used as last segment to compute a reserve based on the Zer
       altitude: 0.
       mach: 0.
 
+.. _segment-ground_speed_change:
+
+:code:`ground_speed_change` segment
+==========================
+
+This segment is used specifically during accelerating or decelerating parts while still on the ground.
+The friction force with the ground is accounted in the equation of movements.
+Whilst on the ground, the key :code:`wheels_friction` is used to define the friction coefficient.
+The segment ends when the target velocity is reached.
+
+**Example:**
+
+    segment: ground_speed_change
+    wheels_friction: 0.03
+    target:
+      equivalent_airspeed:
+        value: data:mission:operational:takeoff:Vr
+
+.. _segment-rotation:
+
+:code:`rotation` segment
+==========================
+
+This segment is used to represent a rotation while still on the ground. This segment is specifically used for takeoff.
+The specific keys are (in addition to wheel friction coefficient):
+
+:code:`rotation_rate` in (rad/s) is the rotation speed used to realise the manoeuvre (by default 3deg/s, compliant with CS-25 )
+
+:code:`alpha_limit` (in rad) is the maximum angle of attack possible before tail strike (by default 13.5deg).
+
+The segment ends when lift equals weight. Therefore, no target needs to be set.
+
+**Example:**
+
+    segment: rotation
+    wheels_friction: 0.03
+    rotation_rate:
+      value: 0.0523
+    alpha_limit:
+      value: 0.3489
+
+.. _segment-end_of_take_off:
+
+:code:`end_of_takeoff` segment
+==========================
+
+This segment is used at the end of the takeoff phase, between lift off and before reaching the safety altitude. The target sets the safety altitude.
+Because this phase is quite dynamic, it is a good practice to lower the time step at least to 0.05s for a
+good accuracy on takeoff distance.
+
+**Example:**
+
+    segment: end_of_takeoff
+    time_step: 0.05
+    target:
+      delta_altitude:
+        value: 35
+        unit: ft
+
 .. _segment-target:
 
 **************

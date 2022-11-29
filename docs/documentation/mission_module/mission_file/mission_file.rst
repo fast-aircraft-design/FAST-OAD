@@ -142,6 +142,72 @@ Example:
         climb:                                    # Phase name
           ...                                          # Definition of the phase...
 
+.. _takeoff-section:
+
+Specific takeoff phase definition section
+************************
+
+The takeoff and associated manoeuvres may be simulated by assembling the specific segments.
+An exemple of takeoff phase definition, as well as start-stop phase are given here:
+
+Example:
+
+.. code-block:: yaml
+
+    takeoff:
+        engine_setting: takeoff
+        polar:
+          CL: data:aerodynamics:aircraft:takeoff:CL
+          CD: data:aerodynamics:aircraft:takeoff:CD
+          ground_effect: None # Ground effect model selection
+          CL0_clean: data:aerodynamics:aircraft:takeoff:CL0_clean
+          CL_alpha: data:aerodynamics:aircraft:takeoff:CL_alpha
+          CL_high_lift: data:aerodynamics:high_lift_devices:takeoff:CL
+        thrust_rate: 1.0
+        isa_offset: data:mission:operational:ISA_offset
+        parts:
+          - segment: ground_speed_change
+            target:
+              equivalent_airspeed:
+                value: data:mission:operational:takeoff:Vr
+          - segment: rotation
+            target:
+              delta_altitude:
+                value: 35
+                unit: ft
+          - segment: end_of_takeoff
+            time_step: 0.05
+            target:
+              delta_altitude:
+                value: 35
+                unit: ft
+    start_stop: # start - stop manoeuvre with only brakes on
+        engine_setting: takeoff
+        polar:
+          CL: data:aerodynamics:aircraft:takeoff:CL
+          CD: data:aerodynamics:aircraft:takeoff:CD
+          ground_effect: Raymer # Ground effect model selection
+          CL0_clean: data:aerodynamics:aircraft:takeoff:CL0_clean
+          CL_alpha: data:aerodynamics:aircraft:takeoff:CL_alpha
+          CL_high_lift: data:aerodynamics:high_lift_devices:takeoff:CL
+        thrust_rate: 1.0
+        isa_offset: data:mission:operational:ISA_offset
+        parts:
+          - segment: ground_speed_change
+            wheels_friction: 0.03
+            time_step: 0.05
+            target:
+              equivalent_airspeed:
+                value: data:mission:operational:takeoff:V1
+          - segment: ground_speed_change
+            engine_setting: idle
+            thrust_rate: 0.07
+            wheels_friction: 0.5
+            time_step: 0.05
+            target:
+              true_airspeed:
+                value: 0
+                unit: m/s
 
 .. _route-section:
 
