@@ -226,10 +226,9 @@ class VariableViewer:
         :return display of the user interface
         """
         self._filter_widgets = []
-        modules_item = sorted(self._find_submodules(self.dataframe))
-        if modules_item:
-            w = widgets.Dropdown(options=modules_item)
-            self._filter_widgets.append(w)
+        modules_item = [TAG_ALL] + sorted(self._find_submodules(self.dataframe))
+        w = widgets.Dropdown(options=modules_item)
+        self._filter_widgets.append(w)
         return self._render_ui()
 
     # pylint: disable=unused-argument  # args has to be there for observe() to work
@@ -422,8 +421,7 @@ class VariableViewer:
                 path = ":".join(modules[:-1])
             else:
                 path = ":".join(modules)
-
-        path_filter = [True] * len(df) if path == "" else df.Name.str.startswith(path)
+        path_filter = df.Name.str.startswith(path)
         io_filter = [True] * len(df) if var_io_type == TAG_ALL else df["I/O"] == var_io_type
 
         filtered_df = df[path_filter & io_filter]

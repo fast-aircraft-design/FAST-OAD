@@ -51,6 +51,29 @@ segments, phases, routes and missions. They are summarized in this table:
         | Generally, it begins when engine starts and ends when engine
         | stops.
 
+.. important::
+
+    Starting with version 1.4.0 of FAST-OAD, any mission has to use a variable for mass input. This
+    variable can be defined using the :ref:`start segment <segment-start>`, if it provides the mass at
+    mission start (typically a ramp-up weight), or using the :ref:`mass_input segment <segment-mass_input>`
+    otherwise (typically a takeoff weight, achieved after the taxi-out).
+
+    In the case no variable is defined for input mass, FAST-OAD will automatically add, at the
+    beginning of the mission, a taxi-out and a very simple takeoff phase
+    (:ref:`transition segment <segment-transition>`) with a
+    :ref:`mass_input segment <segment-mass_input>`. In that case, the input
+    mass is given by the :code:`data:mission:<mission_name>:TOW` variable, which represents the
+    aircraft mass just **after** takeoff.
+
+    This addition of taxi-out, takeoff and mass input allows to keep compatibility with
+    mission definitions for FAST-OAD versions earlier than 1.4.
+
+    (Please note that takeoff weight should be actually considered as
+    the mass just **before** takeoff, but this way of doing is kept for maximum
+    backward-compatibility)
+
+
+
 *************
 File sections
 *************
@@ -180,26 +203,25 @@ Mission definition section
 This is the main section. It allows to define one or several missions, that will be computed
 by the mission module.
 
-A mission is identified by its name and has only the :code:`parts` attribute that lists the
-:ref:`phase<phase-section>` and/or :ref:`route<route-section>` names that compose the mission, with
-optionally a last item that is the :code:`reserve` (see below).
+A mission is identified by its name and has 3 attributes:
+
+    - :code:`parts`: list of the :ref:`phase<phase-section>` and/or :ref:`route<route-section>`
+      names that compose the mission, with optionally a last item that is the :code:`reserve`
+      (see below).
+    - :code:`use_all_block_fuel`: if True, the range of the main :ref:`route <route-section>`
+      of the mission will be adjusted so that all block fuel (provided as input
+      `data:mission:<mission_name>:block_fuel`) will be consumed for the mission, excepted the
+      reserve, if defined. The provided range for first route is overridden but used as a first guess
+      to initiate the iterative process.
 
 
 The mission name is used when configuring the mission module in the FAST-OAD configuration file.
 **If there is only one mission defined in the file, naming it in the configuration file is
 optional.**
 
-About mission start:
+.. note::
 
-    - Each mission begins by default by taxi-out and takeoff phases, but these phases are not
-      defined in the mission file. One reason for that is that the mass input for the mission is
-      the TakeOff Weight, which is the aircraft weight at the end of takeoff phase.
-    - A taxi-out phase is automatically computed at begin of the mission. To ignore this phase,
-      simply put its duration to 0. in the input data file.
-    - The takeoff data are simple inputs of the mission model. They have to be computed in a
-      dedicated takeoff model (available soon), or provided in the input data file.
-
-About reserve:
+    **About reserve**
 
     The :code:`reserve` keyword is typically designed to define fuel reserve as stated in
     EU-OPS 1.255.
@@ -216,6 +238,8 @@ Example:
     missions:
       sizing:
         parts:
+          - phase: taxi_out
+          - phase: takeoff
           - route: main_route
           - route: diversion
           - phase: holding
@@ -226,9 +250,19 @@ Example:
               multiplier: 0.03
       operational:
         parts:
+          - phase: taxi_out
+          - phase: takeoff
           - route: main_route
           - phase: landing
           - phase: taxi_in
+      fuel_driven:
+        parts:
+          - phase: taxi_out
+          - phase: takeoff
+          - route: main_route
+          - phase: landing
+          - phase: taxi_in
+        use_all_block_fuel: true
 
 
 

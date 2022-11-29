@@ -23,10 +23,10 @@ jobs:
       - uses: mpi4py/setup-mpi@v1
 
       - name: Install poetry
-        run: pipx install poetry
+        run: pipx install poetry==1.1.15
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'poetry'

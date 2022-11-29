@@ -15,25 +15,24 @@ phases:
     parts:
       - segment: taxi
         isa_offset: 0.0
-        thrust_rate: data:mission:operational:taxi_out:thrust_rate
-        true_airspeed:
-          value: data:mission:operational:taxi_out:true_airspeed
-          default: 0.
+        thrust_rate: 0.3
+        true_airspeed: 0.0
         target:
-          time: data:mission:operational:taxi_out:duration
-      - segment: mass_input
-        target:
-          mass: data:mission:operational:TOW
+          time: ~duration
   takeoff:
     parts:
       - segment: transition
         target:
           delta_altitude:
-            value: data:mission:operational:takeoff:safety_altitude
+            value: ~safety_altitude
             default: 35
             unit: ft
-          delta_mass: -data:mission:operational:takeoff:fuel
-          true_airspeed: data:mission:operational:takeoff:V2
+          delta_mass: -~fuel
+          true_airspeed: 80.0
+          time: 0.0
+      - segment: mass_input
+        target:
+          mass: ~~TOW
   initial_climb:
     engine_setting: takeoff
     polar: data:aerodynamics:aircraft:takeoff
@@ -113,9 +112,39 @@ phases:
           altitude:
             value: 1500.
             unit: ft
+  diversion_climb:
+    engine_setting: climb
+    polar: data:aerodynamics:aircraft:cruise
+    thrust_rate: 0.9
+    time_step:
+      value: settings:mission~
+      default: 5.0
+      unit: s
+    parts:
+      - segment: altitude_change
+        target:
+          altitude:
+            value: 10000.
+            unit: ft
+          equivalent_airspeed: constant
+      - segment: speed_change
+        target:
+          equivalent_airspeed:
+            value: 300.0
+            unit: kn
+      - segment: altitude_change
+        target:
+          altitude:
+            value: 22000.
+            unit: ft
+          equivalent_airspeed: constant
 
 routes:
   main_route:
+    distance_accuracy:
+      value: ~
+      default: 0.5
+      unit: km
     range:
       value: 2000.
       unit: NM
@@ -128,6 +157,22 @@ routes:
       polar: data:aerodynamics:aircraft:cruise
     descent_parts:
       - phase: descent
+  diversion:
+    distance_accuracy:
+      value: ~
+      default: 0.5
+      unit: km
+    range:
+      value: 200
+      unit: NM
+    climb_parts:
+      - phase: diversion_climb
+    cruise_part:
+      segment: breguet
+      engine_setting: cruise
+      polar: data:aerodynamics:aircraft:cruise
+    descent_parts:
+      - phase: descent
 
 missions:
   unused:
@@ -135,10 +180,21 @@ missions:
       - route: main_route
   operational:
     parts:
-      - phase: start
-      - phase: taxi_out
-      - phase: takeoff
+#      - phase: start
+#      - phase: taxi_out
+#      - phase: takeoff
       - route: main_route
       - reserve:
           ref: main_route
           multiplier: 0.03
+  fuel_as_objective:
+    parts:
+      - phase: start
+      - phase: taxi_out
+      - phase: takeoff
+      - route: main_route
+      - route: diversion
+      - reserve:
+          ref: main_route
+          multiplier: 0.03
+    use_all_block_fuel: True

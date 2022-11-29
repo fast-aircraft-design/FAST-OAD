@@ -40,17 +40,31 @@ Available segments are:
    :local:
    :depth: 1
 
-.. _segment-speed_change:
+.. _segment-start:
 
 
 :code:`start` segment
 =====================
 
+.. versionadded:: 1.4.0
+
 :code:`start` is a special segment to be used at the beginning of the mission definition to
 specify the starting point of the mission, preferably by defining variables so it can be
 controlled from FAST-OAD input file.
 
-Without no :code:`start` specified, the mission is assumed to start at altitude 0, speed 0.
+Without no :code:`start` specified, the mission is assumed to start at altitude 0.0, speed 0.0.
+
+.. note::
+
+    The :code:`start` segment allows to define the aircraft mass at the beginning of the mission.
+    Yet it is possible to define aircraft mass at some intermediate phase (e.g. takeoff) using
+    the `mass_input segment`_.
+
+.. important::
+
+    **In any case, a variable for input mass has to be defined once and
+    only once in the whole mission.**
+
 
 **Example:**
 
@@ -78,13 +92,47 @@ Without no :code:`start` specified, the mission is assumed to start at altitude 
           - phase: start_phase
           - ...
 
-.. note::
 
-    The :code:`start` segment allows to define the aircraft mass at the beginning of the mission.
-    Yet it is possible to define aircraft mass at some intermediate phase (e.g. takeoff) using
-    the `mass_input segment`_. In any case, mass has to be defined once and only once in the whole
-    mission.
 
+.. _segment-mass_input:
+
+:code:`mass_input` segment
+==================
+
+.. versionadded:: 1.4.0
+
+The `start segment`_ allows to define aircraft mass at the beginning of the mission, but it
+is sometimes needed to define the aircraft mass at some point in the mission. The typical
+example would be the need to specify a takeoff weight that is expected to be achieved after the
+taxi-out phase.
+
+The :code:`mass_input` segment is designed to address this need. It will ensure this mass is
+achieved at the specify instant in the mission by setting the start mass input accordingly.
+
+**Example:**
+
+.. code:: yaml
+
+    # For setting mass at the end of taxi-out:
+    phases:
+      taxi-out:
+        parts:
+          - segment: taxi
+            ...
+          - segment: mass_input
+            target:
+              mass:
+                value: my:MTOW:variable
+                unit: kg
+
+.. warning::
+
+    Currently, FAST-OAD assumes the fuel consumption before the :code:`mass_input` segment is
+    independent of aircraft mass, which is considered true in a phase such as taxi. Assuming
+    otherwise would require to solve an additional inner loop. Since it does not correspond to
+    any use case we currently know of, it has been decided to stick to the simple case.
+
+.. _segment-speed_change:
 
 :code:`speed_change` segment
 ============================
@@ -233,6 +281,7 @@ Python documentation: :class:`~fastoad.models.performances.mission.segments.crui
         value: 2000
         unit: NM
 
+.. _segment-holding:
 
 :code:`holding` segment
 =======================
@@ -255,6 +304,7 @@ Python documentation: :class:`~fastoad.models.performances.mission.segments.hold
         value: 20                               # 20 minutes holding
         unit: min
 
+.. _segment-taxi:
 
 :code:`taxi` segment
 ====================
@@ -273,6 +323,8 @@ Python documentation: :class:`~fastoad.models.performances.mission.segments.taxi
     target:
       time:
         value: 300              # taxi for 300 seconds (5 minutes)
+
+.. _segment-transition:
 
 :code:`transition` segment
 ==========================
@@ -315,6 +367,8 @@ parameter.
 
 **Example:**
 
+.. code-block:: yaml
+
     segment: transition # Rough climb simulation
     mass_ratio: 0.97            # Aircraft end mass will be 97% of total start mass
     target:
@@ -340,41 +394,6 @@ Typically, it will be used as last segment to compute a reserve based on the Zer
     target:
       altitude: 0.
       mach: 0.
-
-
-:code:`mass_input` segment
-==================
-
-The `start segment` allows to define aircraft mass at the beginning of the mission, but it
-is sometimes needed to define the aircraft mass at some point in the mission. The typical
-example would be the need to specify a takeoff weight that is expected to be achieved after the
-taxi-out phase.
-
-The :code:`mass_input` segment is designed to address this need. It will ensure this mass is
-achieved at the specify instant in the mission by setting the start mass input accordingly.
-
-**Example:**
-
-.. code:: yaml
-
-    # For setting mass at the end of taxi-out:
-    phases:
-      taxi-out:
-        parts:
-          - segment: taxi
-            ...
-          - segment: mass_input
-            target:
-              mass:
-                value: my:MTOW:variable
-                unit: kg
-
-.. warning::
-
-    Currently, FAST-OAD assumes the fuel consumption before the :code:`mass_input` segment is
-    independent of aircraft mass, which is considered true in a phase such as taxi. Assuming
-    otherwise would require to solve an additional inner loop. Since it does not correspond to
-    any use case we currently know of, it has been decided to stick to the simple case.
 
 .. _segment-target:
 

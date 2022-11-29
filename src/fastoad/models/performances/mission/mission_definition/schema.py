@@ -98,11 +98,12 @@ class MissionDefinition(OrderedDict):
         """
         phase_names = set(content[PHASE_DEFINITIONS_TAG].keys())
 
-        for route_definition in content[ROUTE_DEFINITIONS_TAG].values():
-            for part in list(route_definition[CLIMB_PARTS_TAG]) + list(
-                route_definition[DESCENT_PARTS_TAG]
-            ):
-                Ensure(part[PHASE_TAG]).is_in(phase_names)
+        if ROUTE_DEFINITIONS_TAG in content:
+            for route_definition in content[ROUTE_DEFINITIONS_TAG].values():
+                for part in list(route_definition[CLIMB_PARTS_TAG]) + list(
+                    route_definition[DESCENT_PARTS_TAG]
+                ):
+                    Ensure(part[PHASE_TAG]).is_in(phase_names)
 
         for mission_definition in content[MISSION_DEFINITION_TAG].values():
             reserve_count = 0

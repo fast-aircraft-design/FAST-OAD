@@ -24,7 +24,11 @@ from fastoad.model_base.propulsion import IPropulsion
 from fastoad.openmdao.variables import VariableList
 from .constants import NAME_TAG, SEGMENT_TYPE_TAG, TYPE_TAG
 from .input_definition import InputDefinition
-from .structure_builders import AbstractStructureBuilder, MissionStructureBuilder
+from .structure_builders import (
+    AbstractStructureBuilder,
+    MissionStructureBuilder,
+    PhaseStructureBuilder,
+)
 from ..exceptions import FastMissionFileMissingMissionNameError
 from ..schema import (
     CLIMB_PARTS_TAG,
@@ -39,6 +43,7 @@ from ..schema import (
     SEGMENT_TAG,
 )
 from ...base import FlightSequence
+from ...mission import Mission
 from ...polar import Polar
 from ...routes import RangedRoute
 from ...segments.base import AbstractFlightSegment, SegmentDefinitions
@@ -88,6 +93,9 @@ class MissionBuilder:
                 self._definition, mission_name
             )
 
+            if self.get_input_weight_variable_name(mission_name) is None:
+                self._add_default_taxi_takeoff(mission_name)
+
     @property
     def propulsion(self) -> IPropulsion:
         """Propulsion model for performance computation."""
@@ -106,7 +114,7 @@ class MissionBuilder:
     def reference_area(self, reference_area: float):
         self._base_kwargs["reference_area"] = reference_area
 
-    def build(self, inputs: Optional[Mapping] = None, mission_name: str = None) -> FlightSequence:
+    def build(self, inputs: Optional[Mapping] = None, mission_name: str = None) -> Mission:
         """
         Builds the flight sequence from definition file.
 
@@ -115,6 +123,9 @@ class MissionBuilder:
         :param mission_name: mission name (can be omitted if only one mission is defined)
         :return:
         """
+        if self.get_input_weight_variable_name(mission_name) is None:
+            self._add_default_taxi_takeoff(mission_name)
+
         for input_def in self._structure_builders[mission_name].get_input_definitions():
             input_def.set_variable_value(inputs)
         if mission_name is None:
@@ -132,7 +143,7 @@ class MissionBuilder:
         :param mission_name: mission name (can be omitted if only one mission is defined)
         :return: list of flight ranges for each element of the flight sequence that is a route
         """
-        routes = self.build(inputs, mission_name).flight_sequence
+        routes = self.build(inputs, mission_name)
         return [route.flight_distance for route in routes if isinstance(route, RangedRoute)]
 
     def get_reserve(self, flight_points: pd.DataFrame, mission_name: str = None) -> float:
@@ -205,46 +216,17 @@ class MissionBuilder:
             self._get_mission_part_structures(mission_name)
         )
 
-    def get_mission_start_mass_input(self, mission_name: str) -> Optional[str]:
-        """
-
-        :param mission_name:
-        :return: Target mass variable of first segment, if any.
-        """
-        part = self._get_first_segment_structure(mission_name)
-        if "mass" in part["target"]:
-            return part["target"]["mass"].variable_name
-
-        return None
-
-    def _get_first_segment_structure(self, mission_name: str):
-        part = self._get_mission_part_structures(mission_name)[0]
-        while PARTS_TAG in part:
-            part = part[PARTS_TAG][0]
-        return part
-
-    def get_mission_part_names(self, mission_name: str) -> List[str]:
-        """
-
-        :param mission_name:
-        :return: list of names of parts (phase or route) for specified mission.
-        """
-        return [
-            part[NAME_TAG]
-            for part in self._get_mission_part_structures(mission_name)
-            if part.get(TYPE_TAG) in [ROUTE_TAG, PHASE_TAG]
-        ]
-
-    def _build_mission(self, mission_structure: OrderedDict) -> FlightSequence:
+    def _build_mission(self, mission_structure: OrderedDict) -> Mission:
         """
         Builds mission instance from provided structure.
 
         :param mission_structure: structure of the mission to build
         :return: the mission instance
         """
-        mission = FlightSequence()
 
         part_kwargs = self._get_part_kwargs({}, mission_structure)
+
+        mission = Mission(target_fuel_consumption=part_kwargs.get("target_fuel_consumption"))
 
         mission.name = mission_structure[NAME_TAG]
         for part_spec in mission_structure[PARTS_TAG]:
@@ -252,11 +234,25 @@ class MissionBuilder:
                 continue
             if part_spec[TYPE_TAG] == SEGMENT_TAG:
                 part = self._build_segment(part_spec, part_kwargs)
-            if part_spec[TYPE_TAG] == ROUTE_TAG:
+            elif part_spec[TYPE_TAG] == ROUTE_TAG:
                 part = self._build_route(part_spec, part_kwargs)
             elif part_spec[TYPE_TAG] == PHASE_TAG:
                 part = self._build_phase(part_spec, part_kwargs)
-            mission.flight_sequence.append(part)
+            else:
+                raise RuntimeError(
+                    "Unknown part type. This error should have been prevented "
+                    "by the JSON schema validation."
+                )
+            mission.append(part)
+
+        last_part = mission_structure[PARTS_TAG][-1]
+        if RESERVE_TAG in last_part:
+            mission.reserve_ratio = last_part[RESERVE_TAG]["multiplier"].value
+            base_route_name_definition = last_part[RESERVE_TAG].get("ref")
+            if base_route_name_definition:
+                mission.reserve_base_route_name = (
+                    f"{mission.name}:{base_route_name_definition.value}"
+                )
 
         return mission
 
@@ -328,7 +324,7 @@ class MissionBuilder:
                 flight_part = self._build_phase(part_structure, part_kwargs)
             else:
                 flight_part = self._build_segment(part_structure, part_kwargs)
-            phase.flight_sequence.append(flight_part)
+            phase.append(flight_part)
 
         return phase
 
@@ -421,3 +417,60 @@ class MissionBuilder:
                     return name
 
         return None
+
+    def _add_default_taxi_takeoff(self, mission_name):
+        definition = {
+            "phases": {
+                "taxi_out": {
+                    "parts": [
+                        {
+                            "segment": "start",
+                            "target": {
+                                "altitude": {"value": "~", "unit": "ft", "default": 0.0},
+                                "true_airspeed": {"value": "~", "unit": "m/s", "default": 0.0},
+                            },
+                        },
+                        {
+                            "segment": "taxi",
+                            "time_step": {
+                                "value": "settings:mission~",
+                                "default": 60.0,
+                                "unit": "s",
+                            },
+                            "thrust_rate": "~",
+                            "true_airspeed": {"value": "~", "unit": "m/s", "default": 0.0},
+                            "target": {"time": "~duration"},
+                        },
+                    ],
+                },
+                "takeoff": {
+                    "parts": [
+                        {
+                            "segment": "transition",
+                            "target": {
+                                "delta_altitude": {
+                                    "value": "~safety_altitude",
+                                    "unit": "ft",
+                                    "default": 35.0,
+                                },
+                                "delta_mass": {"value": "-~fuel", "unit": "kg"},
+                                "time": {"value": "~duration", "default": 0.0, "unit": "s"},
+                                "true_airspeed": {"value": "~V2", "unit": "m/s"},
+                            },
+                        },
+                        {
+                            "segment": "mass_input",
+                            "target": {"mass": {"value": "~~:TOW", "unit": "kg"}},
+                        },
+                    ]
+                },
+            }
+        }
+
+        taxi_out = PhaseStructureBuilder(definition, "taxi_out", mission_name)
+        taxi_out_structure = self._structure_builders[mission_name].process_builder(taxi_out)
+        self._structure_builders[mission_name].structure[PARTS_TAG].insert(0, taxi_out_structure)
+
+        takeoff = PhaseStructureBuilder(definition, "takeoff", mission_name)
+        takeoff_structure = self._structure_builders[mission_name].process_builder(takeoff)
+        self._structure_builders[mission_name].structure[PARTS_TAG].insert(1, takeoff_structure)

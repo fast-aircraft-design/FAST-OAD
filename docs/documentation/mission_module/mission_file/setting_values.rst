@@ -175,7 +175,7 @@ Example
 **Example 1**
 
 :code:`route_A` contains the parameter :code:`range` where a contextual variable name is affected,
-that will used the default prefix (:code:`data:mission:`) and the customized suffix
+that will use the default prefix (:code:`data:mission:`) and the customized suffix
 (:code:`distance`).
 
 :code:`route_A` is used as a step by both :code:`mission_1` and :code:`mission_2`.
@@ -200,7 +200,7 @@ Then the mission computation has among its inputs:
       - \data:mission
       - mission_2:route_A
       - distance
-      - \data:mission:mission_1:route_A:distance
+      - \data:mission:mission_2:route_A:distance
 
 
 **Examples 2 & 3**
@@ -209,7 +209,7 @@ Then the mission computation has among its inputs:
 variable names are affected.
 For :code:`thrust_rate`, default prefix (:code:`data:mission:`) and suffix (:code:`thrust_rate`)
 will be used.
-For :code:`time_step`, prefix is customized (:code:`settings:mission`) and default prefix
+For :code:`time_step`, prefix is customized (:code:`settings:mission`) and default suffix
 (:code:`time_step`) will be used.
 
 

@@ -21,6 +21,7 @@ from abc import ABC, abstractmethod
 from importlib.resources import open_text
 from typing import Dict
 
+import numpy as np
 import openmdao.api as om
 import tomlkit
 from jsonschema import validate
@@ -230,8 +231,14 @@ class FASTOADProblemConfigurator:
         if source_file_path:
             ref_vars = DataFile(source_file_path, formatter=source_formatter)
             variables.update(ref_vars, add_variables=False)
+            nan_variable_names = []
             for var in variables:
                 var.is_input = True
+                # Checking if variables have NaN values
+                if np.any(np.isnan(var.value)):
+                    nan_variable_names.append(var.name)
+            if nan_variable_names:
+                _LOGGER.warning("The following variables have NaN values: %s", nan_variable_names)
         variables.save()
 
     def get_optimization_definition(self) -> Dict:

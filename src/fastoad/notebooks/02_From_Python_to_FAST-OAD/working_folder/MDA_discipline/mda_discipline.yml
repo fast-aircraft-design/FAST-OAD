@@ -1,0 +1,37 @@
+title: Sample OAD Process
+
+# List of folder paths where user added custom registered OpenMDAO components
+module_folders:
+  - ./../../modules
+
+# Input and output files
+input_file: ./problem_inputs.xml
+output_file: ./problem_outputs.xml
+
+# Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
+driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
+
+# Definition of OpenMDAO model
+# Although "model" is a mandatory name for the top level of the model, its
+# sub-components can be freely named by user
+model:
+
+  #  Solvers are defined assuming the OpenMDAO convention "import openmdao.api as om"
+  nonlinear_solver: om.NonlinearBlockGS(maxiter=50, atol=1e-4)
+  linear_solver: om.DirectSolver()
+
+  # A group can be set with its own solvers.
+  geometry:
+    id: tutorial.fast_oad.geometry
+
+  aerodynamic:
+    id: tutorial.fast_oad.aerodynamics
+
+  mass:
+    id: tutorial.fast_oad.mass
+
+  performance:
+    id: tutorial.fast_oad.performance
+
+  mtow_update:
+    id: tutorial.fast_oad.update_mtow

@@ -84,7 +84,7 @@ Given this implementation::
     from typing import List
 
     @dataclass
-    class NewSegment(AbstractFlightSegment, mission_file_keyword="new_segment"):
+    class NewSegment(oad.AbstractFlightSegment, mission_file_keyword="new_segment"):
         my_float: float = 0.0
         my_bool: bool = True
         my_array: List[float] = field(default_factory=list)
@@ -115,7 +115,7 @@ Given this implementation::
         from dataclasses import dataclass
 
         @dataclass
-        class NewSegment(AbstractFlightSegment, mission_file_keyword="new_segment"):
+        class NewSegment(oad.AbstractFlightSegment, mission_file_keyword="new_segment"):
             my_mandatory_float: float = oad.MANDATORY_FIELD
             ...
 
@@ -132,7 +132,7 @@ The AbstractFlightSegment class
 
 As :ref:`previously said <adding-segments-links-with-mission-file>`, a segment class has to
 inherit from :class:`~fastoad.models.performances.mission.segments.base.AbstractFlightSegment`
-(and specify the `mission_file_keyword` if its usage if intended in mission definition files)
+(and specify the `mission_file_keyword` if its usage is intended in mission definition files)
 and will be implemented like this::
 
     import fastoad.api as oad
@@ -140,7 +140,7 @@ and will be implemented like this::
     from typing import List
 
     @dataclass
-    class NewSegment(AbstractFlightSegment, mission_file_keyword="new_segment"):
+    class NewSegment(oad.AbstractFlightSegment, mission_file_keyword="new_segment"):
         my_float: float = 0.0
         ...
 
@@ -153,7 +153,7 @@ The instantiation in FAST-OAD will be like this::
 
     import fastoad.api as oad
 
-    segment = NewSegment( target=oad.FlightPoint(altitude=5000.0, true_airspeed=200.0,
+    segment = NewSegment( target=oad.FlightPoint(altitude=5000.0, true_airspeed=200.0),
                           my_float=4.2,
                          ...
                         )

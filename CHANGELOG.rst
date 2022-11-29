@@ -2,6 +2,40 @@
 Changelog
 =========
 
+Version 1.4.1
+=============
+- Fixed:
+    - Fixed backward compatibility of bundled missions. (#466)
+
+Version 1.4.0
+=============
+
+- Changed:
+    - Added a new series of tutorials. (#426)
+    - Enhancements in mission module (#430 and #462), mainly:
+        - a parameter with a variable as value can now be associated to a unit and a default value that will be used in the OpenMDAO input declaration (and be in generated input data file).
+        - a target parameter can be declared as relative to the start point of the segment by prefixing the parameter name with "delta_"
+          when setting a parameter, a minus sign can be put before a variable name to get the opposite value (can be useful with relative values)
+        - a parameter can now be set at route or mission level.
+        - dISA can now be set in mission definition file with isa_offset.
+        - a mission phase can now contain other phases.
+        - if a segment parameter (dataclass field) is an array or a list, the associated variable in mission file will be declared with shape_by_conn=True.
+        - taxi-out and takeoff are no more automatically set outside of the mission definition file:
+            - mission starting point (altitude, speed, mass) can now be set using the "start" segment.
+            - the mass input of the mission can be set using the "mass_input" segment. This segment can be anywhere in the mission, though it is expected that fuel consumption in previous segments is mass-independent.
+            - if none of the two above solution is used to define a mass input variable, the mission module falls back to behaviour of earlier releases, i.e. the automatic addition of taxi-out and takeoff at beginning of the mission.
+    - Upgrade to wop 2.x API. (#453)
+
+- Fixed:
+    - Variable viewer was showing only one variable at a time if variable names contained no colon. (#456)
+    - Optimization viewer was handling incorrectly bounds with value 0. (#461)
+
+Version 1.3.5
+=============
+- Fixed:
+    - Deactivated automatic reports from OpenMDAO 3.17+ (can still be driven by environment variable OPENMDAO_REPORTS). (#449)
+    - Mass breakdown bar plot now accepts more than 5 datasets. The used color map is now consistent with othe FAST-OAD plots. (#451)
+
 Version 1.3.4
 =============
 - Fixed:

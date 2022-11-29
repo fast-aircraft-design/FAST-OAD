@@ -364,6 +364,9 @@
               }
             ]
           }
+        },
+        "use_all_block_fuel": {
+          "$ref": "#/definitions/boolean_parameter_value"
         }
       },
       "required": [
@@ -394,8 +397,7 @@
     }
   },
   "required": [
-    "missions",
-    "routes"
+    "missions"
   ],
   "additionalProperties": false
 }

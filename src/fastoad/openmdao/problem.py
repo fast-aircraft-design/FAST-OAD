@@ -10,7 +10,7 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+import os
 import warnings
 from copy import deepcopy
 from typing import Tuple
@@ -38,7 +38,8 @@ SHAPER_SYSTEM_NAME = "fastoad_shaper"
 
 
 class FASTOADProblem(om.Problem):
-    """Vanilla OpenMDAO Problem except that it can write its outputs to a file.
+    """
+    Vanilla OpenMDAO Problem except that it can write its outputs to a file.
 
     It also runs :class:`~fastoad.openmdao.validity_checker.ValidityDomainChecker`
     after each :meth:`run_model` or :meth:`run_driver`
@@ -46,6 +47,15 @@ class FASTOADProblem(om.Problem):
     """
 
     def __init__(self, *args, **kwargs):
+        if (
+            version.parse(openmdao.__version__) >= version.parse("3.17")
+            and "OPENMDAO_REPORTS" not in os.environ
+            and "reports" not in kwargs
+            and len(args) < 5
+        ):
+            # Automatic reports are deactivated for FAST-OAD, unless OPENMDAO_REPORTS env
+            # variable is set.
+            kwargs["reports"] = None
         super().__init__(*args, **kwargs)
 
         #: File path where :meth:`read_inputs` will read inputs
@@ -149,7 +159,7 @@ class FASTOADProblem(om.Problem):
         for name in unused_variables.names():
             del input_variables[name]
 
-        nan_variable_names = [var.name for var in input_variables if np.all(np.isnan(var.value))]
+        nan_variable_names = [var.name for var in input_variables if np.any(np.isnan(var.value))]
         if nan_variable_names:
             raise FASTOpenMDAONanInInputFile(self.input_file_path, nan_variable_names)
 
@@ -183,7 +193,9 @@ class FASTOADProblem(om.Problem):
             # create the "shaper" IVC, but we ignore it because we need to redefine these variables
             # in input file.
             ivc_vars = tmp_prob.model.get_io_metadata(
-                "output", tags="indep_var", excludes=f"{SHAPER_SYSTEM_NAME}.*"
+                "output",
+                tags=["indep_var", "openmdao:indep_var"],
+                excludes=f"{SHAPER_SYSTEM_NAME}.*",
             )
         for meta in ivc_vars.values():
             try:
@@ -244,35 +256,35 @@ class FASTOADProblem(om.Problem):
     ):
         # In OpenMDAO >3.16, get_io_metadata() won't complain after dynamically shaped, non-
         # connected inputs.
-        if version.parse(openmdao.__version__) > version.parse("3.16"):
+        if version.parse(openmdao.__version__) >= version.parse("3.17"):
             return system.get_io_metadata(iotypes)
-        else:
-            # For OpenMDAO<=3.16, we try the vanilla get_io_metadata() and if it fails, we
-            # try with our simplified implementation.
-            try:
-                return system.get_io_metadata(iotypes)
-            except RuntimeError:
-                prefix = system.pathname + "." if system.pathname else ""
-                rel_idx = len(prefix)
-                if isinstance(iotypes, str):
-                    iotypes = (iotypes,)
 
-                result = {}
-                for iotype in iotypes:
-                    for abs_name, prom in system._var_abs2prom[iotype].items():
-                        rel_name = abs_name[rel_idx:]
-                        meta = system._var_allprocs_abs2meta[iotype].get(abs_name)
-                        ret_meta = _MetadataDict(meta) if meta is not None else None
-                        if ret_meta is not None:
-                            ret_meta["prom_name"] = prom
-                            result[rel_name] = ret_meta
+        # For OpenMDAO<=3.16, we try the vanilla get_io_metadata() and if it fails, we
+        # try with our simplified implementation.
+        try:
+            return system.get_io_metadata(iotypes)
+        except RuntimeError:
+            prefix = system.pathname + "." if system.pathname else ""
+            rel_idx = len(prefix)
+            if isinstance(iotypes, str):
+                iotypes = (iotypes,)
 
-                warnings.warn(
-                    "Dynamically shaped problem inputs are better managed with OpenMDAO>3.16 "
-                    "Upgrade is recommended.",
-                    DeprecationWarning,
-                )
-                return result
+            result = {}
+            for iotype in iotypes:
+                for abs_name, prom in system._var_abs2prom[iotype].items():
+                    rel_name = abs_name[rel_idx:]
+                    meta = system._var_allprocs_abs2meta[iotype].get(abs_name)
+                    ret_meta = _MetadataDict(meta) if meta is not None else None
+                    if ret_meta is not None:
+                        ret_meta["prom_name"] = prom
+                        result[rel_name] = ret_meta
+
+            warnings.warn(
+                "Dynamically shaped problem inputs are better managed with OpenMDAO>3.16 "
+                "Upgrade is recommended.",
+                DeprecationWarning,
+            )
+            return result
 
 
 class AutoUnitsDefaultGroup(om.Group):
