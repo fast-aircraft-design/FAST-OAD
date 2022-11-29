@@ -22,7 +22,7 @@ from scipy.constants import foot, knot
 
 from fastoad._utils.testing import run_system
 from fastoad.io import DataFile
-from ..mission import Mission, MissionComponent
+from ..mission import OMMission, MissionComponent
 from ..mission_wrapper import MissionWrapper
 from ...mission_definition.exceptions import FastMissionFileMissingMissionNameError
 
@@ -194,7 +194,7 @@ def test_mission_group_without_loop(cleanup, with_dummy_plugin_2):
 
     with pytest.raises(FastMissionFileMissingMissionNameError):
         run_system(
-            Mission(
+            OMMission(
                 propulsion_id="test.wrapper.propulsion.dummy_engine",
                 out_file=pth.join(RESULTS_FOLDER_PATH, "test_unlooped_mission_group.csv"),
                 use_initializer_iteration=False,
@@ -205,7 +205,7 @@ def test_mission_group_without_loop(cleanup, with_dummy_plugin_2):
         )
 
     problem = run_system(
-        Mission(
+        OMMission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
             out_file=pth.join(RESULTS_FOLDER_PATH, "test_unlooped_mission_group.csv"),
             use_initializer_iteration=False,
@@ -230,7 +230,7 @@ def test_mission_group_with_loop(cleanup, with_dummy_plugin_2):
     # ivc.add_output("data:geometry:wing:area", 100.0, units="m**2")
 
     problem = run_system(
-        Mission(
+        OMMission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
             out_file=pth.join(RESULTS_FOLDER_PATH, "test_looped_mission_group.csv"),
             use_initializer_iteration=True,
