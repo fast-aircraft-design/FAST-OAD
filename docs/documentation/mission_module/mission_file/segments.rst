@@ -517,3 +517,29 @@ Therefore, the next example is equivalent to the previous one:
 
     segment: cruise
     polar: data:aerodynamics:aircraft:cruise
+
+Four special sub-keys are necessary to realise the segments dedicated to takeoff.
+During takeoff and rotation, the polar should be expressed as a function of the Angle of Attack (AoA)
+and take into account the ground effect (if any).
+The polar will be automatically constructed as a function of the AoA when adding the keys:
+
+:code:`CL0_clean` : the aircraft lift coefficient in clean configuration at AoA = 0.
+
+:code:`CL_alpha` : the aircraft lift slope coefficient.
+
+:code:`CL_high_lift` : the lift increment due to high lift systems.
+
+The ground effect requires to select a model using the keyword :code:`ground_effect`, for now the only available
+model is :code:`Raymer`. When left empty or removed, the ground effect is simply ignored.
+
+The polar for the takeoff phase should then look like:
+
+.. code-block:: yaml
+
+    polar:
+      CL: data:aerodynamics:aircraft:takeoff:CL
+      CD: data:aerodynamics:aircraft:takeoff:CD
+      ground_effect: Raymer
+      CL0_clean: data:aerodynamics:aircraft:takeoff:CL0_clean
+      CL_alpha: data:aerodynamics:aircraft:takeoff:CL_alpha
+      CL_high_lift: data:aerodynamics:high_lift_devices:takeoff:CL
