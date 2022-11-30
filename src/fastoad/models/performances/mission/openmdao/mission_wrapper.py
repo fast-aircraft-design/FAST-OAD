@@ -40,27 +40,29 @@ class MissionWrapper(MissionBuilder):
     Wrapper around
     :class:`~fastoad.models.performances.mission.mission_definition.mission_builder.MissionBuilder`
     for using with OpenMDAO.
+
+    Unlike its parent class, the `mission_name` argument is mandatory at instantiation, unless
+    there is only one mission in the definition file.
     """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.mission_name = None
         self.consumed_fuel_before_input_weight = 0.0
+        if self.mission_name is None:
+            raise RuntimeError(
+                "Mission name should be specified when instantiating MissionWrapper."
+            )
 
-    def setup(self, component: om.ExplicitComponent, mission_name: str = None):
+    def setup(self, component: om.ExplicitComponent):
         """
         To be used during setup() of provided OpenMDAO component.
 
         It adds input and output variables deduced from mission definition file.
 
         :param component: the OpenMDAO component where the setup is done.
-        :param mission_name: mission name (can be omitted if only one mission is defined)
         """
 
-        if mission_name is None:
-            mission_name = self.get_unique_mission_name()
-        self.mission_name = mission_name
-        input_definition = self.get_input_variables(mission_name)
+        input_definition = self.get_input_variables(self.mission_name)
         output_definition = self._identify_outputs()
         output_definition = {
             name: value
