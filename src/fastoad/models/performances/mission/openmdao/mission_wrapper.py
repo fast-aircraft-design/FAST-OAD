@@ -14,7 +14,7 @@ Mission wrapper.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Dict, Tuple
+from typing import Dict, Optional, Tuple, Union
 
 import numpy as np
 import openmdao.api as om
@@ -22,11 +22,13 @@ import pandas as pd
 from openmdao.vectors.vector import Vector
 
 from fastoad.model_base import FlightPoint
+from fastoad.model_base.propulsion import IPropulsion
 from ..mission_definition.mission_builder import MissionBuilder
 from ..mission_definition.schema import (
     CLIMB_PARTS_TAG,
     DESCENT_PARTS_TAG,
     MISSION_DEFINITION_TAG,
+    MissionDefinition,
     PARTS_TAG,
     PHASE_TAG,
     RESERVE_TAG,
@@ -45,13 +47,40 @@ class MissionWrapper(MissionBuilder):
     there is only one mission in the definition file.
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        mission_definition: Union[str, MissionDefinition],
+        *,
+        propulsion: IPropulsion = None,
+        reference_area: float = None,
+        mission_name: Optional[str] = None,
+        variable_prefix: str = "data:mission",
+        force_all_block_fuel_usage: bool = False,
+    ):
+        """
+        :param mission_definition: a file path or MissionDefinition instance
+        :param propulsion: if not provided, the property :attr:`propulsion` must be
+                           set before calling :meth:`build`
+        :param reference_area: if not provided, the property :attr:`reference_area` must be
+                               set before calling :meth:`build`
+        :param mission_name: name of chosen mission. Can be omitted if definition file contains
+                             only one mission.
+        :param variable_prefix: prefix for auto-generated variable names.
+        :param force_all_block_fuel_usage: if True and if `mission_name` is provided, the mission
+                                           definition will be modified to set the target fuel
+                                           consumption to variable  "~:block_fuel"
+        """
+        super().__init__(
+            mission_definition,
+            propulsion=propulsion,
+            reference_area=reference_area,
+            mission_name=mission_name,
+            variable_prefix=variable_prefix,
+        )
         self.consumed_fuel_before_input_weight = 0.0
-        if self.mission_name is None:
-            raise RuntimeError(
-                "Mission name should be specified when instantiating MissionWrapper."
-            )
+        if force_all_block_fuel_usage and self.mission_name:
+            self.definition.force_all_block_fuel_usage(mission_name)
+            self._update_structure_builders()
 
     def setup(self, component: om.ExplicitComponent):
         """

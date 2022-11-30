@@ -161,9 +161,9 @@ def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
             out_file=pth.join(RESULTS_FOLDER_PATH, "breguet.csv"),
             use_initializer_iteration=False,
             mission_file_path=MissionWrapper(
-                pth.join(DATA_FOLDER_PATH, "test_breguet_from_block_fuel.yml")
+                pth.join(DATA_FOLDER_PATH, "test_breguet_from_block_fuel.yml"),
+                mission_name="operational",
             ),
-            mission_name="operational",
             reference_area_variable="data:geometry:aircraft:reference_area",
         ),
         ivc,
