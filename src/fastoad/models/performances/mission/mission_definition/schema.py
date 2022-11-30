@@ -76,20 +76,26 @@ class MissionDefinition(OrderedDict):
         validate(data, json_schema)
 
         self._validate(data)
+        self._convert_none_values(data)
+
         self.update(data)
+
+        for mission_name in self[MISSION_DEFINITION_TAG]:
+            if self[MISSION_DEFINITION_TAG][mission_name].get("use_all_block_fuel"):
+                self.force_all_block_fuel_usage(mission_name)
+
+    def force_all_block_fuel_usage(self, mission_name):
+        mission_definitions = self[MISSION_DEFINITION_TAG]
+        if mission_name in mission_definitions:
+            mission_definitions[mission_name]["target_fuel_consumption"] = {
+                "value": "~:block_fuel",
+                "unit": "kg",
+            }
 
     @classmethod
     def _validate(cls, content: dict):
         """
         Does a second pass validation of file content.
-
-        Also applies thess features:
-            * None values are set back to "~".
-            *       - polar: foo:bar
-                is translated to:
-                    - polar:
-                        CL: foo:bar:CL
-                        CD: foo:bar:CD
 
         Errors are raised if file content is incorrect.
 
@@ -119,8 +125,6 @@ class MissionDefinition(OrderedDict):
             if reserve_count == 1:
                 # reserve definition should be the last part
                 Ensure(part_type).equals(RESERVE_TAG)
-
-        cls._convert_none_values(content)
 
     @classmethod
     def _convert_none_values(cls, struct: Union[dict, list]):
