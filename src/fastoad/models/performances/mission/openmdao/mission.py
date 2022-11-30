@@ -146,11 +146,12 @@ class OMMission(om.Group):
             file_name = self.options["mission_file_path"][i + 2 :] + ".yml"
             with path(resources, file_name) as mission_input_file:
                 self.options["mission_file_path"] = MissionDefinition(mission_input_file)
-        self._mission_wrapper = MissionWrapper(self.options["mission_file_path"])
-        if self.options["mission_name"] is None:
-            self.options["mission_name"] = self._mission_wrapper.get_unique_mission_name()
+        self._mission_wrapper = MissionWrapper(
+            self.options["mission_file_path"],
+            mission_name=self.options["mission_name"],
+        )
 
-        mission_name = self.options["mission_name"]
+        mission_name = self._mission_wrapper.mission_name
         mission_options = dict(self.options.items())
         del mission_options["adjust_fuel"]
         del mission_options["compute_input_weight"]

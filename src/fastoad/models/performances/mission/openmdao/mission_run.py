@@ -65,7 +65,9 @@ class MissionRun(om.ExplicitComponent):
         )
         self.options.declare(
             "mission_name",
+            default=None,
             types=str,
+            allow_none=True,
             desc="The mission name. Required if mission file defines several missions.",
         )
         self.options.declare(
@@ -86,16 +88,14 @@ class MissionRun(om.ExplicitComponent):
         self._engine_wrapper.setup(self)
 
         self._mission_wrapper = self._get_mission_wrapper()
-        self._mission_wrapper.setup(
-            self,
-            self.options["mission_name"],
-        )
+        self._mission_wrapper.setup(self)
 
-        mission_name = self.options["mission_name"]
-
+        if self.options["mission_name"] is not None:
+            self._mission_wrapper.mission_name = self.options["mission_name"]
+        mission_name = self._mission_wrapper.mission_name
         self._name_provider = self.get_variable_name_provider(mission_name)
         self._input_weight_variable_name = self._mission_wrapper.get_input_weight_variable_name(
-            self.options["mission_name"]
+            mission_name
         )
 
         try:
@@ -187,7 +187,10 @@ class MissionRun(om.ExplicitComponent):
         if isinstance(self.options["mission_file_path"], MissionWrapper):
             mission_wrapper = self.options["mission_file_path"]
         else:
-            mission_wrapper = MissionWrapper(self.options["mission_file_path"])
+            mission_wrapper = MissionWrapper(
+                self.options["mission_file_path"], mission_name=self.options["mission_name"]
+            )
+
         mission_wrapper.variable_prefix = self.options["variable_prefix"]
         return mission_wrapper
 
@@ -261,9 +264,7 @@ class MissionAdvancedRun(MissionRun):
         propulsion_model = self._engine_wrapper.get_model(inputs)
 
         high_speed_polar = self._get_initial_polar(inputs)
-        distance = np.sum(
-            self._mission_wrapper.get_route_ranges(inputs, self.options["mission_name"])
-        ).item()
+        distance = np.sum(self._mission_wrapper.get_route_ranges(inputs)).item()
 
         altitude = 100.0
         cruise_mach = 0.1

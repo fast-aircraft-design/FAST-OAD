@@ -98,8 +98,9 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
             propulsion_id="test.wrapper.propulsion.dummy_engine",
             out_file=pth.join(RESULTS_FOLDER_PATH, "mission.csv"),
             use_initializer_iteration=False,
-            mission_file_path=MissionWrapper(pth.join(DATA_FOLDER_PATH, "test_mission.yml")),
-            mission_name="operational",
+            mission_file_path=MissionWrapper(
+                pth.join(DATA_FOLDER_PATH, "test_mission.yml"), mission_name="operational"
+            ),
             reference_area_variable="data:geometry:aircraft:reference_area",
         ),
         ivc,
