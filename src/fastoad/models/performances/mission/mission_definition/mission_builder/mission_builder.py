@@ -71,6 +71,9 @@ class MissionBuilder:
                                set before calling :meth:`build`
         :param mission_name: name of chosen mission, if already decided.
         :param variable_prefix: prefix for auto-generated variable names.
+        :param force_all_block_fuel_usage: if True and if `mission_name` is provided, the mission
+                                           definition will be modified to set the target fuel
+                                           consumption to variable  "~:block_fuel"
         """
         self._structure_builders: Dict[str, AbstractStructureBuilder] = {}
 
@@ -81,6 +84,7 @@ class MissionBuilder:
         self.definition: MissionDefinition = mission_definition
 
         self._mission_name = mission_name
+
         self._base_kwargs = {"reference_area": reference_area, "propulsion": propulsion}
 
     @property
@@ -99,13 +103,7 @@ class MissionBuilder:
         else:
             self._definition = mission_definition
 
-        for mission_name in self._definition[MISSION_DEFINITION_TAG]:
-            self._structure_builders[mission_name] = MissionStructureBuilder(
-                self._definition, mission_name, variable_prefix=self.variable_prefix
-            )
-
-            if self.get_input_weight_variable_name(mission_name) is None:
-                self._add_default_taxi_takeoff(mission_name)
+        self._update_structure_builders()
 
     @property
     def propulsion(self) -> IPropulsion:
@@ -256,6 +254,15 @@ class MissionBuilder:
         return self._get_input_weight_variable_name_in_structure(
             self._get_mission_part_structures(mission_name)
         )
+
+    def _update_structure_builders(self):
+        for mission_name in self._definition[MISSION_DEFINITION_TAG]:
+            self._structure_builders[mission_name] = MissionStructureBuilder(
+                self._definition, mission_name, variable_prefix=self.variable_prefix
+            )
+
+            if self.get_input_weight_variable_name(mission_name) is None:
+                self._add_default_taxi_takeoff(mission_name)
 
     def _build_mission(self, mission_structure: OrderedDict) -> Mission:
         """
