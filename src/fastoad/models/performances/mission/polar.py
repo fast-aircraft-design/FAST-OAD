@@ -22,11 +22,17 @@ class Polar:
     _use_CL_alpha = False
 
     gnd_effect_variables_raymer = {
-        "span": "data:geometry:wing:span",
-        "lg_height": "data:geometry:landing_gear:height",
-        "induced_drag_coef": "data:aerodynamics:aircraft:low_speed:induced_drag_coefficient",
-        "k_winglet": "tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k",
-        "k_cd": "tuning:aerodynamics:aircraft:cruise:CD:k",
+        "span": {"name": "data:geometry:wing:span", "unit": "m"},
+        "lg_height": {"name": "data:geometry:landing_gear:height", "unit": "m"},
+        "induced_drag_coef": {
+            "name": "data:aerodynamics:aircraft:low_speed:induced_drag_coefficient",
+            "unit": None,
+        },
+        "k_winglet": {
+            "name": "tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k",
+            "unit": None,
+        },
+        "k_cd": {"name": "tuning:aerodynamics:aircraft:cruise:CD:k", "unit": None},
     }
 
     def __init__(self, input_arg=None):

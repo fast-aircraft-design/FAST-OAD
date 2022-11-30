@@ -263,7 +263,7 @@ class AbstractStructureBuilder(ABC):
                     gnd_effect = polar_structure[GROUND_EFFECT_TAG]
                     polar = Polar()
                     for name, value in polar.get_gnd_effect_model(gnd_effect).items():
-                        polar_structure[name] = {"value": value}
+                        polar_structure[name] = {"value": value["name"], "unit": value["unit"]}
 
         return polar_structure
 

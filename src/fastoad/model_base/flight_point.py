@@ -103,7 +103,7 @@ class FlightPoint:
     slope_angle: float = None  #: Slope angle in radians.
     acceleration: float = None  #: Acceleration value in m/s**2.
     alpha: float = None  #: angle of attack in rad
-    slop_angle_derivative: float = None  #: slope angle derivative in rad/s
+    slope_angle_derivative: float = None  #: slope angle derivative in rad/s
     name: str = None  #: Name of current phase.
 
     _units = dict(

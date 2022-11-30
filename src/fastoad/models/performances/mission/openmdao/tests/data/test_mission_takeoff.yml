@@ -24,7 +24,9 @@ phases:
       CD: data:aerodynamics:aircraft:takeoff:CD
       ground_effect: Raymer
       CL0_clean: data:aerodynamics:aircraft:takeoff:CL0_clean
-      CL_alpha: data:aerodynamics:aircraft:takeoff:CL_alpha
+      CL_alpha:
+        value: data:aerodynamics:aircraft:takeoff:CL_alpha
+        unit: 1/rad
       CL_high_lift: data:aerodynamics:high_lift_devices:takeoff:CL
     thrust_rate: 1.0
     isa_offset: data:mission:operational:ISA_offset
@@ -51,7 +53,9 @@ phases:
       CD: data:aerodynamics:aircraft:takeoff:CD
       ground_effect: none
       CL0_clean: data:aerodynamics:aircraft:takeoff:CL0_clean
-      CL_alpha: data:aerodynamics:aircraft:takeoff:CL_alpha
+      CL_alpha:
+        value: data:aerodynamics:aircraft:takeoff:CL_alpha
+        unit: 1/rad
       CL_high_lift: data:aerodynamics:high_lift_devices:takeoff:CL
     thrust_rate: 1.0
     isa_offset: data:mission:operational:ISA_offset
@@ -83,7 +87,9 @@ phases:
       CD: data:aerodynamics:aircraft:takeoff:CD
       ground_effect: Raymer
       CL0_clean: data:aerodynamics:aircraft:takeoff:CL0_clean
-      CL_alpha: data:aerodynamics:aircraft:takeoff:CL_alpha
+      CL_alpha:
+        value: data:aerodynamics:aircraft:takeoff:CL_alpha
+        unit: 1/rad
       CL_high_lift: data:aerodynamics:high_lift_devices:takeoff:CL
     thrust_rate: 1.0
     isa_offset: data:mission:operational:ISA_offset
