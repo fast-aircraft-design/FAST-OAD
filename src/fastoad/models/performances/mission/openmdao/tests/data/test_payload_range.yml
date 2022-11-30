@@ -1,0 +1,78 @@
+phases:
+  start:
+    parts:
+      - segment: start
+        target:
+          altitude:
+            value: ~
+            unit: ft
+            default: 0.0
+          true_airspeed:
+            value: ~
+            unit: m/s
+            default: 0.0
+  taxi_out:
+    parts:
+      - segment: taxi
+        isa_offset: 0.0
+        thrust_rate: 0.3
+        true_airspeed: 0.0
+        target:
+          time: ~duration
+      - segment: mass_input
+        target:
+          mass: ~~TOW
+  takeoff:
+    parts:
+      - segment: transition
+        target:
+          delta_altitude:
+            value: 35
+            unit: ft
+          delta_mass: -data:mission:operational:takeoff:fuel
+          true_airspeed: data:mission:operational:takeoff:V2
+  climb:
+    parts:
+      - segment: transition
+        target:
+          altitude:
+            value: 34000
+            unit: ft
+          mach: 0.78
+          ground_distance:
+            value: 250
+            unit: NM
+        mass_ratio: 0.988
+  descent:
+    parts:
+      - segment: transition
+        target:
+          altitude: 0.
+          mach: 0.
+          ground_distance:
+            value: 250
+            unit: NM
+        mass_ratio: 0.997
+        reserve_mass_ratio: 0.013
+
+routes:
+  main_route:
+    range:
+      value: 2000.
+      unit: NM
+    climb_parts:
+      - phase: climb
+    cruise_part:
+      segment: breguet
+      engine_setting: cruise
+      polar: data:aerodynamics:aircraft:cruise
+    descent_parts:
+      - phase: descent
+
+missions:
+  operational:
+    parts:
+      - phase: start
+      - phase: taxi_out
+      - phase: takeoff
+      - route: main_route
