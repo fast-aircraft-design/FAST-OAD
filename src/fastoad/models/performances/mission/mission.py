@@ -87,7 +87,7 @@ class Mission(FlightSequence):
 
     def get_reserve_fuel(self):
         """:returns: the fuel quantity for reserve, obtained after mission computation."""
-        if not self.reserve_ratio:
+        if not self.reserve_ratio or not self.part_flight_points:
             return 0.0
 
         reserve_points = self.part_flight_points[-1]
@@ -130,17 +130,21 @@ class Mission(FlightSequence):
         matches provided consumed fuel.
         """
 
-        self.first_route.solve_distance = False
-        input_cruise_distance = self.first_route.flight_distance
+        if self.target_fuel_consumption == 0.0:
+            start.name = self.name
+            self._flight_points = pd.DataFrame([start, start])
+        else:
+            self.first_route.solve_distance = False
+            input_cruise_distance = self.first_route.flight_distance
 
-        root_scalar(
-            self._compute_flight,
-            args=(start,),
-            x0=input_cruise_distance * 0.5,
-            x1=input_cruise_distance * 1.0,
-            xtol=self.fuel_accuracy,
-            method="secant",
-        )
+            root_scalar(
+                self._compute_flight,
+                args=(start,),
+                x0=input_cruise_distance * 0.5,
+                x1=input_cruise_distance * 1.0,
+                xtol=self.fuel_accuracy,
+                method="secant",
+            )
 
         return self._flight_points
 
