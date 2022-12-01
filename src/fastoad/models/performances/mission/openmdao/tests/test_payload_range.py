@@ -45,6 +45,7 @@ def test_payload_range(cleanup, with_dummy_plugin_2):
             mission_file_path=pth.join(DATA_FOLDER_PATH, "test_payload_range.yml"),
             mission_name="operational",
             reference_area_variable="data:geometry:aircraft:reference_area",
+            nb_contour_points=6,
         ),
         ivc,
     )
@@ -54,14 +55,14 @@ def test_payload_range(cleanup, with_dummy_plugin_2):
 
     assert_allclose(
         problem["data:payload_range:operational:payload"].squeeze(),
-        [19000.0, 19000.0, 9300.0, 0.0],
+        [19000.0, 19000.0, 15300.0, 10200.0, 5100.0, 0.0],
     )
     assert_allclose(
         problem["data:payload_range:operational:block_fuel"].squeeze(),
-        [0.0, 11300.0, 21000.0, 21000.0],
+        [0.0, 11300.0, 15000.0, 15000.0, 15000.0, 15000.0],
     )
     assert_allclose(
         problem.get_val("data:payload_range:operational:range", "km").squeeze(),
-        [0.0, 7210.0, 15022.0, 17421.0],
+        [0.0, 7210.0, 10026.0, 10826.0, 11673.0, 12574.0],
         atol=0.5,
     )

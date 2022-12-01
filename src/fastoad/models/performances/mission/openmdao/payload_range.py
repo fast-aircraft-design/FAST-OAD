@@ -13,7 +13,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-from enum import Enum
 from importlib.resources import path
 
 import numpy as np
@@ -61,6 +60,14 @@ class PayloadRange(om.Group):
             types=str,
             desc="Defines the name of the variable for providing aircraft reference surface area.",
         )
+        self.options.declare(
+            "nb_contour_points",
+            default=4,
+            types=int,
+            lower=4,
+            desc='If >4, additional points are used in the final "MFW slope" of '
+            "the diagram contour.",
+        )
 
     def setup(self):
 
@@ -77,17 +84,19 @@ class PayloadRange(om.Group):
         self.add_subsystem("contour_calc", contour_subgroup, promotes=["*"])
 
     def _get_payload_range_contour_group(self):
+        """Creates a group for computing payload-range contour."""
         mission_name = self.options["mission_name"]
+        nb_contour_points = self.options["nb_contour_points"]
 
         group = om.Group()
 
         group.add_subsystem(
             "input_grid",
-            PayloadRangeContourInputValues(mission_name=mission_name),
+            PayloadRangeContourInputValues(mission_name=mission_name, nb_points=nb_contour_points),
             promotes=["*"],
         )
-        n_contour_points = 4
-        for i in range(n_contour_points):
+
+        for i in range(nb_contour_points):
             mission_wrapper = MissionWrapper(
                 self.options["mission_file_path"],
                 mission_name=mission_name,
@@ -96,7 +105,7 @@ class PayloadRange(om.Group):
 
             options = dict(self.options.items())
             options["mission_file_path"] = mission_wrapper
-
+            del options["nb_contour_points"]
             mission_inputs = get_variable_list_from_system(
                 MissionRun(**options), io_status="inputs"
             )
@@ -132,7 +141,7 @@ class PayloadRange(om.Group):
                 f"{subsys_name}.data:mission:{mission_name}:distance",
                 f"mux.range_{i}",
             )
-        mux_comp = group.add_subsystem(name="mux", subsys=om.MuxComp(vec_size=n_contour_points))
+        mux_comp = group.add_subsystem(name="mux", subsys=om.MuxComp(vec_size=nb_contour_points))
         mux_comp.add_var("range", shape=(1,), axis=0, units="m")
         group.promotes("mux", outputs=[("range", f"data:payload_range:{mission_name}:range")])
 
@@ -153,6 +162,13 @@ class PayloadRangeContourInputValues(om.ExplicitComponent):
             allow_none=True,
             desc="The mission name. Required if mission file defines several missions.",
         )
+        self.options.declare(
+            "nb_points",
+            default=4,
+            types=int,
+            lower=4,
+            desc='If >4, additional points are used in the final "MFW slope" of the diagram.',
+        )
 
     def setup(self):
         mission_name = self.options["mission_name"]
@@ -166,36 +182,40 @@ class PayloadRangeContourInputValues(om.ExplicitComponent):
             val=np.nan,
             units="kg",
         )
-
-        self.add_output(f"data:payload_range:{mission_name}:payload", shape=(4, 1), units="kg")
-        self.add_output(f"data:payload_range:{mission_name}:block_fuel", shape=(4, 1), units="kg")
-        self.add_output(f"data:payload_range:{mission_name}:TOW", shape=(4, 1), units="kg")
+        nb_points = self.options["nb_points"]
+        self.add_output(
+            f"data:payload_range:{mission_name}:payload", shape=(nb_points, 1), units="kg"
+        )
+        self.add_output(
+            f"data:payload_range:{mission_name}:block_fuel", shape=(nb_points, 1), units="kg"
+        )
+        self.add_output(f"data:payload_range:{mission_name}:TOW", shape=(nb_points, 1), units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mission_name = self.options["mission_name"]
+        nb_points = self.options["nb_points"]
 
         max_payload = inputs["data:weight:aircraft:max_payload"]
-        outputs[f"data:payload_range:{mission_name}:payload"] = [
-            max_payload,
-            max_payload,
-            self._calculate_payload_at_max_takeoff_weight_and_max_fuel_weight(inputs),
-            0.0,
-        ]
+        payload_at_max_takeoff_weight_and_max_fuel_weight = (
+            self._calculate_payload_at_max_takeoff_weight_and_max_fuel_weight(inputs)
+        )
 
-        outputs[f"data:payload_range:{mission_name}:block_fuel"][0] = 0.0
-        outputs[f"data:payload_range:{mission_name}:block_fuel"][
-            1
-        ] = self._calculate_block_fuel_at_max_takeoff_weight(inputs, max_payload)
+        payload_values = outputs[f"data:payload_range:{mission_name}:payload"]
+        block_fuel_values = outputs[f"data:payload_range:{mission_name}:block_fuel"]
+        TOW_values = outputs[f"data:payload_range:{mission_name}:TOW"]
 
-        outputs[f"data:payload_range:{mission_name}:block_fuel"][2:] = inputs[
-            "data:weight:aircraft:MFW"
-        ]
+        payload_values[0:2] = max_payload
+        payload_values[2:] = np.linspace(
+            payload_at_max_takeoff_weight_and_max_fuel_weight, 0.0, nb_points - 2
+        )
 
-        outputs[f"data:payload_range:{mission_name}:TOW"][:2] = inputs["data:weight:aircraft:MTOW"]
-        outputs[f"data:payload_range:{mission_name}:TOW"][
-            2:
-        ] = self._calculate_takeoff_weight_at_max_fuel_weight(
-            inputs, outputs[f"data:payload_range:{mission_name}:payload"][2:]
+        block_fuel_values[0] = 0.0
+        block_fuel_values[1] = self._calculate_block_fuel_at_max_takeoff_weight(inputs, max_payload)
+        block_fuel_values[2:] = inputs["data:weight:aircraft:MFW"]
+
+        TOW_values[:2] = inputs["data:weight:aircraft:MTOW"]
+        TOW_values[2:] = self._calculate_takeoff_weight_at_max_fuel_weight(
+            inputs, payload_values[2:]
         )
 
     def _calculate_block_fuel_at_max_takeoff_weight(self, inputs, payload):
@@ -234,21 +254,3 @@ class PayloadRangeContourInputValues(om.ExplicitComponent):
             - inputs["data:weight:aircraft:OWE"]
         )
         return payload_at_max_takeoff_weight_and_max_fuel_weight
-
-
-def _get_variable_name_provider(mission_name):
-    """Factory for enum class that provide mission variable names."""
-
-    def get_variable_name(suffix):
-        return f"data:payload_range:{mission_name}:{suffix}"
-
-    class VariableNames(Enum):
-        """Enum with mission-related variable names."""
-
-        ZFW = get_variable_name("ZFW")
-        PAYLOAD = get_variable_name("payload")
-        BLOCK_FUEL = get_variable_name("block_fuel")
-        NEEDED_BLOCK_FUEL = get_variable_name("needed_block_fuel")
-        CONSUMED_FUEL_BEFORE_INPUT_WEIGHT = get_variable_name("consumed_fuel_before_input_weight")
-
-    return VariableNames
