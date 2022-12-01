@@ -63,6 +63,6 @@ def test_payload_range(cleanup, with_dummy_plugin_2):
     )
     assert_allclose(
         problem.get_val("data:payload_range:operational:range", "km").squeeze(),
-        [0.0, 7210.0, 10026.0, 10826.0, 11673.0, 12574.0],
+        [0.0, 6745.0, 9594.0, 10454.0, 11378.0, 12377.0],
         atol=0.5,
     )

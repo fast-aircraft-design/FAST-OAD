@@ -164,6 +164,20 @@ class MissionBuilder:
         mission = self._build_mission(self._structure_builders[mission_name].structure)
         return mission
 
+    def get_route_names(self, mission_name: str = None) -> List[str]:
+        """
+
+        :param mission_name:
+        :return: a list with names of all routes in the mission, in order.
+        """
+        if mission_name is None:
+            mission_name = self.mission_name
+
+        mission_parts = self.definition[MISSION_DEFINITION_TAG][mission_name][PARTS_TAG]
+        route_names = [part[ROUTE_TAG] for part in mission_parts if ROUTE_TAG in part]
+
+        return route_names
+
     def get_route_ranges(
         self, inputs: Optional[Mapping] = None, mission_name: str = None
     ) -> List[float]:
