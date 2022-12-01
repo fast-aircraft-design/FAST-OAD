@@ -96,12 +96,35 @@ class PayloadRange(om.Group):
             promotes=["*"],
         )
 
+        var_connections = [
+            (
+                f"data:payload_range:{mission_name}:block_fuel",
+                f"data:mission:{mission_name}:block_fuel",
+            ),
+            (
+                f"data:payload_range:{mission_name}:TOW",
+                f"data:mission:{mission_name}:TOW",
+            ),
+        ]
+
         mission_wrapper = MissionWrapper(
             self.options["mission_file_path"],
             mission_name=mission_name,
             force_all_block_fuel_usage=True,
         )
-        first_route_name = mission_wrapper.get_route_names()[0]
+
+        self._add_mission_runs(group, mission_wrapper, var_connections)
+
+        mux_comp = group.add_subsystem(name="mux", subsys=om.MuxComp(vec_size=nb_contour_points))
+        mux_comp.add_var("range", shape=(1,), axis=0, units="m")
+        group.promotes("mux", outputs=[("range", f"data:payload_range:{mission_name}:range")])
+
+        return group
+
+    def _add_mission_runs(self, group, mission_wrapper, var_connections):
+
+        mission_name = self.options["mission_name"]
+        nb_contour_points = self.options["nb_contour_points"]
 
         mission_options = dict(self.options.items())
         mission_options["mission_file_path"] = mission_wrapper
@@ -110,43 +133,32 @@ class PayloadRange(om.Group):
             MissionRun(**mission_options), io_status="inputs"
         )
 
+        first_route_name = mission_wrapper.get_route_names()[0]
         for i in range(nb_contour_points):
             subsys_name = f"mission_{i}"
             group.add_subsystem(subsys_name, MissionRun(**mission_options))
 
             # Connect block_fuel and TOW mission inputs to contour inputs
-            group.connect(
-                f"data:payload_range:{mission_name}:block_fuel",
-                f"{subsys_name}.data:mission:{mission_name}:block_fuel",
-                src_indices=[i],
-            )
-            group.connect(
-                f"data:payload_range:{mission_name}:TOW",
-                f"{subsys_name}.data:mission:{mission_name}:TOW",
-                src_indices=[i],
-            )
+            for payload_range_var, mission_var in var_connections:
+                group.connect(
+                    payload_range_var,
+                    f"{subsys_name}.{mission_var}",
+                    src_indices=[i],
+                )
 
             # All other inputs are promoted.
             promoted_inputs = [
                 variable.name
                 for variable in mission_inputs
-                if variable.name
-                not in [
-                    f"data:mission:{mission_name}:block_fuel",
-                    f"data:mission:{mission_name}:TOW",
-                ]
+                if variable.name not in [var_conn[1] for var_conn in var_connections]
             ]
+
             group.promotes(subsys_name, inputs=promoted_inputs)
 
             group.connect(
                 f"{subsys_name}.data:mission:{mission_name}:{first_route_name}:distance",
                 f"mux.range_{i}",
             )
-        mux_comp = group.add_subsystem(name="mux", subsys=om.MuxComp(vec_size=nb_contour_points))
-        mux_comp.add_var("range", shape=(1,), axis=0, units="m")
-        group.promotes("mux", outputs=[("range", f"data:payload_range:{mission_name}:range")])
-
-        return group
 
 
 class PayloadRangeContourInputValues(om.ExplicitComponent):
