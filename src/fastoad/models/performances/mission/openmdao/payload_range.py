@@ -96,22 +96,23 @@ class PayloadRange(om.Group):
             promotes=["*"],
         )
 
+        mission_wrapper = MissionWrapper(
+            self.options["mission_file_path"],
+            mission_name=mission_name,
+            force_all_block_fuel_usage=True,
+        )
+        first_route_name = mission_wrapper.get_route_names()[0]
+
+        mission_options = dict(self.options.items())
+        mission_options["mission_file_path"] = mission_wrapper
+        del mission_options["nb_contour_points"]
+        mission_inputs = get_variable_list_from_system(
+            MissionRun(**mission_options), io_status="inputs"
+        )
+
         for i in range(nb_contour_points):
-            mission_wrapper = MissionWrapper(
-                self.options["mission_file_path"],
-                mission_name=mission_name,
-                force_all_block_fuel_usage=True,
-            )
-
-            options = dict(self.options.items())
-            options["mission_file_path"] = mission_wrapper
-            del options["nb_contour_points"]
-            mission_inputs = get_variable_list_from_system(
-                MissionRun(**options), io_status="inputs"
-            )
-
             subsys_name = f"mission_{i}"
-            group.add_subsystem(subsys_name, MissionRun(**options))
+            group.add_subsystem(subsys_name, MissionRun(**mission_options))
 
             # Connect block_fuel and TOW mission inputs to contour inputs
             group.connect(
@@ -138,7 +139,7 @@ class PayloadRange(om.Group):
             group.promotes(subsys_name, inputs=promoted_inputs)
 
             group.connect(
-                f"{subsys_name}.data:mission:{mission_name}:distance",
+                f"{subsys_name}.data:mission:{mission_name}:{first_route_name}:distance",
                 f"mux.range_{i}",
             )
         mux_comp = group.add_subsystem(name="mux", subsys=om.MuxComp(vec_size=nb_contour_points))

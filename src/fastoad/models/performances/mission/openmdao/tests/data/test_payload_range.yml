@@ -43,6 +43,20 @@ phases:
             value: 250
             unit: NM
         mass_ratio: 0.988
+  diversion_climb:
+    parts:
+      - segment: transition
+        target:
+          altitude:
+            value: 22000
+            unit: ft
+          equivalent_airspeed:
+            value: 300.0
+            unit: kn
+          ground_distance:
+            value: 250
+            unit: NM
+        mass_ratio: 0.988
   descent:
     parts:
       - segment: transition
@@ -68,6 +82,18 @@ routes:
       polar: data:aerodynamics:aircraft:cruise
     descent_parts:
       - phase: descent
+  diversion:
+    range:
+      value: 200
+      unit: NM
+    climb_parts:
+      - phase: diversion_climb
+    cruise_part:
+      segment: breguet
+      engine_setting: cruise
+      polar: data:aerodynamics:aircraft:cruise
+    descent_parts:
+      - phase: descent
 
 missions:
   operational:
@@ -76,3 +102,4 @@ missions:
       - phase: taxi_out
       - phase: takeoff
       - route: main_route
+      - route: diversion
