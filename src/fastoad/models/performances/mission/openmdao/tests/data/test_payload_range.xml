@@ -296,7 +296,7 @@
                 <MTOW units="kg">70000.0</MTOW>
                 <OWE units="kg">40000.0</OWE>
                 <max_payload units="kg">19000.0</max_payload>
-                <MFW units="kg">21000.0</MFW>
+                <MFW units="kg">15000.0</MFW>
             </aircraft>
         </weight>
     </data>
