@@ -39,8 +39,10 @@ class MissionRun(om.ExplicitComponent):
         self.flight_points = None
         self._name_provider = None
         self._input_weight_variable_name = ""
+
         self._engine_wrapper = self._get_engine_wrapper()
-        self._mission_wrapper = self._get_mission_wrapper()
+        if self._engine_wrapper:
+            self._mission_wrapper = self._get_mission_wrapper()
 
     def initialize(self):
         self.options.declare(
@@ -181,7 +183,8 @@ class MissionRun(om.ExplicitComponent):
 
         :return: the engine wrapper instance
         """
-        return RegisterPropulsion.get_provider(self.options["propulsion_id"])
+        if self.options["propulsion_id"]:
+            return RegisterPropulsion.get_provider(self.options["propulsion_id"])
 
     def _get_mission_wrapper(self) -> MissionWrapper:
         if isinstance(self.options["mission_file_path"], MissionWrapper):
