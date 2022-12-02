@@ -46,6 +46,8 @@ def test_payload_range(cleanup, with_dummy_plugin_2):
             mission_name="operational",
             reference_area_variable="data:geometry:aircraft:reference_area",
             nb_contour_points=6,
+            nb_grid_points=10,
+            grid_random_seed=0,
         ),
         ivc,
     )
@@ -54,15 +56,36 @@ def test_payload_range(cleanup, with_dummy_plugin_2):
     # Note: tested value are obtained by asking 1 meter of accuracy for distance routes
 
     assert_allclose(
-        problem["data:payload_range:operational:payload"].squeeze(),
+        problem["data:payload_range:operational:payload"],
         [19000.0, 19000.0, 15300.0, 10200.0, 5100.0, 0.0],
     )
     assert_allclose(
-        problem["data:payload_range:operational:block_fuel"].squeeze(),
+        problem["data:payload_range:operational:block_fuel"],
         [0.0, 11300.0, 15000.0, 15000.0, 15000.0, 15000.0],
     )
     assert_allclose(
         problem.get_val("data:payload_range:operational:range", "km").squeeze(),
         [0.0, 6745.0, 9594.0, 10454.0, 11378.0, 12377.0],
+        atol=0.5,
+    )
+
+    assert_allclose(
+        problem["data:payload_range:operational:grid:payload"],
+        [10876.0, 14911.0, 11530.0, 13053.0, 9219.0, 18827.0, 15126.0, 17447.0, 7755.0, 6651.0],
+        atol=0.5,
+    )
+    assert_allclose(
+        problem["data:payload_range:operational:grid:block_fuel"],
+        [11925.0, 11396.0, 14767.0, 9712.0, 10581.0, 9883.0, 6183.0, 4350.0, 8109.0, 7045.0],
+        atol=0.5,
+    )
+    assert_allclose(
+        problem.get_val("data:payload_range:operational:grid:range", "km").squeeze(),
+        [8188.0, 7298.0, 10066.0, 6356.0, 7429.0, 5863.0, 3685.0, 2261.0, 5726.0, 5002.0],
+        atol=0.5,
+    )
+    assert_allclose(
+        problem["data:payload_range:operational:grid:duration"].squeeze(),
+        [31255.0, 27424.0, 39336.0, 23370.0, 27990.0, 21247.0, 11873.0, 5745.0, 20658.0, 17542.0],
         atol=0.5,
     )
