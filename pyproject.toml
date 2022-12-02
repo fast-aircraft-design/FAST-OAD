@@ -67,6 +67,7 @@ Deprecated = "^1.2.13"
 click = "^8.0.3"
 importlib-metadata = { version = "^4.2", python = "<3.10" }
 mpi4py = {version = "^3", optional = true}
+pyDOE2 = "^1.3.0"
 
 [tool.poetry.extras]
 mpi4py = ["mpi4py"]
