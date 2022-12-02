@@ -857,8 +857,8 @@ def plot_payload_range(
     payload = np.asarray(variables[f"data:payload_range:{mission_name}:payload"].value)
 
     pr_contour = go.Scatter(
-        x=range[0:-1],
-        y=payload[0:-1],
+        x=range * 0.000539957,
+        y=payload / 1000,
         mode="lines+markers",
         line=dict(color="black", width=3),
         showlegend=False,
@@ -895,13 +895,13 @@ def plot_payload_range(
             )
         )
 
-        fig.update_layout(
-            xaxis_title="Range [NM]",
-            yaxis_title="Payload [tons]",
-            showlegend=False,
-            height=500,
-            width=900,
-            title={"text": name, "y": 0.9, "x": 0.5, "xanchor": "center", "yanchor": "top"},
-        )
+    fig.update_layout(
+        xaxis_title="Range [NM]",
+        yaxis_title="Payload [tons]",
+        showlegend=False,
+        height=500,
+        width=900,
+        title={"text": name, "y": 0.9, "x": 0.5, "xanchor": "center", "yanchor": "top"},
+    )
 
     return fig
