@@ -181,7 +181,7 @@ def breguet_leduc_points(
     ra_d = breguet_leduc_formula(mass_in, mass_out, coeff, sizing_range * 10)[0]
 
     BL_ranges = np.array([0, ra_b, ra_c, ra_d, sizing_range])
-    BL_payloads = np.array([max_payload, payload_b, payload_c, 0, sizing_payload]) / 10 ** 3
+    BL_payloads = np.array([max_payload, payload_b, payload_c, 0, sizing_payload]) / 10**3
     return BL_ranges, BL_payloads
 
 
@@ -650,7 +650,7 @@ def payload_range_loop_computation(
         time_begin = time.perf_counter()
         input_file_mission["data:mission:op_mission:payload"].value = grid_payloads[i]
         input_file_mission["data:mission:op_mission:main_route:range"].value = (
-            grid_ranges[i] * 10 ** 3 * 1.852
+            grid_ranges[i] * 10**3 * 1.852
         )
         input_file_mission.save()
 
@@ -680,7 +680,7 @@ def payload_range_loop_computation(
 
     # Specific consumption computation and saving into a file
 
-    grid[2] = grid[2] / (grid[1] * grid[0] * 1.852 * 10 ** 3)  # kg_fuel/kg_payload/km
+    grid[2] = grid[2] / (grid[1] * grid[0] * 1.852 * 10**3)  # kg_fuel/kg_payload/km
     np.savetxt(pth.join(file_save_folder, file_save), grid.T)
 
     # remove the mission_inputs outputs
@@ -838,5 +838,70 @@ def payload_range_full(
         fig.update_xaxes(range=[x_axis[0], x_axis[1]])
     if y_axis is not None:
         fig.update_yaxes(range=[y_axis[0], y_axis[1]])
+
+    return fig
+
+
+def plot_payload_range(
+    aircraft_file_path: str,
+    name="Payload-Range",
+    mission_name="operational",
+    variable_of_interest="block_fuel",
+    only_contour=True,
+):
+
+    variables = VariableIO(aircraft_file_path).read()
+
+    # Contour of the payload range
+    range = np.asarray(variables[f"data:payload_range:{mission_name}:range"].value)
+    payload = np.asarray(variables[f"data:payload_range:{mission_name}:payload"].value)
+
+    pr_contour = go.Scatter(
+        x=range[0:-1],
+        y=payload[0:-1],
+        mode="lines+markers",
+        line=dict(color="black", width=3),
+        showlegend=False,
+        name=name,
+    )
+
+    fig = go.Figure()
+    fig.add_trace(pr_contour)
+
+    if not only_contour:
+        # Grid for the payload range
+        range_grid = np.asarray(variables[f"data:payload_range:{mission_name}:grid:range"].value)
+        payload_grid = np.asarray(
+            variables[f"data:payload_range:{mission_name}:grid:payload"].value
+        )
+        variable_of_interest_grid = np.asarray(
+            variables[f"data:payload_range:{mission_name}:grid:{variable_of_interest}"].value
+        )
+
+        fig.add_trace(
+            go.Contour(
+                x=range_grid * 0.000539957,
+                y=payload_grid / 1000,
+                z=variable_of_interest_grid,
+                contours=dict(start=1e-4, end=5e-4, size=2.5e-5),
+                colorbar=dict(
+                    title="Consumption per payload and per range",  # title here
+                    titleside="right",
+                    titlefont=dict(size=15, family="Arial, sans-serif"),
+                    tickvals=[1e-4, 2e-4, 3e-4, 4e-4, 5e-4],
+                    tickformat=".1e",
+                ),
+                colorscale="RdBu_r",
+            )
+        )
+
+        fig.update_layout(
+            xaxis_title="Range [NM]",
+            yaxis_title="Payload [tons]",
+            showlegend=False,
+            height=500,
+            width=900,
+            title={"text": name, "y": 0.9, "x": 0.5, "xanchor": "center", "yanchor": "top"},
+        )
 
     return fig
