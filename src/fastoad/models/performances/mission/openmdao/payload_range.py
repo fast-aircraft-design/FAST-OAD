@@ -86,6 +86,21 @@ class PayloadRange(om.Group):
             desc="Used as random state for initializing the Latin Hypercube Sampling "
             "algorithm for generating the inner grid.",
         )
+        self.options.declare(
+            "min_payload_ratio",
+            default=0.3,
+            lower=0.0,
+            upper=0.9,
+            desc="Sets the minimum payload for inner grid points, as a ratio w.r.t. max payload.",
+        )
+        self.options.declare(
+            "min_block_fuel_ratio",
+            default=0.3,
+            lower=0.0,
+            upper=0.9,
+            desc="Sets the minimum block fuel for inner grid points, as a ratio w.r.t. max "
+            "possible fuel weight for the current payload.",
+        )
 
     def setup(self):
 
@@ -168,6 +183,8 @@ class PayloadRange(om.Group):
                 mission_name=mission_name,
                 nb_points=nb_grid_points,
                 random_seed=self.options["grid_random_seed"],
+                min_payload_ratio=self.options["min_payload_ratio"],
+                min_block_fuel_ratio=self.options["min_block_fuel_ratio"],
             ),
             promotes=["*"],
         )
@@ -395,6 +412,21 @@ class PayloadRangeGridInputValues(om.ExplicitComponent):
             desc="Used as random state for initializing the Latin Hypercube Sampling "
             "algorithm for generating the inner grid.",
         )
+        self.options.declare(
+            "min_payload_ratio",
+            default=0.3,
+            lower=0.0,
+            upper=0.9,
+            desc="Sets the minimum payload for inner grid points, as a ratio w.r.t. max payload.",
+        )
+        self.options.declare(
+            "min_block_fuel_ratio",
+            default=0.3,
+            lower=0.0,
+            upper=0.9,
+            desc="Sets the minimum block fuel for inner grid points, as a ratio w.r.t. max "
+            "possible fuel weight for the current payload.",
+        )
 
     def setup(self):
         mission_name = self.options["mission_name"]
@@ -430,8 +462,8 @@ class PayloadRangeGridInputValues(om.ExplicitComponent):
         mission_name = self.options["mission_name"]
         nb_points = self.options["nb_points"]
 
-        min_payload_ratio = 0.3
-        min_block_fuel_ratio = 0.3
+        min_payload_ratio = self.options["min_payload_ratio"]
+        min_block_fuel_ratio = self.options["min_block_fuel_ratio"]
 
         payload_contour_values = inputs[f"data:payload_range:{mission_name}:payload"]
         block_fuel_contour_values = inputs[f"data:payload_range:{mission_name}:block_fuel"]

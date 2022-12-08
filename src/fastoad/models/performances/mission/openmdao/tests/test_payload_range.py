@@ -15,6 +15,7 @@ import os.path as pth
 from os import makedirs
 from shutil import rmtree
 
+import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
@@ -136,6 +137,8 @@ def test_payload_range_sizing_mission(cleanup, with_dummy_plugin_2):
             nb_contour_points=4,
             nb_grid_points=2,
             grid_random_seed=0,
+            min_payload_ratio=0.5,
+            min_block_fuel_ratio=0.4,
         ),
         ivc,
     )
@@ -149,17 +152,19 @@ def test_payload_range_sizing_mission(cleanup, with_dummy_plugin_2):
         atol=0.5,
     )
 
-    assert_allclose(problem["data:payload_range:sizing:grid:payload"], [10456.0, 15973.0], atol=0.5)
     assert_allclose(
-        problem["data:payload_range:sizing:grid:block_fuel"], [7381.0, 12335.0], atol=0.5
+        problem["data:payload_range:sizing:grid:payload"], np.array([12897.0, 16838.0]), atol=0.5
+    )
+    assert_allclose(
+        problem["data:payload_range:sizing:grid:block_fuel"], np.array([8470.0, 11858.0]), atol=0.5
     )
     assert_allclose(
         problem.get_val("data:payload_range:sizing:grid:range", "km").squeeze(),
-        [3935.0, 6650.0],
+        [4488.0, 6256.0],
         atol=0.5,
     )
     assert_allclose(
         problem.get_val("data:payload_range:sizing:grid:duration", "min").squeeze(),
-        [290.0, 486.0],
+        [330.0, 458.0],
         atol=0.5,
     )
