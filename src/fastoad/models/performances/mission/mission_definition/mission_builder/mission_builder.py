@@ -43,6 +43,7 @@ from ..schema import (
     SEGMENT_TAG,
 )
 from ...base import FlightSequence
+from ...mission import Mission
 from ...polar import Polar
 from ...routes import RangedRoute
 from ...segments.base import AbstractFlightSegment, SegmentDefinitions
@@ -113,7 +114,7 @@ class MissionBuilder:
     def reference_area(self, reference_area: float):
         self._base_kwargs["reference_area"] = reference_area
 
-    def build(self, inputs: Optional[Mapping] = None, mission_name: str = None) -> FlightSequence:
+    def build(self, inputs: Optional[Mapping] = None, mission_name: str = None) -> Mission:
         """
         Builds the flight sequence from definition file.
 
@@ -142,7 +143,7 @@ class MissionBuilder:
         :param mission_name: mission name (can be omitted if only one mission is defined)
         :return: list of flight ranges for each element of the flight sequence that is a route
         """
-        routes = self.build(inputs, mission_name).flight_sequence
+        routes = self.build(inputs, mission_name)
         return [route.flight_distance for route in routes if isinstance(route, RangedRoute)]
 
     def get_reserve(self, flight_points: pd.DataFrame, mission_name: str = None) -> float:
@@ -215,46 +216,17 @@ class MissionBuilder:
             self._get_mission_part_structures(mission_name)
         )
 
-    def get_mission_start_mass_input(self, mission_name: str) -> Optional[str]:
-        """
-
-        :param mission_name:
-        :return: Target mass variable of first segment, if any.
-        """
-        part = self._get_first_segment_structure(mission_name)
-        if "mass" in part["target"]:
-            return part["target"]["mass"].variable_name
-
-        return None
-
-    def _get_first_segment_structure(self, mission_name: str):
-        part = self._get_mission_part_structures(mission_name)[0]
-        while PARTS_TAG in part:
-            part = part[PARTS_TAG][0]
-        return part
-
-    def get_mission_part_names(self, mission_name: str) -> List[str]:
-        """
-
-        :param mission_name:
-        :return: list of names of parts (phase or route) for specified mission.
-        """
-        return [
-            part[NAME_TAG]
-            for part in self._get_mission_part_structures(mission_name)
-            if part.get(TYPE_TAG) in [ROUTE_TAG, PHASE_TAG]
-        ]
-
-    def _build_mission(self, mission_structure: OrderedDict) -> FlightSequence:
+    def _build_mission(self, mission_structure: OrderedDict) -> Mission:
         """
         Builds mission instance from provided structure.
 
         :param mission_structure: structure of the mission to build
         :return: the mission instance
         """
-        mission = FlightSequence()
 
         part_kwargs = self._get_part_kwargs({}, mission_structure)
+
+        mission = Mission(target_fuel_consumption=part_kwargs.get("target_fuel_consumption"))
 
         mission.name = mission_structure[NAME_TAG]
         for part_spec in mission_structure[PARTS_TAG]:
@@ -262,11 +234,25 @@ class MissionBuilder:
                 continue
             if part_spec[TYPE_TAG] == SEGMENT_TAG:
                 part = self._build_segment(part_spec, part_kwargs)
-            if part_spec[TYPE_TAG] == ROUTE_TAG:
+            elif part_spec[TYPE_TAG] == ROUTE_TAG:
                 part = self._build_route(part_spec, part_kwargs)
             elif part_spec[TYPE_TAG] == PHASE_TAG:
                 part = self._build_phase(part_spec, part_kwargs)
-            mission.flight_sequence.append(part)
+            else:
+                raise RuntimeError(
+                    "Unknown part type. This error should have been prevented "
+                    "by the JSON schema validation."
+                )
+            mission.append(part)
+
+        last_part = mission_structure[PARTS_TAG][-1]
+        if RESERVE_TAG in last_part:
+            mission.reserve_ratio = last_part[RESERVE_TAG]["multiplier"].value
+            base_route_name_definition = last_part[RESERVE_TAG].get("ref")
+            if base_route_name_definition:
+                mission.reserve_base_route_name = (
+                    f"{mission.name}:{base_route_name_definition.value}"
+                )
 
         return mission
 
@@ -338,7 +324,7 @@ class MissionBuilder:
                 flight_part = self._build_phase(part_structure, part_kwargs)
             else:
                 flight_part = self._build_segment(part_structure, part_kwargs)
-            phase.flight_sequence.append(flight_part)
+            phase.append(flight_part)
 
         return phase
 

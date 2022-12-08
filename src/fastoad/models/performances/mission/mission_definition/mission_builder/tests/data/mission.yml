@@ -203,6 +203,15 @@ missions:
       - reserve:
           ref: main
           multiplier: 0.02
+  fuel_as_objective:
+    parts:
+      - phase: taxi_out
+      - route: main
+      - phase: taxi_in
+      - reserve:
+          ref: main
+          multiplier: 0.02
+    use_all_block_fuel: true
   test:
     parts:
       - phase: test_phase

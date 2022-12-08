@@ -352,6 +352,9 @@
               }
             ]
           }
+        },
+        "use_all_block_fuel": {
+          "$ref": "#/definitions/boolean_parameter_value"
         }
       },
       "required": [
