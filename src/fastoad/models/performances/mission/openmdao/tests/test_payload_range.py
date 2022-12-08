@@ -34,7 +34,7 @@ def cleanup():
     makedirs(RESULTS_FOLDER_PATH)
 
 
-def test_payload_range(cleanup, with_dummy_plugin_2):
+def test_payload_range_custom_breguet_mission(cleanup, with_dummy_plugin_2):
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_payload_range.xml")
     ivc = DataFile(input_file_path).to_ivc()
@@ -51,9 +51,6 @@ def test_payload_range(cleanup, with_dummy_plugin_2):
         ),
         ivc,
     )
-    # plot_flight(problem.model.component.flight_points, "test_mission.png")
-
-    # Note: tested value are obtained by asking 1 meter of accuracy for distance routes
 
     assert_allclose(
         problem["data:payload_range:operational:payload"],
@@ -87,5 +84,82 @@ def test_payload_range(cleanup, with_dummy_plugin_2):
     assert_allclose(
         problem["data:payload_range:operational:grid:duration"].squeeze(),
         [31255.0, 27424.0, 39336.0, 23370.0, 27990.0, 21247.0, 11873.0, 5745.0, 20658.0, 17542.0],
+        atol=0.5,
+    )
+
+
+def test_payload_range_sizing_breguet(cleanup, with_dummy_plugin_2):
+
+    input_file_path = pth.join(DATA_FOLDER_PATH, "test_payload_range.xml")
+    ivc = DataFile(input_file_path).to_ivc()
+
+    problem = run_system(
+        PayloadRange(
+            propulsion_id="test.wrapper.propulsion.dummy_engine",
+            mission_file_path="::sizing_breguet",
+            mission_name="sizing",
+            reference_area_variable="data:geometry:aircraft:reference_area",
+            nb_contour_points=7,
+        ),
+        ivc,
+    )
+    assert_allclose(
+        problem["data:payload_range:sizing:payload"],
+        [19000.0, 19000.0, 15300.0, 11475.0, 7650.0, 3825.0, 0.0],
+    )
+    assert_allclose(
+        problem["data:payload_range:sizing:block_fuel"],
+        [0.0, 11300.0, 15000.0, 15000.0, 15000.0, 15000.0, 15000.0],
+    )
+    assert_allclose(
+        problem.get_val("data:payload_range:sizing:range", "km").squeeze(),
+        [0.0, 3313.0, 6173.0, 6912.0, 7763.0, 8750.0, 9908.0],
+        atol=0.5,
+    )
+
+    for var_name in ["payload", "block_fuel", "range", "duration"]:
+        with pytest.raises(KeyError):
+            problem[f"data:payload_range:sizing:grid:{var_name}"]
+
+
+def test_payload_range_sizing_mission(cleanup, with_dummy_plugin_2):
+
+    input_file_path = pth.join(DATA_FOLDER_PATH, "test_payload_range.xml")
+    ivc = DataFile(input_file_path).to_ivc()
+
+    problem = run_system(
+        PayloadRange(
+            propulsion_id="test.wrapper.propulsion.dummy_engine",
+            mission_file_path="::sizing_mission",
+            mission_name="sizing",
+            reference_area_variable="data:geometry:aircraft:reference_area",
+            nb_contour_points=4,
+            nb_grid_points=2,
+            grid_random_seed=0,
+        ),
+        ivc,
+    )
+    assert_allclose(problem["data:payload_range:sizing:payload"], [19000.0, 19000.0, 15300.0, 0.0])
+    assert_allclose(
+        problem["data:payload_range:sizing:block_fuel"], [0.0, 11300.0, 15000.0, 15000.0]
+    )
+    assert_allclose(
+        problem.get_val("data:payload_range:sizing:range", "km").squeeze(),
+        [0.0, 5649.0, 8298.0, 11559.0],
+        atol=0.5,
+    )
+
+    assert_allclose(problem["data:payload_range:sizing:grid:payload"], [10456.0, 15973.0], atol=0.5)
+    assert_allclose(
+        problem["data:payload_range:sizing:grid:block_fuel"], [7381.0, 12335.0], atol=0.5
+    )
+    assert_allclose(
+        problem.get_val("data:payload_range:sizing:grid:range", "km").squeeze(),
+        [3935.0, 6650.0],
+        atol=0.5,
+    )
+    assert_allclose(
+        problem.get_val("data:payload_range:sizing:grid:duration", "min").squeeze(),
+        [290.0, 486.0],
         atol=0.5,
     )
