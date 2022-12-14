@@ -85,6 +85,7 @@ class MissionDefinition(OrderedDict):
                 self.force_all_block_fuel_usage(mission_name)
 
     def force_all_block_fuel_usage(self, mission_name):
+        """Sets target fuel consumption to variable "~:block_fuel"."""
         mission_definitions = self[MISSION_DEFINITION_TAG]
         if mission_name in mission_definitions:
             mission_definitions[mission_name]["target_fuel_consumption"] = {

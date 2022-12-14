@@ -37,6 +37,11 @@ class OMMission(om.Group):
     Computes a mission as specified in mission input file.
     """
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._name_provider = None
+        self._mission_wrapper = None
+
     def initialize(self):
         self.options.declare(
             "propulsion_id",

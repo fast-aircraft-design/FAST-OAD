@@ -31,6 +31,8 @@ from ..mission_definition.schema import MissionDefinition
 
 @RegisterOpenMDAOSystem("fastoad.performances.payload_range", domain=ModelDomain.PERFORMANCE)
 class PayloadRange(om.Group):
+    """OpenMDAO component for computing data for payload-range plots."""
+
     def initialize(self):
         self.options.declare(
             "propulsion_id",

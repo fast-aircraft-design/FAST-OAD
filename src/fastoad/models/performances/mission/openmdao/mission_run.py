@@ -14,6 +14,7 @@
 import logging
 from enum import Enum
 from os import makedirs, path as pth
+from typing import Optional
 
 import numpy as np
 from openmdao import api as om
@@ -174,7 +175,7 @@ class MissionRun(om.ExplicitComponent):
             self._name_provider.CONSUMED_FUEL_BEFORE_INPUT_WEIGHT.value
         ] = self._mission_wrapper.consumed_fuel_before_input_weight
 
-    def _get_engine_wrapper(self) -> IOMPropulsionWrapper:
+    def _get_engine_wrapper(self) -> Optional[IOMPropulsionWrapper]:
         """
         Overloading this method allows to define the engine without relying on the propulsion
         option.
@@ -185,6 +186,8 @@ class MissionRun(om.ExplicitComponent):
         """
         if self.options["propulsion_id"]:
             return RegisterPropulsion.get_provider(self.options["propulsion_id"])
+
+        return None
 
     def _get_mission_wrapper(self) -> MissionWrapper:
         if isinstance(self.options["mission_file_path"], MissionWrapper):
