@@ -21,7 +21,7 @@ from scipy.constants import nautical_mile
 
 from fastoad._utils.testing import run_system
 from fastoad.io import DataFile
-from ..mission_run import MissionRun
+from ..mission_run import MissionComp
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(
@@ -41,7 +41,7 @@ def test_mission_run(cleanup, with_dummy_plugin_2):
     ivc = DataFile(input_file_path).to_ivc()
 
     problem = run_system(
-        MissionRun(
+        MissionComp(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
             out_file=pth.join(RESULTS_FOLDER_PATH, "mission.csv"),
             mission_file_path=pth.join(DATA_FOLDER_PATH, "test_mission.yml"),

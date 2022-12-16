@@ -22,7 +22,7 @@ from scipy.constants import foot, knot, nautical_mile
 from fastoad._utils.testing import run_system
 from fastoad.io import DataFile
 from ..mission import OMMission
-from ..mission_run import MissionAdvancedRun
+from ..mission_run import AdvancedMissionComp
 from ..mission_wrapper import MissionWrapper
 from ...mission_definition.exceptions import FastMissionFileMissingMissionNameError
 
@@ -94,7 +94,7 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
     ivc = DataFile(input_file_path).to_ivc()
 
     problem = run_system(
-        MissionAdvancedRun(
+        AdvancedMissionComp(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
             out_file=pth.join(RESULTS_FOLDER_PATH, "mission.csv"),
             use_initializer_iteration=False,
@@ -156,7 +156,7 @@ def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
     ivc.add_output("data:mission:operational:ramp_weight", 70100.0, units="kg")
 
     problem = run_system(
-        MissionAdvancedRun(
+        AdvancedMissionComp(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
             out_file=pth.join(RESULTS_FOLDER_PATH, "breguet.csv"),
             use_initializer_iteration=False,

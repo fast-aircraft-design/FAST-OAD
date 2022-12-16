@@ -78,8 +78,13 @@ class MissionWrapper(MissionBuilder):
             variable_prefix=variable_prefix,
         )
         self.consumed_fuel_before_input_weight = 0.0
-        if force_all_block_fuel_usage and self.mission_name:
-            self.definition.force_all_block_fuel_usage(mission_name)
+        if force_all_block_fuel_usage:
+            self.force_all_block_fuel_usage()
+
+    def force_all_block_fuel_usage(self):
+        """Modifies mission definition to set block fuel as target fuel consumption."""
+        if self.mission_name:
+            self.definition.force_all_block_fuel_usage(self.mission_name)
             self._update_structure_builders()
 
     def setup(self, component: om.ExplicitComponent):

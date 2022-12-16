@@ -101,26 +101,27 @@ def test_payload_range_sizing_breguet(cleanup, with_dummy_plugin_2):
             mission_name="sizing",
             reference_area_variable="data:geometry:aircraft:reference_area",
             nb_contour_points=7,
+            variable_prefix="data:PR_diagram",
         ),
         ivc,
     )
     assert_allclose(
-        problem["data:payload_range:sizing:payload"],
+        problem["data:PR_diagram:sizing:payload"],
         [19000.0, 19000.0, 15300.0, 11475.0, 7650.0, 3825.0, 0.0],
     )
     assert_allclose(
-        problem["data:payload_range:sizing:block_fuel"],
+        problem["data:PR_diagram:sizing:block_fuel"],
         [0.0, 11300.0, 15000.0, 15000.0, 15000.0, 15000.0, 15000.0],
     )
     assert_allclose(
-        problem.get_val("data:payload_range:sizing:range", "km").squeeze(),
+        problem.get_val("data:PR_diagram:sizing:range", "km").squeeze(),
         [0.0, 3313.0, 6173.0, 6912.0, 7763.0, 8750.0, 9908.0],
         atol=0.5,
     )
 
     for var_name in ["payload", "block_fuel", "range", "duration"]:
         with pytest.raises(KeyError):
-            problem[f"data:payload_range:sizing:grid:{var_name}"]
+            problem[f"data:PR_diagram:sizing:grid:{var_name}"]
 
 
 def test_payload_range_sizing_mission(cleanup, with_dummy_plugin_2):
