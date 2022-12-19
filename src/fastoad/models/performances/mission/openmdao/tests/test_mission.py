@@ -277,7 +277,7 @@ def test_mission_group_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
     # check loop
     assert_allclose(
         problem["data:mission:operational:ZFW"],
-        problem["data:mission:operational:OWE"] + problem["data:mission:operational:payload"],
+        problem["data:weight:aircraft:OWE"] + problem["data:mission:operational:payload"],
         atol=1.0,
     )
     assert_allclose(
@@ -317,7 +317,7 @@ def test_mission_group_breguet_with_fuel_adjustment(cleanup, with_dummy_plugin_2
     # check loop
     assert_allclose(
         problem["data:mission:operational:ZFW"],
-        problem["data:mission:operational:OWE"] + problem["data:mission:operational:payload"],
+        problem["data:weight:aircraft:OWE"] + problem["data:mission:operational:payload"],
         atol=1.0,
     )
     assert_allclose(
