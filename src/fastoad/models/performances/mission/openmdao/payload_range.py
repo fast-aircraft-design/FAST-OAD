@@ -264,7 +264,7 @@ class PayloadRangeContourInputValues(
         super().setup()
 
         mission_name = self._mission_wrapper.mission_name
-        PR_var_prefix = self.options["PR_variable_prefix"]
+        var_prefix = self.options["PR_variable_prefix"]
         nb_points = self.options["nb_points"]
 
         self.add_input("data:weight:aircraft:max_payload", val=np.nan, units="kg")
@@ -277,15 +277,13 @@ class PayloadRangeContourInputValues(
             units="kg",
         )
 
-        self.add_output(f"{PR_var_prefix}:{mission_name}:payload", shape=(nb_points,), units="kg")
-        self.add_output(
-            f"{PR_var_prefix}:{mission_name}:block_fuel", shape=(nb_points,), units="kg"
-        )
-        self.add_output(f"{PR_var_prefix}:{mission_name}:TOW", shape=(nb_points,), units="kg")
+        self.add_output(f"{var_prefix}:{mission_name}:payload", shape=(nb_points,), units="kg")
+        self.add_output(f"{var_prefix}:{mission_name}:block_fuel", shape=(nb_points,), units="kg")
+        self.add_output(f"{var_prefix}:{mission_name}:TOW", shape=(nb_points,), units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mission_name = self._mission_wrapper.mission_name
-        PR_var_prefix = self.options["PR_variable_prefix"]
+        var_prefix = self.options["PR_variable_prefix"]
         nb_points = self.options["nb_points"]
 
         max_payload = inputs["data:weight:aircraft:max_payload"]
@@ -293,9 +291,9 @@ class PayloadRangeContourInputValues(
             self._calculate_payload_at_max_takeoff_weight_and_max_fuel_weight(inputs)
         )
 
-        payload_values = outputs[f"{PR_var_prefix}:{mission_name}:payload"]
-        block_fuel_values = outputs[f"{PR_var_prefix}:{mission_name}:block_fuel"]
-        TOW_values = outputs[f"{PR_var_prefix}:{mission_name}:TOW"]
+        payload_values = outputs[f"{var_prefix}:{mission_name}:payload"]
+        block_fuel_values = outputs[f"{var_prefix}:{mission_name}:block_fuel"]
+        TOW_values = outputs[f"{var_prefix}:{mission_name}:TOW"]
 
         payload_values[0:2] = max_payload
         payload_values[2:] = np.linspace(
@@ -427,27 +425,31 @@ class PayloadRangeGridInputValues(om.ExplicitComponent, BaseMissionComp, NeedsOW
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mission_name = self._mission_wrapper.mission_name
-        PR_var_prefix = self.options["PR_variable_prefix"]
-        nb_points = self.options["nb_points"]
-
+        var_prefix = self.options["PR_variable_prefix"]
         min_payload_ratio = self.options["min_payload_ratio"]
         min_block_fuel_ratio = self.options["min_block_fuel_ratio"]
 
-        payload_contour_values = inputs[f"{PR_var_prefix}:{mission_name}:payload"]
-        block_fuel_contour_values = inputs[f"{PR_var_prefix}:{mission_name}:block_fuel"]
+        payload_contour_values = inputs[f"{var_prefix}:{mission_name}:payload"]
+        block_fuel_contour_values = inputs[f"{var_prefix}:{mission_name}:block_fuel"]
 
         max_payload = payload_contour_values[0]
         get_max_block_fuel = interp1d(payload_contour_values[1:], block_fuel_contour_values[1:])
 
-        x = lhs(2, samples=nb_points, random_state=self.options["random_seed"])
-        payload_values = (min_payload_ratio + (1.0 - min_payload_ratio) * x[:, 1]) * max_payload
+        lhs_grid = lhs(
+            2,
+            samples=(self.options["nb_points"]),
+            random_state=self.options["random_seed"],
+        )
+        payload_values = (
+            min_payload_ratio + (1.0 - min_payload_ratio) * lhs_grid[:, 1]
+        ) * max_payload
         block_fuel_values = (
-            min_block_fuel_ratio + (1.0 - min_block_fuel_ratio) * x[:, 0]
+            min_block_fuel_ratio + (1.0 - min_block_fuel_ratio) * lhs_grid[:, 0]
         ) * get_max_block_fuel(payload_values)
 
-        outputs[f"{PR_var_prefix}:{mission_name}:grid:payload"] = payload_values
-        outputs[f"{PR_var_prefix}:{mission_name}:grid:block_fuel"] = block_fuel_values
-        outputs[f"{PR_var_prefix}:{mission_name}:grid:TOW"] = self._calculate_takeoff_weight(
+        outputs[f"{var_prefix}:{mission_name}:grid:payload"] = payload_values
+        outputs[f"{var_prefix}:{mission_name}:grid:block_fuel"] = block_fuel_values
+        outputs[f"{var_prefix}:{mission_name}:grid:TOW"] = self._calculate_takeoff_weight(
             inputs, payload_values, block_fuel_values
         )
 
