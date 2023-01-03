@@ -164,10 +164,10 @@ class MissionComponent(om.ExplicitComponent):
         Otherwise, the actual cruise polar is returned.
         """
         high_speed_polar = Polar(
-            (
-                inputs["data:aerodynamics:aircraft:cruise:CL"],
-                inputs["data:aerodynamics:aircraft:cruise:CD"],
-            )
+            {
+                "CL": inputs["data:aerodynamics:aircraft:cruise:CL"],
+                "CD": inputs["data:aerodynamics:aircraft:cruise:CD"],
+            }
         )
         use_minimum_l_d_ratio = False
         try:
@@ -180,7 +180,9 @@ class MissionComponent(om.ExplicitComponent):
             use_minimum_l_d_ratio = True
         if use_minimum_l_d_ratio:
             # We replace by a polar that has at least 10.0 as max L/D ratio
-            high_speed_polar = Polar((np.array([0.0, 0.5, 1.0]), np.array([0.1, 0.05, 1.0])))
+            high_speed_polar = Polar(
+                {"CL": np.array([0.0, 0.5, 1.0]), "CD": np.array([0.1, 0.05, 1.0])}
+            )
 
         return high_speed_polar
 

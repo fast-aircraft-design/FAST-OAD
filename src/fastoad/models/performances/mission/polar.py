@@ -15,6 +15,8 @@ import numpy as np
 from scipy.interpolate import interp1d
 from scipy.optimize import fmin
 
+from .ground_effect import GroundEffect
+
 
 class Polar:
 
@@ -35,7 +37,7 @@ class Polar:
         "k_cd": {"name": "tuning:aerodynamics:aircraft:cruise:CD:k", "unit": None},
     }
 
-    def __init__(self, input_arg=None):
+    def __init__(self, input_dic=None):
         """
         Class for managing aerodynamic polar data.
 
@@ -44,29 +46,18 @@ class Polar:
 
         Once defined, for any CL value, CD can be obtained using :meth:`cd`.
 
-        :param input_arg: a dictionary containing the CL and CD N-elements
+        :param input_dic: a dictionary containing the CL and CD N-elements
         array and additional variables for ground effect calculation.
         For ground segments the 'CL vs alpha curve' is required and the dictionary
         must contain 'CL0_clean', 'CL_alpha' and 'CL_high_lift'
 
         """
-        if isinstance(input_arg, tuple):
-            self._definition_CL = input_arg[0]
+
+        if {"CL", "CD"}.issubset(input_dic):
+            self._definition_CL = input_dic["CL"]
             self._cd = interp1d(
-                input_arg[0], input_arg[1], kind="quadratic", fill_value="extrapolate"
+                input_dic["CL"], input_dic["CD"], kind="quadratic", fill_value="extrapolate"
             )
-        elif isinstance(input_arg, dict):
-            key = list(input_arg.keys())
-            if "CL" and "CD" in key:
-                self._definition_CL = input_arg["CL"]
-                self._cd = interp1d(
-                    input_arg["CL"], input_arg["CD"], kind="quadratic", fill_value="extrapolate"
-                )
-                if "CL0_clean" and "CL_alpha" and "CL_high_lift" in key:
-                    self.init_takeoff_polar(input_arg)
-                    self._use_CL_alpha = True
-                if "ground_effect" in key:
-                    self.init_ground_effect(input_arg)
         else:
             # default initialisation for instanciation without argument
             self._definition_CL = np.array([0.2, 0.5, 1.0])
@@ -76,28 +67,21 @@ class Polar:
                 self._definition_CL, self._definition_CD, kind="quadratic", fill_value="extrapolate"
             )
 
+        # Additional arguments for takeoff segments
+        if {"CL0_clean", "CL_alpha", "CL_high_lift"}.issubset(input_dic):
+            self.init_takeoff_polar(input_dic)
+            self._use_CL_alpha = True
+
+        # Additional arguments for ground effect
+        if "ground_effect" in input_dic:
+            self.ground_effect = GroundEffect(input_dic)
+            self._use_ground_effect = self.ground_effect.use_ground_effect
+
         def _negated_lift_drag_ratio(lift_coeff):
             """Returns -CL/CD."""
             return -lift_coeff / self.cd(lift_coeff)
 
         self._optimal_CL = fmin(_negated_lift_drag_ratio, self._definition_CL[0], disp=0)
-
-    def init_ground_effect(self, input_arg):
-        """
-        Initialise the ground effect calculation
-
-        Only Raymer model available
-        """
-        if input_arg["ground_effect"] == "Raymer":
-            # TO DO : replace condition by keywords designating the ground effect model
-            self._span = input_arg["span"]
-            self._lg_height = input_arg["lg_height"]
-            self._induced_drag_coef = input_arg["induced_drag_coef"]
-            self._k_winglet = input_arg["k_winglet"]
-            self._k_cd = input_arg["k_cd"]
-            self._use_ground_effect = True
-        else:
-            self._use_ground_effect = False
 
     def init_takeoff_polar(self, input_arg):
         """
@@ -111,13 +95,8 @@ class Polar:
         ) / self._CL_alpha
         self._clvsalpha = interp1d(alpha_vector, self._definition_CL)
 
-    def get_gnd_effect_model(self, model_name):
-        """Returns the input variables need to evaluate the gnd effect model"""
-        if model_name == "Raymer":
-            return self.gnd_effect_variables_raymer
-        else:
-            # return empty dictionnary
-            return {}
+    def get_gnd_effect_model(self):
+        return self.ground_effect.get_gnd_effect_model()
 
     @property
     def definition_cl(self):
@@ -147,14 +126,15 @@ class Polar:
         'Aircraft Design A conceptual approach', D. Raymer p304"""
 
         if cl is None:
-            return self._cd(self._definition_CL)
-        elif self._use_ground_effect:
-            h_b = (self._span * 0.1 + self._lg_height + altitude) / self._span
-            k_ground = 33.0 * h_b ** 1.5 / (1 + 33.0 * h_b ** 1.5)
-            cd_ground = self._induced_drag_coef * cl ** 2 * self._k_winglet * self._k_cd * (
-                k_ground - 1
-            ) + self._cd(cl)
-            return cd_ground
+            if self._use_ground_effect:
+                cd_ground = self.ground_effect.cd_ground(self._definition_CL, altitude)
+                return self._cd(self._definition_CL) + cd_ground
+            else:
+                return self._cd(self._definition_CL)
+
+        if self._use_ground_effect:
+            cd_ground = self.ground_effect.cd_ground(cl, altitude)
+            return cd_ground + self._cd(cl)
         else:
             return self._cd(cl)
 
