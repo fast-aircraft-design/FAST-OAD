@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "FAST-OAD-core"
-version = "1.3.0" # This version number is overwritten by GitHub packaging workflow but setting 1.3 here will allow installation of CS25 models in development mode
+version = "1.4.1" # This version number is overwritten by GitHub packaging workflow but setting 1.3 here will allow installation of CS25 models in development mode
 description = "FAST-OAD is a framework for performing rapid Overall Aircraft Design"
 readme = "README.md"
 authors = [
@@ -72,7 +72,7 @@ mpi4py = {version = "^3", optional = true}
 mpi4py = ["mpi4py"]
 
 [tool.poetry.dev-dependencies]
-fast-oad-cs25 = "0.*"
+fast-oad-cs25 = ">=0.1.4"
 pytest = "^7.2"
 pytest-cov = "^4.0"
 coverage = { extras = ["toml"], version = "^7.0" }
