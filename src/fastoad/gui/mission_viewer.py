@@ -22,6 +22,8 @@ import pandas as pd
 import plotly.graph_objects as go
 from IPython.display import clear_output, display
 
+from .exceptions import FastUnrecognizedMissionName
+
 
 class MissionViewer:
     """
@@ -58,69 +60,64 @@ class MissionViewer:
         else:
             raise TypeError("Unknown type for mission data, please use .csv of DataFrame")
 
-        # Initialize widgets when first mission is added
-        if len(self.missions) == 1:
-            self._initialize_widgets()
+    def display(self, name: str = ""):
 
-    def _initialize_widgets(self):
-        """
-        Initializes the widgets for selecting x and y
-        """
+        if name in list(self.missions):
+            key = name
+        else:
+            # If no names are specified we take the first mission we added
+            if not name:
+                key = list(self.missions)[0]
+            else:
+                raise FastUnrecognizedMissionName(
+                    name,
+                    " is not a valid mission name. Valid mission name(s) are: ",
+                    list(self.missions),
+                )
 
-        key = list(self.missions)[0]
         keys = self.missions[key].keys()
+
+        output = widgets.Output()
+
+        # pylint: disable=unused-argument  # args has to be there for observe() to work
+        def show_plots(change=None):
+
+            with output:
+
+                clear_output(wait=True)
+
+                x_name = self._x_widget.value
+                y_name = self._y_widget.value
+
+                for name in self.missions:
+                    fig = go.Figure()
+                    # pylint: disable=invalid-name # that's a common naming
+                    x = self.missions[name][x_name]
+                    # pylint: disable=invalid-name # that's a common naming
+                    y = self.missions[name][y_name]
+
+                    scatter = go.Scatter(x=x, y=y, mode="lines", name=name)
+
+                    fig.add_trace(scatter)
+
+                fig.update_layout(
+                    title_text="Mission", title_x=0.5, xaxis_title=x_name, yaxis_title=y_name
+                )
+
+                fig = go.FigureWidget(fig)
+                display(fig)
 
         # By default ground distance
         self._x_widget = widgets.Dropdown(value=keys[2], options=keys)
-        self._x_widget.observe(self.display, "value")
+        self._x_widget.observe(show_plots, "value")
         # By default altitude
         self._y_widget = widgets.Dropdown(value=keys[1], options=keys)
-        self._y_widget.observe(self.display, "value")
+        self._y_widget.observe(show_plots, "value")
 
-    def _build_plots(self):
-        """
-        Add a plot of the mission
-        """
+        show_plots()
 
-        x_name = self._x_widget.value
-        y_name = self._y_widget.value
-
-        for name in self.missions:
-            if self._fig is None:
-                self._fig = go.Figure()
-            # pylint: disable=invalid-name # that's a common naming
-            x = self.missions[name][x_name]
-            # pylint: disable=invalid-name # that's a common naming
-            y = self.missions[name][y_name]
-
-            scatter = go.Scatter(x=x, y=y, mode="lines", name=name)
-
-            self._fig.add_trace(scatter)
-
-            self._fig = go.FigureWidget(self._fig)
-
-        self._fig.update_layout(
-            title_text="Mission", title_x=0.5, xaxis_title=x_name, yaxis_title=y_name
-        )
-
-    # pylint: disable=unused-argument  # args has to be there for observe() to work
-    def display(self, change=None) -> display:
-        """
-        Display the user interface
-        :return the display object
-        """
-        clear_output(wait=True)
-        self._update_plots()
         toolbar = widgets.HBox(
             [widgets.Label(value="x:"), self._x_widget, widgets.Label(value="y:"), self._y_widget]
         )
-        # pylint: disable=invalid-name # that's a common naming
-        ui = widgets.VBox([toolbar, self._fig])
-        return display(ui)
 
-    def _update_plots(self):
-        """
-        Update the plots
-        """
-        self._fig = None
-        self._build_plots()
+        display(toolbar, output)

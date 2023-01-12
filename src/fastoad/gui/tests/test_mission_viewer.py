@@ -21,6 +21,7 @@ import pandas as pd
 import pytest
 
 from ..mission_viewer import MissionViewer
+from ..exceptions import FastUnrecognizedMissionName
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
@@ -51,5 +52,12 @@ def test_mission_viewer(cleanup):
         filename = pth.join(DATA_FOLDER_PATH, "valid_sellar.toml")
         mission_viewer.add_mission(filename, name="Mission 2")
 
-    # Testing display()
+    # Testing display() with no mission name, it will take the first one
     mission_viewer.display()
+
+    # Testing display() with the second mission name
+    mission_viewer.display(name="Mission 2")
+
+    # Testing display() with an invalid mission name
+    with pytest.raises(FastUnrecognizedMissionName):
+        mission_viewer.display(name="Apollo 11")

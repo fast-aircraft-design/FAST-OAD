@@ -19,3 +19,7 @@ from fastoad.exceptions import FastError
 
 class FastMissingFile(FastError):
     """Raised when a file does not exist"""
+
+
+class FastUnrecognizedMissionName(FastError):
+    """Raised when trying to display a mission that does not exist among added missions"""
