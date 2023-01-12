@@ -193,3 +193,35 @@ class FastSeveralConfigurationFilesError(FastError):
             f'Installed package "{dist_name}" provides several configuration files. '
             "One must be specified."
         )
+
+
+class FastNoAvailableSourceFileError(FastError):
+    """Raised when a source file is asked, but none is available in plugins."""
+
+    def __init__(self):
+        super().__init__("No source file provided with currently installed plugins.")
+
+
+class FastUnknownSourceFileError(FastError):
+    """Raised when a source file is not found for named distribution."""
+
+    def __init__(self, source_file, dist_name):
+        self.source_file = source_file
+        self.dist_name = dist_name
+        super().__init__(
+            f'Configuration file "{source_file}" not provided with '
+            f'installed package "{dist_name}".'
+        )
+
+
+class FastSeveralSourceFilesError(FastError):
+    """
+    Raised when no source file has been specified but several source files are
+    provided with the distribution."""
+
+    def __init__(self, dist_name):
+        self.dist_name = dist_name
+        super().__init__(
+            f'Installed package "{dist_name}" provides several source files. '
+            "One must be specified."
+        )

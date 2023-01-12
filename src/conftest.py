@@ -236,11 +236,11 @@ def with_dummy_plugins():
     """
     Reduces plugin list to:
         - dummy-dist-1 with plugins test_plugin_1 and test_plugin_4
-          (one configuration file, no models, notebook folder).
+          (one configuration file, no models, notebook folder, one source files).
         - dummy-dist-2 with plugins test_plugin_2 and test_plugin_3
-          (3 configuration files, model folder, no notebooks).
+          (3 configuration files, model folder, no notebooks, no source files).
         - dummy-dist-3 with plugins test_plugin_5
-          (no configuration file, model folder, notebook folder).
+          (no configuration file, model folder, notebook folder, 3 source files).
 
     Any previous state of plugins is restored during teardown.
     """
