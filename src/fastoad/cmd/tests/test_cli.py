@@ -58,6 +58,11 @@ def test_plugin_info(with_dummy_plugins):
                 ["dummy_conf_2-1.yml", "dummy_conf_3-1.yml", "dummy_conf_3-2.yaml"],
                 [],
             ],
+            source_files=[
+                ["dummy_source_4-1.xml"],
+                [],
+                ["dummy_source_5-1.xml", "dummy_source_5-2.xml", "dummy_source_5-3.xml"],
+            ],
         )
     )
     assert result.output == expected_info.to_markdown(index=False) + "\n"
