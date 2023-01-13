@@ -31,6 +31,9 @@ from fastoad.module_management.exceptions import (
     FastSeveralDistPluginsError,
     FastUnknownConfigurationFileError,
     FastUnknownDistPluginError,
+    FastNoAvailableSourceFileError,
+    FastSeveralSourceFilesError,
+    FastUnknownSourceFileError,
 )
 from . import api
 
@@ -86,6 +89,47 @@ def gen_conf(conf_file, from_package, source, force):
         FastSeveralConfigurationFilesError,
         FastUnknownConfigurationFileError,
         FastNoAvailableConfigurationFileError,
+    ) as exc:
+        click.echo(exc.args[0])
+
+
+@fast_oad.command(name="gen_source_file")
+@click.argument("source_file", nargs=1)
+@click.option(
+    "-p",
+    "--from_package",
+    nargs=1,
+    help="Name of installed package that provides the sample source file.",
+)
+@click.option("-s", "--source", nargs=1, help="Name of original source file.")
+@overwrite_option
+def gen_source_file(source_file, from_package, source, force):
+    """
+    Generate a sample source file with given argument as name.
+
+    Option "--from_package" has to be used if several FAST-OAD plugins are available.
+
+    Option "--source" has to be used if the targeted plugin provides several sample
+    source files.
+
+    Use "fastoad plugin_info" to get information about available plugins and sample
+    configuration files.
+    """
+    try:
+        manage_overwrite(
+            api.generate_source_file,
+            source_file_path=source_file,
+            overwrite=force,
+            distribution_name=from_package,
+            sample_file_name=source,
+        )
+    except (
+        FastNoDistPluginError,
+        FastSeveralDistPluginsError,
+        FastUnknownDistPluginError,
+        FastSeveralSourceFilesError,
+        FastUnknownSourceFileError,
+        FastNoAvailableSourceFileError,
     ) as exc:
         click.echo(exc.args[0])
 

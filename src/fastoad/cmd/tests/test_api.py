@@ -176,6 +176,81 @@ def test_generate_configuration_file_plugin_2(cleanup, with_dummy_plugins, plugi
     assert cmp(configuration_file_path, original_file)
 
 
+def test_generate_source_file_plugin_4(cleanup, with_dummy_plugins, plugin_root_path):
+    source_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_4.xml")
+
+    # No conf file specified because the dist has only one
+    api.generate_source_file(source_file_path, overwrite=False, distribution_name="dummy-dist-1")
+    original_file = pth.join(
+        plugin_root_path, "dist_1", "dummy_plugin_4", "source_files", "dummy_source_4-1.xml"
+    )
+    assert cmp(source_file_path, original_file)
+
+    # Generating again without forcing overwrite will make it fail
+    with pytest.raises(FastPathExistsError):
+        api.generate_source_file(
+            source_file_path, overwrite=False, distribution_name="dummy-dist-1"
+        )
+
+    # Generating again with overwrite=True should be Ok
+    api.generate_source_file(source_file_path, overwrite=True, distribution_name="dummy-dist-1")
+
+
+def test_generate_source_file_plugin_4_alone(cleanup, with_dummy_plugin_4):
+    source_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_4.xml")
+
+    # No plugin specified, only one plugin is available
+    api.generate_source_file(source_file_path, overwrite=True)
+
+
+def test_generate_source_file_plugin_1_and_2(cleanup, with_dummy_plugin_distribution_1_and_2):
+    source_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_4_again.xml")
+
+    # No plugin specified, several plugins available, but only one with a conf file
+    api.generate_source_file(source_file_path, overwrite=True)
+
+
+def test_generate_configuration_file_plugin_5(cleanup, with_dummy_plugins, plugin_root_path):
+    source_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_5.xml")
+    api.generate_source_file(
+        source_file_path,
+        overwrite=True,
+        distribution_name="dummy-dist-3",
+        sample_file_name="dummy_source_5-1.xml",
+    )
+
+    # As conf file names are unique, it is possible to omit distribution_name
+    source_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_5_again.xml")
+    api.generate_source_file(
+        source_file_path,
+        overwrite=True,
+        sample_file_name="dummy_source_5-1.xml",
+    )
+    original_file = pth.join(
+        plugin_root_path, "dist_3", "dummy_plugin_5", "source_files", "dummy_source_5-1.xml"
+    )
+    assert cmp(source_file_path, original_file)
+
+    with pytest.raises(FastPathExistsError):
+        api.generate_source_file(
+            source_file_path,
+            overwrite=False,
+            distribution_name="dummy-dist-3",
+            sample_file_name="dummy_source_5-2.xml",
+        )
+
+    api.generate_source_file(
+        source_file_path,
+        overwrite=True,
+        distribution_name="dummy-dist-3",
+        sample_file_name="dummy_source_5-2.xml",
+    )
+    original_file = pth.join(
+        plugin_root_path, "dist_3", "dummy_plugin_5", "source_files", "dummy_source_5-2.xml"
+    )
+    assert cmp(source_file_path, original_file)
+
+
 def test_generate_inputs(cleanup):
     input_file_path = api.generate_inputs(CONFIGURATION_FILE_PATH, overwrite=False)
     assert input_file_path == pth.join(RESULTS_FOLDER_PATH, "inputs.xml")

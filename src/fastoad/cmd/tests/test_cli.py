@@ -218,6 +218,189 @@ def test_gen_conf_several_plugin(cleanup, with_dummy_plugins, plugin_root_path):
         assert cmp(pth.join(temp_dir, "my_conf.yml"), original_file)
 
 
+def test_gen_source_no_plugin(with_no_plugin):
+    runner = CliRunner()
+    result = runner.invoke(fast_oad, ["gen_source_file", "my_source.xml"])
+    assert not result.exception
+    assert result.exit_code == 0
+    assert result.output == "This feature needs plugins, but no plugin available.\n"
+
+
+def test_gen_source_file_one_plugin(cleanup, with_dummy_plugin_4, plugin_root_path):
+    runner = CliRunner()
+    with runner.isolated_filesystem(temp_dir=RESULTS_FOLDER_PATH) as temp_dir:
+        # Test minimal command =================================================
+        result = runner.invoke(
+            fast_oad,
+            ["gen_source_file", "my_source.xml"],
+        )
+        original_file = pth.join(
+            plugin_root_path, "dist_1", "dummy_plugin_4", "source_files", "dummy_source_4-1.xml"
+        )
+        assert cmp(pth.join(temp_dir, "my_source.xml"), original_file)
+        assert not result.exception
+        assert result.exit_code == 0
+        assert result.output.endswith("has been written.\n")
+
+        # Test overwrite prompt ================================================
+        result = runner.invoke(fast_oad, ["gen_source_file", "my_source.xml"], input="n")
+        assert not result.exception
+        assert result.exit_code == 0
+        assert "Do you want to overwrite it? [y/N]:" in result.output
+        assert result.output.endswith("Operation cancelled.\n")
+
+        # ----------------------------------------------------------------------
+        result = runner.invoke(fast_oad, ["gen_source_file", "my_source.xml"], input="y")
+        assert not result.exception
+        assert result.exit_code == 0
+        assert "Do you want to overwrite it? [y/N]:" in result.output
+        assert result.output.endswith("has been written.\n")
+
+        # ----------------------------------------------------------------------
+        result = runner.invoke(fast_oad, ["gen_source_file", "my_source.xml", "--force"])
+        assert not result.exception
+        assert result.exit_code == 0
+        assert "Do you want to overwrite it? [y/N]:" not in result.output
+        assert result.output.endswith("has been written.\n")
+
+        # Test plugin specification ============================================
+        result = runner.invoke(
+            fast_oad,
+            ["gen_source_file", "my_source.xml", "--from_package", "unknown-dist"],
+            input="n",
+        )
+        assert not result.exception
+        assert result.exit_code == 0
+        assert result.output.endswith(
+            'No installed package with FAST-OAD plugin found with name "unknown-dist".\n'
+        )
+
+        # ----------------------------------------------------------------------
+        result = runner.invoke(
+            fast_oad, ["gen_source_file", "my_source.xml", "-f", "-p", "dummy-dist-1"]
+        )
+        assert not result.exception
+        assert result.exit_code == 0
+        assert result.output.endswith("has been written.\n")
+
+        # Test source file specification =======================================
+        result = runner.invoke(
+            fast_oad,
+            [
+                "gen_source_file",
+                "my_source.xml",
+                "-f",
+                "-p",
+                "dummy-dist-1",
+                "-s",
+                "dummy_source_4-1.xml",
+            ],
+        )
+        assert not result.exception
+        assert result.exit_code == 0
+        assert result.output.endswith("has been written.\n")
+
+        # ----------------------------------------------------------------------
+        result = runner.invoke(
+            fast_oad,
+            ["gen_source_file", "my_source.xml", "-f", "--source", "dummy_source_4-1.xml"],
+        )
+        assert not result.exception
+        assert result.exit_code == 0
+        assert result.output.endswith("has been written.\n")
+
+        # ----------------------------------------------------------------------
+        result = runner.invoke(
+            fast_oad,
+            ["gen_source_file", "my_source.xml", "-f", "--source", "unknown_source_file.xml"],
+        )
+        assert not result.exception
+        assert result.exit_code == 0
+        assert result.output.endswith(
+            '"unknown_source_file.xml" not provided with installed package "dummy-dist-1".\n'
+        )
+
+
+def test_gen_source_several_plugin(cleanup, with_dummy_plugins, plugin_root_path):
+    runner = CliRunner()
+    with runner.isolated_filesystem(temp_dir=RESULTS_FOLDER_PATH) as temp_dir:
+        # Test errors ==========================================================
+        result = runner.invoke(
+            fast_oad,
+            ["gen_source_file", "my_source.xml"],
+        )
+        assert not result.exception
+        assert result.exit_code == 0
+        assert result.output.endswith(
+            "Several installed packages with FAST-OAD plugins are available. "
+            "One must be specified.\n"
+        )
+
+        # ----------------------------------------------------------------------
+        result = runner.invoke(
+            fast_oad,
+            ["gen_source_file", "my_source.xml", "-p", "dummy-dist-3"],
+        )
+        assert not result.exception
+        assert result.exit_code == 0
+        assert result.output.endswith(
+            '"dummy-dist-3" provides several source files. One must be specified.\n'
+        )
+
+        # ----------------------------------------------------------------------
+        result = runner.invoke(
+            fast_oad,
+            ["gen_source_file", "my_source.xml", "-p", "dummy-dist-3", "-s", "unknown_source.xml"],
+        )
+        assert not result.exception
+        assert result.exit_code == 0
+        assert result.output.endswith(
+            '"unknown_source.xml" not provided with installed package "dummy-dist-3".\n'
+        )
+
+        # Test source file specification =======================================
+        result = runner.invoke(
+            fast_oad,
+            [
+                "gen_source_file",
+                "my_source.xml",
+                "-f",
+                "-p",
+                "dummy-dist-1",
+                "-s",
+                "dummy_source_4-1.xml",
+            ],
+        )
+        assert not result.exception
+        assert result.exit_code == 0
+        assert result.output.endswith("has been written.\n")
+        original_file = pth.join(
+            plugin_root_path, "dist_1", "dummy_plugin_4", "source_files", "dummy_source_4-1.xml"
+        )
+        assert cmp(pth.join(temp_dir, "my_source.xml"), original_file)
+
+        # ----------------------------------------------------------------------
+        result = runner.invoke(
+            fast_oad,
+            [
+                "gen_source_file",
+                "my_source.xml",
+                "-f",
+                "-p",
+                "dummy-dist-3",
+                "-s",
+                "dummy_source_5-2.xml",
+            ],
+        )
+        assert not result.exception
+        assert result.exit_code == 0
+        assert result.output.endswith("has been written.\n")
+        original_file = pth.join(
+            plugin_root_path, "dist_3", "dummy_plugin_5", "source_files", "dummy_source_5-2.xml"
+        )
+        assert cmp(pth.join(temp_dir, "my_source.xml"), original_file)
+
+
 def test_create_notebooks_with_no_notebook(cleanup, with_dummy_plugin_2, plugin_root_path):
     runner = CliRunner()
     with runner.isolated_filesystem(temp_dir=RESULTS_FOLDER_PATH):

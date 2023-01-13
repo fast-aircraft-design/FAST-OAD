@@ -198,6 +198,69 @@ def generate_configuration_file(
     return configuration_file_path
 
 
+def generate_source_file(
+    source_file_path: str,
+    overwrite: bool = False,
+    distribution_name=None,
+    sample_file_name=None,
+):
+    """
+    Copies a sample source file from an available plugin.
+
+    :param source_file_path: the path of file to be written
+    :param overwrite: if True, the file will be written, even if it already exists
+    :param distribution_name: the name of the installed package that provides the sample
+                             source file (can be omitted if only one plugin is available)
+    :param sample_file_name: the name of the sample source file (can be omitted if
+                             the plugin provides only one source file)
+    :return: path of generated file
+    :raise FastPathExistsError: if overwrite==False and source_file_path already exists
+    """
+
+    if distribution_name is None:
+        # If no distribution is specified, but only one contains source files, no need to
+        # specify the name
+        count_plugin_with_source_file = 0
+        dist_with_source_file = ""
+        plugin_source_files = {
+            name: [resource.name for resource in definition.get_source_file_list()]
+            for name, definition in get_plugin_information().items()
+        }
+        for plugin_name, source_files in plugin_source_files.items():
+            # Plugin is retained if it contains source files. Additionally, if sample_file_name
+            # is provided, plugin is retained only if sample_file_name is in provided conf files.
+            if len(source_files) > 0 and (
+                sample_file_name is None or sample_file_name in source_files
+            ):
+                count_plugin_with_source_file += 1
+                dist_with_source_file = plugin_name
+            if count_plugin_with_source_file > 1:
+                break
+
+        # If only one plugin has been retained, it can be used as automatically selected plugin.
+        if count_plugin_with_source_file == 1:
+            distribution_name = dist_with_source_file
+
+    dist_definition = FastoadLoader().get_distribution_plugin_definition(distribution_name)
+    file_info = dist_definition.get_source_file_info(sample_file_name)
+
+    # Check on file overwrite
+    source_file_path = pth.abspath(source_file_path)
+    if not overwrite and pth.exists(source_file_path):
+        raise FastPathExistsError(
+            f"Source file {source_file_path} not written because it already exists. "
+            "Use overwrite=True to bypass.",
+            source_file_path,
+        )
+
+    # Write file
+    make_parent_dir(source_file_path)
+    copy_resource(file_info.package_name, file_info.name, source_file_path)
+    _LOGGER.info('Sample source file written in "%s".', source_file_path)
+
+    return source_file_path
+
+
 def generate_inputs(
     configuration_file_path: str,
     source_path: str = None,
