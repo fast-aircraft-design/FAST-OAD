@@ -77,6 +77,11 @@ jobs:
         run: poetry run pytest --no-cov tests/memory_tests
         shell: bash
 
+      # There is a problem with notebook tests in MPI environment
+      - name: Deactivate MPI
+        run: poetry run pip uninstall mpi4py --yes
+        shell: bash
+
       - name: Notebook tests
         #        if: ${{ github.event_name == 'pull_request' || contains(github.event.head_commit.message, '[test nb]') || github.ref == 'refs/heads/master' }}
         run: poetry run pytest --no-cov --nbval-lax -p no:python src/fastoad/notebooks
