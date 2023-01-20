@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -45,18 +45,21 @@ def test_plugins(with_dummy_plugins):
     FastoadLoader._loaded = False  # Ensures next instantiation will trigger reloading
 
     dist1_definition = FastoadLoader().distribution_plugin_definitions["dummy-dist-1"]
-    assert "models" not in dist1_definition["test_plugin_1"].subpackages
-    assert "notebooks" not in dist1_definition["test_plugin_1"].subpackages
+    assert SubPackageNames.MODELS not in dist1_definition["test_plugin_1"].subpackages
+    assert (
+        dist1_definition["test_plugin_1"].subpackages[SubPackageNames.NOTEBOOKS]
+        == "tests.dummy_plugins.dist_1.dummy_plugin_1.notebooks"
+    )
 
-    assert "models" not in dist1_definition["test_plugin_4"].subpackages
-    assert "configurations" not in dist1_definition["test_plugin_4"].subpackages
+    assert SubPackageNames.MODELS not in dist1_definition["test_plugin_4"].subpackages
+    assert SubPackageNames.CONFIGURATIONS not in dist1_definition["test_plugin_4"].subpackages
 
     dist2_definition = FastoadLoader().distribution_plugin_definitions["dummy-dist-2"]
     assert (
         dist2_definition["test_plugin_3"].subpackages[SubPackageNames.MODELS]
         == "tests.dummy_plugins.dist_2.dummy_plugin_3.models"
     )
-    assert "notebooks" not in dist2_definition["test_plugin_3"].subpackages
+    assert SubPackageNames.NOTEBOOKS not in dist2_definition["test_plugin_3"].subpackages
     assert (
         dist2_definition["test_plugin_3"].subpackages[SubPackageNames.CONFIGURATIONS]
         == "tests.dummy_plugins.dist_2.dummy_plugin_3.configurations"
