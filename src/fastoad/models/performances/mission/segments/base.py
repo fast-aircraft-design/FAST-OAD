@@ -1,6 +1,6 @@
 """Base classes for simulating flight segments."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,7 +16,7 @@ import logging
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Type
+from typing import List, Optional, Tuple, Type
 
 import numpy as np
 import pandas as pd
@@ -147,12 +147,9 @@ class AbstractFlightSegment(IFlightPart, ABC):
         """
 
     @classmethod
-    def __init_subclass__(cls, *, mission_file_keyword="", attribute_units: Dict[str, str] = None):
+    def __init_subclass__(cls, *, mission_file_keyword=""):
         if mission_file_keyword:
             SegmentDefinitions.add_segment(mission_file_keyword, cls)
-        cls._attribute_units = cls._attribute_units.copy()
-        if attribute_units:
-            cls._attribute_units.update(attribute_units)
 
         # We want to have self.target as a property to ensure it gets always "scalarized".
         # But properties and dataclasses do not mix very well. It would be possible to
@@ -172,11 +169,6 @@ class AbstractFlightSegment(IFlightPart, ABC):
             self._target = value
 
         cls.target = property(_get_target, _set_target)
-
-    @classmethod
-    def get_attribute_unit(cls, attribute_name: str) -> str:
-        """Returns unit for specified attribute."""
-        return cls._attribute_units.get(attribute_name)
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         """
