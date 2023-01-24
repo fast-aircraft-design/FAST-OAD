@@ -2,6 +2,13 @@
 Changelog
 =========
 
+Version 1.4.2
+=============
+- Fixed:
+    - Fixed compatibility with Openmdao 3.22. (#464)
+    - Now a warning is issued when a nan value is in generated input file from a given data source. (#468)
+    - Now FAST-OAD_CS25 0.1.4 is explicitly required. (#475)
+
 Version 1.4.1
 =============
 - Fixed:

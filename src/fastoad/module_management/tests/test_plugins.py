@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -25,9 +25,6 @@ from ..exceptions import (
     FastSeveralDistPluginsError,
     FastUnknownConfigurationFileError,
     FastUnknownDistPluginError,
-    FastNoAvailableSourceFileError,
-    FastUnknownSourceFileError,
-    FastSeveralSourceFilesError,
 )
 from ..service_registry import RegisterService
 
@@ -48,20 +45,21 @@ def test_plugins(with_dummy_plugins):
     FastoadLoader._loaded = False  # Ensures next instantiation will trigger reloading
 
     dist1_definition = FastoadLoader().distribution_plugin_definitions["dummy-dist-1"]
-    assert "models" not in dist1_definition["test_plugin_1"].subpackages
-    assert "notebooks" not in dist1_definition["test_plugin_1"].subpackages
-    assert "source_files" not in dist1_definition["test_plugin_1"].subpackages
+    assert SubPackageNames.MODELS not in dist1_definition["test_plugin_1"].subpackages
+    assert (
+        dist1_definition["test_plugin_1"].subpackages[SubPackageNames.NOTEBOOKS]
+        == "tests.dummy_plugins.dist_1.dummy_plugin_1.notebooks"
+    )
 
-    assert "models" not in dist1_definition["test_plugin_4"].subpackages
-    assert "configurations" not in dist1_definition["test_plugin_4"].subpackages
+    assert SubPackageNames.MODELS not in dist1_definition["test_plugin_4"].subpackages
+    assert SubPackageNames.CONFIGURATIONS not in dist1_definition["test_plugin_4"].subpackages
 
     dist2_definition = FastoadLoader().distribution_plugin_definitions["dummy-dist-2"]
     assert (
         dist2_definition["test_plugin_3"].subpackages[SubPackageNames.MODELS]
         == "tests.dummy_plugins.dist_2.dummy_plugin_3.models"
     )
-    assert "notebooks" not in dist2_definition["test_plugin_3"].subpackages
-    assert "source_files" not in dist2_definition["test_plugin_3"].subpackages
+    assert SubPackageNames.NOTEBOOKS not in dist2_definition["test_plugin_3"].subpackages
     assert (
         dist2_definition["test_plugin_3"].subpackages[SubPackageNames.CONFIGURATIONS]
         == "tests.dummy_plugins.dist_2.dummy_plugin_3.configurations"
@@ -145,28 +143,6 @@ def test_get_plugin_configuration_file_list(with_dummy_plugins):
         file_list = FastoadLoader().get_configuration_file_list("unknown-dist")
 
 
-def test_get_plugin_source_file_list(with_dummy_plugins):
-    def extract_info(file_list):
-        return {(item.name, item.plugin_name) for item in file_list}
-
-    file_list = FastoadLoader().get_source_file_list("dummy-dist-1")
-    assert extract_info(file_list) == {("dummy_source_4-1.xml", "test_plugin_4")}
-
-    file_list = FastoadLoader().get_source_file_list("dummy-dist-2")
-    assert extract_info(file_list) == set()
-
-    file_list = FastoadLoader().get_source_file_list("dummy-dist-3")
-    assert extract_info(file_list) == {
-        ("dummy_source_5-1.xml", "test_plugin_5"),
-        ("dummy_source_5-2.xml", "test_plugin_5"),
-        ("dummy_source_5-3.xml", "test_plugin_5"),
-    }
-
-    # improper name
-    with pytest.raises(FastUnknownDistPluginError):
-        file_list = FastoadLoader().get_configuration_file_list("unknown-dist")
-
-
 def test_get_plugin_notebook_folder_list_with_one_plugin(with_dummy_plugin_distribution_1):
     def extract_info(folder_list):
         return {(item.dist_name, item.package_name) for item in folder_list}
@@ -213,21 +189,6 @@ def test_get_plugin_notebook_folder_list_with_plugins(with_dummy_plugins):
         file_list = FastoadLoader().get_notebook_folder_list("unknown-dist")
 
 
-def test_get_source_file_info_with_1_plugin(with_dummy_plugin_4):
-    dist_def = FastoadLoader().get_distribution_plugin_definition("dummy-dist-1")
-
-    with pytest.raises(FastUnknownSourceFileError):
-        dist_def.get_source_file_info("unknown.xml")
-    file_info = dist_def.get_source_file_info("dummy_source_4-1.xml")
-    assert file_info.name == "dummy_source_4-1.xml"
-    assert file_info.dist_name == "dummy-dist-1"
-    assert file_info.plugin_name == "test_plugin_4"
-    assert file_info.package_name == "tests.dummy_plugins.dist_1.dummy_plugin_4.source_files"
-
-    file_info_bis = dist_def.get_source_file_info()
-    assert file_info_bis == file_info
-
-
 def test_get_configuration_file_info_with_1_plugin(with_dummy_plugin_1):
     dist_def = FastoadLoader().get_distribution_plugin_definition("dummy-dist-1")
 
@@ -248,13 +209,6 @@ def test_get_configuration_file_info_without_conf_file_available(with_dummy_plug
 
     with pytest.raises(FastNoAvailableConfigurationFileError):
         dist_def.get_configuration_file_info("unknown.yml")
-
-
-def test_get_source_file_info_without_source_file_available(with_dummy_plugin_2):
-    dist_def = FastoadLoader().get_distribution_plugin_definition("dummy-dist-2")
-
-    with pytest.raises(FastNoAvailableSourceFileError):
-        dist_def.get_source_file_info("unknown.yml")
 
 
 def test_get_configuration_file_info_with_plugins(with_dummy_plugins):
@@ -294,42 +248,3 @@ def test_get_configuration_file_info_with_plugins(with_dummy_plugins):
     assert file_info.dist_name == "dummy-dist-2"
     assert file_info.plugin_name == "test_plugin_3"
     assert file_info.package_name == "tests.dummy_plugins.dist_2.dummy_plugin_3.configurations"
-
-
-def test_get_source_file_info_with_plugins(with_dummy_plugins):
-    dist_def = FastoadLoader().get_distribution_plugin_definition("dummy-dist-1")
-
-    with pytest.raises(FastUnknownSourceFileError):
-        dist_def.get_source_file_info("unknown.yml")
-    file_info = dist_def.get_source_file_info("dummy_source_4-1.xml")
-    assert file_info.name == "dummy_source_4-1.xml"
-    assert file_info.dist_name == "dummy-dist-1"
-    assert file_info.plugin_name == "test_plugin_4"
-    assert file_info.package_name == "tests.dummy_plugins.dist_1.dummy_plugin_4.source_files"
-
-    file_info_bis = dist_def.get_source_file_info()
-    assert file_info_bis == file_info
-
-    dist_def = FastoadLoader().get_distribution_plugin_definition("dummy-dist-3")
-    with pytest.raises(FastUnknownSourceFileError):
-        dist_def.get_source_file_info("unknown.yml")
-    with pytest.raises(FastSeveralSourceFilesError):
-        dist_def.get_source_file_info()
-
-    file_info = dist_def.get_source_file_info("dummy_source_5-1.xml")
-    assert file_info.name == "dummy_source_5-1.xml"
-    assert file_info.dist_name == "dummy-dist-3"
-    assert file_info.plugin_name == "test_plugin_5"
-    assert file_info.package_name == "tests.dummy_plugins.dist_3.dummy_plugin_5.source_files"
-
-    file_info = dist_def.get_source_file_info("dummy_source_5-2.xml")
-    assert file_info.name == "dummy_source_5-2.xml"
-    assert file_info.dist_name == "dummy-dist-3"
-    assert file_info.plugin_name == "test_plugin_5"
-    assert file_info.package_name == "tests.dummy_plugins.dist_3.dummy_plugin_5.source_files"
-
-    file_info = dist_def.get_source_file_info("dummy_source_5-3.xml")
-    assert file_info.name == "dummy_source_5-3.xml"
-    assert file_info.dist_name == "dummy-dist-3"
-    assert file_info.plugin_name == "test_plugin_5"
-    assert file_info.package_name == "tests.dummy_plugins.dist_3.dummy_plugin_5.source_files"
