@@ -21,7 +21,6 @@ from scipy.constants import g
 
 from fastoad.model_base import FlightPoint
 from .base import GroundSegment
-from ..exceptions import FastFlightSegmentIncompleteFlightPoint
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -76,9 +75,10 @@ class RotationSegment(GroundSegment, mission_file_keyword="rotation"):
         if self.polar:
             alpha = flight_point.alpha
             CL = self.polar.cl(alpha)
-            CD = self.polar.cd_ground(cl=CL, altitude=flight_point.altitude)
-            flight_point.CL = CL
+            CD = self.polar_modifier.ModifyPolar(self.polar, flight_point).cd(CL)
+            # self.polar_modifier.ModifyPolar(self.polar, flight_point)
             flight_point.CD = CD
+            flight_point.CL = CL
         else:
             flight_point.CL = flight_point.CD = 0.0
 
@@ -101,7 +101,7 @@ class RotationSegment(GroundSegment, mission_file_keyword="rotation"):
         airspeed = current.true_airspeed
         mass = current.mass
         alpha = current.alpha
-        CL = self.polar.cl(alpha)
+        CL = current.CL
         thrust = current.thrust
 
         lift = 0.5 * atm.density * self.reference_area * airspeed ** 2 * CL * cos(
@@ -109,11 +109,15 @@ class RotationSegment(GroundSegment, mission_file_keyword="rotation"):
         ) + thrust * sin(alpha)
         if alpha <= self.alpha_limit:
             return lift - mass * g
+        else:
+            # Tail strick, issue warning and continue accelerating without rotation
+            self.rotation_rate = 0.0
+            _LOGGER.warning("TAIL STRICK during take-off, consider increasing VR.")
 
-        raise FastFlightSegmentIncompleteFlightPoint(
-            "Alpha limit reached, aircraft cannot takeoff before tailstrick,"
-            "consider increasing Vr."
-        )
+        # raise FastFlightSegmentIncompleteFlightPoint(
+        #     "Alpha limit reached, aircraft cannot takeoff before tailstrick,"
+        #     "consider increasing Vr."
+        # )
 
     def compute_next_alpha(self, next_point: FlightPoint, previous_point: FlightPoint):
 

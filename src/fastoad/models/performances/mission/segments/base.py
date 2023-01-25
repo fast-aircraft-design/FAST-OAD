@@ -33,6 +33,7 @@ from fastoad.model_base.propulsion import IPropulsion
 from fastoad.models.performances.mission.polar import Polar
 from ..base import IFlightPart
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
+from ..polar_modifier import AbstractPolarModifier, LegacyPolar
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -311,6 +312,7 @@ class AbstractTimeStepFlightSegment(
 
     #: The Polar instance that will provide drag data.
     polar: Polar = MANDATORY_FIELD
+    polar_modifier: AbstractPolarModifier = LegacyPolar()
 
     #: The reference area, in m**2.
     reference_area: float = MANDATORY_FIELD
@@ -385,8 +387,12 @@ class AbstractTimeStepFlightSegment(
             )
 
             if self.polar:
+                # self.polar_modifier.ModifyPolar(self.polar, flight_point)
                 flight_point.CL = flight_point.mass * g / reference_force
-                flight_point.CD = self.polar.cd(flight_point.CL)
+                # flight_point.CD = self.polar.cd(flight_point.CL)
+                flight_point.CD = self.polar_modifier.ModifyPolar(self.polar, flight_point).cd(
+                    flight_point.CL
+                )
             else:
                 flight_point.CL = flight_point.CD = 0.0
             flight_point.drag = flight_point.CD * reference_force
@@ -630,3 +636,6 @@ class GroundSegment(AbstractManualThrustSegment, ABC):
     # The default value is representative of dry concrete/asphalte
     wheels_friction: float = 0.03
     time_step: float = 0.1
+
+    # The angle of attack of the aircraft at the beginning of the segment
+    alpha: float = 0.0

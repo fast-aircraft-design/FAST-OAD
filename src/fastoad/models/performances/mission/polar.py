@@ -11,11 +11,8 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import numpy as np
 from scipy.interpolate import interp1d
 from scipy.optimize import fmin
-
-from .ground_effect import GroundEffect
 
 
 class Polar:
@@ -37,7 +34,7 @@ class Polar:
         "k_cd": {"name": "tuning:aerodynamics:aircraft:cruise:CD:k", "unit": None},
     }
 
-    def __init__(self, input_dic=None):
+    def __init__(self, cl, cd, cl_alpha=5.0, cl0_clean=0.0, cl_high_lift=0.0):
         """
         Class for managing aerodynamic polar data.
 
@@ -46,36 +43,31 @@ class Polar:
 
         Once defined, for any CL value, CD can be obtained using :meth:`cd`.
 
-        :param input_dic: a dictionary containing the CL and CD N-elements
-        array and additional variables for ground effect calculation.
-        For ground segments the 'CL vs alpha curve' is required and the dictionary
-        must contain 'CL0_clean', 'CL_alpha' and 'CL_high_lift'
+        :param cl: the lift coefficient vector
+        :param cd: the drag coefficient vector
+        :param cl_alpha: the lift slope coefficient
+        :param cl0_clean: the zero angle of attack(relative to aircraft) lift coefficient
+        :param cl_high_lift: the lift increase due to high lift systems
+
+        For ground segments the 'CL vs alpha curve' is required and the vairables
+        'CL0_clean', 'CL_alpha' and 'CL_high_lift' should be provided through mission file
 
         """
 
-        if {"CL", "CD"}.issubset(input_dic):
-            self._definition_CL = input_dic["CL"]
-            self._cd = interp1d(
-                input_dic["CL"], input_dic["CD"], kind="quadratic", fill_value="extrapolate"
-            )
-        else:
-            # default initialisation for instanciation without argument
-            self._definition_CL = np.array([0.2, 0.5, 1.0])
-            self._definition_CD = np.array([0.01, 0.02, 0.1])
+        self._definition_CL = cl
+        self._definition_CD = cd
 
-            self._cd = interp1d(
-                self._definition_CL, self._definition_CD, kind="quadratic", fill_value="extrapolate"
-            )
+        # Interpolate cd
+        self.interpolate_cd(self._definition_CL, self._definition_CD)
 
-        # Additional arguments for takeoff segments
-        if {"CL0_clean", "CL_alpha", "CL_high_lift"}.issubset(input_dic):
-            self.init_takeoff_polar(input_dic)
-            self._use_CL_alpha = True
-
-        # Additional arguments for ground effect
-        if "ground_effect" in input_dic:
-            self.ground_effect = GroundEffect(input_dic)
-            self._use_ground_effect = self.ground_effect.use_ground_effect
+        # Additional arguments for ground segments
+        self._CL_alpha_0 = cl0_clean
+        self._CL_alpha = cl_alpha
+        self._CL_high_lift = cl_high_lift
+        alpha_vector = (
+            self._definition_CL - self._CL_alpha_0 - self._CL_high_lift
+        ) / self._CL_alpha
+        self._clvsalpha = interp1d(alpha_vector, self._definition_CL)
 
         def _negated_lift_drag_ratio(lift_coeff):
             """Returns -CL/CD."""
@@ -83,17 +75,8 @@ class Polar:
 
         self._optimal_CL = fmin(_negated_lift_drag_ratio, self._definition_CL[0], disp=0)
 
-    def init_takeoff_polar(self, input_arg):
-        """
-        Builds the CL vs alpha vector for ground manoeuvres.
-        """
-        self._CL_alpha_0 = input_arg["CL0_clean"]
-        self._CL_alpha = input_arg["CL_alpha"]
-        self._CL_high_lift = input_arg["CL_high_lift"]
-        alpha_vector = (
-            self._definition_CL - self._CL_alpha_0 - self._CL_high_lift
-        ) / self._CL_alpha
-        self._clvsalpha = interp1d(alpha_vector, self._definition_CL)
+    def interpolate_cd(self, cl, cd):
+        self._cd = interp1d(cl, cd, kind="quadratic", fill_value="extrapolate")
 
     def get_gnd_effect_model(self):
         return self.ground_effect.get_gnd_effect_model()
@@ -102,6 +85,11 @@ class Polar:
     def definition_cl(self):
         """The vector that has been used for defining lift coefficient."""
         return self._definition_CL
+
+    @property
+    def definition_cd(self):
+        """The vector that has been used for defining drag coefficient."""
+        return self._definition_CD
 
     @property
     def optimal_cl(self):
@@ -120,32 +108,11 @@ class Polar:
             return self._cd(self._definition_CL)
         return self._cd(cl)
 
-    def cd_ground(self, cl=None, altitude: float = 0):
-
-        """Evaluates the drag in ground effect, using Raymer's model:
-        'Aircraft Design A conceptual approach', D. Raymer p304"""
-
-        if cl is None:
-            if self._use_ground_effect:
-                cd_ground = self.ground_effect.cd_ground(self._definition_CL, altitude)
-                return self._cd(self._definition_CL) + cd_ground
-            else:
-                return self._cd(self._definition_CL)
-
-        if self._use_ground_effect:
-            cd_ground = self.ground_effect.cd_ground(cl, altitude)
-            return cd_ground + self._cd(cl)
-        else:
-            return self._cd(cl)
-
     def cl(self, alpha):
         """
         The lift coefficient corresponding to alpha (rad)
+
+        :param alpha: the angle of attack at which CL is evaluated
+        :return: CL value for each alpha.
         """
-        if self._use_CL_alpha:
-            return self._clvsalpha(alpha)
-        else:
-            raise ValueError(
-                "CL vs alpha curve not available, provide 'CL0_clean', 'CL_alpha' and"
-                "'CL_high_lift' to polar in mission definition."
-            )
+        return self._clvsalpha(alpha)

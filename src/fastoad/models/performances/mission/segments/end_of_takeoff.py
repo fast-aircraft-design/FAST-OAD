@@ -127,12 +127,14 @@ class EndOfTakoffSegment(AbstractManualThrustSegment, mission_file_keyword="end_
         airspeed = flight_point.true_airspeed
         alpha = flight_point.alpha
         gamma = flight_point.slope_angle
-        altitude = flight_point.altitude
 
         atm = self._get_atmosphere_point(flight_point.altitude)
 
         CL = self.polar.cl(alpha)
-        CD = self.polar.cd_ground(cl=CL, altitude=altitude)
+        CD = self.polar_modifier.ModifyPolar(self.polar, flight_point).cd(CL)
+        # self.polar_modifier.ModifyPolar(self.polar, flight_point)
+        flight_point.CD = CD
+        flight_point.CL = CL
         drag_aero = 0.5 * atm.density * self.reference_area * airspeed ** 2 * CD
         lift = 0.5 * atm.density * self.reference_area * airspeed ** 2 * CL
 

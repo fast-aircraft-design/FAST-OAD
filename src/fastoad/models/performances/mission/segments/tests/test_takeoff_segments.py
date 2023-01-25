@@ -23,6 +23,7 @@ from ..end_of_takeoff import EndOfTakoffSegment
 from ..ground_speed_change import GroundSpeedChangeSegment
 from ..rotation import RotationSegment
 from ...polar import Polar
+from ...polar_modifier import AbstractPolarModifier, GroundEffectRaymer
 
 
 def print_dataframe(df):
@@ -64,23 +65,26 @@ class DummyEngine(AbstractFuelPropulsion):
 def polar() -> Polar:
     """Returns a dummy polar where max L/D ratio is around 16."""
     cl = np.arange(0.0, 1.5, 0.01) + 0.5
-    polar_dict = {
-        "CL": cl,
-        "CD": 0.5e-1 * cl ** 2 + 0.01,
-        "ground_effect": "Raymer",
-        "span": 34.5,
-        "lg_height": 2.5,
-        "induced_drag_coef": 0.034,
-        "k_cd": 1.0,
-        "k_winglet": 1.0,
-        "CL_alpha": 5.0,
-        "CL0_clean": 0.2,
-        "CL_high_lift": 0.5,
-    }
-    return Polar(polar_dict)
+    cd = 0.5e-1 * cl ** 2 + 0.01
+    CL_alpha = 5.0
+    CL0_clean = 0.2
+    CL_high_lift = 0.5
+
+    return Polar(cl, cd, cl_alpha=CL_alpha, cl0_clean=CL0_clean, cl_high_lift=CL_high_lift)
 
 
-def test_ground_speed_change(polar):
+@pytest.fixture
+def polar_modifier() -> AbstractPolarModifier:
+    span = 34.5
+    lg_height = 2.5
+    induced_drag_coef = 0.034
+    k_cd = 1.0
+    k_winglet = 1.0
+
+    return GroundEffectRaymer(span, lg_height, induced_drag_coef, k_winglet, k_cd)
+
+
+def test_ground_speed_change(polar, polar_modifier):
     propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     # initialisation then change instance attributes
@@ -89,6 +93,7 @@ def test_ground_speed_change(polar):
         propulsion=propulsion,
         reference_area=120.0,
         polar=polar,
+        polar_modifier=polar_modifier,
         engine_setting=EngineSetting.CLIMB,
     )
     segment.thrust_rate = 1.0
@@ -107,7 +112,7 @@ def test_ground_speed_change(polar):
     assert last_point.engine_setting == EngineSetting.CLIMB
 
 
-def test_rotation(polar):
+def test_rotation(polar, polar_modifier):
     propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     # initialisation then change instance attributes
@@ -116,6 +121,7 @@ def test_rotation(polar):
         propulsion=propulsion,
         reference_area=120.0,
         polar=polar,
+        polar_modifier=polar_modifier,
         engine_setting=EngineSetting.CLIMB,
     )
     segment.thrust_rate = 1.0
@@ -133,7 +139,7 @@ def test_rotation(polar):
     assert last_point.engine_setting == EngineSetting.CLIMB
 
 
-def test_end_of_takeoff(polar):
+def test_end_of_takeoff(polar, polar_modifier):
     propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     # initialisation then change instance attributes
@@ -142,6 +148,7 @@ def test_end_of_takeoff(polar):
         propulsion=propulsion,
         reference_area=120.0,
         polar=polar,
+        polar_modifier=polar_modifier,
         engine_setting=EngineSetting.CLIMB,
     )
     segment.thrust_rate = 1.0
