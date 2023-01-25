@@ -17,6 +17,7 @@ from .analysis_and_plots import (
     mass_breakdown_bar_plot,
     mass_breakdown_sun_plot,
     wing_geometry_plot,
+    payload_range_plot,
 )
 from .mission_viewer import MissionViewer
 from .optimization_viewer import OptimizationViewer
