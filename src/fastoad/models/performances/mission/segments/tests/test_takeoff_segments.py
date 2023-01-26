@@ -76,12 +76,12 @@ def polar() -> Polar:
 @pytest.fixture
 def polar_modifier() -> AbstractPolarModifier:
     span = 34.5
-    lg_height = 2.5
+    landing_gear_height = 2.5
     induced_drag_coef = 0.034
     k_cd = 1.0
     k_winglet = 1.0
 
-    return GroundEffectRaymer(span, lg_height, induced_drag_coef, k_winglet, k_cd)
+    return GroundEffectRaymer(span, landing_gear_height, induced_drag_coef, k_winglet, k_cd)
 
 
 def test_ground_speed_change(polar, polar_modifier):

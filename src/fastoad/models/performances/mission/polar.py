@@ -16,24 +16,6 @@ from scipy.optimize import fmin
 
 
 class Polar:
-
-    _use_ground_effect = False
-    _use_CL_alpha = False
-
-    gnd_effect_variables_raymer = {
-        "span": {"name": "data:geometry:wing:span", "unit": "m"},
-        "lg_height": {"name": "data:geometry:landing_gear:height", "unit": "m"},
-        "induced_drag_coef": {
-            "name": "data:aerodynamics:aircraft:low_speed:induced_drag_coefficient",
-            "unit": None,
-        },
-        "k_winglet": {
-            "name": "tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k",
-            "unit": None,
-        },
-        "k_cd": {"name": "tuning:aerodynamics:aircraft:cruise:CD:k", "unit": None},
-    }
-
     def __init__(self, cl, cd, cl_alpha=5.0, cl0_clean=0.0, cl_high_lift=0.0):
         """
         Class for managing aerodynamic polar data.
@@ -58,15 +40,13 @@ class Polar:
         self._definition_CD = cd
 
         # Interpolate cd
-        self.interpolate_cd(self._definition_CL, self._definition_CD)
+        self._cd = interp1d(cl, cd, kind="quadratic", fill_value="extrapolate")
 
         # Additional arguments for ground segments
-        self._CL_alpha_0 = cl0_clean
-        self._CL_alpha = cl_alpha
-        self._CL_high_lift = cl_high_lift
-        alpha_vector = (
-            self._definition_CL - self._CL_alpha_0 - self._CL_high_lift
-        ) / self._CL_alpha
+        self.CL_alpha_0 = cl0_clean
+        self.CL_alpha = cl_alpha
+        self.CL_high_lift = cl_high_lift
+        alpha_vector = (self._definition_CL - self.CL_alpha_0 - self.CL_high_lift) / self.CL_alpha
         self._clvsalpha = interp1d(alpha_vector, self._definition_CL)
 
         def _negated_lift_drag_ratio(lift_coeff):
@@ -74,12 +54,6 @@ class Polar:
             return -lift_coeff / self.cd(lift_coeff)
 
         self._optimal_CL = fmin(_negated_lift_drag_ratio, self._definition_CL[0], disp=0)
-
-    def interpolate_cd(self, cl, cd):
-        self._cd = interp1d(cl, cd, kind="quadratic", fill_value="extrapolate")
-
-    def get_gnd_effect_model(self):
-        return self.ground_effect.get_gnd_effect_model()
 
     @property
     def definition_cl(self):

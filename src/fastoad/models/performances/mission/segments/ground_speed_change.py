@@ -46,22 +46,15 @@ class GroundSpeedChangeSegment(GroundSegment, mission_file_keyword="ground_speed
 
         self._complete_speed_values(flight_point)
 
-        # initialize alpha, and gamma_dot
-        # alpha = 0
-        # gamma_dot = 0
-
         flight_point.alpha = self.alpha
-        # flight_point.slope_angle_derivative = gamma_dot
 
         atm = self._get_atmosphere_point(flight_point.altitude)
         reference_force = 0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_area
 
         if self.polar:
-            CL = self.polar.cl(self.alpha)
-            CD = self.polar_modifier.ModifyPolar(self.polar, flight_point).cd(CL)
-            # self.polar_modifier.ModifyPolar(self.polar, flight_point)
-            flight_point.CD = CD
-            flight_point.CL = CL
+            modified_polar = self.polar_modifier.modify_polar(self.polar, flight_point)
+            flight_point.CL = modified_polar.cl(self.alpha)
+            flight_point.CD = modified_polar.cd(flight_point.CL)
         else:
             flight_point.CL = flight_point.CD = 0.0
         flight_point.drag = flight_point.CD * reference_force

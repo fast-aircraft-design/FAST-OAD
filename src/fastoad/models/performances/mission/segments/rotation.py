@@ -74,11 +74,9 @@ class RotationSegment(GroundSegment, mission_file_keyword="rotation"):
 
         if self.polar:
             alpha = flight_point.alpha
-            CL = self.polar.cl(alpha)
-            CD = self.polar_modifier.ModifyPolar(self.polar, flight_point).cd(CL)
-            # self.polar_modifier.ModifyPolar(self.polar, flight_point)
-            flight_point.CD = CD
-            flight_point.CL = CL
+            modified_polar = self.polar_modifier.modify_polar(self.polar, flight_point)
+            flight_point.CL = modified_polar.cl(alpha)
+            flight_point.CD = modified_polar.cd(flight_point.CL)
         else:
             flight_point.CL = flight_point.CD = 0.0
 
@@ -107,17 +105,13 @@ class RotationSegment(GroundSegment, mission_file_keyword="rotation"):
         lift = 0.5 * atm.density * self.reference_area * airspeed ** 2 * CL * cos(
             alpha
         ) + thrust * sin(alpha)
-        if alpha <= self.alpha_limit:
-            return lift - mass * g
-        else:
+
+        if alpha >= self.alpha_limit:
             # Tail strick, issue warning and continue accelerating without rotation
             self.rotation_rate = 0.0
             _LOGGER.warning("TAIL STRICK during take-off, consider increasing VR.")
 
-        # raise FastFlightSegmentIncompleteFlightPoint(
-        #     "Alpha limit reached, aircraft cannot takeoff before tailstrick,"
-        #     "consider increasing Vr."
-        # )
+        return lift - mass * g
 
     def compute_next_alpha(self, next_point: FlightPoint, previous_point: FlightPoint):
 

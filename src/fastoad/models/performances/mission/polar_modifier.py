@@ -12,17 +12,19 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 
 from fastoad.model_base.flight_point import FlightPoint
 from .polar import Polar
 
 
+@dataclass
 class AbstractPolarModifier(ABC):
 
     """ """
 
     @abstractmethod
-    def ModifyPolar(self, polar: Polar, flightpoint: FlightPoint) -> Polar:
+    def modify_polar(self, polar: Polar, flightpoint: FlightPoint) -> Polar:
 
         """
         :param polar: an instance of Polar
@@ -31,11 +33,13 @@ class AbstractPolarModifier(ABC):
         """
 
 
+@dataclass
 class LegacyPolar(AbstractPolarModifier):
-    def ModifyPolar(self, polar: Polar, flightpoint: FlightPoint) -> Polar:
+    def modify_polar(self, polar: Polar, flightpoint: FlightPoint) -> Polar:
         return polar
 
 
+@dataclass
 class GroundEffectRaymer(AbstractPolarModifier):
 
     """
@@ -43,27 +47,40 @@ class GroundEffectRaymer(AbstractPolarModifier):
         'Aircraft Design A conceptual approach', D. Raymer p304
     """
 
-    def __init__(self, span, lg_height, induced_drag_coef, k_winglet, k_cd):
+    # The wingspan
+    span: float
 
-        self._span = span
-        self._lg_height = lg_height
-        self._induced_drag_coef = induced_drag_coef
-        self._k_winglet = k_winglet
-        self._k_cd = k_cd
+    # The main landing gear height
+    landing_gear_height: float
 
-    def ModifyPolar(self, polar: Polar, flightpoint: FlightPoint) -> Polar:
+    # The induced drag coefficient, multiplies CL**2 to obtain the induced drag
+    induced_drag_coef: float
 
-        h_b = (self._span * 0.1 + self._lg_height + flightpoint.altitude) / self._span
+    # The winglet effect tuning coefficient
+    k_winglet: float
+
+    # The total drag tuning coefficient
+    k_cd: float
+
+    def modify_polar(self, polar: Polar, flightpoint: FlightPoint) -> Polar:
+
+        h_b = (self.span * 0.1 + self.landing_gear_height + flightpoint.altitude) / self.span
         k_ground = 33.0 * h_b ** 1.5 / (1 + 33.0 * h_b ** 1.5)
         cd_ground = (
-            self._induced_drag_coef
+            self.induced_drag_coef
             * polar.definition_cl ** 2
-            * self._k_winglet
-            * self._k_cd
+            * self.k_winglet
+            * self.k_cd
             * (k_ground - 1)
         )
 
         # Update polar interpolation
-        polar.interpolate_cd(polar.definition_cl, polar.definition_cd + cd_ground)
+        modified_polar = Polar(
+            polar.definition_cl,
+            polar.definition_cd + cd_ground,
+            cl_alpha=polar.CL_alpha,
+            cl0_clean=polar.CL_alpha_0,
+            cl_high_lift=polar.CL_high_lift,
+        )
 
-        return polar
+        return modified_polar

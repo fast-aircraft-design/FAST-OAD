@@ -387,12 +387,9 @@ class AbstractTimeStepFlightSegment(
             )
 
             if self.polar:
-                # self.polar_modifier.ModifyPolar(self.polar, flight_point)
+                modified_polar = self.polar_modifier.modify_polar(self.polar, flight_point)
                 flight_point.CL = flight_point.mass * g / reference_force
-                # flight_point.CD = self.polar.cd(flight_point.CL)
-                flight_point.CD = self.polar_modifier.ModifyPolar(self.polar, flight_point).cd(
-                    flight_point.CL
-                )
+                flight_point.CD = modified_polar.cd(flight_point.CL)
             else:
                 flight_point.CL = flight_point.CD = 0.0
             flight_point.drag = flight_point.CD * reference_force
