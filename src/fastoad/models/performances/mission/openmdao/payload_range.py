@@ -1,6 +1,6 @@
 """Payload-Range diagram computation."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -55,6 +55,13 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
             allow_none=True,
             desc="Used as random state for initializing the Latin Hypercube Sampling "
             "algorithm for generating the inner grid.",
+        )
+        self.options.declare(
+            "grid_lhs_criterion",
+            default="center",
+            types=str,
+            allow_none=True,
+            desc="Criterion for the Latin Hypercube Sampling algorithm, as asked by pyDOE2.lhs.",
         )
         self.options.declare(
             "min_payload_ratio",
@@ -150,6 +157,7 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
                 nb_points=nb_grid_points,
                 PR_variable_prefix=var_prefix,
                 random_seed=self.options["grid_random_seed"],
+                lhs_criterion=self.options["grid_lhs_criterion"],
                 min_payload_ratio=self.options["min_payload_ratio"],
                 min_block_fuel_ratio=self.options["min_block_fuel_ratio"],
             ),
@@ -377,6 +385,13 @@ class PayloadRangeGridInputValues(om.ExplicitComponent, BaseMissionComp, NeedsOW
             "algorithm for generating the inner grid.",
         )
         self.options.declare(
+            "lhs_criterion",
+            default=None,
+            types=str,
+            allow_none=True,
+            desc="Criterion for the Latin Hypercube Sampling algorithm, as asked by pyDOE2.lhs.",
+        )
+        self.options.declare(
             "min_payload_ratio",
             default=0.3,
             lower=0.0,
@@ -437,6 +452,7 @@ class PayloadRangeGridInputValues(om.ExplicitComponent, BaseMissionComp, NeedsOW
 
         lhs_grid = lhs(
             2,
+            criterion=self.options["lhs_criterion"],
             samples=(self.options["nb_points"]),
             random_state=self.options["random_seed"],
         )

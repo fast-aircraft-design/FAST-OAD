@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -69,22 +69,22 @@ def test_payload_range_custom_breguet_mission(cleanup, with_dummy_plugin_2):
 
     assert_allclose(
         problem["data:payload_range:operational:grid:payload"],
-        [10876.0, 14911.0, 11530.0, 13053.0, 9219.0, 18827.0, 15126.0, 17447.0, 7755.0, 6651.0],
+        [10355.0, 14345.0, 11685.0, 13015.0, 9025.0, 18335.0, 15675.0, 17005.0, 7695.0, 6365.0],
         atol=0.5,
     )
     assert_allclose(
         problem["data:payload_range:operational:grid:block_fuel"],
-        [11925.0, 11396.0, 14767.0, 9712.0, 10581.0, 9883.0, 6183.0, 4350.0, 8109.0, 7045.0],
+        [12375.0, 11325.0, 14475.0, 9225.0, 10275.0, 10708.675, 5923.125, 4453.825, 8175.0, 7125.0],
         atol=0.5,
     )
     assert_allclose(
         problem.get_val("data:payload_range:operational:grid:range", "km").squeeze(),
-        [8188.0, 7298.0, 10066.0, 6356.0, 7429.0, 5863.0, 3685.0, 2261.0, 5726.0, 5002.0],
+        [8581.6, 7319.8, 9841.1, 6016.4, 7225.8, 6445.2, 3464.0, 2356.6, 5782.2, 5090.5],
         atol=0.5,
     )
     assert_allclose(
         problem["data:payload_range:operational:grid:duration"].squeeze(),
-        [31255.0, 27424.0, 39336.0, 23370.0, 27990.0, 21247.0, 11873.0, 5745.0, 20658.0, 17542.0],
+        [32949.6, 27518.6, 38370.6, 21909.1, 27114.4, 23754.4, 10923.6, 6157.4, 20901.1, 17923.8],
         atol=0.5,
     )
 
