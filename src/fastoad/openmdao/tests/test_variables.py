@@ -154,14 +154,17 @@ def test_df_from_to_variables():
     vars["a"] = {"val": 5}
     vars["b"] = {"val": np.array([1.0, 2.0, 3.0]), "units": "m"}
     vars["c"] = {"val": [1.0, 2.0, 3.0], "units": "kg/s", "desc": "some test"}
+    vars["d"] = {"val": "my value is a string"}
 
     df = vars.to_dataframe()
-    assert np.all(df["name"] == ["a", "b", "c"])
-    assert np.all(df["val"] == [5, [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]])
-    assert np.all(df["units"].to_list() == [None, "m", "kg/s"])
-    assert np.all(df["desc"].to_list() == ["", "", "some test"])
+    assert np.all(df["name"] == ["a", "b", "c", "d"])
+    assert np.all(df["val"] == [5, [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], "my value is a string"])
+    assert np.all(df["units"].to_list() == [None, "m", "kg/s", None])
+    assert np.all(df["desc"].to_list() == ["", "", "some test", ""])
 
     new_vars = VariableList.from_dataframe(df)
+    print(vars)
+    print(new_vars)
 
     assert vars.names() == new_vars.names()
     for var, new_var in zip(vars, new_vars):
