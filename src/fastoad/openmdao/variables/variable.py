@@ -328,7 +328,11 @@ class Variable(Hashable):
         return (
             isinstance(other, Variable)
             and self.name == other.name
-            and np.all(np.isclose(my_value, other_value, equal_nan=True))
+            # First condition for val of type string
+            and (
+                np.all(my_value == other_value)
+                or np.all(np.isclose(my_value, other_value, equal_nan=True))
+            )
             and my_metadata == other_metadata
         )
 
