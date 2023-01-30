@@ -138,6 +138,7 @@ def test_payload_range_sizing_mission(cleanup, with_dummy_plugin_2):
             nb_contour_points=4,
             nb_grid_points=2,
             grid_random_seed=0,
+            grid_lhs_criterion=None,
             min_payload_ratio=0.5,
             min_block_fuel_ratio=0.4,
         ),

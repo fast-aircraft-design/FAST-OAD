@@ -2,7 +2,7 @@
 Base classes for mission-related OpenMDAO components.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -99,7 +99,7 @@ class BaseMissionComp(System, metaclass=ABCMeta):
             desc="The path to file that defines the mission.\n"
             'It can also begin with two colons "::" to use pre-defined missions:\n'
             '  - "::sizing_mission" : design mission for CeRAS-01\n'
-            '  - "::breguet" : a simple mission with Breguet formula for cruise, and input\n'
+            '  - "::sizing_breguet" : a simple mission with Breguet formula for cruise, and input\n'
             "    coefficients for fuel reserve and fuel consumption during climb and descent",
         )
         self.options.declare(

@@ -411,14 +411,14 @@ class PayloadRangeGridInputValues(om.ExplicitComponent, BaseMissionComp, NeedsOW
         super().setup()
 
         mission_name = self._mission_wrapper.mission_name
-        PR_var_prefix = self.options["PR_variable_prefix"]
+        var_prefix = self.options["PR_variable_prefix"]
         nb_points = self.options["nb_points"]
 
         self.add_input(
-            f"{PR_var_prefix}:{mission_name}:payload", val=np.nan, shape_by_conn=True, units="kg"
+            f"{var_prefix}:{mission_name}:payload", val=np.nan, shape_by_conn=True, units="kg"
         )
         self.add_input(
-            f"{PR_var_prefix}:{mission_name}:block_fuel",
+            f"{var_prefix}:{mission_name}:block_fuel",
             val=np.nan,
             shape_by_conn=True,
             units="kg",
@@ -430,13 +430,11 @@ class PayloadRangeGridInputValues(om.ExplicitComponent, BaseMissionComp, NeedsOW
             units="kg",
         )
 
+        self.add_output(f"{var_prefix}:{mission_name}:grid:payload", shape=(nb_points,), units="kg")
         self.add_output(
-            f"{PR_var_prefix}:{mission_name}:grid:payload", shape=(nb_points,), units="kg"
+            f"{var_prefix}:{mission_name}:grid:block_fuel", shape=(nb_points,), units="kg"
         )
-        self.add_output(
-            f"{PR_var_prefix}:{mission_name}:grid:block_fuel", shape=(nb_points,), units="kg"
-        )
-        self.add_output(f"{PR_var_prefix}:{mission_name}:grid:TOW", shape=(nb_points,), units="kg")
+        self.add_output(f"{var_prefix}:{mission_name}:grid:TOW", shape=(nb_points,), units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mission_name = self._mission_wrapper.mission_name
