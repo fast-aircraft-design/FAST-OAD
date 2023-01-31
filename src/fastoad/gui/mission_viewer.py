@@ -22,8 +22,6 @@ import pandas as pd
 import plotly.graph_objects as go
 from IPython.display import clear_output, display
 
-from .exceptions import FastUnrecognizedMissionName
-
 
 class MissionViewer:
     """
@@ -60,21 +58,9 @@ class MissionViewer:
         else:
             raise TypeError("Unknown type for mission data, please use .csv of DataFrame")
 
-    def display(self, name: str = ""):
+    def display(self):
 
-        if name in list(self.missions):
-            key = name
-        else:
-            # If no names are specified we take the first mission we added
-            if not name:
-                key = list(self.missions)[0]
-            else:
-                raise FastUnrecognizedMissionName(
-                    name,
-                    " is not a valid mission name. Valid mission name(s) are: ",
-                    list(self.missions),
-                )
-
+        key = list(self.missions)[0]
         keys = self.missions[key].keys()
 
         output = widgets.Output()
@@ -89,14 +75,18 @@ class MissionViewer:
                 x_name = self._x_widget.value
                 y_name = self._y_widget.value
 
-                for name in self.missions:
-                    fig = go.Figure()
-                    # pylint: disable=invalid-name # that's a common naming
-                    x = self.missions[name][x_name]
-                    # pylint: disable=invalid-name # that's a common naming
-                    y = self.missions[name][y_name]
+                fig = None
 
-                    scatter = go.Scatter(x=x, y=y, mode="lines", name=name)
+                for mission_name in self.missions:
+
+                    if fig is None:
+                        fig = go.Figure()
+                    # pylint: disable=invalid-name # that's a common naming
+                    x = self.missions[mission_name][x_name]
+                    # pylint: disable=invalid-name # that's a common naming
+                    y = self.missions[mission_name][y_name]
+
+                    scatter = go.Scatter(x=x, y=y, mode="lines", name=mission_name)
 
                     fig.add_trace(scatter)
 
