@@ -42,7 +42,7 @@ def test_variables(with_dummy_plugin_2):
     # Test description overloading
     FastoadLoader()  # needed to ensure loading of variable description file.
     x = Variable("test:test_variable", val=500)
-    assert x.description == "for testing (do not remove, keep first)"
+    assert x.description == "for testing"
 
     # Initialization
     variables = VariableList()

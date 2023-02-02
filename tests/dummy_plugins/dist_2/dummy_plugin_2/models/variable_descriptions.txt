@@ -1,1 +1,2 @@
-test:test_variable || for testing (do not remove, keep first)
+# Some documentation
+test:test_variable || for testing
