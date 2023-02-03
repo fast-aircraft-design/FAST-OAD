@@ -14,7 +14,7 @@ Mission wrapper.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Dict, Tuple
+from typing import Dict, Optional, Tuple, Union
 
 import numpy as np
 import openmdao.api as om
@@ -22,11 +22,13 @@ import pandas as pd
 from openmdao.vectors.vector import Vector
 
 from fastoad.model_base import FlightPoint
+from fastoad.model_base.propulsion import IPropulsion
 from ..mission_definition.mission_builder import MissionBuilder
 from ..mission_definition.schema import (
     CLIMB_PARTS_TAG,
     DESCENT_PARTS_TAG,
     MISSION_DEFINITION_TAG,
+    MissionDefinition,
     PARTS_TAG,
     PHASE_TAG,
     RESERVE_TAG,
@@ -40,27 +42,61 @@ class MissionWrapper(MissionBuilder):
     Wrapper around
     :class:`~fastoad.models.performances.mission.mission_definition.mission_builder.MissionBuilder`
     for using with OpenMDAO.
+
+    Unlike its parent class, the `mission_name` argument is mandatory at instantiation, unless
+    there is only one mission in the definition file.
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.mission_name = None
+    def __init__(
+        self,
+        mission_definition: Union[str, MissionDefinition],
+        *,
+        propulsion: IPropulsion = None,
+        reference_area: float = None,
+        mission_name: Optional[str] = None,
+        variable_prefix: str = "data:mission",
+        force_all_block_fuel_usage: bool = False,
+    ):
+        """
+        :param mission_definition: a file path or MissionDefinition instance
+        :param propulsion: if not provided, the property :attr:`propulsion` must be
+                           set before calling :meth:`build`
+        :param reference_area: if not provided, the property :attr:`reference_area` must be
+                               set before calling :meth:`build`
+        :param mission_name: name of chosen mission. Can be omitted if definition file contains
+                             only one mission.
+        :param variable_prefix: prefix for auto-generated variable names.
+        :param force_all_block_fuel_usage: if True and if `mission_name` is provided, the mission
+                                           definition will be modified to set the target fuel
+                                           consumption to variable  "~:block_fuel"
+        """
+        super().__init__(
+            mission_definition,
+            propulsion=propulsion,
+            reference_area=reference_area,
+            mission_name=mission_name,
+            variable_prefix=variable_prefix,
+        )
         self.consumed_fuel_before_input_weight = 0.0
+        if force_all_block_fuel_usage:
+            self.force_all_block_fuel_usage()
 
-    def setup(self, component: om.ExplicitComponent, mission_name: str = None):
+    def force_all_block_fuel_usage(self):
+        """Modifies mission definition to set block fuel as target fuel consumption."""
+        if self.mission_name:
+            self.definition.force_all_block_fuel_usage(self.mission_name)
+            self._update_structure_builders()
+
+    def setup(self, component: om.ExplicitComponent):
         """
         To be used during setup() of provided OpenMDAO component.
 
         It adds input and output variables deduced from mission definition file.
 
         :param component: the OpenMDAO component where the setup is done.
-        :param mission_name: mission name (can be omitted if only one mission is defined)
         """
 
-        if mission_name is None:
-            mission_name = self.get_unique_mission_name()
-        self.mission_name = mission_name
-        input_definition = self.get_input_variables(mission_name)
+        input_definition = self.get_input_variables(self.mission_name)
         output_definition = self._identify_outputs()
         output_definition = {
             name: value
@@ -112,12 +148,14 @@ class MissionWrapper(MissionBuilder):
             for part_name1, part_name2 in zip(part_names[:-1], part_names[1:]):
                 part1 = grouped_points.get_group(part_name1)
                 part2 = grouped_points.get_group(part_name2)
-                _compute_vars(f"data:mission:{part_name2}", part1.iloc[-1], part2.iloc[-1])
+                _compute_vars(
+                    f"{self.variable_prefix}:{part_name2}", part1.iloc[-1], part2.iloc[-1]
+                )
 
             start_part_name = part_names[0]
             start_part = grouped_points.get_group(start_part_name)
             _compute_vars(
-                f"data:mission:{start_part_name}", start_part.iloc[0], start_part.iloc[-1]
+                f"{self.variable_prefix}:{start_part_name}", start_part.iloc[0], start_part.iloc[-1]
             )
         del flight_points["name2"]
 
@@ -132,7 +170,7 @@ class MissionWrapper(MissionBuilder):
         :return: the name of OpenMDAO variable for fuel reserve. This name is among the declared
                  outputs in :meth:`setup`.
         """
-        return f"{self._variable_prefix}:reserve:fuel"
+        return f"{self.variable_prefix}:{self.mission_name}:reserve:fuel"
 
     def _identify_outputs(self) -> Dict[str, Tuple[str, str]]:
         """
@@ -168,8 +206,7 @@ class MissionWrapper(MissionBuilder):
 
         return output_definition
 
-    @staticmethod
-    def _add_vars(mission_name, route_name=None, phase_name=None) -> dict:
+    def _add_vars(self, mission_name, route_name=None, phase_name=None) -> dict:
         """
         Builds names of OpenMDAO outputs for provided mission, route and phase names.
 
@@ -181,7 +218,9 @@ class MissionWrapper(MissionBuilder):
         output_definition = {}
 
         name_root = ":".join(
-            name for name in ["data:mission", mission_name, route_name, phase_name] if name
+            name
+            for name in [f"{self.variable_prefix}", mission_name, route_name, phase_name]
+            if name
         )
         if route_name and phase_name:
             flight_part_desc = (
@@ -203,7 +242,3 @@ class MissionWrapper(MissionBuilder):
         )
 
         return output_definition
-
-    @property
-    def _variable_prefix(self):
-        return f"data:mission:{self.mission_name}"

@@ -21,6 +21,7 @@ stdatm
 Deprecated
 click
 importlib-metadata
+pyDOE2
 sphinx
 sphinx-rtd-theme
 sphinxcontrib-bibtex
