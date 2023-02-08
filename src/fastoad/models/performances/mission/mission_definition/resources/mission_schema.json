@@ -165,6 +165,9 @@
         "CD"
       ],
       "properties": {
+        "AoA": {
+          "$ref": "#/definitions/CL_CD"
+        },
         "CL": {
           "$ref": "#/definitions/CL_CD"
         },
@@ -182,6 +185,32 @@
         },
         "ground_effect": {
           "$ref": "#/definitions/string_parameter_value"
+        }
+      }
+    },
+    "polar_modifier": {
+      "type": [
+        "string",
+        "object"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/string_parameter_value"
+        },
+        "span": {
+          "$ref": "#/definitions/parameter_value_with_unit"
+        },
+        "landing_gear_height": {
+          "$ref": "#/definitions/parameter_value_with_unit"
+        },
+        "induced_drag_coef": {
+          "$ref": "#/definitions/parameter_value_without_unit"
+        },
+        "k_winglet": {
+          "$ref": "#/definitions/parameter_value_without_unit"
+        },
+        "k_cd": {
+          "$ref": "#/definitions/parameter_value_without_unit"
         }
       }
     },

@@ -16,6 +16,7 @@ import os.path as pth
 from os import mkdir
 from shutil import rmtree
 
+import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 from scipy.constants import foot, knot
@@ -142,6 +143,9 @@ def test_ground_effect(cleanup, with_dummy_plugin_2):
 
     ivc = datafile.to_ivc()
     ivc.add_output("data:mission:operational:ramp_weight", 70200, units="kg")
+    ivc.add_output(
+        "data:aerodynamics:aircraft:takeoff:AoA", np.linspace(-2.15729317, 14.91684912, 150)
+    )
 
     problem = run_system(
         MissionComponent(

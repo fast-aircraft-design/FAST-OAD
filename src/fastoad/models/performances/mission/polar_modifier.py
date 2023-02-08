@@ -78,9 +78,7 @@ class GroundEffectRaymer(AbstractPolarModifier):
         modified_polar = Polar(
             polar.definition_cl,
             polar.definition_cd + cd_ground,
-            cl_alpha=polar.CL_alpha,
-            cl0_clean=polar.CL_alpha_0,
-            cl_high_lift=polar.CL_high_lift,
+            polar.definition_alpha,
         )
 
         return modified_polar

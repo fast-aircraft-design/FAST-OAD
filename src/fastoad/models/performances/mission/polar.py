@@ -1,4 +1,6 @@
 """Aerodynamic polar data."""
+import numpy as np
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -16,23 +18,20 @@ from scipy.optimize import fmin
 
 
 class Polar:
-    def __init__(self, cl, cd, cl_alpha=5.0, cl0_clean=0.0, cl_high_lift=0.0):
+    def __init__(self, cl, cd, alpha=None):
         """
         Class for managing aerodynamic polar data.
 
         Links drag coefficient (CD) to lift coefficient (CL).
         It is defined by two vectors with CL and CD values.
+        If a vector of angle of attack (alpha) is given, is links alpha and CL
 
         Once defined, for any CL value, CD can be obtained using :meth:`cd`.
+        For any alpha given, CL is obtained using :meth:'cl'.
 
         :param cl: the lift coefficient vector
         :param cd: the drag coefficient vector
-        :param cl_alpha: the lift slope coefficient
-        :param cl0_clean: the zero angle of attack(relative to aircraft) lift coefficient
-        :param cl_high_lift: the lift increase due to high lift systems
-
-        For ground segments the 'CL vs alpha curve' is required and the vairables
-        'CL0_clean', 'CL_alpha' and 'CL_high_lift' should be provided through mission file
+        :param alpha: the angle of attack corresponding to lift coefficient
 
         """
 
@@ -42,12 +41,16 @@ class Polar:
         # Interpolate cd
         self._cd = interp1d(cl, cd, kind="quadratic", fill_value="extrapolate")
 
-        # Additional arguments for ground segments
-        self.CL_alpha_0 = cl0_clean
-        self.CL_alpha = cl_alpha
-        self.CL_high_lift = cl_high_lift
-        alpha_vector = (self._definition_CL - self.CL_alpha_0 - self.CL_high_lift) / self.CL_alpha
-        self._clvsalpha = interp1d(alpha_vector, self._definition_CL)
+        # CL as a function of AoA
+        if alpha is None:
+            # Define dummy AoA vector
+            # Or force to give alpha
+            alpha = np.linspace(-2, 20, np.size(cl))
+
+        self._definition_alpha = alpha
+        self._clvsalpha = interp1d(
+            self._definition_alpha, self._definition_CL, kind="linear", fill_value="extrapolate"
+        )
 
         def _negated_lift_drag_ratio(lift_coeff):
             """Returns -CL/CD."""
@@ -64,6 +67,11 @@ class Polar:
     def definition_cd(self):
         """The vector that has been used for defining drag coefficient."""
         return self._definition_CD
+
+    @property
+    def definition_alpha(self):
+        """The vector that has been used for defining AoA."""
+        return self._definition_alpha
 
     @property
     def optimal_cl(self):

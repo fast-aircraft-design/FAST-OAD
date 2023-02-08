@@ -42,7 +42,6 @@ from ..schema import (
     SEGMENT_TAG,
     GROUND_EFFECT_TAG,
 )
-from ...polar import Polar
 from ...segments.base import SegmentDefinitions
 
 
@@ -250,19 +249,18 @@ class AbstractStructureBuilder(ABC):
                 }
             )
         elif isinstance(polar_structure, dict):
-            for key in ["CL", "CD"]:
+            for key in ["CL", "CD", "AoA"]:
                 if isinstance(polar_structure[key], str):
                     polar_structure[key] = {"value": polar_structure[key], "shape_by_conn": True}
                 elif isinstance(polar_structure[key], dict):
                     polar_structure[key]["shape_by_conn"] = True
 
-            # If ground_effect tag, call the variables needed for the ground effect model declared
-            if isinstance(polar_structure, dict):
-                keys = list(polar_structure.keys())
-                if GROUND_EFFECT_TAG in keys:
-                    gnd_effect = polar_structure[GROUND_EFFECT_TAG]
-                    polar = Polar({GROUND_EFFECT_TAG: gnd_effect})
-                    for name, value in polar.get_gnd_effect_model().items():
+            # If ground_effect tag, handle the variables
+            keys = list(polar_structure.keys())
+            if GROUND_EFFECT_TAG in keys:
+                gnd_effect = polar_structure[GROUND_EFFECT_TAG]
+                if isinstance(gnd_effect, dict):
+                    for name, value in gnd_effect.items():
                         polar_structure[name] = {"value": value["name"], "unit": value["unit"]}
 
         return polar_structure

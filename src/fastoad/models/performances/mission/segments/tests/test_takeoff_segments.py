@@ -66,11 +66,8 @@ def polar() -> Polar:
     """Returns a dummy polar where max L/D ratio is around 16."""
     cl = np.arange(0.0, 1.5, 0.01) + 0.5
     cd = 0.5e-1 * cl ** 2 + 0.01
-    CL_alpha = 5.0
-    CL0_clean = 0.2
-    CL_high_lift = 0.5
 
-    return Polar(cl, cd, cl_alpha=CL_alpha, cl0_clean=CL0_clean, cl_high_lift=CL_high_lift)
+    return Polar(cl, cd)
 
 
 @pytest.fixture

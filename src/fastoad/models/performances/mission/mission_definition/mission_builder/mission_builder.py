@@ -45,7 +45,7 @@ from ..schema import (
 from ...base import FlightSequence
 from ...mission import Mission
 from ...polar import Polar
-from ...polar_modifier import LegacyPolar
+from ...polar_modifier import LegacyPolar, GroundEffectRaymer
 from ...routes import RangedRoute
 from ...segments.base import AbstractFlightSegment, SegmentDefinitions
 
@@ -344,20 +344,16 @@ class MissionBuilder:
         part_kwargs.update(self._base_kwargs)
         for key, value in part_kwargs.items():
             if key == "polar":
-                if {"CL0_clean", "CL_alpha", "CL_high_lift"}.issubset(value):
-                    value = Polar(
-                        value["CL"].value,
-                        value["CD"].value,
-                        cl_alpha=value["CL_alpha"].value,
-                        cl0_clean=value["CL0_clean"].value,
-                        cl_high_lift=value["CL_high_lift"].value,
-                    )
+                if {"AoA"}.issubset(value.keys()):
+                    value = Polar(value["CL"], value["CD"], value["AoA"])
                 else:
-                    value = Polar(value["CL"].value, value["CD"].value)
-                # value = Polar({kkey: vval.value for kkey, vval in value.items()})
+                    value = Polar(value["CL"], value["CD"])
             elif key == "polar_modifier":
                 # TODO Instantiate the correct polar_modifier
-                value = LegacyPolar()
+                if value["name"] == "RaymerGroundEffect":
+                    value = GroundEffectRaymer()
+                else:
+                    value = LegacyPolar()
             elif key == "target":
                 if not isinstance(value, FlightPoint):
                     target_parameters = {
