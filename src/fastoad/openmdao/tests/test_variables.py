@@ -163,8 +163,6 @@ def test_df_from_to_variables():
     assert np.all(df["desc"].to_list() == ["", "", "some test", ""])
 
     new_vars = VariableList.from_dataframe(df)
-    print(vars)
-    print(new_vars)
 
     assert vars.names() == new_vars.names()
     for var, new_var in zip(vars, new_vars):
