@@ -164,10 +164,8 @@ class MissionComponent(om.ExplicitComponent):
         Otherwise, the actual cruise polar is returned.
         """
         high_speed_polar = Polar(
-            {
-                "CL": inputs["data:aerodynamics:aircraft:cruise:CL"],
-                "CD": inputs["data:aerodynamics:aircraft:cruise:CD"],
-            }
+            inputs["data:aerodynamics:aircraft:cruise:CL"],
+            inputs["data:aerodynamics:aircraft:cruise:CD"],
         )
         use_minimum_l_d_ratio = False
         try:

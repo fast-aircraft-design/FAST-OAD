@@ -72,7 +72,7 @@ mpi4py = {version = "^3", optional = true}
 mpi4py = ["mpi4py"]
 
 [tool.poetry.dev-dependencies]
-fast-oad-cs25 = "0.*"
+fast-oad-cs25 = "^0.2"
 pytest = "^6.2"
 pytest-cov = "^3.0"
 coverage = { extras = ["toml"], version = "^5.5" }

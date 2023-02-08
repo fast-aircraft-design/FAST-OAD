@@ -37,7 +37,6 @@ phases:
         value: tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k
       k_cd:
         value: tuning:aerodynamics:aircraft:cruise:CD:k
-
     thrust_rate: 1.0
     isa_offset: data:mission:operational:ISA_offset
     parts:
@@ -62,7 +61,6 @@ phases:
       CL: data:aerodynamics:aircraft:takeoff:CL
       CD: data:aerodynamics:aircraft:takeoff:CD
       AoA: data:aerodynamics:aircraft:takeoff:AoA
-      ground_effect: none
     thrust_rate: 1.0
     isa_offset: data:mission:operational:ISA_offset
     parts:
@@ -92,7 +90,20 @@ phases:
       CL: data:aerodynamics:aircraft:takeoff:CL
       CD: data:aerodynamics:aircraft:takeoff:CD
       AoA: data:aerodynamics:aircraft:takeoff:AoA
-      ground_effect: Raymer
+    polar_modifier:
+      name: RaymerGroundEffect
+      span:
+        value: data:geometry:wing:span
+        unit: m
+      landing_gear_height:
+        value: data:geometry:landing_gear:height
+        unit: m
+      induced_drag_coef:
+        value: data:aerodynamics:aircraft:low_speed:induced_drag_coefficient
+      k_winglet:
+        value: tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k
+      k_cd:
+        value: tuning:aerodynamics:aircraft:cruise:CD:k
     thrust_rate: 1.0
     isa_offset: data:mission:operational:ISA_offset
     parts:

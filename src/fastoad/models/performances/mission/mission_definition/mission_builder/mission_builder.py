@@ -345,13 +345,19 @@ class MissionBuilder:
         for key, value in part_kwargs.items():
             if key == "polar":
                 if {"AoA"}.issubset(value.keys()):
-                    value = Polar(value["CL"], value["CD"], value["AoA"])
+                    value = Polar(value["CL"].value, value["CD"].value, value["AoA"].value)
                 else:
-                    value = Polar(value["CL"], value["CD"])
+                    value = Polar(value["CL"].value, value["CD"].value)
             elif key == "polar_modifier":
                 # TODO Instantiate the correct polar_modifier
                 if value["name"] == "RaymerGroundEffect":
-                    value = GroundEffectRaymer()
+                    value = GroundEffectRaymer(
+                        span=value["span"].value,
+                        landing_gear_height=value["landing_gear_height"].value,
+                        induced_drag_coef=value["induced_drag_coef"].value,
+                        k_winglet=value["k_winglet"].value,
+                        k_cd=value["k_cd"].value,
+                    )
                 else:
                     value = LegacyPolar()
             elif key == "target":

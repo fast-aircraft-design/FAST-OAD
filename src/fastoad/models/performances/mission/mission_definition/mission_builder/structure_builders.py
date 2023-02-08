@@ -251,7 +251,18 @@ class AbstractStructureBuilder(ABC):
         elif isinstance(polar_structure, dict):
             for key in ["CL", "CD", "AoA"]:
                 if isinstance(polar_structure[key], str):
-                    polar_structure[key] = {"value": polar_structure[key], "shape_by_conn": True}
+                    if key == "AoA":
+                        # set unit
+                        polar_structure[key] = {
+                            "value": polar_structure[key],
+                            "shape_by_conn": True,
+                            "unit": "rad",
+                        }
+                    else:
+                        polar_structure[key] = {
+                            "value": polar_structure[key],
+                            "shape_by_conn": True,
+                        }
                 elif isinstance(polar_structure[key], dict):
                     polar_structure[key]["shape_by_conn"] = True
 

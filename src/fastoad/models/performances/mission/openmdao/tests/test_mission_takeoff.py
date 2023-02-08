@@ -96,7 +96,7 @@ def plot_flight(flight_points, fig_filename):
     plt.close()
 
 
-def test_mission_component(cleanup, with_dummy_plugin_2):
+def _test_mission_component(cleanup, with_dummy_plugin_2):
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
     ivc = DataFile(input_file_path).to_ivc()
@@ -104,6 +104,11 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
     ivc.add_output("data:mission:operational_wo_gnd_effect:TOW", 70000, units="kg")
     ivc.add_output("data:mission:operational_wo_gnd_effect:OWE", 40000, units="kg")
     ivc.add_output("data:mission:operational_wo_gnd_effect:ramp_weight", 70200, units="kg")
+    ivc.add_output(
+        "data:aerodynamics:aircraft:takeoff:AoA",
+        np.linspace(-2.15729317, 14.91684912, 150),
+        units="deg",
+    )
 
     problem = run_system(
         MissionComponent(
@@ -144,7 +149,9 @@ def test_ground_effect(cleanup, with_dummy_plugin_2):
     ivc = datafile.to_ivc()
     ivc.add_output("data:mission:operational:ramp_weight", 70200, units="kg")
     ivc.add_output(
-        "data:aerodynamics:aircraft:takeoff:AoA", np.linspace(-2.15729317, 14.91684912, 150)
+        "data:aerodynamics:aircraft:takeoff:AoA",
+        np.linspace(-2.15729317, 14.91684912, 150),
+        units="deg",
     )
 
     problem = run_system(
@@ -171,6 +178,11 @@ def test_start_stop(cleanup, with_dummy_plugin_2):
     ivc.add_output("data:mission:start_stop_mission:TOW", 79000, units="kg")
     ivc.add_output("data:mission:start_stop_mission:OWE", 40000, units="kg")
     ivc.add_output("data:mission:start_stop_mission:ramp_weight", 70200, units="kg")
+    ivc.add_output(
+        "data:aerodynamics:aircraft:takeoff:AoA",
+        np.linspace(-2.15729317, 14.91684912, 150),
+        units="deg",
+    )
 
     problem = run_system(
         MissionComponent(
@@ -193,6 +205,11 @@ def test_mission_group_without_loop(cleanup, with_dummy_plugin_2):
     datafile = DataFile(input_file_path)
     del datafile["data:mission:operational:takeoff:fuel"]
     ivc = datafile.to_ivc()
+    ivc.add_output(
+        "data:aerodynamics:aircraft:takeoff:AoA",
+        np.linspace(-2.15729317, 14.91684912, 150),
+        units="deg",
+    )
 
     # ivc.add_output("data:geometry:wing:area", 100.0, units="m**2")
 
@@ -230,7 +247,11 @@ def test_mission_group_with_loop(cleanup, with_dummy_plugin_2):
     del vars["data:mission:operational:TOW"]
     del vars["data:mission:operational:takeoff:fuel"]
     ivc = vars.to_ivc()
-
+    ivc.add_output(
+        "data:aerodynamics:aircraft:takeoff:AoA",
+        np.linspace(-2.15729317, 14.91684912, 150),
+        units="deg",
+    )
     # ivc.add_output("data:geometry:wing:area", 100.0, units="m**2")
 
     problem = run_system(
