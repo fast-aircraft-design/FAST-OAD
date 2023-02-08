@@ -153,9 +153,7 @@ class VariableList(list):
         var_dict.update({metadata_name: [] for metadata_name in self.metadata_keys()})
 
         for variable in self:
-            value = self._as_list_or_float_or_str(variable.value)
-            # Allow for non-float values
-            value = self._as_list_or_float_or_str(variable.value)
+            value = self._as_list_or_float(variable.value)
             var_dict["name"].append(variable.name)
             for metadata_name in self.metadata_keys():
                 if metadata_name == "val":
@@ -163,7 +161,7 @@ class VariableList(list):
                 else:
                     # TODO: make this more generic
                     if metadata_name in ["val", "initial_value", "lower", "upper"]:
-                        metadata = self._as_list_or_float_or_str(variable.metadata[metadata_name])
+                        metadata = self._as_list_or_float(variable.metadata[metadata_name])
                     else:
                         metadata = variable.metadata[metadata_name]
                     var_dict[metadata_name].append(metadata)
@@ -207,21 +205,15 @@ class VariableList(list):
         ).items():
             metadata = metadata.copy()
             value = metadata.pop("val")
-            value = cls._as_list_or_float_or_str(value)
+            value = cls._as_list_or_float(value)
             metadata.update({"val": value})
             variables[name] = metadata
 
         return variables
 
     @classmethod
-    def _as_list_or_float_or_str(cls, value):
-        # If string return string
-        if isinstance(value, str):
-            print("oh yeah ", value)
-            return value
-        else:
-            value = np.asarray(value)
-        # If float return float
+    def _as_list_or_float(cls, value):
+        value = np.asarray(value)
         if np.size(value) == 1:
             value = value.item()
             try:
@@ -229,9 +221,8 @@ class VariableList(list):
             except (TypeError, ValueError):
                 pass
             return value
-        # If array return list
-        else:
-            return value.tolist()
+
+        return value.tolist()
 
     @classmethod
     def from_dataframe(cls, df: pd.DataFrame) -> "VariableList":
@@ -251,7 +242,7 @@ class VariableList(list):
             # TODO: make this more generic
             for key, val in var_as_dict.items():
                 if key in ["val", "initial_value", "lower", "upper"]:
-                    var_as_dict[key] = cls._as_list_or_float_or_str(val)
+                    var_as_dict[key] = cls._as_list_or_float(val)
                 else:
                     pass
             return Variable(**var_as_dict)
