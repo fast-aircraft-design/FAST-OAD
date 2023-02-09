@@ -1,6 +1,4 @@
-"""
-Package for managing OpenMDAO variables
-"""
+"""Exceptions for mission definition."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,5 +12,15 @@ Package for managing OpenMDAO variables
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .variable import Variable
-from .variable_list import VariableList
+from fastoad.exceptions import FastError
+
+
+class FastUnknownMissionSegmentError(FastError):
+    """Raised when an undeclared segment type is requested."""
+
+    def __init__(self, segment_type: str):
+        self.segment_type = segment_type
+
+        msg = f'Segment type "{segment_type}" has not been declared.'
+
+        super().__init__(self, msg)

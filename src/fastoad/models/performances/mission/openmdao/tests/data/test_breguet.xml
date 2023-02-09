@@ -44,7 +44,6 @@
     <mission>
       <operational>
         <ramp_weight units="kg">70000.0</ramp_weight>
-        <OWE units="kg">40000.0</OWE>
         <payload units="kg">15000.0</payload>
         <takeoff>
           <V2 units="m/s" is_input="True">80.0<!--safety speed before reaching 35 feet height in sizing mission--></V2>

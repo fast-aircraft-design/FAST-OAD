@@ -19,7 +19,7 @@ import numpy as np
 import openmdao
 import openmdao.api as om
 from openmdao.core.constants import _SetupStatus
-from openmdao.core.system import _MetadataDict
+from openmdao.core.system import System, _MetadataDict
 from packaging import version
 
 from fastoad.io import DataFile, VariableIO
@@ -327,3 +327,30 @@ class FASTOADModel(AutoUnitsDefaultGroup):
 
     def setup(self):
         RegisterSubmodel.active_models.update(self.active_submodels)
+
+
+def get_variable_list_from_system(
+    system: System,
+    get_promoted_names: bool = True,
+    promoted_only: bool = True,
+    io_status: str = "all",
+) -> "VariableList":
+    """
+    Creates a VariableList instance containing inputs and outputs of any OpenMDAO System.
+
+    Convenience method that creates a FASTOADProblem problem with only provided `system`
+    and uses :meth:`~fastoad.openmdao.variables.variable.VariableList.from_problem()`.
+    """
+    # Dev note:
+    # This method is not a class method of VariableList because it would
+    # create a circular import because of the usage of FASTOADProblem.
+    # And usage of FASTOADProblem instead of om.Problem avoids failure in case
+    # there are shape_by_conn inputs.
+    problem = FASTOADProblem()
+    problem.model.add_subsystem("comp", system, promotes=["*"])
+    return VariableList.from_problem(
+        problem,
+        get_promoted_names=get_promoted_names,
+        promoted_only=promoted_only,
+        io_status=io_status,
+    )

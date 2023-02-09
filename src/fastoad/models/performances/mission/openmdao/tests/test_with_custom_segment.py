@@ -22,12 +22,9 @@ import pytest
 from fastoad._utils.testing import run_system
 from fastoad.io import DataFile
 from fastoad.model_base.datacls import MANDATORY_FIELD
-from ..mission_component import MissionComponent
+from ..mission_run import AdvancedMissionComp
 from ..mission_wrapper import MissionWrapper
 from ...segments.base import AbstractFlightSegment
-
-# noinspection PyUnresolvedReferences
-from ...segments.start import Start
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
@@ -61,10 +58,10 @@ def test_with_custom_segment(cleanup, with_dummy_plugin_2):
     ivc = DataFile(input_file_path).to_ivc()
 
     problem = run_system(
-        MissionComponent(
+        AdvancedMissionComp(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
             use_initializer_iteration=False,
-            mission_wrapper=MissionWrapper(
+            mission_file_path=MissionWrapper(
                 pth.join(DATA_FOLDER_PATH, "test_with_custom_segment.yml")
             ),
             mission_name="test",

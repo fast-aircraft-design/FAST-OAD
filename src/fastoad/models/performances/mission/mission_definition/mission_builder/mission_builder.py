@@ -61,6 +61,8 @@ class MissionBuilder:
         *,
         propulsion: IPropulsion = None,
         reference_area: float = None,
+        mission_name: Optional[str] = None,
+        variable_prefix: str = "data:mission",
     ):
         """
         :param mission_definition: a file path or MissionDefinition instance
@@ -68,9 +70,22 @@ class MissionBuilder:
                            set before calling :meth:`build`
         :param reference_area: if not provided, the property :attr:`reference_area` must be
                                set before calling :meth:`build`
+        :param mission_name: name of chosen mission, if already decided.
+        :param variable_prefix: prefix for auto-generated variable names.
+        :param force_all_block_fuel_usage: if True and if `mission_name` is provided, the mission
+                                           definition will be modified to set the target fuel
+                                           consumption to variable  "~:block_fuel"
         """
         self._structure_builders: Dict[str, AbstractStructureBuilder] = {}
-        self.definition = mission_definition
+
+        #: The prefix for auto-generated variable names
+        self.variable_prefix: str = variable_prefix
+
+        #: The definition of missions as provided in input file.
+        self.definition: MissionDefinition = mission_definition
+
+        self._mission_name = mission_name
+
         self._base_kwargs = {"reference_area": reference_area, "propulsion": propulsion}
 
     @property
@@ -89,13 +104,7 @@ class MissionBuilder:
         else:
             self._definition = mission_definition
 
-        for mission_name in self._definition[MISSION_DEFINITION_TAG]:
-            self._structure_builders[mission_name] = MissionStructureBuilder(
-                self._definition, mission_name
-            )
-
-            if self.get_input_weight_variable_name(mission_name) is None:
-                self._add_default_taxi_takeoff(mission_name)
+        self._update_structure_builders()
 
     @property
     def propulsion(self) -> IPropulsion:
@@ -115,24 +124,60 @@ class MissionBuilder:
     def reference_area(self, reference_area: float):
         self._base_kwargs["reference_area"] = reference_area
 
+    @property
+    def mission_name(self):
+        """The mission name, in case it has been specified, or if it is unique in the file."""
+        if self._mission_name is None:
+            self._mission_name = self.get_unique_mission_name()
+
+        return self._mission_name
+
+    @mission_name.setter
+    def mission_name(self, value):
+        if value is None:
+            self._mission_name = None
+        elif value in self.definition[MISSION_DEFINITION_TAG]:
+            self._mission_name = value
+        else:
+            raise FastMissionFileMissingMissionNameError(
+                f'No Mission named "{value}" in provided mission file.'
+            )
+
     def build(self, inputs: Optional[Mapping] = None, mission_name: str = None) -> Mission:
         """
         Builds the flight sequence from definition file.
 
         :param inputs: if provided, any input parameter that is a string which matches
                        a key of `inputs` will be replaced by the corresponding value
-        :param mission_name: mission name (can be omitted if only one mission is defined)
+        :param mission_name: mission name (can be omitted if only one mission is defined or if
+                             :attr:`mission` has been defined)
         :return:
         """
+        if mission_name is None:
+            mission_name = self.mission_name
+
         if self.get_input_weight_variable_name(mission_name) is None:
             self._add_default_taxi_takeoff(mission_name)
 
         for input_def in self._structure_builders[mission_name].get_input_definitions():
             input_def.set_variable_value(inputs)
-        if mission_name is None:
-            mission_name = self.get_unique_mission_name()
+
         mission = self._build_mission(self._structure_builders[mission_name].structure)
         return mission
+
+    def get_route_names(self, mission_name: str = None) -> List[str]:
+        """
+
+        :param mission_name:
+        :return: a list with names of all routes in the mission, in order.
+        """
+        if mission_name is None:
+            mission_name = self.mission_name
+
+        mission_parts = self.definition[MISSION_DEFINITION_TAG][mission_name][PARTS_TAG]
+        route_names = [part[ROUTE_TAG] for part in mission_parts if ROUTE_TAG in part]
+
+        return route_names
 
     def get_route_ranges(
         self, inputs: Optional[Mapping] = None, mission_name: str = None
@@ -141,9 +186,13 @@ class MissionBuilder:
 
         :param inputs: if provided, any input parameter that is a string which matches
                        a key of `inputs` will be replaced by the corresponding value
-        :param mission_name: mission name (can be omitted if only one mission is defined)
+        :param mission_name: mission name (can be omitted if only one mission is defined or if
+                             :attr:`mission` has been defined)
         :return: list of flight ranges for each element of the flight sequence that is a route
         """
+        if mission_name is None:
+            mission_name = self.mission_name
+
         routes = self.build(inputs, mission_name)
         return [route.flight_distance for route in routes if isinstance(route, RangedRoute)]
 
@@ -153,12 +202,13 @@ class MissionBuilder:
 
         :param flight_points: the dataframe returned by compute_from() method of the
                               instance returned by :meth:`build`
-        :param mission_name: mission name (can be omitted if only one mission is defined)
+        :param mission_name: mission name (can be omitted if only one mission is defined or if
+                             :attr:`mission` has been defined)
         :return: the reserve fuel mass in kg, or 0.0 if no reserve is defined.
         """
 
         if mission_name is None:
-            mission_name = self.get_unique_mission_name()
+            mission_name = self.mission_name
 
         last_part_spec = self._get_mission_part_structures(mission_name)[-1]
         if RESERVE_TAG in last_part_spec:
@@ -177,11 +227,12 @@ class MissionBuilder:
         """
         Identify variables for a defined mission.
 
-        :param mission_name: mission name (can be omitted if only one mission is defined)
+        :param mission_name: mission name (can be omitted if only one mission is defined or if
+                             :attr:`mission` has been defined)
         :return: a VariableList instance.
         """
         if mission_name is None:
-            mission_name = self.get_unique_mission_name()
+            mission_name = self.mission_name
 
         input_definition = VariableList()
         for input_def in self._structure_builders[mission_name].get_input_definitions():
@@ -205,17 +256,28 @@ class MissionBuilder:
             "Mission name must be specified if several missions are defined in mission file."
         )
 
-    def get_input_weight_variable_name(self, mission_name: str) -> Optional[str]:
+    def get_input_weight_variable_name(self, mission_name: str = None) -> Optional[str]:
         """
         Search the mission structure for a segment that has a target absolute mass defined and
         returns the associated variable name.
 
-        :param mission_name:
+        :param mission_name: mission name (can be omitted if only one mission is defined or if
+                             :attr:`mission` has been defined)
         :return: The variable name, or None if no target mass found.
         """
+
         return self._get_input_weight_variable_name_in_structure(
             self._get_mission_part_structures(mission_name)
         )
+
+    def _update_structure_builders(self):
+        for mission_name in self._definition[MISSION_DEFINITION_TAG]:
+            self._structure_builders[mission_name] = MissionStructureBuilder(
+                self._definition, mission_name, variable_prefix=self.variable_prefix
+            )
+
+            if self.get_input_weight_variable_name(mission_name) is None:
+                self._add_default_taxi_takeoff(mission_name)
 
     def _build_mission(self, mission_structure: OrderedDict) -> Mission:
         """
@@ -480,10 +542,10 @@ class MissionBuilder:
             }
         }
 
-        taxi_out = PhaseStructureBuilder(definition, "taxi_out", mission_name)
+        taxi_out = PhaseStructureBuilder(definition, "taxi_out", mission_name, self.variable_prefix)
         taxi_out_structure = self._structure_builders[mission_name].process_builder(taxi_out)
         self._structure_builders[mission_name].structure[PARTS_TAG].insert(0, taxi_out_structure)
 
-        takeoff = PhaseStructureBuilder(definition, "takeoff", mission_name)
+        takeoff = PhaseStructureBuilder(definition, "takeoff", mission_name, self.variable_prefix)
         takeoff_structure = self._structure_builders[mission_name].process_builder(takeoff)
         self._structure_builders[mission_name].structure[PARTS_TAG].insert(1, takeoff_structure)

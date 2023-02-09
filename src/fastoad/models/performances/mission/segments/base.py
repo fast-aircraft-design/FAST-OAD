@@ -31,6 +31,7 @@ from fastoad.model_base import FlightPoint
 from fastoad.model_base.datacls import MANDATORY_FIELD
 from fastoad.model_base.propulsion import IPropulsion
 from fastoad.models.performances.mission.polar import Polar
+from .exceptions import FastUnknownMissionSegmentError
 from ..base import IFlightPart
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
 from ..polar_modifier import AbstractPolarModifier, LegacyPolar
@@ -69,13 +70,17 @@ class SegmentDefinitions(Enum):
         :param segment_name:
         :return: the segment implementation (derived of :class:`~FlightSegment`),
                  or None if segment_name is not known
+        :raise FastUnknownMissionSegmentError: if segment type has not been declared.
         """
         try:
             enum = cls[segment_name]
         except KeyError:
             enum = None
 
-        return enum.value if enum else None
+        if enum:
+            return enum.value
+
+        raise FastUnknownMissionSegmentError(segment_name)
 
 
 @dataclass

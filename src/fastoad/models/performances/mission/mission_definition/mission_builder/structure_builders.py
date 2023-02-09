@@ -66,6 +66,7 @@ class AbstractStructureBuilder(ABC):
     definition: InitVar[dict]
     name: str
     parent_name: str = None
+    variable_prefix: str = ""
 
     _structure: OrderedDict = field(default=None, init=False)
 
@@ -176,13 +177,16 @@ class AbstractStructureBuilder(ABC):
 
             if "value" in structure:
                 input_definition = InputDefinition.from_dict(
-                    parent, structure, part_identifier=part_identifier
+                    parent, structure, part_identifier=part_identifier, prefix=self.variable_prefix
                 )
                 input_definitions.append(input_definition)
                 return input_definition
 
             part_identifier = structure.get(NAME_TAG, part_identifier)
-            segment_class = SegmentDefinitions.get_segment_class(structure.get(SEGMENT_TYPE_TAG))
+            if SEGMENT_TYPE_TAG in structure:
+                segment_class = SegmentDefinitions.get_segment_class(structure[SEGMENT_TYPE_TAG])
+            else:
+                segment_class = None
             for key, value in structure.items():
                 if key in [
                     NAME_TAG,
@@ -213,7 +217,9 @@ class AbstractStructureBuilder(ABC):
 
         # Here structure is not a dict, hence a directly given value.
         key, value = parent, structure
-        input_definition = InputDefinition(key, value, part_identifier=part_identifier)
+        input_definition = InputDefinition(
+            key, value, part_identifier=part_identifier, prefix=self.variable_prefix
+        )
         if segment_class and isinstance(value, str):
             input_definition.shape_by_conn = self._is_shape_by_conn(key, segment_class)
         input_definitions.append(input_definition)
@@ -316,9 +322,13 @@ class PhaseStructureBuilder(AbstractStructureBuilder, structure_type=PHASE_TAG):
 
         for i, part in enumerate(phase_definition[PARTS_TAG]):
             if PHASE_TAG in part:
-                builder = PhaseStructureBuilder(definition, part[PHASE_TAG], self.qualified_name)
+                builder = PhaseStructureBuilder(
+                    definition, part[PHASE_TAG], self.qualified_name, self.variable_prefix
+                )
             elif SEGMENT_TAG in part:
-                builder = SegmentStructureBuilder(part, "", self.qualified_name)
+                builder = SegmentStructureBuilder(
+                    part, "", self.qualified_name, self.variable_prefix
+                )
             else:
                 raise RuntimeError(f"Unexpected structure in definition of phase {self.name}")
 
@@ -344,7 +354,7 @@ class RouteStructureBuilder(AbstractStructureBuilder, structure_type=ROUTE_TAG):
         )
 
         builder = SegmentStructureBuilder(
-            route_definition[CRUISE_PART_TAG], "cruise", self.qualified_name
+            route_definition[CRUISE_PART_TAG], "cruise", self.qualified_name, self.variable_prefix
         )
         route_structure[CRUISE_PART_TAG] = self.process_builder(builder)
 
@@ -358,7 +368,9 @@ class RouteStructureBuilder(AbstractStructureBuilder, structure_type=ROUTE_TAG):
         parts = []
         for part_definition in parts_definition:
             phase_name = part_definition["phase"]
-            builder = PhaseStructureBuilder(global_definition, phase_name, self.qualified_name)
+            builder = PhaseStructureBuilder(
+                global_definition, phase_name, self.qualified_name, self.variable_prefix
+            )
             phase_structure = self.process_builder(builder)
             parts.append(phase_structure)
         return parts
@@ -375,21 +387,26 @@ class MissionStructureBuilder(AbstractStructureBuilder, structure_type="mission"
         mission_definition = definition[MISSION_DEFINITION_TAG][self.name]
         mission_structure = OrderedDict(deepcopy(mission_definition))
 
-        if mission_structure.get("use_all_block_fuel"):
-            mission_structure["target_fuel_consumption"] = {"value": "~:block_fuel", "unit": "kg"}
-
         mission_parts = []
         for part_definition in mission_definition[PARTS_TAG]:
             if ROUTE_TAG in part_definition:
                 route_name = part_definition[ROUTE_TAG]
-                builder = RouteStructureBuilder(definition, route_name, self.qualified_name)
+                builder = RouteStructureBuilder(
+                    definition, route_name, self.qualified_name, self.variable_prefix
+                )
             elif PHASE_TAG in part_definition:
                 phase_name = part_definition[PHASE_TAG]
-                builder = PhaseStructureBuilder(definition, phase_name, self.qualified_name)
+                builder = PhaseStructureBuilder(
+                    definition, phase_name, self.qualified_name, self.variable_prefix
+                )
             elif SEGMENT_TAG in part_definition:
-                builder = SegmentStructureBuilder(part_definition, "", self.qualified_name)
+                builder = SegmentStructureBuilder(
+                    part_definition, "", self.qualified_name, self.variable_prefix
+                )
             else:
-                builder = DefaultStructureBuilder(part_definition, "", self.qualified_name)
+                builder = DefaultStructureBuilder(
+                    part_definition, "", self.qualified_name, self.variable_prefix
+                )
 
             part_structure = self.process_builder(builder)
             mission_parts.append(part_structure)
