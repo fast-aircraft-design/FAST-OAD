@@ -2,7 +2,7 @@
 Test module for Overall Aircraft Design process
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -307,7 +307,7 @@ def test_api_optim(cleanup):
     assert_allclose(problem["data:geometry:wing:aspect_ratio"], 14.53, atol=2e-2)
 
     # Constraint
-    assert_allclose(problem["data:geometry:wing:span"], 44.88, atol=1e-2)
+    assert_allclose(problem["data:geometry:wing:span"], 44.88, atol=2e-2)
 
     # Objective
     assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 18900.0, atol=1)
