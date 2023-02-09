@@ -1050,11 +1050,11 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "openmdao"
-version = "3.10.0"
+version = "3.18.0"
 description = "OpenMDAO framework infrastructure"
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 
 [package.dependencies]
 networkx = ">=2.0"
@@ -1065,11 +1065,11 @@ requests = "*"
 scipy = "*"
 
 [package.extras]
-all = ["aiounittest", "bokeh (>=1.3.4)", "colorama", "ipyparallel", "ipython", "jupyter", "jupyter-book", "jupyter-sphinx (==0.3.1)", "matplotlib", "nbconvert", "notebook", "numpydoc (>=0.9.1)", "numpydoc (>=0.9.1)", "parameterized", "pycodestyle (>=2.4.0)", "pydocstyle (==2.0.0)", "pyppeteer", "sphinx-sitemap", "tabulate", "tabulate", "testflo", "testflo (>=1.3.6websockets)"]
-docs = ["ipyparallel", "jupyter", "jupyter-book", "jupyter-sphinx (==0.3.1)", "matplotlib", "nbconvert", "numpydoc (>=0.9.1)", "sphinx-sitemap", "tabulate", "testflo"]
-notebooks = ["ipython", "notebook", "tabulate"]
-test = ["aiounittest", "numpydoc (>=0.9.1)", "parameterized", "pycodestyle (>=2.4.0)", "pydocstyle (==2.0.0)", "pyppeteer", "testflo (>=1.3.6websockets)"]
-visualization = ["bokeh (>=1.3.4)", "colorama"]
+all = ["aiounittest", "bokeh (>=1.3.4)", "colorama", "ipympl", "ipyparallel", "ipython", "ipywidgets (>=7.6.5)", "jupyter", "jupyter-book", "jupyter-sphinx", "matplotlib", "nbconvert", "notebook", "num2words", "numpydoc (>=1.1)", "parameterized", "playwright (>=1.20)", "pycodestyle (>=2.4.0)", "pydocstyle (==2.0.0)", "sphinx-sitemap", "tabulate", "testflo", "testflo (>=1.3.6)", "websockets (>8)"]
+docs = ["ipyparallel", "jupyter", "jupyter-book", "jupyter-sphinx", "matplotlib", "nbconvert", "numpydoc (>=1.1)", "sphinx-sitemap", "tabulate", "testflo"]
+notebooks = ["ipympl", "ipython", "ipywidgets (>=7.6.5)", "notebook", "tabulate"]
+test = ["aiounittest", "num2words", "numpydoc (>=1.1)", "parameterized", "playwright (>=1.20)", "pycodestyle (>=2.4.0)", "pydocstyle (==2.0.0)", "testflo (>=1.3.6)", "websockets (>8)"]
+visualization = ["bokeh (>=1.3.4)", "colorama", "matplotlib"]
 
 [[package]]
 name = "openmdao-extensions"
@@ -2644,7 +2644,7 @@ numpy = [
     {file = "numpy-1.21.0.zip", hash = "sha256:e80fe25cba41c124d04c662f33f6364909b985f2eb5998aaa5ae4b9587242cce"},
 ]
 openmdao = [
-    {file = "openmdao-3.10.0.tar.gz", hash = "sha256:4152b6179cc823be5800b837a80674c2baa78989a6d348099aafc521c58c909e"},
+    {file = "openmdao-3.18.0.tar.gz", hash = "sha256:1baccd656a21cc7faab40d92f23efcdae9a68b27f4bd6938ab978137f13d6598"},
 ]
 openmdao-extensions = [
     {file = "openmdao_extensions-1.1.0.tar.gz", hash = "sha256:2a46552f7ea05151f0118171d21e718ceb220fbeb0a01d50d29e80fe971dde99"},
