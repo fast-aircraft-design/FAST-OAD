@@ -4,7 +4,7 @@ phases:
       - segment: start
         target:
           altitude:
-            value: 1000
+            value: 0
             unit: m
       - segment: taxi
         isa_offset: 0.0

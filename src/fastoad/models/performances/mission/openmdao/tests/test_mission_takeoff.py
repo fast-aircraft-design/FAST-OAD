@@ -166,9 +166,9 @@ def test_ground_effect(cleanup, with_dummy_plugin_2):
     )
     plot_flight(problem.model.component.flight_points, "test_mission.png")
     take_off_distance = problem["data:mission:operational:takeoff:distance"]
-    assert_allclose(take_off_distance, 1768, atol=1.0)
-    assert_allclose(problem["data:mission:operational:takeoff:fuel"], 122.4, atol=1e-1)
-    assert_allclose(problem["data:mission:operational:takeoff:duration"], 34.0, atol=1e-1)
+    assert_allclose(take_off_distance, 1628, atol=1.0)
+    assert_allclose(problem["data:mission:operational:takeoff:fuel"], 117.4, atol=1e-1)
+    assert_allclose(problem["data:mission:operational:takeoff:duration"], 32.6, atol=1e-1)
 
 
 def test_start_stop(cleanup, with_dummy_plugin_2):
@@ -196,8 +196,10 @@ def test_start_stop(cleanup, with_dummy_plugin_2):
     )
     plot_flight(problem.model.component.flight_points, "test_mission.png")
     start_stop_distance = problem["data:mission:start_stop_mission:start_stop:distance"]
-    assert_allclose(start_stop_distance, 1659, atol=1.0)
-    assert_allclose(problem["data:mission:start_stop_mission:start_stop:duration"], 42.8, atol=1e-1)
+    assert_allclose(start_stop_distance, 1504, atol=1.0)
+    assert_allclose(
+        problem["data:mission:start_stop_mission:start_stop:duration"], 40.76, atol=1e-1
+    )
 
 
 def test_mission_group_without_loop(cleanup, with_dummy_plugin_2):
@@ -236,7 +238,7 @@ def test_mission_group_without_loop(cleanup, with_dummy_plugin_2):
         ),
         ivc,
     )
-    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6505, atol=1.0)
+    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6580, atol=1.0)
     assert_allclose(problem["data:mission:operational:block_fuel"], 15100.0, atol=1.0)
 
 
@@ -284,4 +286,4 @@ def test_mission_group_with_loop(cleanup, with_dummy_plugin_2):
         atol=1.0,
     )
 
-    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 5597, atol=1.0)
+    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 5667, atol=1.0)
