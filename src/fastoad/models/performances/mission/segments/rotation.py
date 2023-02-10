@@ -13,6 +13,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+from copy import deepcopy
 from dataclasses import dataclass
 from typing import List
 
@@ -74,7 +75,11 @@ class RotationSegment(GroundSegment, mission_file_keyword="rotation"):
 
         if self.polar:
             alpha = flight_point.alpha
-            modified_polar = self.polar_modifier.modify_polar(self.polar, flight_point)
+            flight_point_copy = deepcopy(flight_point)
+            # The ground effect expects the altitude from the ground
+            flight_point_copy.altitude = flight_point_copy.altitude - self.start.altitude
+
+            modified_polar = self.polar_modifier.modify_polar(self.polar, flight_point_copy)
             flight_point.CL = modified_polar.cl(alpha)
             flight_point.CD = modified_polar.cd(flight_point.CL)
         else:

@@ -134,6 +134,8 @@ class AbstractFlightSegment(IFlightPart, ABC):
     # To be noted: this one is not a dataclass field, but an actual class attribute
     _attribute_units = dict(reference_area="m**2", time_step="s")
 
+    start: FlightPoint = field(default=MANDATORY_FIELD, init=False)
+
     @abstractmethod
     def compute_from_start_to_target(self, start, target) -> pd.DataFrame:
         """
@@ -203,6 +205,8 @@ class AbstractFlightSegment(IFlightPart, ABC):
         # Let's ensure we do not modify the original definitions of start and target
         # during the process
         start_copy = deepcopy(start)
+        self.start = start_copy
+
         if start_copy.altitude is not None:
             try:
                 self.complete_flight_point(start_copy)

@@ -47,22 +47,28 @@ class GroundEffectRaymer(AbstractPolarModifier):
         'Aircraft Design A conceptual approach', D. Raymer p304
     """
 
-    # The wingspan
+    #: The wingspan
     span: float
 
-    # The main landing gear height
+    #: The main landing gear height
     landing_gear_height: float
 
-    # The induced drag coefficient, multiplies CL**2 to obtain the induced drag
+    #: The induced drag coefficient, multiplies CL**2 to obtain the induced drag
     induced_drag_coef: float
 
-    # The winglet effect tuning coefficient
+    #: The winglet effect tuning coefficient
     k_winglet: float
 
-    # The total drag tuning coefficient
+    #: The total drag tuning coefficient
     k_cd: float
 
     def modify_polar(self, polar: Polar, flightpoint: FlightPoint) -> Polar:
+        """
+        Compute the ground effect based on altitude from ground and return an updated polar
+
+        :param flightpoint: this method expects a FlightPoint containing the altitude from ground
+        :return: modified polar with ground effect
+        """
 
         h_b = (self.span * 0.1 + self.landing_gear_height + flightpoint.altitude) / self.span
         k_ground = 33.0 * h_b ** 1.5 / (1 + 33.0 * h_b ** 1.5)

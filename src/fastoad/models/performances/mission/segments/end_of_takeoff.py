@@ -13,6 +13,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+from copy import deepcopy
 from dataclasses import dataclass
 from typing import List
 
@@ -130,7 +131,11 @@ class EndOfTakoffSegment(AbstractManualThrustSegment, mission_file_keyword="end_
 
         atm = self._get_atmosphere_point(flight_point.altitude)
 
-        modified_polar = self.polar_modifier.modify_polar(self.polar, flight_point)
+        flight_point_copy = deepcopy(flight_point)
+        # The ground effect expects the altitude from the ground
+        flight_point_copy.altitude = flight_point_copy.altitude - self.start.altitude
+
+        modified_polar = self.polar_modifier.modify_polar(self.polar, flight_point_copy)
         CL = modified_polar.cl(alpha)
         CD = modified_polar.cd(CL)
 

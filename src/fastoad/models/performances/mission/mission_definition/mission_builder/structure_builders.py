@@ -255,23 +255,22 @@ class AbstractStructureBuilder(ABC):
                 }
             )
         elif isinstance(polar_structure, dict):
-            for key in ["CL", "CD", "AoA"]:
+            for key in ["CL", "CD"]:
                 if isinstance(polar_structure[key], str):
-                    if key == "AoA":
-                        # set unit
-                        polar_structure[key] = {
-                            "value": polar_structure[key],
-                            "shape_by_conn": True,
-                            "unit": "rad",
-                        }
-                    else:
-                        polar_structure[key] = {
-                            "value": polar_structure[key],
-                            "shape_by_conn": True,
-                        }
+                    polar_structure[key] = {
+                        "value": polar_structure[key],
+                        "shape_by_conn": True,
+                    }
                 elif isinstance(polar_structure[key], dict):
                     polar_structure[key]["shape_by_conn"] = True
-
+            # Treat AoA separately to keep it optional
+            if {"AoA"}.issubset(polar_structure.keys()):
+                # set unit
+                polar_structure["AoA"] = {
+                    "value": polar_structure["AoA"],
+                    "shape_by_conn": True,
+                    "unit": "rad",
+                }
             # If ground_effect tag, handle the variables
             keys = list(polar_structure.keys())
             if GROUND_EFFECT_TAG in keys:
