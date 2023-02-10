@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         python-version: [ 3.7, 3.8, 3.9 ]
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        os: [ ubuntu-20.04, windows-latest, macos-latest ] # On 2023/02/10, pytest completely stalls on ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
