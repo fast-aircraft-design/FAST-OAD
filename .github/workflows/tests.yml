@@ -56,7 +56,7 @@ jobs:
           coverage-reports: coverage.xml
 
       - name: Publish code coverage on Codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         if: ${{ runner.os == 'Windows' && matrix.python-version == '3.8' }} # Using Windows for covering XFOIL calls
         with:
           #          flags: unittests  # optional
