@@ -34,6 +34,7 @@ from fastoad.models.performances.mission.polar import Polar
 from .exceptions import FastUnknownMissionSegmentError
 from ..base import IFlightPart
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
+from ..polar_modifier import AbstractPolarModifier, LegacyPolar
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -133,6 +134,8 @@ class AbstractFlightSegment(IFlightPart, ABC):
     # To be noted: this one is not a dataclass field, but an actual class attribute
     _attribute_units = dict(reference_area="m**2", time_step="s")
 
+    start: FlightPoint = field(default=MANDATORY_FIELD, init=False)
+
     @abstractmethod
     def compute_from_start_to_target(self, start, target) -> pd.DataFrame:
         """
@@ -202,6 +205,8 @@ class AbstractFlightSegment(IFlightPart, ABC):
         # Let's ensure we do not modify the original definitions of start and target
         # during the process
         start_copy = deepcopy(start)
+        self.start = start_copy
+
         if start_copy.altitude is not None:
             try:
                 self.complete_flight_point(start_copy)
@@ -316,6 +321,7 @@ class AbstractTimeStepFlightSegment(
 
     #: The Polar instance that will provide drag data.
     polar: Polar = MANDATORY_FIELD
+    polar_modifier: AbstractPolarModifier = LegacyPolar()
 
     #: The reference area, in m**2.
     reference_area: float = MANDATORY_FIELD
@@ -330,7 +336,7 @@ class AbstractTimeStepFlightSegment(
 
     #: Minimum and maximum authorized mach values. If computed Mach gets beyond these limits,
     #: computation will be interrupted and a warning message will be issued in logger.
-    mach_bounds: tuple = (0.0, 5.0)
+    mach_bounds: tuple = (-1.0e-6, 5.0)
 
     #: If True, computation will be interrupted if a parameter stops getting closer to target
     #: between two iterations (which can mean the provided thrust rate is not adapted).
@@ -390,8 +396,9 @@ class AbstractTimeStepFlightSegment(
             )
 
             if self.polar:
+                modified_polar = self.polar_modifier.modify_polar(self.polar, flight_point)
                 flight_point.CL = flight_point.mass * g / reference_force
-                flight_point.CD = self.polar.cd(flight_point.CL)
+                flight_point.CD = modified_polar.cd(flight_point.CL)
             else:
                 flight_point.CL = flight_point.CD = 0.0
             flight_point.drag = flight_point.CD * reference_force
@@ -623,3 +630,18 @@ class AbstractFixedDurationSegment(AbstractTimeStepFlightSegment, ABC):
     ) -> float:
         current = flight_points[-1]
         return target.time - current.time
+
+
+@dataclass
+class GroundSegment(AbstractManualThrustSegment, ABC):
+    """
+    Class for computing accelerated segments on the ground with wheel friction.
+    """
+
+    # Friction coefficient considered for acceleration at take-off.
+    # The default value is representative of dry concrete/asphalte
+    wheels_friction: float = 0.03
+    time_step: float = 0.1
+
+    # The angle of attack of the aircraft at the beginning of the segment
+    alpha: float = 0.0

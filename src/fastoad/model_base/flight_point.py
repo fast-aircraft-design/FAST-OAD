@@ -90,6 +90,7 @@ class FlightPoint:
     CL: float = None  # pylint: disable=invalid-name
     #: Drag coefficient.
     CD: float = None  # pylint: disable=invalid-name
+    lift: float = None  #: Aicraft lift in Newton
     drag: float = None  #: Aircraft drag in Newtons.
     thrust: float = None  #: Thrust in Newtons.
     thrust_rate: float = None  #: Thrust rate (between 0. and 1.)
@@ -101,6 +102,8 @@ class FlightPoint:
     sfc: float = None  #: Specific Fuel Consumption in kg/N/s.
     slope_angle: float = None  #: Slope angle in radians.
     acceleration: float = None  #: Acceleration value in m/s**2.
+    alpha: float = None  #: angle of attack in rad
+    slope_angle_derivative: float = None  #: slope angle derivative in rad/s
     name: str = None  #: Name of current phase.
 
     _units = dict(
@@ -113,12 +116,15 @@ class FlightPoint:
         mach="-",
         CL="-",
         CD="-",
+        lift="N",
         drag="N",
         thrust="N",
         thrust_rate="-",
         sfc="kg/N/s",
         slope_angle="rad",
         acceleration="m/s**2",
+        alpha="rad",
+        slope_angle_derivative="rad/s",
     )
 
     def __post_init__(self):
