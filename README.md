@@ -1,6 +1,7 @@
 <p align="center">
   <img src="docs/img/FAST_OAD_logo2.jpg" alt="FAST-OAD logo" width="600">
 </p>
+
 Future Aircraft Sizing Tool - Overall Aircraft Design
 ===============================================================
 
