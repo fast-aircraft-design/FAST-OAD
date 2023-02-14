@@ -153,7 +153,7 @@ class VariableList(list):
         var_dict.update({metadata_name: [] for metadata_name in self.metadata_keys()})
 
         for variable in self:
-            value = self._as_list_or_float(variable.value)
+            value = self._as_list_or_item(variable.value)
             var_dict["name"].append(variable.name)
             for metadata_name in self.metadata_keys():
                 if metadata_name == "val":
@@ -161,7 +161,7 @@ class VariableList(list):
                 else:
                     # TODO: make this more generic
                     if metadata_name in ["val", "initial_value", "lower", "upper"]:
-                        metadata = self._as_list_or_float(variable.metadata[metadata_name])
+                        metadata = self._as_list_or_item(variable.metadata[metadata_name])
                     else:
                         metadata = variable.metadata[metadata_name]
                     var_dict[metadata_name].append(metadata)
@@ -205,14 +205,14 @@ class VariableList(list):
         ).items():
             metadata = metadata.copy()
             value = metadata.pop("val")
-            value = cls._as_list_or_float(value)
+            value = cls._as_list_or_item(value)
             metadata.update({"val": value})
             variables[name] = metadata
 
         return variables
 
     @classmethod
-    def _as_list_or_float(cls, value):
+    def _as_list_or_item(cls, value):
         value = np.asarray(value)
         if np.size(value) == 1:
             value = value.item()
@@ -242,7 +242,7 @@ class VariableList(list):
             # TODO: make this more generic
             for key, val in var_as_dict.items():
                 if key in ["val", "initial_value", "lower", "upper"]:
-                    var_as_dict[key] = cls._as_list_or_float(val)
+                    var_as_dict[key] = cls._as_list_or_item(val)
                 else:
                     pass
             return Variable(**var_as_dict)
