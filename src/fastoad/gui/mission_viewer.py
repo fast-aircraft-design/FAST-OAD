@@ -32,8 +32,8 @@ class MissionViewer:
         # The dataframes containing each mission
         self.missions = {}
 
-        # The figure displayed
-        self._fig = None
+        # The output widget containing the figure to display
+        self._output_widget = None
 
         # The x selector
         self._x_widget = None
@@ -59,55 +59,64 @@ class MissionViewer:
             raise TypeError("Unknown type for mission data, please use .csv of DataFrame")
 
     def display(self):
+        """
+        Display the user interface
+        :return the display object
+        """
 
         key = list(self.missions)[0]
         keys = self.missions[key].keys()
 
-        output = widgets.Output()
-
-        # pylint: disable=unused-argument  # args has to be there for observe() to work
-        def show_plots(change=None):
-
-            with output:
-
-                clear_output(wait=True)
-
-                x_name = self._x_widget.value
-                y_name = self._y_widget.value
-
-                fig = None
-
-                for mission_name in self.missions:
-
-                    if fig is None:
-                        fig = go.Figure()
-                    # pylint: disable=invalid-name # that's a common naming
-                    x = self.missions[mission_name][x_name]
-                    # pylint: disable=invalid-name # that's a common naming
-                    y = self.missions[mission_name][y_name]
-
-                    scatter = go.Scatter(x=x, y=y, mode="lines", name=mission_name)
-
-                    fig.add_trace(scatter)
-
-                fig.update_layout(
-                    title_text="Mission", title_x=0.5, xaxis_title=x_name, yaxis_title=y_name
-                )
-
-                fig = go.FigureWidget(fig)
-                display(fig)
+        self._output_widget = widgets.Output()
 
         # By default ground distance
         self._x_widget = widgets.Dropdown(value=keys[2], options=keys)
-        self._x_widget.observe(show_plots, "value")
+        self._x_widget.observe(self._show_plot, "value")
         # By default altitude
         self._y_widget = widgets.Dropdown(value=keys[1], options=keys)
-        self._y_widget.observe(show_plots, "value")
+        self._y_widget.observe(self._show_plot, "value")
 
-        show_plots()
+        self._show_plot()
 
         toolbar = widgets.HBox(
             [widgets.Label(value="x:"), self._x_widget, widgets.Label(value="y:"), self._y_widget]
         )
 
-        display(toolbar, output)
+        ui = display(toolbar, self._output_widget)
+
+        return ui
+
+    # pylint: disable=unused-argument # args has to be there for observe() to work
+    def _show_plot(self, change=None):
+        """
+        Updates and shows the plots
+        """
+
+        with self._output_widget:
+
+            clear_output(wait=True)
+
+            x_name = self._x_widget.value
+            y_name = self._y_widget.value
+
+            fig = None
+
+            for mission_name in self.missions:
+
+                if fig is None:
+                    fig = go.Figure()
+                # pylint: disable=invalid-name # that's a common naming
+                x = self.missions[mission_name][x_name]
+                # pylint: disable=invalid-name # that's a common naming
+                y = self.missions[mission_name][y_name]
+
+                scatter = go.Scatter(x=x, y=y, mode="lines", name=mission_name)
+
+                fig.add_trace(scatter)
+
+            fig.update_layout(
+                title_text="Mission", title_x=0.5, xaxis_title=x_name, yaxis_title=y_name
+            )
+
+            fig = go.FigureWidget(fig)
+            display(fig)
