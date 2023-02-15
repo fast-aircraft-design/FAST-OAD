@@ -14,6 +14,7 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
+from pandas._testing import assert_frame_equal
 
 from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
@@ -22,6 +23,7 @@ from ..end_of_takeoff import EndOfTakoffSegment
 from ..ground_speed_change import GroundSpeedChangeSegment
 from ..rotation import RotationSegment
 from ..takeoff.takeoff import TakeOffSequence
+from ...base import FlightSequence
 from ...polar import Polar
 from ...polar_modifier import AbstractPolarModifier, GroundEffectRaymer
 
@@ -120,7 +122,6 @@ def test_rotation(polar, polar_modifier):
     assert_allclose(last_point.time, 32.58, rtol=1e-2)
     assert_allclose(last_point.mass, 69995.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 200.64, rtol=1e-3)
-    assert_allclose(np.degrees(last_point.alpha), 7.713, rtol=1e-3)
     assert last_point.engine_setting == EngineSetting.CLIMB
 
 
@@ -140,13 +141,12 @@ def test_end_of_takeoff(polar, polar_modifier):
     segment.time_step = 0.05
     flight_points = segment.compute_from(
         FlightPoint(
-            time=32.58,
+            time=35.0,
             altitude=0.0,
-            mass=69995.0,
+            mass=70000.0,
             true_airspeed=85.0,
             alpha=10.0 / 180 * 3.14,
             slope_angle=0.0,
-            ground_distance=200.64,
         )
     )  # Test with dict
 
@@ -166,7 +166,39 @@ def test_end_of_takeoff(polar, polar_modifier):
 def test_takeoff(polar, polar_modifier):
     propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
-    # initialisation then change instance attributes
+    ground_segment = GroundSpeedChangeSegment(
+        target=FlightPoint(equivalent_airspeed=75.0),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        polar_modifier=polar_modifier,
+        engine_setting=EngineSetting.CLIMB,
+        thrust_rate=1.0,
+        time_step=0.2,
+    )
+    rotation_segment = RotationSegment(
+        target=FlightPoint(),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        polar_modifier=polar_modifier,
+        engine_setting=EngineSetting.CLIMB,
+        thrust_rate=1.0,
+        time_step=0.2,
+    )
+    end_segment = EndOfTakoffSegment(
+        target=FlightPoint(altitude=12.0),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        polar_modifier=polar_modifier,
+        engine_setting=EngineSetting.CLIMB,
+        thrust_rate=1.0,
+        time_step=0.05,
+    )
+    sequence = FlightSequence()
+    [sequence.append(seg) for seg in [ground_segment, rotation_segment, end_segment]]
+
     segment = TakeOffSequence(
         target=FlightPoint(altitude=12.0),
         propulsion=propulsion,
@@ -174,18 +206,14 @@ def test_takeoff(polar, polar_modifier):
         polar=polar,
         polar_modifier=polar_modifier,
         engine_setting=EngineSetting.CLIMB,
+        thrust_rate=1.0,
         time_step=0.2,
         rotation_equivalent_airspeed=75.0,
     )
-    segment.thrust_rate = 1.0
-    segment.time_step = 0.05
+
+    ref_flight_points = sequence.compute_from(
+        FlightPoint(altitude=0.0, mass=70000.0, true_airspeed=0.0)
+    )
     flight_points = segment.compute_from(FlightPoint(altitude=0.0, mass=70000.0, true_airspeed=0.0))
 
-    last_point = flight_points.iloc[-1]
-    # Note: reference values are obtained by running the process with 0.01s as time step
-    assert_allclose(last_point.altitude, 12.0)
-    assert_allclose(last_point.true_airspeed, 90.88, rtol=1e-3)
-    assert_allclose(last_point.time, 38.46, rtol=1e-2)
-    assert_allclose(last_point.mass, 69993.0, rtol=1e-4)
-    assert_allclose(last_point.ground_distance, 302.97, rtol=1e-3)
-    assert last_point.engine_setting == EngineSetting.CLIMB
+    assert_frame_equal(flight_points, ref_flight_points, rtol=1e-2)

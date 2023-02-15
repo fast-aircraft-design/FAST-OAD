@@ -42,6 +42,8 @@ class TakeOffSequence(RegisteredSegment, FlightSequence):
     #: The reference area, in m**2.
     reference_area: float = MANDATORY_FIELD
 
+    thrust_rate: float = 1.0
+
     #: Used time step for computation (actual time step can be lower at some particular times of
     #: the flight path).
     time_step: float = DEFAULT_TIME_STEP
@@ -59,33 +61,36 @@ class TakeOffSequence(RegisteredSegment, FlightSequence):
             GroundSpeedChangeSegment(
                 target=self._rotation_target,
                 propulsion=self.propulsion,
-                reference_area=120.0,
+                reference_area=self.reference_area,
                 polar=self.polar,
                 polar_modifier=self.polar_modifier,
-                engine_setting=EngineSetting.CLIMB,
+                engine_setting=self.engine_setting,
                 time_step=self.time_step,
+                thrust_rate=self.thrust_rate,
             )
         )
         self.append(
             RotationSegment(
                 target=FlightPoint(),
                 propulsion=self.propulsion,
-                reference_area=120.0,
+                reference_area=self.reference_area,
                 polar=self.polar,
                 polar_modifier=self.polar_modifier,
-                engine_setting=EngineSetting.CLIMB,
+                engine_setting=self.engine_setting,
                 time_step=self.time_step,
+                thrust_rate=self.thrust_rate,
             )
         )
         self.append(
             EndOfTakoffSegment(
                 target=self.target,
                 propulsion=self.propulsion,
-                reference_area=120.0,
+                reference_area=self.reference_area,
                 polar=self.polar,
                 polar_modifier=self.polar_modifier,
-                engine_setting=EngineSetting.CLIMB,
+                engine_setting=self.engine_setting,
                 time_step=0.05,
+                thrust_rate=self.thrust_rate,
             )
         )
 
