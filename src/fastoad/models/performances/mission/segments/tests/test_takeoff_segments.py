@@ -199,21 +199,45 @@ def test_takeoff(polar, polar_modifier):
     sequence = FlightSequence()
     [sequence.append(seg) for seg in [ground_segment, rotation_segment, end_segment]]
 
-    segment = TakeOffSequence(
+    segment_1 = TakeOffSequence(
         target=FlightPoint(altitude=12.0),
         propulsion=propulsion,
         reference_area=120.0,
         polar=polar,
         polar_modifier=polar_modifier,
-        engine_setting=EngineSetting.CLIMB,
-        thrust_rate=1.0,
-        time_step=0.2,
+        # engine_setting=EngineSetting.CLIMB,   # using default value
         rotation_equivalent_airspeed=75.0,
+        # thrust_rate=1.0,                      # using default value
+        time_step=0.2,
     )
 
-    ref_flight_points = sequence.compute_from(
-        FlightPoint(altitude=0.0, mass=70000.0, true_airspeed=0.0)
-    )
-    flight_points = segment.compute_from(FlightPoint(altitude=0.0, mass=70000.0, true_airspeed=0.0))
+    start_point = FlightPoint(altitude=0.0, mass=70000.0, true_airspeed=0.0)
 
-    assert_frame_equal(flight_points, ref_flight_points, rtol=1e-2)
+    ref_flight_points = sequence.compute_from(start_point)
+    flight_points_1 = segment_1.compute_from(start_point)
+    assert_frame_equal(flight_points_1, ref_flight_points, rtol=1e-6)
+
+    # for segment 2, field values are modified afterward.
+    segment_2 = TakeOffSequence(
+        target=FlightPoint(),
+        propulsion=None,
+        reference_area=0.0,
+        polar=None,
+        polar_modifier=None,
+        engine_setting=None,
+        rotation_equivalent_airspeed=0.0,
+        thrust_rate=0.0,
+        time_step=0.0,
+    )
+    segment_2.target = FlightPoint(altitude=12.0)
+    segment_2.propulsion = propulsion
+    segment_2.reference_area = 120.0
+    segment_2.polar = polar
+    segment_2.polar_modifier = polar_modifier
+    segment_2.engine_setting = EngineSetting.CLIMB
+    segment_2.rotation_equivalent_airspeed = 75.0
+    segment_2.thrust_rate = 1.0
+    segment_2.time_step = 0.2
+
+    flight_points_2 = segment_2.compute_from(start_point)
+    assert_frame_equal(flight_points_2, ref_flight_points, rtol=1e-6)

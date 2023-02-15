@@ -1,3 +1,4 @@
+"""Class for takeoff sequence"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -23,11 +24,27 @@ from ..ground_speed_change import GroundSpeedChangeSegment
 from ..rotation import RotationSegment
 from ...base import FlightSequence
 from ...polar import Polar
-from ...polar_modifier import AbstractPolarModifier, LegacyPolar
+from ...polar_modifier import AbstractPolarModifier, UnchangedPolar
 
 
 @dataclass
-class TakeOffSequence(RegisteredSegment, FlightSequence):
+class TakeOffSequence(RegisteredSegment, FlightSequence, mission_file_keyword="takeoff"):
+    """
+    This class does a time-step simulation of a full takeoff:
+
+    - ground speed acceleration up to :attr:`rotation_equivalent_airspeed`
+    - rotation
+    - climb up to altitude provided in :attr:`target` (safety altitude)
+    """
+
+    # This field will be used to instantiate sub-segments. Its values are synced with field
+    # values in __setattr__.
+    # It has to be defined first for __setattr__ to work when instantiating.
+    _segment_kwargs: dict = field(default_factory=dict, init=False, repr=False)
+
+    # This field has to be created before any call to __setattr__
+
+    #: Target flight point for end of takeoff
     target: FlightPoint = MANDATORY_FIELD
 
     #: A IPropulsion instance that will be called at each time step.
@@ -36,68 +53,91 @@ class TakeOffSequence(RegisteredSegment, FlightSequence):
     #: The Polar instance that will provide drag data.
     polar: Polar = MANDATORY_FIELD
 
-    #:
-    polar_modifier: AbstractPolarModifier = LegacyPolar()
+    #: PolarModifier instance that defines the ground effect.
+    polar_modifier: AbstractPolarModifier = field(default_factory=UnchangedPolar)
 
-    #: The reference area, in m**2.
+    #: Reference area, in m**2.
     reference_area: float = MANDATORY_FIELD
 
-    thrust_rate: float = 1.0
-
-    #: Used time step for computation (actual time step can be lower at some particular times of
-    #: the flight path).
-    time_step: float = DEFAULT_TIME_STEP
-
-    #: The EngineSetting value associated to the segment. Can be used in the
+    #: EngineSetting value associated to the sequence. Can be used in the
     #: propulsion model.
     engine_setting: EngineSetting = EngineSetting.CLIMB
 
+    #: Imposed thrust rate for the whole sequence.
+    thrust_rate: float = 1.0
+
+    # This field is the container for the rotation_equivalent_airspeed below
+    # (has to be declared first)
+    _rotation_target: FlightPoint = field(default_factory=FlightPoint, init=False)
+
+    #: Equivalent airspeed to reach for starting aircraft rotation.
     rotation_equivalent_airspeed: float = MANDATORY_FIELD
-    _rotation_target: FlightPoint = field(default=FlightPoint(), init=False)
+
+    #: Used time step for computing ground acceleration and rotation.
+    time_step: float = DEFAULT_TIME_STEP
+
+    # Used time step for computing the takeoff part after rotation.
+    end_time_step: float = 0.05
+
+    _initialized: bool = field(default=False, init=False)
 
     def __post_init__(self):
-        self._rotation_target = FlightPoint(equivalent_airspeed=self.rotation_equivalent_airspeed)
+        self._build_sequence()
+        self._initialized = True
+
+    def __setattr__(self, key, value):
+        super().__setattr__(key, value)
+
+        if key in [
+            "propulsion",
+            "reference_area",
+            "polar",
+            "polar_modifier",
+            "engine_setting",
+            "thrust_rate",
+            "time_step",
+            "end_time_step",
+        ]:
+            self._segment_kwargs[key] = value
+        elif key == "rotation_equivalent_airspeed":
+            self._rotation_target.equivalent_airspeed = value
+        else:
+            return
+
+        if self._initialized:
+            # Rebuild the sequence after this update of value.
+            self._build_sequence()
+
+    def _build_sequence(self):
+        # This method builds the takeoff sequence. It is called from __setattr__ each time a
+        # field value is updated, so the takeoff sequence is always up-to-date.
+
+        self.clear()
+
+        kwargs = self._segment_kwargs.copy()
+        if "end_time_step" in kwargs:
+            del kwargs["end_time_step"]
+
         self.append(
             GroundSpeedChangeSegment(
+                name=self.name,
                 target=self._rotation_target,
-                propulsion=self.propulsion,
-                reference_area=self.reference_area,
-                polar=self.polar,
-                polar_modifier=self.polar_modifier,
-                engine_setting=self.engine_setting,
-                time_step=self.time_step,
-                thrust_rate=self.thrust_rate,
+                **kwargs,
             )
         )
         self.append(
             RotationSegment(
+                name=self.name,
                 target=FlightPoint(),
-                propulsion=self.propulsion,
-                reference_area=self.reference_area,
-                polar=self.polar,
-                polar_modifier=self.polar_modifier,
-                engine_setting=self.engine_setting,
-                time_step=self.time_step,
-                thrust_rate=self.thrust_rate,
+                **kwargs,
             )
         )
+
+        kwargs["time_step"] = self.end_time_step
         self.append(
             EndOfTakoffSegment(
+                name=self.name,
                 target=self.target,
-                propulsion=self.propulsion,
-                reference_area=self.reference_area,
-                polar=self.polar,
-                polar_modifier=self.polar_modifier,
-                engine_setting=self.engine_setting,
-                time_step=0.05,
-                thrust_rate=self.thrust_rate,
+                **kwargs,
             )
         )
-
-    @property
-    def rotation_equivalent_airspeed(self) -> float:
-        return self._rotation_target.equivalent_airspeed
-
-    @rotation_equivalent_airspeed.setter
-    def rotation_equivalent_airspeed(self, value: float):
-        self._rotation_target.equivalent_airspeed = value
