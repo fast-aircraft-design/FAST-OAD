@@ -141,8 +141,7 @@ def test_payload_range_plot():
         filename,
         name="Payload-Range",
         mission_name="sizing",
-        variable_of_interest="block_fuel",
-        only_contour=True,
+        variable_of_interest=None,
     )
 
     # Second plot
@@ -152,5 +151,4 @@ def test_payload_range_plot():
         name="Payload-Range",
         mission_name="sizing",
         variable_of_interest="block_fuel",
-        only_contour=False,
     )

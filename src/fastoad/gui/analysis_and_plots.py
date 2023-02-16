@@ -453,8 +453,7 @@ def payload_range_plot(
     aircraft_file_path: str,
     name="Payload-Range",
     mission_name="operational",
-    variable_of_interest="block_fuel",
-    only_contour=True,
+    variable_of_interest=None,
 ):
     """
     Returns a figure of the payload-range diagram.
@@ -505,7 +504,7 @@ def payload_range_plot(
     fig.add_trace(pr_contour_mask)
     fig.add_trace(pr_contour)
 
-    if not only_contour:
+    if variable_of_interest is not None:
         # Grid for the payload range
         range_grid = np.asarray(variables[f"data:payload_range:{mission_name}:grid:range"].value)
         payload_grid = np.asarray(
