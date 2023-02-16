@@ -458,7 +458,8 @@ def payload_range_plot(
 ):
     """
     Returns a figure of the payload-range diagram.
-    The diagram contains by default only the contour but can also provide a heatmap of the grid points.
+    The diagram contains by default only the contour but can also provide a heatmap
+    of the grid points.
 
     :param aircraft_file_path: path of data file
     :param name: name to give to the trace added to the figure
