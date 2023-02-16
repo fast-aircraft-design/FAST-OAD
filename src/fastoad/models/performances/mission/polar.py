@@ -24,7 +24,7 @@ class Polar:
 
         Links drag coefficient (CD) to lift coefficient (CL).
         It is defined by two vectors with CL and CD values.
-        If a vector of angle of attack (alpha) is given, is links alpha and CL
+        If a vector of angle of attack (alpha) is given, it links alpha and CL
 
         Once defined, for any CL value, CD can be obtained using :meth:`cd`.
         For any alpha given, CL is obtained using :meth:'cl'.
@@ -48,9 +48,7 @@ class Polar:
             alpha = np.linspace(-2, 20, np.size(cl))
 
         self._definition_alpha = alpha
-        self._clvsalpha = interp1d(
-            self._definition_alpha, self._definition_CL, kind="linear", fill_value="extrapolate"
-        )
+        self._clvsalpha = interp1d( alpha, cl, kind="linear", fill_value="extrapolate")
 
         def _negated_lift_drag_ratio(lift_coeff):
             """Returns -CL/CD."""
