@@ -1,3 +1,4 @@
+""" Aerodynamics polar modifier."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -21,21 +22,32 @@ from .polar import Polar
 @dataclass
 class AbstractPolarModifier(ABC):
 
-    """ """
+    """
+    Base class to implement a change to the polar during the mission computation
+    """
 
     @abstractmethod
-    def modify_polar(self, polar: Polar, flightpoint: FlightPoint) -> Polar:
+    def modify_polar(self, polar: Polar, flight_point: FlightPoint) -> Polar:
 
         """
         :param polar: an instance of Polar
-        :param flightpoint: an intance of FlightPoint containg only floats
+        :param flight_point: an intance of FlightPoint containg only floats
         :return: the modified polar for the flight point
         """
 
 
 @dataclass
-class LegacyPolar(AbstractPolarModifier):
-    def modify_polar(self, polar: Polar, flightpoint: FlightPoint) -> Polar:
+class UnchangedPolar(AbstractPolarModifier):
+    """
+    Default polar modifier returning the polar without changes
+    """
+
+    def modify_polar(self, polar: Polar, flight_point: FlightPoint) -> Polar:
+        """
+        :param polar: a polar instance
+        :param flight_point: a FlightPoint instance
+        :return: the polar instance
+        """
         return polar
 
 
@@ -47,30 +59,40 @@ class GroundEffectRaymer(AbstractPolarModifier):
         'Aircraft Design A conceptual approach', D. Raymer p304
     """
 
-    #: The wingspan
+    #: Wingspan
     span: float
 
-    #: The main landing gear height
+    #: Main landing gear height
     landing_gear_height: float
 
-    #: The induced drag coefficient, multiplies CL**2 to obtain the induced drag
+    #: Induced drag coefficient, multiplies CL**2 to obtain the induced drag
     induced_drag_coef: float
 
-    #: The winglet effect tuning coefficient
+    #: Winglet effect tuning coefficient
     k_winglet: float
 
-    #: The total drag tuning coefficient
+    #: Total drag tuning coefficient
     k_cd: float
 
-    def modify_polar(self, polar: Polar, flightpoint: FlightPoint) -> Polar:
+    #: Altitude of ground w.r.t. sea level
+    ground_altitude: float = 0.0
+
+    def modify_polar(self, polar: Polar, flight_point: FlightPoint) -> Polar:
         """
         Compute the ground effect based on altitude from ground and return an updated polar
 
-        :param flightpoint: this method expects a FlightPoint containing the altitude from ground
-        :return: modified polar with ground effect
+        :param polar: a Polar instance used as basis to apply ground effect
+        :param flight_point: a flight point containing the flight conditions
+        for calculation of ground effect
+        :return: a copy of polar with ground effect
         """
 
-        h_b = (self.span * 0.1 + self.landing_gear_height + flightpoint.altitude) / self.span
+        h_b = (
+            self.span * 0.1
+            + self.landing_gear_height
+            + flight_point.altitude
+            - self.ground_altitude
+        ) / self.span
         k_ground = 33.0 * h_b ** 1.5 / (1 + 33.0 * h_b ** 1.5)
         cd_ground = (
             self.induced_drag_coef

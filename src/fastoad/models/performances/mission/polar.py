@@ -1,5 +1,4 @@
 """Aerodynamic polar data."""
-import numpy as np
 
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
@@ -13,12 +12,13 @@ import numpy as np
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from numpy import ndarray
 from scipy.interpolate import interp1d
 from scipy.optimize import fmin
 
 
 class Polar:
-    def __init__(self, cl, cd, alpha=None):
+    def __init__(self, cl: ndarray, cd: ndarray, alpha=None):
         """
         Class for managing aerodynamic polar data.
 
@@ -29,9 +29,9 @@ class Polar:
         Once defined, for any CL value, CD can be obtained using :meth:`cd`.
         For any alpha given, CL is obtained using :meth:'cl'.
 
-        :param cl: the lift coefficient vector
-        :param cd: the drag coefficient vector
-        :param alpha: the angle of attack corresponding to lift coefficient
+        :param cl: a N-elements array with CL values
+        :param cd: a N-elements array with CD values that match CL
+        :param alpha: a N-elements array with angle of attack corresponding to CL values
 
         """
 
@@ -42,19 +42,15 @@ class Polar:
         self._cd = interp1d(cl, cd, kind="quadratic", fill_value="extrapolate")
 
         # CL as a function of AoA
-        if alpha is None:
-            # Define dummy AoA vector
-            # Or force to give alpha
-            alpha = np.linspace(-2, 20, np.size(cl))
-
         self._definition_alpha = alpha
-        self._clvsalpha = interp1d( alpha, cl, kind="linear", fill_value="extrapolate")
+        if alpha is not None:
+            self._clvsalpha = interp1d(alpha, cl, kind="linear", fill_value="extrapolate")
 
         def _negated_lift_drag_ratio(lift_coeff):
             """Returns -CL/CD."""
             return -lift_coeff / self.cd(lift_coeff)
 
-        self._optimal_CL = fmin(_negated_lift_drag_ratio, self._definition_CL[0], disp=0)
+        self._optimal_CL = fmin(_negated_lift_drag_ratio, cl[0], disp=0)
 
     @property
     def definition_cl(self):
@@ -95,4 +91,7 @@ class Polar:
         :param alpha: the angle of attack at which CL is evaluated
         :return: CL value for each alpha.
         """
+        if self._definition_alpha is None:
+            raise ValueError("Polar was instantiated without AoA vector.")
+
         return self._clvsalpha(alpha)

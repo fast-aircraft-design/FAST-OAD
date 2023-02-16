@@ -13,7 +13,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from copy import deepcopy
 from dataclasses import dataclass
 from typing import List
 
@@ -21,14 +20,14 @@ from numpy import cos, sin
 from scipy.constants import g
 
 from fastoad.model_base import FlightPoint
-from .base import AbstractManualThrustSegment
+from .base import TakeOffSegment
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 @dataclass
-class EndOfTakoffSegment(AbstractManualThrustSegment, mission_file_keyword="end_of_takeoff"):
+class EndOfTakoffSegment(TakeOffSegment, mission_file_keyword="end_of_takeoff"):
     """
     Computes a flight path segment where altitude is modified with constant pitch angle.
     As a result, the slope angle and angle of attack are changing through time.
@@ -92,10 +91,8 @@ class EndOfTakoffSegment(AbstractManualThrustSegment, mission_file_keyword="end_
         """
         Computes angle of attack (alpha) based on gamma_dot, using constant pitch angle assumption
 
-        :param flight_point: parameters before propulsion model has been called
-
-        :return: angle of attack in radians
-
+        :param next_point: the next flight point
+        :param previous_point: the flight point from which next alpha is computed
         """
         time_step = next_point.time - previous_point.time
 
@@ -106,9 +103,8 @@ class EndOfTakoffSegment(AbstractManualThrustSegment, mission_file_keyword="end_
         """
         Computes slope angle (gamma) based on gamma_dot
 
-        :param flight_point: parameters before propulsion model has been called
-
-        :return: slope angle in radians
+        :param next_point: the next flight point
+        :param previous_point: the flight point from which next gamma is computed
         """
         time_step = next_point.time - previous_point.time
         next_point.slope_angle = (
@@ -131,11 +127,7 @@ class EndOfTakoffSegment(AbstractManualThrustSegment, mission_file_keyword="end_
 
         atm = self._get_atmosphere_point(flight_point.altitude)
 
-        flight_point_copy = deepcopy(flight_point)
-        # The ground effect expects the altitude from the ground
-        flight_point_copy.altitude = flight_point_copy.altitude - self.start.altitude
-
-        modified_polar = self.polar_modifier.modify_polar(self.polar, flight_point_copy)
+        modified_polar = self.polar_modifier.modify_polar(self.polar, flight_point)
         CL = modified_polar.cl(alpha)
         CD = modified_polar.cd(CL)
 

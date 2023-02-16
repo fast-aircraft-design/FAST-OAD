@@ -13,7 +13,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from copy import deepcopy
 from dataclasses import dataclass
 from typing import List
 
@@ -57,42 +56,6 @@ class RotationSegment(GroundSegment, mission_file_keyword="rotation"):
         self.compute_next_alpha(next_point, previous)
         return next_point
 
-    def complete_flight_point(self, flight_point: FlightPoint):
-        """
-        Computes data for provided flight point.
-
-        Assumes that it is already defined for time, altitude, mass,
-        ground distance and speed (TAS, EAS, or Mach).
-
-        :param flight_point: the flight point that will be completed in-place
-        """
-        flight_point.engine_setting = self.engine_setting
-
-        self._complete_speed_values(flight_point)
-
-        atm = self._get_atmosphere_point(flight_point.altitude)
-        reference_force = 0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_area
-
-        if self.polar:
-            alpha = flight_point.alpha
-            flight_point_copy = deepcopy(flight_point)
-            # The ground effect expects the altitude from the ground
-            flight_point_copy.altitude = flight_point_copy.altitude - self.start.altitude
-
-            modified_polar = self.polar_modifier.modify_polar(self.polar, flight_point_copy)
-            flight_point.CL = modified_polar.cl(alpha)
-            flight_point.CD = modified_polar.cd(flight_point.CL)
-        else:
-            flight_point.CL = flight_point.CD = 0.0
-
-        flight_point.drag = flight_point.CD * reference_force
-        flight_point.lift = flight_point.CL * reference_force
-
-        self.compute_propulsion(flight_point)
-        flight_point.slope_angle, flight_point.acceleration = self.get_gamma_and_acceleration(
-            flight_point
-        )
-
     def get_distance_to_target(
         self, flight_points: List[FlightPoint], target: FlightPoint
     ) -> float:
@@ -119,22 +82,11 @@ class RotationSegment(GroundSegment, mission_file_keyword="rotation"):
         return lift - mass * g
 
     def compute_next_alpha(self, next_point: FlightPoint, previous_point: FlightPoint):
+        """
+        Determine the next AoA based on imposed rotation rate
 
+        :param next_point: the next flight point
+        :param previous_point: the flight point from which next alpha is computed
+        """
         time_step = next_point.time - previous_point.time
         next_point.alpha = previous_point.alpha + time_step * self.rotation_rate
-
-    def get_gamma_and_acceleration(self, flight_point: FlightPoint):
-
-        mass = flight_point.mass
-        drag_aero = flight_point.drag
-        lift = flight_point.lift
-        thrust = flight_point.thrust
-
-        drag = drag_aero + (mass * g - lift) * self.wheels_friction
-
-        # edit flight_point fields
-        flight_point.drag = drag
-
-        acceleration = (thrust - drag) / mass
-
-        return 0.0, acceleration

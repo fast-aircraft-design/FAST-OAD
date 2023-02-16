@@ -12,7 +12,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-import pandas as pd
 import pytest
 from numpy.testing import assert_allclose
 
@@ -24,16 +23,6 @@ from ..ground_speed_change import GroundSpeedChangeSegment
 from ..rotation import RotationSegment
 from ...polar import Polar
 from ...polar_modifier import AbstractPolarModifier, GroundEffectRaymer
-
-
-def print_dataframe(df):
-    """Utility for correctly printing results"""
-    # Not used if all goes all well. Please keep it for future test setting/debugging.
-    with pd.option_context(
-        "display.max_rows", 20, "display.max_columns", None, "display.width", None
-    ):
-        print()
-        print(df)
 
 
 class DummyEngine(AbstractFuelPropulsion):
@@ -96,12 +85,9 @@ def test_ground_speed_change(polar, polar_modifier):
     )
     segment.thrust_rate = 1.0
     segment.time_step = 0.2
-    flight_points = segment.compute_from(
-        FlightPoint(altitude=0.0, mass=70000.0, true_airspeed=0.0)
-    )  # Test with dict
+    flight_points = segment.compute_from(FlightPoint(altitude=0.0, mass=70000.0, true_airspeed=0.0))
 
     last_point = flight_points.iloc[-1]
-    # Note: reference values are obtained by running the process with 0.01s as time step
     assert_allclose(last_point.altitude, 0.0)
     assert_allclose(last_point.true_airspeed, 75.0)
     assert_allclose(last_point.time, 29.44, rtol=1e-2)
@@ -128,12 +114,12 @@ def test_rotation(polar, polar_modifier):
     )  # Test with dict
 
     last_point = flight_points.iloc[-1]
-    # Note: reference values are obtained by running the process with 0.01s as time step
     assert_allclose(last_point.altitude, 0.0)
     assert_allclose(last_point.true_airspeed, 81.22, rtol=1e-3)
     assert_allclose(last_point.time, 32.58, rtol=1e-2)
     assert_allclose(last_point.mass, 69995.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 200.64, rtol=1e-3)
+    assert_allclose(last_point.alpha, 0.134, rtol=1e-2)
     assert last_point.engine_setting == EngineSetting.CLIMB
 
 
@@ -163,10 +149,13 @@ def test_end_of_takeoff(polar, polar_modifier):
     )  # Test with dict
 
     last_point = flight_points.iloc[-1]
-    # Note: reference values are obtained by running the process with 0.01s as time step
+    # Note: reference values are obtained by running the process with 0.05s as time step
     assert_allclose(last_point.altitude, 12.0)
     assert_allclose(last_point.true_airspeed, 90.88, rtol=1e-3)
     assert_allclose(last_point.time, 38.46, rtol=1e-2)
     assert_allclose(last_point.mass, 69993.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 302.97, rtol=1e-3)
+    assert_allclose(last_point.alpha, 0.105, rtol=1e-2)
+    assert_allclose(last_point.slope_angle, 0.06907, rtol=1e-3)
+    assert_allclose(last_point.slope_angle_derivative, 0.01251, rtol=1e-3)
     assert last_point.engine_setting == EngineSetting.CLIMB
