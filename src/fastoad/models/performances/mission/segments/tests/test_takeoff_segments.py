@@ -101,7 +101,7 @@ def test_rotation(polar, polar_modifier):
 
     # initialisation then change instance attributes
     segment = RotationSegment(
-        target=FlightPoint(altitude=12.0),
+        target=FlightPoint(),
         propulsion=propulsion,
         reference_area=120.0,
         polar=polar,
