@@ -18,7 +18,7 @@ from scipy.optimize import fmin
 
 
 class Polar:
-    def __init__(self, cl: ndarray, cd: ndarray, alpha=None):
+    def __init__(self, cl: ndarray, cd: ndarray, alpha: ndarray = None):
         """
         Class for managing aerodynamic polar data.
 
