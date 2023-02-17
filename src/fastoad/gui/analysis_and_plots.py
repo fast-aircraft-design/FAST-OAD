@@ -471,14 +471,10 @@ def payload_range_plot(
     # Contour of the payload range
     range_ = np.asarray(variables[f"data:payload_range:{mission_name}:range"].value)
     payload = np.asarray(variables[f"data:payload_range:{mission_name}:payload"].value)
-    variable_of_interest_contour = np.asarray(
-        variables[f"data:payload_range:{mission_name}:{variable_of_interest}"].value
-    )
 
     pr_contour = go.Scatter(
         x=convert_units(range_, "m", "NM"),
         y=convert_units(payload, "kg", "t"),
-        hovertext=variable_of_interest_contour,
         mode="lines+markers",
         line=dict(color="black", width=3),
         showlegend=False,
@@ -531,7 +527,6 @@ def payload_range_plot(
                     title="Consumption per payload and per range [kg]",
                     titleside="right",
                     titlefont=dict(size=15, family="Arial, sans-serif"),
-                    # tickvals=[1e-1, 2e-1, 3e-1, 4e-1, 5e-1, 6e-1, 7e-1],
                     tickformat=".1e",
                 ),
                 colorscale="RdBu_r",
