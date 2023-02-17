@@ -39,12 +39,12 @@ class Polar:
         self._definition_CD = cd
 
         # Interpolate cd
-        self._cd = interp1d(cl, cd, kind="quadratic", fill_value="extrapolate")
+        self._cd_vs_cl = interp1d(cl, cd, kind="quadratic", fill_value="extrapolate")
 
         # CL as a function of AoA
         self._definition_alpha = alpha
         if alpha is not None:
-            self._clvsalpha = interp1d(alpha, cl, kind="linear", fill_value="extrapolate")
+            self._cl_vs_alpha = interp1d(alpha, cl, kind="linear", fill_value="extrapolate")
 
         def _negated_lift_drag_ratio(lift_coeff):
             """Returns -CL/CD."""
@@ -81,8 +81,8 @@ class Polar:
         :return: CD values for each provide CL values
         """
         if cl is None:
-            return self._cd(self._definition_CL)
-        return self._cd(cl)
+            return self._cd_vs_cl(self._definition_CL)
+        return self._cd_vs_cl(cl)
 
     def cl(self, alpha):
         """
@@ -94,4 +94,4 @@ class Polar:
         if self._definition_alpha is None:
             raise ValueError("Polar was instantiated without AoA vector.")
 
-        return self._clvsalpha(alpha)
+        return self._cl_vs_alpha(alpha)
