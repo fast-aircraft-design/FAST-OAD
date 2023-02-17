@@ -453,7 +453,8 @@ def payload_range_plot(
     aircraft_file_path: str,
     name="Payload-Range",
     mission_name="operational",
-    variable_of_interest=None,
+    variable_of_interest: str = None,
+    variable_of_interest_legend: str = None,
 ):
     """
     Returns a figure of the payload-range diagram.
@@ -464,6 +465,7 @@ def payload_range_plot(
     :param name: name to give to the trace added to the figure
     :param mission_name: name of the mission present in the data file to be plotted.
     :param variable_of_interest: variable of interest for the contour and the heatmap.
+    :param variable_of_interest_legend: name to give to variable of interest in plot legend.
     :return: payload-range plot figure
     """
     variables = VariableIO(aircraft_file_path).read()
@@ -510,9 +512,16 @@ def payload_range_plot(
             variables[f"data:payload_range:{mission_name}:grid:{variable_of_interest}"].value
         )
 
+        variable_of_interest_unit = variables[
+            f"data:payload_range:{mission_name}:grid:{variable_of_interest}"
+        ].units
+
+        if variable_of_interest_legend is None:
+            variable_of_interest_legend = variable_of_interest
+
         x = convert_units(range_grid, "m", "NM")
         y = convert_units(payload_grid, "kg", "t")
-        z = variable_of_interest_grid / y / x
+        z = variable_of_interest_grid
 
         min_z = min(z)
         max_z = max(z)
@@ -524,7 +533,7 @@ def payload_range_plot(
                 z=z,
                 contours=dict(start=min_z, end=max_z, size=(max_z - min_z) / 20),
                 colorbar=dict(
-                    title="Consumption per payload and per range [kg]",
+                    title="%s [%s]" % (variable_of_interest_legend, variable_of_interest_unit),
                     titleside="right",
                     titlefont=dict(size=15, family="Arial, sans-serif"),
                     tickformat=".1e",

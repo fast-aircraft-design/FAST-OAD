@@ -142,6 +142,7 @@ def test_payload_range_plot():
         name="Payload-Range",
         mission_name="sizing",
         variable_of_interest=None,
+        variable_of_interest_legend=None,
     )
 
     # Second plot
@@ -151,4 +152,5 @@ def test_payload_range_plot():
         name="Payload-Range",
         mission_name="sizing",
         variable_of_interest="block_fuel",
+        variable_of_interest_legend="Block fuel",
     )
