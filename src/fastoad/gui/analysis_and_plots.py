@@ -476,7 +476,7 @@ def payload_range_plot(
     )
 
     pr_contour = go.Scatter(
-        x=convert_units(range_, "m", "nm"),
+        x=convert_units(range_, "m", "NM"),
         y=convert_units(payload, "kg", "t"),
         hovertext=variable_of_interest_contour,
         mode="lines+markers",
@@ -490,7 +490,7 @@ def payload_range_plot(
     payload_mask = np.append(payload, (0, 1.1 * max(payload), 1.1 * max(payload)))
 
     pr_contour_mask = go.Scatter(
-        x=convert_units(range_mask, "m", "nm"),
+        x=convert_units(range_mask, "m", "NM"),
         y=convert_units(payload_mask, "kg", "t"),
         mode="lines",
         line=dict(color="#E5ECF6", width=3),
@@ -514,7 +514,7 @@ def payload_range_plot(
             variables[f"data:payload_range:{mission_name}:grid:{variable_of_interest}"].value
         )
 
-        x = convert_units(range_grid, "m", "nm")
+        x = convert_units(range_grid, "m", "NM")
         y = convert_units(payload_grid, "kg", "t")
         z = variable_of_interest_grid / y / x
 
@@ -544,7 +544,7 @@ def payload_range_plot(
         xaxis_title="Range [NM]",
         yaxis_title="Payload [tons]",
         yaxis_range=[0, convert_units(max(payload_mask), "kg", "t")],
-        xaxis_range=[0, convert_units(max(range_mask), "m", "nm")],
+        xaxis_range=[0, convert_units(max(range_mask), "m", "NM")],
         showlegend=False,
         height=500,
         width=900,
