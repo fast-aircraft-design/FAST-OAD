@@ -203,7 +203,7 @@ def test_generate_source_file_plugin_4_alone(cleanup, with_dummy_plugin_4):
     api.generate_source_file(source_file_path, overwrite=True)
 
 
-def test_generate_source_file_plugin_1_and_2(cleanup, with_dummy_plugin_distribution_1_and_3):
+def test_generate_source_file_plugin_1_and_3(cleanup, with_dummy_plugin_distribution_1_and_3):
     source_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_4_again.xml")
 
     # No plugin specified, several plugins available, but only one with a conf file
