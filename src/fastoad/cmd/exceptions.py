@@ -37,3 +37,10 @@ class FastNoAvailableNotebookError(FastError):
 
         self.distribution_name = distribution_name
         super().__init__(msg)
+
+
+class FastUnknownUserFileTypeForGeneration(FastError):
+    """Raised when trying to generate a user file with a type that is not recognized."""
+
+    def __init__(self, *args):
+        super().__init__(*args)

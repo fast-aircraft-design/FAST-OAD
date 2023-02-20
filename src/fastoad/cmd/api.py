@@ -37,6 +37,7 @@ from fastoad._utils.resource_management.copy import copy_resource, copy_resource
 from fastoad.cmd.exceptions import (
     FastNoAvailableNotebookError,
     FastPathExistsError,
+    FastUnknownUserFileTypeForGeneration,
 )
 from fastoad.gui import OptimizationViewer, VariableViewer
 from fastoad.io import IVariableIOFormatter
@@ -51,6 +52,7 @@ from fastoad.openmdao.variables import VariableList
 
 DEFAULT_WOP_URL = "https://ether.onera.fr/whatsopt"
 _LOGGER = logging.getLogger(__name__)
+_AVAILABLE_USER_FILE_TYPE = ["configuration file", "source data file"]
 
 # Used for test purposes only
 _PROBLEM_CONFIGURATOR = None
@@ -137,6 +139,101 @@ def generate_notebooks(
     return destination_path
 
 
+def _generate_user_file(
+    user_file_type: str,
+    user_file_path: str,
+    overwrite: bool = False,
+    distribution_name=None,
+    sample_user_file_name=None,
+):
+    """
+    Copies a sample user file from an available plugin. Since there are a lot of similarities
+    between the generation of source data files and configuration file, this generic method was
+    created to refactor their generation. The term user file is the generic term for
+    configuration files, source data files and inputs/outputs data files (not relevant here).
+
+    :param user_file_type: the type of user file that needs to be written, should match one
+                          available in
+    :param user_file_path: the path of the user file to be written
+    :param overwrite: if True, the file will be written, even if it already exists
+    :param distribution_name: the name of the installed package that provides the sample
+                             source file (can be omitted if only one plugin is available)
+    :param sample_user_file_name: the name of the sample user file (can be omitted if the plugin
+                                 provides only one source file)
+    :return: path of generated file
+    :raise FastPathExistsError: if overwrite==False and source_file_path already exists
+    """
+
+    if user_file_type not in _AVAILABLE_USER_FILE_TYPE:
+        raise FastUnknownUserFileTypeForGeneration(
+            user_file_type.capitalize() + " is not recognized as a type of file available for "
+            "generation from plugins, available type are: " + ", ".join(_AVAILABLE_USER_FILE_TYPE)
+        )
+
+    if distribution_name is None:
+        # If no distribution is specified, but only one contains the type of user files
+        # requested, no need to specify the name
+        count_plugin_with_user_file = 0
+        dist_with_user_file = ""
+
+        # Browse plugin and look for the type of user file requested
+        plugin_user_files = {}
+        for name, definition in get_plugin_information().items():
+            if user_file_type == "configuration file":
+                matching_resources = [
+                    resource.name for resource in definition.get_configuration_file_list()
+                ]
+            else:
+                # Since we ensured the type is among the one we expect we can use the else,
+                # may need to be changed if other user file are added later on.
+                matching_resources = [
+                    resource.name for resource in definition.get_source_file_list()
+                ]
+
+            plugin_user_files[name] = matching_resources
+
+        for plugin_name, user_files in plugin_user_files.items():
+            # Plugin is retained if it contains the requested user files. Additionally, if
+            # sample_user_file_name is provided, plugin is retained only if sample_user_file_name
+            # is in provided user files.
+            if len(user_files) > 0 and (
+                sample_user_file_name is None or sample_user_file_name in user_files
+            ):
+                count_plugin_with_user_file += 1
+                dist_with_user_file = plugin_name
+            if count_plugin_with_user_file > 1:
+                break
+
+        # If only one plugin has been retained, it can be used as automatically selected plugin.
+        if count_plugin_with_user_file == 1:
+            distribution_name = dist_with_user_file
+
+    dist_definition = FastoadLoader().get_distribution_plugin_definition(distribution_name)
+    if user_file_type == "configuration file":
+        file_info = dist_definition.get_configuration_file_info(sample_user_file_name)
+    else:
+        # Since we ensured the type is among the one we expect we can use the else,
+        # may need to be changed if other user file are added later on.
+        file_info = dist_definition.get_source_file_info(sample_user_file_name)
+
+    # Check on file overwrite
+    user_file_path = pth.abspath(user_file_path)
+    if not overwrite and pth.exists(user_file_path):
+        raise FastPathExistsError(
+            user_file_type.capitalize()
+            + f" {user_file_path} not written because it already exists. "
+            "Use overwrite=True to bypass.",
+            user_file_path,
+        )
+
+    # Write file
+    make_parent_dir(user_file_path)
+    copy_resource(file_info.package_name, file_info.name, user_file_path)
+    _LOGGER.info("Sample" + user_file_type + 'written in "%s".', user_file_path)
+
+    return user_file_path
+
+
 def generate_configuration_file(
     configuration_file_path: str,
     overwrite: bool = False,
@@ -156,46 +253,13 @@ def generate_configuration_file(
     :raise FastPathExistsError: if overwrite==False and configuration_file_path already exists
     """
 
-    if distribution_name is None:
-        # If no distribution is specified, but only one contains configuration files, no need to
-        # specify the name
-        count_plugin_with_conf_file = 0
-        dist_with_conf_file = ""
-        plugin_config_files = {
-            name: [resource.name for resource in definition.get_configuration_file_list()]
-            for name, definition in get_plugin_information().items()
-        }
-        for plugin_name, conf_files in plugin_config_files.items():
-            # Plugin is retained if it contains conf files. Additionally, if sample_file_name
-            # is provided, plugin is retained only if sample_file_name is in provided conf files.
-            if len(conf_files) > 0 and (sample_file_name is None or sample_file_name in conf_files):
-                count_plugin_with_conf_file += 1
-                dist_with_conf_file = plugin_name
-            if count_plugin_with_conf_file > 1:
-                break
-
-        # If only one plugin has been retained, it can be used as automatically selected plugin.
-        if count_plugin_with_conf_file == 1:
-            distribution_name = dist_with_conf_file
-
-    dist_definition = FastoadLoader().get_distribution_plugin_definition(distribution_name)
-    file_info = dist_definition.get_configuration_file_info(sample_file_name)
-
-    # Check on file overwrite
-    configuration_file_path = pth.abspath(configuration_file_path)
-    if not overwrite and pth.exists(configuration_file_path):
-        raise FastPathExistsError(
-            f"Configuration file {configuration_file_path} not written because it already exists. "
-            "Use overwrite=True to bypass.",
-            configuration_file_path,
-        )
-
-    # Write file
-    make_parent_dir(configuration_file_path)
-    copy_resource(file_info.package_name, file_info.name, configuration_file_path)
-    _LOGGER.info('Sample configuration written in "%s".', configuration_file_path)
-
-    return configuration_file_path
+    return _generate_user_file(
+        user_file_type="configuration file",
+        user_file_path=configuration_file_path,
+        overwrite=overwrite,
+        distribution_name=distribution_name,
+        sample_user_file_name=sample_file_name,
+    )
 
 
 def generate_source_file(
@@ -217,48 +281,13 @@ def generate_source_file(
     :raise FastPathExistsError: if overwrite==False and source_file_path already exists
     """
 
-    if distribution_name is None:
-        # If no distribution is specified, but only one contains source files, no need to
-        # specify the name
-        count_plugin_with_source_file = 0
-        dist_with_source_file = ""
-        plugin_source_files = {
-            name: [resource.name for resource in definition.get_source_file_list()]
-            for name, definition in get_plugin_information().items()
-        }
-        for plugin_name, source_files in plugin_source_files.items():
-            # Plugin is retained if it contains source files. Additionally, if sample_file_name
-            # is provided, plugin is retained only if sample_file_name is in provided conf files.
-            if len(source_files) > 0 and (
-                sample_file_name is None or sample_file_name in source_files
-            ):
-                count_plugin_with_source_file += 1
-                dist_with_source_file = plugin_name
-            if count_plugin_with_source_file > 1:
-                break
-
-        # If only one plugin has been retained, it can be used as automatically selected plugin.
-        if count_plugin_with_source_file == 1:
-            distribution_name = dist_with_source_file
-
-    dist_definition = FastoadLoader().get_distribution_plugin_definition(distribution_name)
-    file_info = dist_definition.get_source_file_info(sample_file_name)
-
-    # Check on file overwrite
-    source_file_path = pth.abspath(source_file_path)
-    if not overwrite and pth.exists(source_file_path):
-        raise FastPathExistsError(
-            f"Source file {source_file_path} not written because it already exists. "
-            "Use overwrite=True to bypass.",
-            source_file_path,
-        )
-
-    # Write file
-    make_parent_dir(source_file_path)
-    copy_resource(file_info.package_name, file_info.name, source_file_path)
-    _LOGGER.info('Sample source file written in "%s".', source_file_path)
-
-    return source_file_path
+    return _generate_user_file(
+        user_file_type="source data file",
+        user_file_path=source_file_path,
+        overwrite=overwrite,
+        distribution_name=distribution_name,
+        sample_user_file_name=sample_file_name,
+    )
 
 
 def generate_inputs(

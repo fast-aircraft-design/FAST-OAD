@@ -209,7 +209,7 @@ class FastUnknownSourceFileError(FastError):
         self.source_file = source_file
         self.dist_name = dist_name
         super().__init__(
-            f'Configuration file "{source_file}" not provided with '
+            f'Source data file "{source_file}" not provided with '
             f'installed package "{dist_name}".'
         )
 

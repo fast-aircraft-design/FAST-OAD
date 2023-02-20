@@ -29,6 +29,7 @@ from .. import api
 from ..exceptions import (
     FastNoAvailableNotebookError,
     FastPathExistsError,
+    FastUnknownUserFileTypeForGeneration,
 )
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
@@ -93,6 +94,34 @@ def test_generate_notebooks(cleanup, with_dummy_plugins, plugin_root_path):
     assert not pth.exists(pth.join(target_path, "dummy-dist-2"))
 
     assert pth.isfile(pth.join(target_path, "dummy-dist-3", "notebook_2.ipynb"))
+
+
+def test_generate_user_file(cleanup, with_dummy_plugins, plugin_root_path):
+    # Tests that the mechanic which prevents the generation of user files unplanned for works.
+    # The tests on other issues and on the expected results will be tested with each type of user
+    # file.
+
+    text_file_path = pth.join(RESULTS_FOLDER_PATH, "unknown_user_file_type.xml")
+
+    # Generating with wrong type of user file to fail purposely, should fail regardless of
+    # distribution
+    with pytest.raises(FastUnknownUserFileTypeForGeneration) as error_info:
+        api._generate_user_file(
+            "text file",
+            text_file_path,
+            overwrite=False,
+        )
+
+    assert (
+        error_info.value.args[0] == "Text file is not recognized as a type of file available "
+        "for generation from plugins, available type are: configuration file, source data file"
+    )
+
+    # Should also fail with existing and valid file but wrong choice of file type
+    with pytest.raises(FastUnknownUserFileTypeForGeneration):
+        api._generate_user_file(
+            "text file", text_file_path, overwrite=False, distribution_name="dummy-dist-1"
+        )
 
 
 def test_generate_configuration_file_plugin_1(cleanup, with_dummy_plugins, plugin_root_path):
