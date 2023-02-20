@@ -203,31 +203,31 @@ def test_generate_source_file_plugin_4_alone(cleanup, with_dummy_plugin_4):
     api.generate_source_file(source_file_path, overwrite=True)
 
 
-def test_generate_source_file_plugin_1_and_2(cleanup, with_dummy_plugin_distribution_1_and_2):
+def test_generate_source_file_plugin_1_and_2(cleanup, with_dummy_plugin_distribution_1_and_3):
     source_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_4_again.xml")
 
     # No plugin specified, several plugins available, but only one with a conf file
     api.generate_source_file(source_file_path, overwrite=True)
 
 
-def test_generate_configuration_file_plugin_5(cleanup, with_dummy_plugins, plugin_root_path):
-    source_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_5.xml")
+def test_generate_source_data_file_plugin_5(cleanup, with_dummy_plugins, plugin_root_path):
+    source_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_3.xml")
     api.generate_source_file(
         source_file_path,
         overwrite=True,
-        distribution_name="dummy-dist-3",
-        sample_file_name="dummy_source_5-1.xml",
+        distribution_name="dummy-dist-2",
+        sample_file_name="dummy_source_3-1.xml",
     )
 
-    # As conf file names are unique, it is possible to omit distribution_name
-    source_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_5_again.xml")
+    # As source data file names are unique, it is possible to omit distribution_name
+    source_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_3_again.xml")
     api.generate_source_file(
         source_file_path,
         overwrite=True,
-        sample_file_name="dummy_source_5-1.xml",
+        sample_file_name="dummy_source_3-1.xml",
     )
     original_file = pth.join(
-        plugin_root_path, "dist_3", "dummy_plugin_5", "source_files", "dummy_source_5-1.xml"
+        plugin_root_path, "dist_2", "dummy_plugin_3", "source_files", "dummy_source_3-1.xml"
     )
     assert cmp(source_file_path, original_file)
 
@@ -235,18 +235,18 @@ def test_generate_configuration_file_plugin_5(cleanup, with_dummy_plugins, plugi
         api.generate_source_file(
             source_file_path,
             overwrite=False,
-            distribution_name="dummy-dist-3",
-            sample_file_name="dummy_source_5-2.xml",
+            distribution_name="dummy-dist-2",
+            sample_file_name="dummy_source_3-2.xml",
         )
 
     api.generate_source_file(
         source_file_path,
         overwrite=True,
-        distribution_name="dummy-dist-3",
-        sample_file_name="dummy_source_5-2.xml",
+        distribution_name="dummy-dist-2",
+        sample_file_name="dummy_source_3-2.xml",
     )
     original_file = pth.join(
-        plugin_root_path, "dist_3", "dummy_plugin_5", "source_files", "dummy_source_5-2.xml"
+        plugin_root_path, "dist_2", "dummy_plugin_3", "source_files", "dummy_source_3-2.xml"
     )
     assert cmp(source_file_path, original_file)
 

@@ -60,8 +60,8 @@ def test_plugin_info(with_dummy_plugins):
             ],
             source_files=[
                 ["dummy_source_4-1.xml"],
+                ["dummy_source_3-1.xml", "dummy_source_3-2.xml", "dummy_source_3-3.xml"],
                 [],
-                ["dummy_source_5-1.xml", "dummy_source_5-2.xml", "dummy_source_5-3.xml"],
             ],
         )
     )
@@ -344,23 +344,23 @@ def test_gen_source_several_plugin(cleanup, with_dummy_plugins, plugin_root_path
         # ----------------------------------------------------------------------
         result = runner.invoke(
             fast_oad,
-            ["gen_source_file", "my_source.xml", "-p", "dummy-dist-3"],
+            ["gen_source_file", "my_source.xml", "-p", "dummy-dist-2"],
         )
         assert not result.exception
         assert result.exit_code == 0
         assert result.output.endswith(
-            '"dummy-dist-3" provides several source files. One must be specified.\n'
+            '"dummy-dist-2" provides several source files. One must be specified.\n'
         )
 
         # ----------------------------------------------------------------------
         result = runner.invoke(
             fast_oad,
-            ["gen_source_file", "my_source.xml", "-p", "dummy-dist-3", "-s", "unknown_source.xml"],
+            ["gen_source_file", "my_source.xml", "-p", "dummy-dist-2", "-s", "unknown_source.xml"],
         )
         assert not result.exception
         assert result.exit_code == 0
         assert result.output.endswith(
-            '"unknown_source.xml" not provided with installed package "dummy-dist-3".\n'
+            '"unknown_source.xml" not provided with installed package "dummy-dist-2".\n'
         )
 
         # Test source file specification =======================================
@@ -392,16 +392,16 @@ def test_gen_source_several_plugin(cleanup, with_dummy_plugins, plugin_root_path
                 "my_source.xml",
                 "-f",
                 "-p",
-                "dummy-dist-3",
+                "dummy-dist-2",
                 "-s",
-                "dummy_source_5-2.xml",
+                "dummy_source_3-2.xml",
             ],
         )
         assert not result.exception
         assert result.exit_code == 0
         assert result.output.endswith("has been written.\n")
         original_file = pth.join(
-            plugin_root_path, "dist_3", "dummy_plugin_5", "source_files", "dummy_source_5-2.xml"
+            plugin_root_path, "dist_2", "dummy_plugin_3", "source_files", "dummy_source_3-2.xml"
         )
         assert cmp(pth.join(temp_dir, "my_source.xml"), original_file)
 
