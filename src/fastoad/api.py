@@ -21,7 +21,7 @@ from fastoad.cmd.api import (
     generate_notebooks,
     evaluate_problem,
     generate_configuration_file,
-    generate_source_file,
+    generate_source_data_file,
     generate_inputs,
     list_modules,
     list_variables,

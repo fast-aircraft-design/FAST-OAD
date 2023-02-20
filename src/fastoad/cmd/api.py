@@ -153,15 +153,15 @@ def _generate_user_file(
     configuration files, source data files and inputs/outputs data files (not relevant here).
 
     :param user_file_type: the type of user file that needs to be written, should match one
-                          available in
+                          available in _AVAILABLE_USER_FILE_TYPE
     :param user_file_path: the path of the user file to be written
     :param overwrite: if True, the file will be written, even if it already exists
     :param distribution_name: the name of the installed package that provides the sample
-                             source file (can be omitted if only one plugin is available)
+                             user file (can be omitted if only one plugin is available)
     :param sample_user_file_name: the name of the sample user file (can be omitted if the plugin
-                                 provides only one source file)
+                                 provides only one user file)
     :return: path of generated file
-    :raise FastPathExistsError: if overwrite==False and source_file_path already exists
+    :raise FastPathExistsError: if overwrite==False and user_file_path already exists
     """
 
     if user_file_type not in _AVAILABLE_USER_FILE_TYPE:
@@ -187,7 +187,7 @@ def _generate_user_file(
                 # Since we ensured the type is among the one we expect we can use the else,
                 # may need to be changed if other user file are added later on.
                 matching_resources = [
-                    resource.name for resource in definition.get_source_file_list()
+                    resource.name for resource in definition.get_source_data_file_list()
                 ]
 
             plugin_user_files[name] = matching_resources
@@ -214,7 +214,7 @@ def _generate_user_file(
     else:
         # Since we ensured the type is among the one we expect we can use the else,
         # may need to be changed if other user file are added later on.
-        file_info = dist_definition.get_source_file_info(sample_user_file_name)
+        file_info = dist_definition.get_source_data_file_info(sample_user_file_name)
 
     # Check on file overwrite
     user_file_path = pth.abspath(user_file_path)
@@ -262,28 +262,28 @@ def generate_configuration_file(
     )
 
 
-def generate_source_file(
-    source_file_path: str,
+def generate_source_data_file(
+    source_data_file_path: str,
     overwrite: bool = False,
     distribution_name=None,
     sample_file_name=None,
 ):
     """
-    Copies a sample source file from an available plugin.
+    Copies a sample source data file from an available plugin.
 
-    :param source_file_path: the path of file to be written
+    :param source_data_file_path: the path of file to be written
     :param overwrite: if True, the file will be written, even if it already exists
     :param distribution_name: the name of the installed package that provides the sample
-                             source file (can be omitted if only one plugin is available)
-    :param sample_file_name: the name of the sample source file (can be omitted if
-                             the plugin provides only one source file)
+                             source data file (can be omitted if only one plugin is available)
+    :param sample_file_name: the name of the sample source data file (can be omitted if
+                             the plugin provides only one source data file)
     :return: path of generated file
     :raise FastPathExistsError: if overwrite==False and source_file_path already exists
     """
 
     return _generate_user_file(
         user_file_type="source data file",
-        user_file_path=source_file_path,
+        user_file_path=source_data_file_path,
         overwrite=overwrite,
         distribution_name=distribution_name,
         sample_user_file_name=sample_file_name,
@@ -292,16 +292,16 @@ def generate_source_file(
 
 def generate_inputs(
     configuration_file_path: str,
-    source_path: str = None,
-    source_path_schema="native",
+    source_data_path: str = None,
+    source_data_path_schema="native",
     overwrite: bool = False,
 ) -> str:
     """
     Generates input file for the problem specified in configuration_file_path.
 
     :param configuration_file_path: where the path of input file to write is set
-    :param source_path: path of file data will be taken from
-    :param source_path_schema: set to 'legacy' if the source file come from legacy FAST
+    :param source_data_path: path of source data file data will be taken from
+    :param source_data_path_schema: set to 'legacy' if the source file come from legacy FAST
     :param overwrite: if True, file will be written even if one already exists
     :return: path of generated file
     :raise FastPathExistsError: if overwrite==False and configuration_file_path already exists
@@ -317,10 +317,10 @@ def generate_inputs(
             input_file_path,
         )
 
-    if source_path_schema == "legacy":
-        conf.write_needed_inputs(source_path, VariableLegacy1XmlFormatter())
+    if source_data_path_schema == "legacy":
+        conf.write_needed_inputs(source_data_path, VariableLegacy1XmlFormatter())
     else:
-        conf.write_needed_inputs(source_path)
+        conf.write_needed_inputs(source_data_path)
 
     _LOGGER.info("Problem inputs written in %s", input_file_path)
     return input_file_path
