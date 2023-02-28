@@ -34,6 +34,7 @@ from fastoad.models.performances.mission.polar import Polar
 from .exceptions import FastUnknownMissionSegmentError
 from ..base import IFlightPart
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
+from ..polar_modifier import AbstractPolarModifier, UnchangedPolar
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -202,6 +203,7 @@ class AbstractFlightSegment(IFlightPart, ABC):
         # Let's ensure we do not modify the original definitions of start and target
         # during the process
         start_copy = deepcopy(start)
+
         if start_copy.altitude is not None:
             try:
                 self.complete_flight_point(start_copy)
@@ -317,6 +319,10 @@ class AbstractTimeStepFlightSegment(
     #: The Polar instance that will provide drag data.
     polar: Polar = MANDATORY_FIELD
 
+    #: A polar modifier that can apply dynamic changes to the original polar
+    # (the default value returns a polar without change)
+    polar_modifier: AbstractPolarModifier = UnchangedPolar()
+
     #: The reference area, in m**2.
     reference_area: float = MANDATORY_FIELD
 
@@ -330,7 +336,7 @@ class AbstractTimeStepFlightSegment(
 
     #: Minimum and maximum authorized mach values. If computed Mach gets beyond these limits,
     #: computation will be interrupted and a warning message will be issued in logger.
-    mach_bounds: tuple = (0.0, 5.0)
+    mach_bounds: tuple = (-1.0e-6, 5.0)
 
     #: If True, computation will be interrupted if a parameter stops getting closer to target
     #: between two iterations (which can mean the provided thrust rate is not adapted).
@@ -390,8 +396,9 @@ class AbstractTimeStepFlightSegment(
             )
 
             if self.polar:
+                modified_polar = self.polar_modifier.modify_polar(self.polar, flight_point)
                 flight_point.CL = flight_point.mass * g / reference_force
-                flight_point.CD = self.polar.cd(flight_point.CL)
+                flight_point.CD = modified_polar.cd(flight_point.CL)
             else:
                 flight_point.CL = flight_point.CD = 0.0
             flight_point.drag = flight_point.CD * reference_force
@@ -623,3 +630,80 @@ class AbstractFixedDurationSegment(AbstractTimeStepFlightSegment, ABC):
     ) -> float:
         current = flight_points[-1]
         return target.time - current.time
+
+
+@dataclass
+class TakeOffSegment(AbstractManualThrustSegment, ABC):
+    """
+    Class for computing takeoff segment
+    """
+
+    # Default time step for this dynamic segment
+    time_step: float = 0.1
+
+    def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+        self.polar_modifier.ground_altitude = start.altitude
+        return super().compute_from_start_to_target(start, target)
+
+
+@dataclass
+class GroundSegment(TakeOffSegment, ABC):
+    """
+    Class for computing accelerated segments on the ground with wheel friction.
+    """
+
+    # Friction coefficient considered for acceleration at take-off.
+    # The default value is representative of dry concrete/asphalte
+    wheels_friction: float = 0.03
+
+    # The angle of attack of the aircraft at the beginning of the segment
+    alpha: float = 0.0
+
+    def get_gamma_and_acceleration(self, flight_point: FlightPoint):
+        """
+        For ground segment, gamma is assumed always 0 and wheel friction
+        (with or without brake) is added to drag
+        """
+        mass = flight_point.mass
+        drag_aero = flight_point.drag
+        lift = flight_point.lift
+        thrust = flight_point.thrust
+
+        drag = drag_aero + (mass * g - lift) * self.wheels_friction
+
+        # edit flight_point fields
+        flight_point.drag = drag
+
+        acceleration = (thrust - drag) / mass
+
+        return 0.0, acceleration
+
+    def complete_flight_point(self, flight_point: FlightPoint):
+        """
+        Computes data for provided flight point using AoA and apply polar modification if any
+
+        :param flight_point: the flight point that will be completed in-place
+        """
+        self._complete_speed_values(flight_point)
+
+        # Ground segment may force engine setting like reverse or idle
+        flight_point.engine_setting = self.engine_setting
+
+        atm = self._get_atmosphere_point(flight_point.altitude)
+        reference_force = 0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_area
+
+        if self.polar:
+            alpha = flight_point.alpha
+            modified_polar = self.polar_modifier.modify_polar(self.polar, flight_point)
+            flight_point.CL = modified_polar.cl(alpha)
+            flight_point.CD = modified_polar.cd(flight_point.CL)
+        else:
+            flight_point.CL = flight_point.CD = 0.0
+
+        flight_point.drag = flight_point.CD * reference_force
+        flight_point.lift = flight_point.CL * reference_force
+
+        self.compute_propulsion(flight_point)
+        flight_point.slope_angle, flight_point.acceleration = self.get_gamma_and_acceleration(
+            flight_point
+        )
