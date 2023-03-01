@@ -97,14 +97,12 @@ def test_generate_notebooks(cleanup, with_dummy_plugins, plugin_root_path):
 
 
 def test_generate_user_file(cleanup, with_dummy_plugins, plugin_root_path):
-    # Tests that the mechanic which prevents the generation of user files unplanned for works.
-    # The tests on other issues and on the expected results will be tested with each type of user
-    # file.
+    # Tests that exceptions are correctly raised. The tests on other issues and on the expected
+    # results will be tested with each type of user file.
 
     text_file_path = pth.join(RESULTS_FOLDER_PATH, "unknown_user_file_type.xml")
 
-    # Generating with wrong type of user file to fail purposely, should fail regardless of
-    # distribution
+    # Test with wrong type of user file, should fail regardless of distribution
     with pytest.raises(FastUnknownUserFileTypeForGeneration) as error_info:
         api._generate_user_file(
             "text file",

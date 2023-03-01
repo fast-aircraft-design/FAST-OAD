@@ -86,7 +86,7 @@ class MissionViewer:
 
         return ui
 
-    # pylint: disable=unused-argument # args has to be there for observe() to work
+    # pylint: disable=unused-argument # change has to be there for observe() to work
     def _show_plot(self, change=None):
         """
         Updates and shows the plots
