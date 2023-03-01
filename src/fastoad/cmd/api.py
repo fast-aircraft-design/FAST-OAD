@@ -229,7 +229,7 @@ def _generate_user_file(
     # Write file
     make_parent_dir(user_file_path)
     copy_resource(file_info.package_name, file_info.name, user_file_path)
-    _LOGGER.info("Sample" + user_file_type + 'written in "%s".', user_file_path)
+    _LOGGER.info('Sample %s written in "%s".', user_file_type.replace("_", " "), user_file_path)
 
     return user_file_path
 
