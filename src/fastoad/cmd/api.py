@@ -24,6 +24,7 @@ from collections import defaultdict
 from collections.abc import Iterable
 from time import time
 from typing import Dict, IO, List, Union
+from enum import Enum
 
 import openmdao.api as om
 import pandas as pd
@@ -37,7 +38,6 @@ from fastoad._utils.resource_management.copy import copy_resource, copy_resource
 from fastoad.cmd.exceptions import (
     FastNoAvailableNotebookError,
     FastPathExistsError,
-    FastUnknownUserFileTypeForGeneration,
 )
 from fastoad.gui import OptimizationViewer, VariableViewer
 from fastoad.io import IVariableIOFormatter
@@ -52,10 +52,14 @@ from fastoad.openmdao.variables import VariableList
 
 DEFAULT_WOP_URL = "https://ether.onera.fr/whatsopt"
 _LOGGER = logging.getLogger(__name__)
-_AVAILABLE_USER_FILE_TYPE = ["configuration file", "source data file"]
 
 # Used for test purposes only
 _PROBLEM_CONFIGURATOR = None
+
+
+class UserFileType(Enum):
+    CONFIGURATION = "configuration"
+    SOURCE_DATA = "source_data"
 
 
 def get_plugin_information(print_data=False) -> Dict[str, DistributionPluginDefinition]:
@@ -140,7 +144,7 @@ def generate_notebooks(
 
 
 def _generate_user_file(
-    user_file_type: str,
+    user_file_type: UserFileType,
     user_file_path: str,
     overwrite: bool = False,
     distribution_name=None,
@@ -164,12 +168,6 @@ def _generate_user_file(
     :raise FastPathExistsError: if overwrite==False and user_file_path already exists
     """
 
-    if user_file_type not in _AVAILABLE_USER_FILE_TYPE:
-        raise FastUnknownUserFileTypeForGeneration(
-            user_file_type.capitalize() + " is not recognized as a type of file available for "
-            "generation from plugins, available type are: " + ", ".join(_AVAILABLE_USER_FILE_TYPE)
-        )
-
     if distribution_name is None:
         # If no distribution is specified, but only one contains the type of user files
         # requested, no need to specify the name
@@ -179,7 +177,7 @@ def _generate_user_file(
         # Browse plugin and look for the type of user file requested
         plugin_user_files = {}
         for name, definition in get_plugin_information().items():
-            if user_file_type == "configuration file":
+            if user_file_type is UserFileType.CONFIGURATION:
                 matching_resources = [
                     resource.name for resource in definition.get_configuration_file_list()
                 ]
@@ -209,7 +207,7 @@ def _generate_user_file(
             distribution_name = dist_with_user_file
 
     dist_definition = FastoadLoader().get_distribution_plugin_definition(distribution_name)
-    if user_file_type == "configuration file":
+    if user_file_type is UserFileType.CONFIGURATION:
         file_info = dist_definition.get_configuration_file_info(sample_user_file_name)
     else:
         # Since we ensured the type is among the one we expect we can use the else,
@@ -220,7 +218,7 @@ def _generate_user_file(
     user_file_path = pth.abspath(user_file_path)
     if not overwrite and pth.exists(user_file_path):
         raise FastPathExistsError(
-            user_file_type.capitalize()
+            user_file_type.value.capitalize()
             + f" {user_file_path} not written because it already exists. "
             "Use overwrite=True to bypass.",
             user_file_path,
@@ -229,7 +227,9 @@ def _generate_user_file(
     # Write file
     make_parent_dir(user_file_path)
     copy_resource(file_info.package_name, file_info.name, user_file_path)
-    _LOGGER.info('Sample %s written in "%s".', user_file_type.replace("_", " "), user_file_path)
+    _LOGGER.info(
+        'Sample %s written in "%s".', user_file_type.value.replace("_", " "), user_file_path
+    )
 
     return user_file_path
 
@@ -254,7 +254,7 @@ def generate_configuration_file(
     """
 
     return _generate_user_file(
-        user_file_type="configuration file",
+        user_file_type=UserFileType.CONFIGURATION,
         user_file_path=configuration_file_path,
         overwrite=overwrite,
         distribution_name=distribution_name,
@@ -282,7 +282,7 @@ def generate_source_data_file(
     """
 
     return _generate_user_file(
-        user_file_type="source data file",
+        user_file_type=UserFileType.SOURCE_DATA,
         user_file_path=source_data_file_path,
         overwrite=overwrite,
         distribution_name=distribution_name,
