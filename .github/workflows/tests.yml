@@ -15,7 +15,7 @@ jobs:
     if: ${{ !contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]') }}
     strategy:
       matrix:
-        python-version: [ 3.7, 3.8, 3.9 ]
+        python-version: [ 3.7, 3.9 ]
         os: [ ubuntu-20.04, windows-latest, macos-latest ] # On 2023/02/10, pytest completely stalls on ubuntu-latest
 
     steps:
@@ -23,14 +23,13 @@ jobs:
       - uses: mpi4py/setup-mpi@v1
 
       - name: Install poetry
-        run: pipx install poetry
+        run: pipx install poetry==1.1.15
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'poetry'
-
       - name: Activate environment and install dependencies
         run: |
           poetry env use ${{ matrix.python-version }}
