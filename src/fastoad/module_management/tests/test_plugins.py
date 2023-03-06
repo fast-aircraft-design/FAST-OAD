@@ -25,6 +25,9 @@ from ..exceptions import (
     FastSeveralDistPluginsError,
     FastUnknownConfigurationFileError,
     FastUnknownDistPluginError,
+    FastNoAvailableSourceDataFileError,
+    FastUnknownSourceDataFileError,
+    FastSeveralSourceDataFilesError,
 )
 from ..service_registry import RegisterService
 
@@ -50,9 +53,14 @@ def test_plugins(with_dummy_plugins):
         dist1_definition["test_plugin_1"].subpackages[SubPackageNames.NOTEBOOKS]
         == "tests.dummy_plugins.dist_1.dummy_plugin_1.notebooks"
     )
+    assert SubPackageNames.SOURCE_DATA_FILES not in dist1_definition["test_plugin_1"].subpackages
 
     assert SubPackageNames.MODELS not in dist1_definition["test_plugin_4"].subpackages
     assert SubPackageNames.CONFIGURATIONS not in dist1_definition["test_plugin_4"].subpackages
+    assert (
+        dist1_definition["test_plugin_4"].subpackages[SubPackageNames.SOURCE_DATA_FILES]
+        == "tests.dummy_plugins.dist_1.dummy_plugin_4.source_data_files"
+    )
 
     dist2_definition = FastoadLoader().distribution_plugin_definitions["dummy-dist-2"]
     assert (
@@ -64,6 +72,13 @@ def test_plugins(with_dummy_plugins):
         dist2_definition["test_plugin_3"].subpackages[SubPackageNames.CONFIGURATIONS]
         == "tests.dummy_plugins.dist_2.dummy_plugin_3.configurations"
     )
+    assert (
+        dist2_definition["test_plugin_3"].subpackages[SubPackageNames.SOURCE_DATA_FILES]
+        == "tests.dummy_plugins.dist_2.dummy_plugin_3.source_data_files"
+    )
+
+    dist3_definition = FastoadLoader().distribution_plugin_definitions["dummy-dist-3"]
+    assert SubPackageNames.SOURCE_DATA_FILES not in dist3_definition["test_plugin_5"].subpackages
 
     declared_dummy_1 = RegisterService.get_provider("test.plugin.declared.1")
     assert declared_dummy_1.my_class() == "DeclaredDummy1"
@@ -136,6 +151,28 @@ def test_get_plugin_configuration_file_list(with_dummy_plugins):
     }
 
     file_list = FastoadLoader().get_configuration_file_list("dummy-dist-3")
+    assert extract_info(file_list) == set()
+
+    # improper name
+    with pytest.raises(FastUnknownDistPluginError):
+        file_list = FastoadLoader().get_configuration_file_list("unknown-dist")
+
+
+def test_get_plugin_source_data_file_list(with_dummy_plugins):
+    def extract_info(file_list):
+        return {(item.name, item.plugin_name) for item in file_list}
+
+    file_list = FastoadLoader().get_source_data_file_list("dummy-dist-1")
+    assert extract_info(file_list) == {("dummy_source_data_4-1.xml", "test_plugin_4")}
+
+    file_list = FastoadLoader().get_source_data_file_list("dummy-dist-2")
+    assert extract_info(file_list) == {
+        ("dummy_source_data_3-1.xml", "test_plugin_3"),
+        ("dummy_source_data_3-2.xml", "test_plugin_3"),
+        ("dummy_source_data_3-3.xml", "test_plugin_3"),
+    }
+
+    file_list = FastoadLoader().get_source_data_file_list("dummy-dist-3")
     assert extract_info(file_list) == set()
 
     # improper name
@@ -248,3 +285,64 @@ def test_get_configuration_file_info_with_plugins(with_dummy_plugins):
     assert file_info.dist_name == "dummy-dist-2"
     assert file_info.plugin_name == "test_plugin_3"
     assert file_info.package_name == "tests.dummy_plugins.dist_2.dummy_plugin_3.configurations"
+
+
+def test_get_source_data_file_info_with_1_plugin(with_dummy_plugin_4):
+    dist_def = FastoadLoader().get_distribution_plugin_definition("dummy-dist-1")
+
+    with pytest.raises(FastUnknownSourceDataFileError):
+        dist_def.get_source_data_file_info("unknown.xml")
+    file_info = dist_def.get_source_data_file_info("dummy_source_data_4-1.xml")
+    assert file_info.name == "dummy_source_data_4-1.xml"
+    assert file_info.dist_name == "dummy-dist-1"
+    assert file_info.plugin_name == "test_plugin_4"
+    assert file_info.package_name == "tests.dummy_plugins.dist_1.dummy_plugin_4.source_data_files"
+
+    file_info_bis = dist_def.get_source_data_file_info()
+    assert file_info_bis == file_info
+
+
+def test_get_source_data_file_info_without_source_data_file_available(with_dummy_plugin_2):
+    dist_def = FastoadLoader().get_distribution_plugin_definition("dummy-dist-2")
+
+    with pytest.raises(FastNoAvailableSourceDataFileError):
+        dist_def.get_source_data_file_info("unknown.xml")
+
+
+def test_get_source_data_file_info_with_plugins(with_dummy_plugins):
+    dist_def = FastoadLoader().get_distribution_plugin_definition("dummy-dist-1")
+
+    with pytest.raises(FastUnknownSourceDataFileError):
+        dist_def.get_source_data_file_info("unknown.xml")
+    file_info = dist_def.get_source_data_file_info("dummy_source_data_4-1.xml")
+    assert file_info.name == "dummy_source_data_4-1.xml"
+    assert file_info.dist_name == "dummy-dist-1"
+    assert file_info.plugin_name == "test_plugin_4"
+    assert file_info.package_name == "tests.dummy_plugins.dist_1.dummy_plugin_4.source_data_files"
+
+    file_info_bis = dist_def.get_source_data_file_info()
+    assert file_info_bis == file_info
+
+    dist_def = FastoadLoader().get_distribution_plugin_definition("dummy-dist-2")
+    with pytest.raises(FastUnknownSourceDataFileError):
+        dist_def.get_source_data_file_info("unknown.xml")
+    with pytest.raises(FastSeveralSourceDataFilesError):
+        dist_def.get_source_data_file_info()
+
+    file_info = dist_def.get_source_data_file_info("dummy_source_data_3-1.xml")
+    assert file_info.name == "dummy_source_data_3-1.xml"
+    assert file_info.dist_name == "dummy-dist-2"
+    assert file_info.plugin_name == "test_plugin_3"
+    assert file_info.package_name == "tests.dummy_plugins.dist_2.dummy_plugin_3.source_data_files"
+
+    file_info = dist_def.get_source_data_file_info("dummy_source_data_3-2.xml")
+    assert file_info.name == "dummy_source_data_3-2.xml"
+    assert file_info.dist_name == "dummy-dist-2"
+    assert file_info.plugin_name == "test_plugin_3"
+    assert file_info.package_name == "tests.dummy_plugins.dist_2.dummy_plugin_3.source_data_files"
+
+    file_info = dist_def.get_source_data_file_info("dummy_source_data_3-3.xml")
+    assert file_info.name == "dummy_source_data_3-3.xml"
+    assert file_info.dist_name == "dummy-dist-2"
+    assert file_info.plugin_name == "test_plugin_3"
+    assert file_info.package_name == "tests.dummy_plugins.dist_2.dummy_plugin_3.source_data_files"

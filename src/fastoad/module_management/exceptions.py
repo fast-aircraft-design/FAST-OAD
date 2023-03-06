@@ -193,3 +193,35 @@ class FastSeveralConfigurationFilesError(FastError):
             f'Installed package "{dist_name}" provides several configuration files. '
             "One must be specified."
         )
+
+
+class FastNoAvailableSourceDataFileError(FastError):
+    """Raised when a source data file is requested, but none is available in plugins."""
+
+    def __init__(self):
+        super().__init__("No source data file provided with currently installed plugins.")
+
+
+class FastUnknownSourceDataFileError(FastError):
+    """Raised when a source data file is not found for named distribution."""
+
+    def __init__(self, source_data_file, dist_name):
+        self.source_data_file = source_data_file
+        self.dist_name = dist_name
+        super().__init__(
+            f'Source data file "{source_data_file}" not provided with '
+            f'installed package "{dist_name}".'
+        )
+
+
+class FastSeveralSourceDataFilesError(FastError):
+    """
+    Raised when no source data file has been specified but several source data files are
+    provided with the distribution."""
+
+    def __init__(self, dist_name):
+        self.dist_name = dist_name
+        super().__init__(
+            f'Installed package "{dist_name}" provides several source data files. '
+            "One must be specified."
+        )

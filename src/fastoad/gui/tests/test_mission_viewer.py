@@ -46,10 +46,7 @@ def test_mission_viewer(cleanup):
     dataframe = pd.read_csv(filename, index_col=0)
     mission_viewer.add_mission(dataframe, name="Mission 2")
 
-    # Testing with existing .toml
+    # Testing with existing .yml
     with pytest.raises(TypeError):
-        filename = pth.join(DATA_FOLDER_PATH, "valid_sellar.toml")
+        filename = pth.join(DATA_FOLDER_PATH, "valid_sellar.yml")
         mission_viewer.add_mission(filename, name="Mission 2")
-
-    # Testing display()
-    mission_viewer.display()

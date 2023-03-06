@@ -32,8 +32,8 @@ class MissionViewer:
         # The dataframes containing each mission
         self.missions = {}
 
-        # The figure displayed
-        self._fig = None
+        # The output widget containing the figure to display
+        self._output_widget = None
 
         # The x selector
         self._x_widget = None
@@ -58,69 +58,65 @@ class MissionViewer:
         else:
             raise TypeError("Unknown type for mission data, please use .csv of DataFrame")
 
-        # Initialize widgets when first mission is added
-        if len(self.missions) == 1:
-            self._initialize_widgets()
-
-    def _initialize_widgets(self):
+    def display(self):
         """
-        Initializes the widgets for selecting x and y
+        Display the user interface
+        :return the display object
         """
 
         key = list(self.missions)[0]
         keys = self.missions[key].keys()
 
+        self._output_widget = widgets.Output()
+
         # By default ground distance
         self._x_widget = widgets.Dropdown(value=keys[2], options=keys)
-        self._x_widget.observe(self.display, "value")
+        self._x_widget.observe(self._show_plot, "value")
         # By default altitude
         self._y_widget = widgets.Dropdown(value=keys[1], options=keys)
-        self._y_widget.observe(self.display, "value")
+        self._y_widget.observe(self._show_plot, "value")
 
-    def _build_plots(self):
-        """
-        Add a plot of the mission
-        """
+        self._show_plot()
 
-        x_name = self._x_widget.value
-        y_name = self._y_widget.value
-
-        for name in self.missions:
-            if self._fig is None:
-                self._fig = go.Figure()
-            # pylint: disable=invalid-name # that's a common naming
-            x = self.missions[name][x_name]
-            # pylint: disable=invalid-name # that's a common naming
-            y = self.missions[name][y_name]
-
-            scatter = go.Scatter(x=x, y=y, mode="lines", name=name)
-
-            self._fig.add_trace(scatter)
-
-            self._fig = go.FigureWidget(self._fig)
-
-        self._fig.update_layout(
-            title_text="Mission", title_x=0.5, xaxis_title=x_name, yaxis_title=y_name
-        )
-
-    # pylint: disable=unused-argument  # args has to be there for observe() to work
-    def display(self, change=None) -> display:
-        """
-        Display the user interface
-        :return the display object
-        """
-        clear_output(wait=True)
-        self._update_plots()
         toolbar = widgets.HBox(
             [widgets.Label(value="x:"), self._x_widget, widgets.Label(value="y:"), self._y_widget]
         )
-        # pylint: disable=invalid-name # that's a common naming
-        ui = widgets.VBox([toolbar, self._fig])
-        return display(ui)
 
-    def _update_plots(self):
+        ui = display(toolbar, self._output_widget)
+
+        return ui
+
+    # pylint: disable=unused-argument # change has to be there for observe() to work
+    def _show_plot(self, change=None):
         """
-        Update the plots
+        Updates and shows the plots
         """
-        self._fig = None
-        self._build_plots()
+
+        with self._output_widget:
+
+            clear_output(wait=True)
+
+            x_name = self._x_widget.value
+            y_name = self._y_widget.value
+
+            fig = None
+
+            for mission_name in self.missions:
+
+                if fig is None:
+                    fig = go.Figure()
+                # pylint: disable=invalid-name # that's a common naming
+                x = self.missions[mission_name][x_name]
+                # pylint: disable=invalid-name # that's a common naming
+                y = self.missions[mission_name][y_name]
+
+                scatter = go.Scatter(x=x, y=y, mode="lines", name=mission_name)
+
+                fig.add_trace(scatter)
+
+            fig.update_layout(
+                title_text="Mission", title_x=0.5, xaxis_title=x_name, yaxis_title=y_name
+            )
+
+            fig = go.FigureWidget(fig)
+            display(fig)

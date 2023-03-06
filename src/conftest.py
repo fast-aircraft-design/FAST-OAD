@@ -94,7 +94,7 @@ def with_no_plugin():
 def with_dummy_plugin_1():
     """
     Reduces plugin list to dummy-dist-1 with plugin test_plugin_1
-    (one configuration file, no models, notebook folder).
+    (one configuration file, no models, notebook folder, no source data files).
 
     Any previous state of plugins is restored during teardown.
     """
@@ -118,7 +118,7 @@ def with_dummy_plugin_1():
 def with_dummy_plugin_2():
     """
     Reduces plugin list to dummy-dist-2 with plugin test_plugin_2
-    (one configuration file, model folder, no notebooks).
+    (one configuration file, model folder, no notebooks, no source data files).
 
     Any previous state of plugins is restored during teardown.
     """
@@ -142,7 +142,7 @@ def with_dummy_plugin_2():
 def with_dummy_plugin_4():
     """
     Reduces plugin list to dummy-dist-1 with plugin test_plugin_4
-    (no configuration file, no model folder, notebooks).
+    (no configuration file, no model folder, notebooks, one source data file).
 
     Any previous state of plugins is restored during teardown.
     """
@@ -166,7 +166,7 @@ def with_dummy_plugin_4():
 def with_dummy_plugin_distribution_1():
     """
     Reduces plugin list to dummy-dist-1 with plugins test_plugin_1 and test_plugin_4
-    (one configuration file, no models, notebook folder).
+    (one configuration file, no models, notebook folder, one source data file).
 
     Any previous state of plugins is restored during teardown.
     """
@@ -197,7 +197,7 @@ def with_dummy_plugin_distribution_1():
 def with_dummy_plugin_distribution_1_and_3():
     """
     Reduces plugin list to dummy-dist-1 and dummy-dist-3
-    (one configuration file (in dist 1), models, notebook folder).
+    (one configuration file (in dist 1), models, notebook folder, one source data file (in dist 1)).
 
     Any previous state of plugins is restored during teardown.
     """
@@ -236,11 +236,11 @@ def with_dummy_plugins():
     """
     Reduces plugin list to:
         - dummy-dist-1 with plugins test_plugin_1 and test_plugin_4
-          (one configuration file, no models, notebook folder).
+          (one configuration file, no models, notebook folder, one source data file).
         - dummy-dist-2 with plugins test_plugin_2 and test_plugin_3
-          (3 configuration files, model folder, no notebooks).
+          (3 configuration files, model folder, no notebooks, 3 source data files).
         - dummy-dist-3 with plugins test_plugin_5
-          (no configuration file, model folder, notebook folder).
+          (no configuration file, model folder, notebook folder, no source data files).
 
     Any previous state of plugins is restored during teardown.
     """

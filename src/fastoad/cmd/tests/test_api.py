@@ -95,6 +95,30 @@ def test_generate_notebooks(cleanup, with_dummy_plugins, plugin_root_path):
     assert pth.isfile(pth.join(target_path, "dummy-dist-3", "notebook_2.ipynb"))
 
 
+def test_generate_user_file(cleanup, with_dummy_plugins, plugin_root_path):
+    # Tests that exceptions are correctly raised. The tests on other issues and on the expected
+    # results will be tested with each type of user file.
+
+    text_file_path = pth.join(RESULTS_FOLDER_PATH, "unknown_user_file_type.xml")
+
+    # Test with wrong type of user file, should fail regardless of distribution
+    with pytest.raises(AttributeError):
+        api._generate_user_file(
+            api.UserFileType.OUTPUT_FILE,
+            text_file_path,
+            overwrite=False,
+        )
+
+    # Should also fail with existing and valid file but wrong choice of file type
+    with pytest.raises(AttributeError):
+        api._generate_user_file(
+            api.UserFileType.OUTPUT_FILE,
+            text_file_path,
+            overwrite=False,
+            distribution_name="dummy-dist-1",
+        )
+
+
 def test_generate_configuration_file_plugin_1(cleanup, with_dummy_plugins, plugin_root_path):
     configuration_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_1.yml")
 
@@ -176,6 +200,97 @@ def test_generate_configuration_file_plugin_2(cleanup, with_dummy_plugins, plugi
     assert cmp(configuration_file_path, original_file)
 
 
+def test_generate_source_data_file_plugin_4(cleanup, with_dummy_plugins, plugin_root_path):
+    source_data_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_4.xml")
+
+    # No conf file specified because the dist has only one
+    api.generate_source_data_file(
+        source_data_file_path, overwrite=False, distribution_name="dummy-dist-1"
+    )
+    original_file = pth.join(
+        plugin_root_path,
+        "dist_1",
+        "dummy_plugin_4",
+        "source_data_files",
+        "dummy_source_data_4-1.xml",
+    )
+    assert cmp(source_data_file_path, original_file)
+
+    # Generating again without forcing overwrite will make it fail
+    with pytest.raises(FastPathExistsError):
+        api.generate_source_data_file(
+            source_data_file_path, overwrite=False, distribution_name="dummy-dist-1"
+        )
+
+    # Generating again with overwrite=True should be Ok
+    api.generate_source_data_file(
+        source_data_file_path, overwrite=True, distribution_name="dummy-dist-1"
+    )
+
+
+def test_generate_source_data_file_plugin_4_alone(cleanup, with_dummy_plugin_4):
+    source_data_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_4.xml")
+
+    # No plugin specified, only one plugin is available
+    api.generate_source_data_file(source_data_file_path, overwrite=True)
+
+
+def test_generate_source_data_file_plugin_1_and_3(cleanup, with_dummy_plugin_distribution_1_and_3):
+    source_data_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_4_again.xml")
+
+    # No plugin specified, several plugins available, but only one with a conf file
+    api.generate_source_data_file(source_data_file_path, overwrite=True)
+
+
+def test_generate_source_data_file_plugin_5(cleanup, with_dummy_plugins, plugin_root_path):
+    source_data_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_3.xml")
+    api.generate_source_data_file(
+        source_data_file_path,
+        overwrite=True,
+        distribution_name="dummy-dist-2",
+        sample_file_name="dummy_source_data_3-1.xml",
+    )
+
+    # As source data file names are unique, it is possible to omit distribution_name
+    source_data_file_path = pth.join(RESULTS_FOLDER_PATH, "from_plugin_3_again.xml")
+    api.generate_source_data_file(
+        source_data_file_path,
+        overwrite=True,
+        sample_file_name="dummy_source_data_3-1.xml",
+    )
+    original_file = pth.join(
+        plugin_root_path,
+        "dist_2",
+        "dummy_plugin_3",
+        "source_data_files",
+        "dummy_source_data_3-1.xml",
+    )
+    assert cmp(source_data_file_path, original_file)
+
+    with pytest.raises(FastPathExistsError):
+        api.generate_source_data_file(
+            source_data_file_path,
+            overwrite=False,
+            distribution_name="dummy-dist-2",
+            sample_file_name="dummy_source_data_3-2.xml",
+        )
+
+    api.generate_source_data_file(
+        source_data_file_path,
+        overwrite=True,
+        distribution_name="dummy-dist-2",
+        sample_file_name="dummy_source_data_3-2.xml",
+    )
+    original_file = pth.join(
+        plugin_root_path,
+        "dist_2",
+        "dummy_plugin_3",
+        "source_data_files",
+        "dummy_source_data_3-2.xml",
+    )
+    assert cmp(source_data_file_path, original_file)
+
+
 def test_generate_inputs(cleanup):
     input_file_path = api.generate_inputs(CONFIGURATION_FILE_PATH, overwrite=False)
     assert input_file_path == pth.join(RESULTS_FOLDER_PATH, "inputs.xml")
@@ -202,7 +317,7 @@ def test_generate_inputs(cleanup):
     assert len(data) == 2
     assert "x" in data.names() and "z" in data.names()
 
-    # We test without source file to see if variable description in "desc" kwargs
+    # We test without source data file to see if variable description in "desc" kwargs
     # is captured (issue #319)
     input_file_path = api.generate_inputs(CONFIGURATION_FILE_PATH, overwrite=True)
     assert input_file_path == pth.join(RESULTS_FOLDER_PATH, "inputs.xml")

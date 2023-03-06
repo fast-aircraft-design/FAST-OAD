@@ -33,6 +33,9 @@ from .exceptions import (
     FastSeveralDistPluginsError,
     FastUnknownConfigurationFileError,
     FastUnknownDistPluginError,
+    FastNoAvailableSourceDataFileError,
+    FastUnknownSourceDataFileError,
+    FastSeveralSourceDataFilesError,
 )
 from .._utils.resource_management.contents import PackageReader
 
@@ -53,11 +56,14 @@ class SubPackageNames(Enum):
     MODELS = "models"
     NOTEBOOKS = "notebooks"
     CONFIGURATIONS = "configurations"
+    SOURCE_DATA_FILES = "source_data_files"
 
 
 @dataclass
 class ResourceInfo:
-    """Class for storing information about configuration files provided by plugins."""
+    """
+    Class for storing information about configuration and source data files provided by plugins.
+    """
 
     name: str
     dist_name: str
@@ -105,6 +111,24 @@ class PluginDefinition:
 
         return []
 
+    def get_source_data_file_list(self) -> List[ResourceInfo]:
+
+        if SubPackageNames.SOURCE_DATA_FILES in self.subpackages:
+            return [
+                ResourceInfo(
+                    name=file,
+                    dist_name=self.dist_name,
+                    plugin_name=self.plugin_name,
+                    package_name=self.subpackages[SubPackageNames.SOURCE_DATA_FILES],
+                )
+                for file in PackageReader(
+                    self.subpackages[SubPackageNames.SOURCE_DATA_FILES]
+                ).contents
+                if pth.splitext(file)[1] in [".xml"]
+            ]
+
+        return []
+
 
 @dataclass()
 class DistributionPluginDefinition(dict):
@@ -143,6 +167,55 @@ class DistributionPluginDefinition(dict):
 
         if group == MODEL_PLUGIN_ID:
             self[entry_point.name].detect_subfolders()
+
+    def get_source_data_file_list(self, plugin_name=None) -> List[ResourceInfo]:
+        """
+        :param plugin_name: If provided, only file names provided by the plugin in
+                            the distribution will be returned, or an empty list if
+                            the plugin is not in the distribution.
+        :return:  List of source data file information that are provided by the distribution.
+        """
+        file_list = []
+        if plugin_name:
+            if plugin_name in self:
+                file_list = self[plugin_name].get_source_data_file_list()
+        else:
+            for plugin in self.values():
+                file_list += plugin.get_source_data_file_list()
+
+        return file_list
+
+    def get_source_data_file_info(self, file_name=None, plugin_name=None) -> ResourceInfo:
+        """
+        :param file_name: can be None if only one configuration file is provided in the
+                          distribution (or in the plugin if `plugin_name` is provided)
+        :param plugin_name:
+        :return: information for specified configuration file name.
+        :raise FastSeveralSourceDataFilesError: if several source data files are available but
+                                               `file_name` has not been provided.
+        :raise FastUnknownSourceDataFileError: if the specified source data file is not available.
+        :raise FastNoAvailableSourceDataFileError: if there a no source data file in the plugin.
+        """
+
+        source_data_file_list = self.get_source_data_file_list(plugin_name)
+        if not source_data_file_list:
+            raise FastNoAvailableSourceDataFileError()
+
+        if file_name is None:
+            if len(source_data_file_list) > 1:
+                raise FastSeveralSourceDataFilesError(self.dist_name)
+            file_info = source_data_file_list[0]
+        else:
+            matching_list = list(filter(lambda item: item.name == file_name, source_data_file_list))
+            if len(matching_list) == 0:
+                raise FastUnknownSourceDataFileError(file_name, self.dist_name)
+
+            # Here we implicitly assume that plugin developers will ensure that there will be
+            # no duplicates in conf file names (possible if several plugins are in the
+            # same installed package, but such practice is discouraged).
+            file_info = matching_list[0]
+
+        return file_info
 
     def get_configuration_file_list(self, plugin_name=None) -> List[ResourceInfo]:
         """
@@ -229,11 +302,13 @@ class DistributionPluginDefinition(dict):
             [SubPackageNames.NOTEBOOKS in definition.subpackages for definition in self.values()]
         )
         conf_files = [item.name for item in self.get_configuration_file_list()]
+        source_data_files = [item.name for item in self.get_source_data_file_list()]
         return dict(
             installed_package=self.dist_name,
             has_models=has_models,
             has_notebooks=has_notebooks,
             configurations=sorted(conf_files),
+            source_data_files=sorted(source_data_files),
         )
 
 
@@ -298,6 +373,17 @@ class FastoadLoader(BundleLoader):
         """
         return self._get_resource_list(
             DistributionPluginDefinition.get_configuration_file_list,
+            dist_name,
+        )
+
+    def get_source_data_file_list(self, dist_name: str) -> List[ResourceInfo]:
+        """
+        :param dist_name: the distribution to inspect
+        :return: list of source data files available for named distribution, or an empty list if the
+                 specified distribution is not available
+        """
+        return self._get_resource_list(
+            DistributionPluginDefinition.get_source_data_file_list,
             dist_name,
         )
 

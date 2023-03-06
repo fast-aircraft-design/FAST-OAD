@@ -31,6 +31,9 @@ from fastoad.module_management.exceptions import (
     FastSeveralDistPluginsError,
     FastUnknownConfigurationFileError,
     FastUnknownDistPluginError,
+    FastNoAvailableSourceDataFileError,
+    FastSeveralSourceDataFilesError,
+    FastUnknownSourceDataFileError,
 )
 from . import api
 
@@ -90,14 +93,55 @@ def gen_conf(conf_file, from_package, source, force):
         click.echo(exc.args[0])
 
 
+@fast_oad.command(name="gen_source_data_file")
+@click.argument("source_data_file", nargs=1)
+@click.option(
+    "-p",
+    "--from_package",
+    nargs=1,
+    help="Name of installed package that provides the sample source data file.",
+)
+@click.option("-s", "--source", nargs=1, help="Name of original source data file.")
+@overwrite_option
+def gen_source_data_file(source_data_file, from_package, source, force):
+    """
+    Generate a sample source data file with given argument as name.
+
+    Option "--from_package" has to be used if several FAST-OAD plugins are available.
+
+    Option "--source" has to be used if the targeted plugin provides several sample
+    source data files.
+
+    Use "fastoad plugin_info" to get information about available plugins and sample
+    configuration files.
+    """
+    try:
+        manage_overwrite(
+            api.generate_source_data_file,
+            source_data_file_path=source_data_file,
+            overwrite=force,
+            distribution_name=from_package,
+            sample_file_name=source,
+        )
+    except (
+        FastNoDistPluginError,
+        FastSeveralDistPluginsError,
+        FastUnknownDistPluginError,
+        FastSeveralSourceDataFilesError,
+        FastUnknownSourceDataFileError,
+        FastNoAvailableSourceDataFileError,
+    ) as exc:
+        click.echo(exc.args[0])
+
+
 @fast_oad.command(name="gen_inputs")
 @click.argument("conf_file", nargs=1)
-@click.argument("source_file", nargs=1, required=False)
+@click.argument("source_data_file", nargs=1, required=False)
 @overwrite_option
 @click.option(
-    "--legacy", is_flag=True, help="To be used if the source XML file is in legacy format."
+    "--legacy", is_flag=True, help="To be used if the source data XML file is in legacy format."
 )
-def gen_inputs(conf_file, source_file, force, legacy):
+def gen_inputs(conf_file, source_data_file, force, legacy):
     """
     Generate the input file (specified in the configuration file) with needed variables.
 
@@ -120,8 +164,8 @@ def gen_inputs(conf_file, source_file, force, legacy):
     manage_overwrite(
         api.generate_inputs,
         configuration_file_path=conf_file,
-        source_path=source_file,
-        source_path_schema=schema,
+        source_data_path=source_data_file,
+        source_data_path_schema=schema,
         overwrite=force,
     )
 
