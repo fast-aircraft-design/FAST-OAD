@@ -459,12 +459,12 @@ def payload_range_plot(
     """
     Returns a figure of the payload-range diagram.
     The diagram contains by default only the contour but can also provide a heatmap
-    of the grid points.
+    of the grid points, if variable_of_interest is not None.
 
     :param aircraft_file_path: path of data file
     :param name: name to give to the trace added to the figure
     :param mission_name: name of the mission present in the data file to be plotted.
-    :param variable_of_interest: variable of interest for the contour and the heatmap.
+    :param variable_of_interest: variable of interest for the heatmap.
     :param variable_of_interest_legend: name to give to variable of interest in plot legend.
     :return: payload-range plot figure
     """
