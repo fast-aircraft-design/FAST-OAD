@@ -2,7 +2,7 @@
 FAST-OAD model for mission computation.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -145,8 +145,6 @@ class OMMission(om.Group, BaseMissionComp, NeedsOWE):
 
         :return: component that computes Zero Fuel Weight from OWE and mission payload
         """
-        mission_name = self._mission_wrapper.mission_name
-
         if self.options["is_sizing"]:
             payload_var = "data:weight:aircraft:payload"
         else:
@@ -157,7 +155,7 @@ class OMMission(om.Group, BaseMissionComp, NeedsOWE):
             self.name_provider.ZFW.value,
             [self.options["OWE_variable"], payload_var],
             units="kg",
-            desc=f'Zero Fuel Weight for mission "{mission_name}"',
+            desc=f'Zero Fuel Weight for mission "{self.mission_name}"',
         )
         return zfw_computation
 
@@ -166,9 +164,9 @@ class OMMission(om.Group, BaseMissionComp, NeedsOWE):
 
         :return: component that computes input weight
         """
-        mission_name = self._mission_wrapper.mission_name
-
-        input_weight_variable = self._mission_wrapper.get_input_weight_variable_name(mission_name)
+        input_weight_variable = self._mission_wrapper.get_input_weight_variable_name(
+            self.mission_name
+        )
         if not input_weight_variable:
             return None
 
@@ -182,7 +180,7 @@ class OMMission(om.Group, BaseMissionComp, NeedsOWE):
             ],
             units="kg",
             scaling_factors=[1, 1, -1],
-            desc=f'Loaded fuel at beginning for mission "{mission_name}"',
+            desc=f'Loaded fuel at beginning for mission "{self.mission_name}"',
         )
 
         return computation
@@ -192,9 +190,9 @@ class OMMission(om.Group, BaseMissionComp, NeedsOWE):
 
         :return: component that computes block fuel from ramp weight and ZFW
         """
-        mission_name = self._mission_wrapper.mission_name
-
-        input_weight_variable = self._mission_wrapper.get_input_weight_variable_name(mission_name)
+        input_weight_variable = self._mission_wrapper.get_input_weight_variable_name(
+            self.mission_name
+        )
 
         block_fuel_computation = om.AddSubtractComp()
         block_fuel_computation.add_equation(
@@ -206,7 +204,7 @@ class OMMission(om.Group, BaseMissionComp, NeedsOWE):
             ],
             units="kg",
             scaling_factors=[1, 1, -1],
-            desc=f'Loaded fuel at beginning for mission "{mission_name}"',
+            desc=f'Loaded fuel at beginning for mission "{self.mission_name}"',
         )
 
         return block_fuel_computation

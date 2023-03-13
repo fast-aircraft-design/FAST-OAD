@@ -102,8 +102,6 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
 
     def _add_payload_range_contour_group(self):
         """Creates the group for computing payload-range contour."""
-        mission_name = self._mission_wrapper.mission_name
-        var_prefix = self._mission_wrapper.variable_prefix
         nb_contour_points = self.options["nb_contour_points"]
 
         group = om.Group()
@@ -111,9 +109,9 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
         group.add_subsystem(
             "input_values",
             PayloadRangeContourInputValues(
-                mission_name=mission_name,
+                mission_name=self.mission_name,
                 nb_points=nb_contour_points,
-                PR_variable_prefix=var_prefix,
+                PR_variable_prefix=self.variable_prefix,
             ),
             promotes=["*"],
         )
@@ -124,19 +122,23 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
         mux_comp = group.add_subsystem(name="mux", subsys=om.MuxComp(vec_size=nb_contour_points))
         mux_comp.add_var("range", shape=(1,), axis=0, units="m")
         mux_comp.add_var("duration", shape=(1,), axis=0, units="s")
-        group.promotes("mux", outputs=[("range", f"{var_prefix}:{mission_name}:range")])
-        group.promotes("mux", outputs=[("duration", f"{var_prefix}:{mission_name}:duration")])
+        group.promotes(
+            "mux", outputs=[("range", f"{self.variable_prefix}:{self.mission_name}:range")]
+        )
+        group.promotes(
+            "mux", outputs=[("duration", f"{self.variable_prefix}:{self.mission_name}:duration")]
+        )
 
         self.add_subsystem(
             "contour_calc",
             group,
             promotes_inputs=["*"],
             promotes_outputs=[
-                f"{var_prefix}:{mission_name}:block_fuel",
-                f"{var_prefix}:{mission_name}:payload",
-                f"{var_prefix}:{mission_name}:TOW",
-                f"{var_prefix}:{mission_name}:range",
-                f"{var_prefix}:{mission_name}:duration",
+                f"{self.variable_prefix}:{self.mission_name}:block_fuel",
+                f"{self.variable_prefix}:{self.mission_name}:payload",
+                f"{self.variable_prefix}:{self.mission_name}:TOW",
+                f"{self.variable_prefix}:{self.mission_name}:range",
+                f"{self.variable_prefix}:{self.mission_name}:duration",
             ],
         )
 
@@ -144,8 +146,6 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
 
     def _add_payload_range_grid_group(self):
         """Creates the group for computing payload-range inner grid values."""
-        mission_name = self._mission_wrapper.mission_name
-        var_prefix = self._mission_wrapper.variable_prefix
         nb_grid_points = self.options["nb_grid_points"]
 
         group = om.Group()
@@ -153,9 +153,9 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
         group.add_subsystem(
             "input_values",
             PayloadRangeGridInputValues(
-                mission_name=mission_name,
+                mission_name=self.mission_name,
                 nb_points=nb_grid_points,
-                PR_variable_prefix=var_prefix,
+                PR_variable_prefix=self.variable_prefix,
                 random_seed=self.options["grid_random_seed"],
                 lhs_criterion=self.options["grid_lhs_criterion"],
                 min_payload_ratio=self.options["min_payload_ratio"],
@@ -170,19 +170,24 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
         mux_comp = group.add_subsystem(name="mux", subsys=om.MuxComp(vec_size=nb_grid_points))
         mux_comp.add_var("range", shape=(1,), axis=0, units="m")
         mux_comp.add_var("duration", shape=(1,), axis=0, units="s")
-        group.promotes("mux", outputs=[("range", f"{var_prefix}:{mission_name}:grid:range")])
-        group.promotes("mux", outputs=[("duration", f"{var_prefix}:{mission_name}:grid:duration")])
+        group.promotes(
+            "mux", outputs=[("range", f"{self.variable_prefix}:{self.mission_name}:grid:range")]
+        )
+        group.promotes(
+            "mux",
+            outputs=[("duration", f"{self.variable_prefix}:{self.mission_name}:grid:duration")],
+        )
 
         self.add_subsystem(
             "grid_calc",
             group,
             promotes_inputs=["*"],
             promotes_outputs=[
-                f"{var_prefix}:{mission_name}:grid:block_fuel",
-                f"{var_prefix}:{mission_name}:grid:payload",
-                f"{var_prefix}:{mission_name}:grid:TOW",
-                f"{var_prefix}:{mission_name}:grid:range",
-                f"{var_prefix}:{mission_name}:grid:duration",
+                f"{self.variable_prefix}:{self.mission_name}:grid:block_fuel",
+                f"{self.variable_prefix}:{self.mission_name}:grid:payload",
+                f"{self.variable_prefix}:{self.mission_name}:grid:TOW",
+                f"{self.variable_prefix}:{self.mission_name}:grid:range",
+                f"{self.variable_prefix}:{self.mission_name}:grid:duration",
             ],
         )
 
@@ -193,11 +198,10 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
     ):
         """Adds MissionRun components to the provided group."""
 
-        mission_name = self._mission_wrapper.mission_name
         var_prefix = self._mission_wrapper.variable_prefix
 
         input_var_connections = {
-            f"{var_prefix}:{mission_name}:{name1}": f"data:mission:{mission_name}:{name2}"
+            f"{var_prefix}:{self.mission_name}:{name1}": f"data:mission:{self.mission_name}:{name2}"
             for name1, name2 in input_var_connections.items()
         }
 
@@ -212,7 +216,6 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
             MissionComp(**mission_options), io_status="inputs"
         )
 
-        first_route_name = self._mission_wrapper.get_route_names()[0]
         for i in range(nb_missions):
             subsys_name = f"mission_{i}"
             group.add_subsystem(subsys_name, MissionComp(**mission_options))
@@ -235,11 +238,11 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
             group.promotes(subsys_name, inputs=promoted_inputs)
 
             group.connect(
-                f"{subsys_name}.data:mission:{mission_name}:{first_route_name}:distance",
+                f"{subsys_name}.data:mission:{self.mission_name}:{self.first_route_name}:distance",
                 f"mux.range_{i}",
             )
             group.connect(
-                f"{subsys_name}.data:mission:{mission_name}:{first_route_name}:duration",
+                f"{subsys_name}.data:mission:{self.mission_name}:{self.first_route_name}:duration",
                 f"mux.duration_{i}",
             )
 
