@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -293,6 +293,11 @@ def test_mission_group_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
     )
 
     assert_allclose(problem["data:mission:operational:needed_block_fuel"], 5682.0, atol=1.0)
+    assert_allclose(
+        problem.get_val("data:mission:operational:specific_burned_fuel", "km**-1"),
+        1.02283e-4,
+        rtol=1.0e-5,
+    )
 
 
 def test_mission_group_breguet_with_fuel_adjustment(cleanup, with_dummy_plugin_2):

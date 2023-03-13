@@ -228,5 +228,6 @@ class BaseMissionComp(System, metaclass=ABCMeta):
             CONSUMED_FUEL_BEFORE_INPUT_WEIGHT = get_variable_name(
                 "consumed_fuel_before_input_weight"
             )
+            SPECIFIC_BURNED_FUEL = get_variable_name("specific_burned_fuel")
 
         return VariableNames

@@ -87,6 +87,22 @@ def test_payload_range_custom_breguet_mission(cleanup, with_dummy_plugin_2):
         [32949.6, 27518.6, 38370.6, 21909.1, 27114.4, 23754.4, 10923.6, 6157.4, 20901.1, 17923.8],
         atol=0.5,
     )
+    assert_allclose(
+        problem["data:payload_range:operational:grid:specific_burned_fuel"].squeeze(),
+        [
+            2.5791e-4,
+            1.9975e-4,
+            2.3312e-4,
+            2.1819e-4,
+            2.9180e-4,
+            1.6783e-4,
+            2.0202e-4,
+            2.0583e-4,
+            3.4027e-4,
+            4.0726e-4,
+        ],
+        rtol=1.0e-4,
+    )
 
 
 def test_payload_range_sizing_breguet(cleanup, with_dummy_plugin_2):
@@ -169,4 +185,9 @@ def test_payload_range_sizing_mission(cleanup, with_dummy_plugin_2):
         problem.get_val("data:payload_range:sizing:grid:duration", "min").squeeze(),
         [330.0, 458.0],
         atol=0.5,
+    )
+    assert_allclose(
+        problem.get_val("data:payload_range:sizing:grid:specific_burned_fuel", "km**-1").squeeze(),
+        [1.463138e-4, 1.12571e-4],
+        rtol=1.0e-4,
     )

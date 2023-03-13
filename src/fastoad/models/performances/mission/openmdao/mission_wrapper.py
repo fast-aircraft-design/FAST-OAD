@@ -2,7 +2,7 @@
 Mission wrapper.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -107,7 +107,7 @@ class MissionWrapper(MissionBuilder):
             component.add_input(**variable.get_openmdao_kwargs())
 
         for name, (units, desc) in output_definition.items():
-            component.add_output(name, 0.0, units=units, desc=desc)
+            component.add_output(name, units=units, desc=desc)
 
     def compute(
         self, start_flight_point: FlightPoint, inputs: Vector, outputs: Vector

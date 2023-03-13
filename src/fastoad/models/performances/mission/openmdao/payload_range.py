@@ -150,6 +150,7 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
 
         group = om.Group()
 
+        # Build grid inputs
         group.add_subsystem(
             "input_values",
             PayloadRangeGridInputValues(
@@ -164,20 +165,43 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
             promotes=["*"],
         )
 
+        # Run computations
         var_connections = {"grid:block_fuel": "block_fuel", "grid:TOW": "TOW"}
         self._add_mission_runs(group, nb_grid_points, var_connections)
 
+        # Assemble mission results in variables
         mux_comp = group.add_subsystem(name="mux", subsys=om.MuxComp(vec_size=nb_grid_points))
         mux_comp.add_var("range", shape=(1,), axis=0, units="m")
         mux_comp.add_var("duration", shape=(1,), axis=0, units="s")
         group.promotes(
-            "mux", outputs=[("range", f"{self.variable_prefix}:{self.mission_name}:grid:range")]
-        )
-        group.promotes(
             "mux",
-            outputs=[("duration", f"{self.variable_prefix}:{self.mission_name}:grid:duration")],
+            outputs=[
+                ("range", f"{self.variable_prefix}:{self.mission_name}:grid:range"),
+                ("duration", f"{self.variable_prefix}:{self.mission_name}:grid:duration"),
+            ],
         )
 
+        # Computation of specific burned fuel
+        group.add_subsystem(
+            "sbf_comp",
+            om.ExecComp(
+                "sbf = block_fuel / range / payload",
+                block_fuel={"units": "kg", "shape_by_conn": True},
+                range={"units": "NM", "copy_shape": "block_fuel"},
+                payload={"units": "kg", "copy_shape": "block_fuel"},
+                sbf={"units": "NM**-1", "copy_shape": "block_fuel"},
+            ),
+            promotes_inputs=[
+                ("payload", f"{self.variable_prefix}:{self.mission_name}:grid:payload"),
+                ("range", f"{self.variable_prefix}:{self.mission_name}:grid:range"),
+                ("block_fuel", f"{self.variable_prefix}:{self.mission_name}:grid:block_fuel"),
+            ],
+            promotes_outputs=[
+                ("sbf", f"{self.variable_prefix}:{self.mission_name}:grid:specific_burned_fuel")
+            ],
+        )
+
+        # Adding the whole group
         self.add_subsystem(
             "grid_calc",
             group,
@@ -188,6 +212,7 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
                 f"{self.variable_prefix}:{self.mission_name}:grid:TOW",
                 f"{self.variable_prefix}:{self.mission_name}:grid:range",
                 f"{self.variable_prefix}:{self.mission_name}:grid:duration",
+                f"{self.variable_prefix}:{self.mission_name}:grid:specific_burned_fuel",
             ],
         )
 
