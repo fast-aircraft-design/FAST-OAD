@@ -449,6 +449,120 @@ def mass_breakdown_sun_plot(
     return fig
 
 
+def payload_range_plot(
+    aircraft_file_path: str,
+    name="Payload-Range",
+    mission_name="operational",
+    variable_of_interest: str = None,
+    variable_of_interest_legend: str = None,
+):
+    """
+    Returns a figure of the payload-range diagram.
+    The diagram contains by default only the contour but can also provide a heatmap
+    of the grid points, if variable_of_interest is not None.
+    Please note that the data for the contour are expected in the variables
+    `data:payload_range:{mission_name}:range` and `data:payload_range:{mission_name}:payload`.
+    Similarly, the data for the heatmap are expected in the variables
+    `data:payload_range:{mission_name}:grid:range`,
+    `data:payload_range:{mission_name}:grid:payload` and
+    `data:payload_range:{mission_name}:grid:{variable_of_interest}`.
+
+    :param aircraft_file_path: path of data file
+    :param name: name to give to the trace added to the figure
+    :param mission_name: name of the mission present in the data file to be plotted.
+    :param variable_of_interest: variable of interest for the heatmap.
+    :param variable_of_interest_legend: name to give to variable of interest in plot legend.
+    :return: payload-range plot figure
+    """
+    variables = VariableIO(aircraft_file_path).read()
+
+    # Contour of the payload range
+    range_ = np.asarray(variables[f"data:payload_range:{mission_name}:range"].value)
+    payload = np.asarray(variables[f"data:payload_range:{mission_name}:payload"].value)
+
+    pr_contour = go.Scatter(
+        x=convert_units(range_, "m", "NM"),
+        y=convert_units(payload, "kg", "t"),
+        mode="lines+markers",
+        line=dict(color="black", width=3),
+        showlegend=False,
+        name=name,
+    )
+
+    # Create mask for a nice payload range
+    range_mask = np.append(range_, (1.03 * max(range_), 1.03 * max(range_), 0))
+    payload_mask = np.append(payload, (0, 1.1 * max(payload), 1.1 * max(payload)))
+
+    pr_contour_mask = go.Scatter(
+        x=convert_units(range_mask, "m", "NM"),
+        y=convert_units(payload_mask, "kg", "t"),
+        mode="lines",
+        line=dict(color="#E5ECF6", width=3),
+        showlegend=False,
+        name=name,
+        fill="toself",
+        fillcolor="#E5ECF6",
+    )
+
+    fig = go.Figure()
+    fig.add_trace(pr_contour_mask)
+    fig.add_trace(pr_contour)
+
+    if variable_of_interest is not None:
+        # Grid for the payload range
+        range_grid = np.asarray(variables[f"data:payload_range:{mission_name}:grid:range"].value)
+        payload_grid = np.asarray(
+            variables[f"data:payload_range:{mission_name}:grid:payload"].value
+        )
+        variable_of_interest_grid = np.asarray(
+            variables[f"data:payload_range:{mission_name}:grid:{variable_of_interest}"].value
+        )
+
+        variable_of_interest_unit = variables[
+            f"data:payload_range:{mission_name}:grid:{variable_of_interest}"
+        ].units
+
+        if variable_of_interest_legend is None:
+            variable_of_interest_legend = variable_of_interest
+
+        x = convert_units(range_grid, "m", "NM")
+        y = convert_units(payload_grid, "kg", "t")
+        z = variable_of_interest_grid
+
+        min_z = min(z)
+        max_z = max(z)
+
+        fig.add_trace(
+            go.Contour(
+                x=x,
+                y=y,
+                z=z,
+                contours=dict(start=min_z, end=max_z, size=(max_z - min_z) / 20),
+                colorbar=dict(
+                    title=f"{variable_of_interest_legend} [{variable_of_interest_unit}]",
+                    titleside="right",
+                    titlefont=dict(size=15, family="Arial, sans-serif"),
+                    tickformat=".1e",
+                ),
+                colorscale="RdBu_r",
+                contours_coloring="heatmap",
+            )
+        )
+        fig.add_trace(go.Scatter(x=x, y=y, hovertext=z, mode="markers"))
+
+    fig.update_layout(
+        xaxis_title="Range [NM]",
+        yaxis_title="Payload [tons]",
+        yaxis_range=[0, convert_units(max(payload_mask), "kg", "t")],
+        xaxis_range=[0, convert_units(max(range_mask), "m", "NM")],
+        showlegend=False,
+        height=500,
+        width=900,
+        title={"text": name, "y": 0.9, "x": 0.5, "xanchor": "center", "yanchor": "top"},
+    )
+    return fig
+
+
 def _get_variable_values_with_new_units(
     variables: VariableList, var_names_and_new_units: Dict[str, str]
 ):

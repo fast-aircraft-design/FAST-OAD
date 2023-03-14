@@ -22,6 +22,7 @@ from .. import (
     mass_breakdown_bar_plot,
     mass_breakdown_sun_plot,
     wing_geometry_plot,
+    payload_range_plot,
 )
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
@@ -123,3 +124,33 @@ def test_mass_breakdown_sun_plot():
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
     _ = mass_breakdown_sun_plot(filename)
+
+
+def test_payload_range_plot():
+    """
+    Basic tests for testing the plotting.
+    """
+
+    filename = pth.join(DATA_FOLDER_PATH, "problem_outputs.xml")
+
+    # First plot
+    # This is a rudimentary test as plot are difficult to verify
+    # The test will fail if an error is raised by the following line
+    # Only contour
+    fig = payload_range_plot(
+        filename,
+        name="Payload-Range",
+        mission_name="sizing",
+        variable_of_interest=None,
+        variable_of_interest_legend=None,
+    )
+
+    # Second plot
+    # With grid
+    fig = payload_range_plot(
+        filename,
+        name="Payload-Range",
+        mission_name="sizing",
+        variable_of_interest="block_fuel",
+        variable_of_interest_legend="Block fuel",
+    )
