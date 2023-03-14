@@ -47,12 +47,13 @@ jobs:
           poetry run coverage xml  # for sending coverage report
         shell: bash
 
-      - name: Run codacy-coverage-reporter
-        uses: codacy/codacy-coverage-reporter-action@v1
+      - name: Run codacy coverage reporter
         if: ${{ runner.os == 'Linux' && matrix.python-version == '3.9' }} # This action runs only on Linux
-        with:
-          project-token: ${{ secrets.codacy }}
-          coverage-reports: coverage.xml
+        env:
+          CODACY_PROJECT_TOKEN: ${{ secrets.codacy }}
+        run: |
+          bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
+        shell: bash
 
       - name: Publish code coverage on Codecov
         uses: codecov/codecov-action@v3
