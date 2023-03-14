@@ -539,7 +539,7 @@ def payload_range_plot(
                 z=z,
                 contours=dict(start=min_z, end=max_z, size=(max_z - min_z) / 20),
                 colorbar=dict(
-                    title="%s [%s]" % (variable_of_interest_legend, variable_of_interest_unit),
+                    title=f"{variable_of_interest_legend} [{variable_of_interest_unit}]",
                     titleside="right",
                     titlefont=dict(size=15, family="Arial, sans-serif"),
                     tickformat=".1e",
