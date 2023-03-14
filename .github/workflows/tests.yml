@@ -49,14 +49,14 @@ jobs:
 
       - name: Run codacy-coverage-reporter
         uses: codacy/codacy-coverage-reporter-action@v1
-        if: ${{ runner.os == 'Linux' && matrix.python-version == '3.8' }} # This action runs only on Linux
+        if: ${{ runner.os == 'Linux' && matrix.python-version == '3.9' }} # This action runs only on Linux
         with:
           project-token: ${{ secrets.codacy }}
           coverage-reports: coverage.xml
 
       - name: Publish code coverage on Codecov
         uses: codecov/codecov-action@v3
-        if: ${{ runner.os == 'Windows' && matrix.python-version == '3.8' }} # Using Windows for covering XFOIL calls
+        if: ${{ runner.os == 'Windows' && matrix.python-version == '3.9' }} # Using Windows for covering XFOIL calls
         with:
           #          flags: unittests  # optional
           name: codecov-FAST-OAD  # optional
@@ -64,7 +64,7 @@ jobs:
 
       - name: Publish code coverage on Code Climate
         uses: paambaati/codeclimate-action@v3.2.0
-        if: ${{ runner.os == 'Linux' && matrix.python-version == '3.8' }} # This action runs only on Linux
+        if: ${{ runner.os == 'Linux' && matrix.python-version == '3.9' }} # This action runs only on Linux
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.codeclimate }}
 
