@@ -64,7 +64,7 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
         )
         self.options.declare(
             "grid_lhs_criterion",
-            default="center",
+            default="maximin",
             types=str,
             allow_none=True,
             desc="Criterion for the Latin Hypercube Sampling algorithm, as asked by pyDOE2.lhs.",
@@ -422,7 +422,7 @@ class PayloadRangeGridInputValues(om.ExplicitComponent, BaseMissionComp, NeedsOW
         )
         self.options.declare(
             "lhs_criterion",
-            default=None,
+            default="maximin",
             types=str,
             allow_none=True,
             desc="Criterion for the Latin Hypercube Sampling algorithm, as asked by pyDOE2.lhs.",
