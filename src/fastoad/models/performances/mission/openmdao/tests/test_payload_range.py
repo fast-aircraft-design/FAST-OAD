@@ -47,8 +47,9 @@ def test_payload_range_custom_breguet_mission(cleanup, with_dummy_plugin_2):
             mission_name="operational",
             reference_area_variable="data:geometry:aircraft:reference_area",
             nb_contour_points=6,
-            nb_grid_points=10,
+            nb_grid_points=8,
             grid_random_seed=0,
+            grid_lhs_criterion="center",
         ),
         ivc,
     )
@@ -69,37 +70,37 @@ def test_payload_range_custom_breguet_mission(cleanup, with_dummy_plugin_2):
 
     assert_allclose(
         problem["data:payload_range:operational:grid:payload"],
-        [10355.0, 14345.0, 11685.0, 13015.0, 9025.0, 18335.0, 15675.0, 17005.0, 7695.0, 6365.0],
+        [13181.0, 8194.0, 6531.25, 9856.0, 16506.0, 18169.0, 14844.0, 11519.0, 19000.0, 15300.0],
         atol=0.5,
     )
     assert_allclose(
         problem["data:payload_range:operational:grid:block_fuel"],
-        [12375.0, 11325.0, 14475.0, 9225.0, 10275.0, 10708.675, 5923.125, 4453.825, 8175.0, 7125.0],
+        [11719.0, 6469.0, 10406.0, 7781.0, 11983.0, 11601.0, 5156.0, 9094.0, 11300.0, 15000.0],
         atol=0.5,
     )
     assert_allclose(
         problem.get_val("data:payload_range:operational:grid:range", "km").squeeze(),
-        [8581.6, 7319.8, 9841.1, 6016.4, 7225.8, 6445.2, 3464.0, 2356.6, 5782.2, 5090.5],
+        [7736.0, 4422.0, 7634.0, 5275.0, 7485.0, 7033.0, 2976.0, 6078.0, 6745.0, 9594.0],
         atol=0.5,
     )
     assert_allclose(
         problem["data:payload_range:operational:grid:duration"].squeeze(),
-        [32949.6, 27518.6, 38370.6, 21909.1, 27114.4, 23754.4, 10923.6, 6157.4, 20901.1, 17923.8],
+        [29311.0, 15048.0, 28873.0, 18719.0, 28229.0, 26286.0, 8821.0, 22175.0, 25046.0, 37307.0],
         atol=0.5,
     )
     assert_allclose(
         problem["data:payload_range:operational:grid:specific_burned_fuel"].squeeze(),
         [
-            2.5791e-4,
-            1.9975e-4,
-            2.3312e-4,
-            2.1819e-4,
-            2.9180e-4,
-            1.6783e-4,
-            2.0202e-4,
-            2.0583e-4,
-            3.4027e-4,
-            4.0726e-4,
+            2.1283e-4,
+            3.3062e-4,
+            3.8651e-4,
+            2.7715e-4,
+            1.7963e-4,
+            1.6813e-4,
+            2.1620e-4,
+            2.4055e-4,
+            1.6329e-4,
+            1.8925e-4,
         ],
         rtol=1.0e-4,
     )
@@ -171,23 +172,27 @@ def test_payload_range_sizing_mission(cleanup, with_dummy_plugin_2):
     )
 
     assert_allclose(
-        problem["data:payload_range:sizing:grid:payload"], np.array([12897.0, 16838.0]), atol=0.5
+        problem["data:payload_range:sizing:grid:payload"],
+        np.array([12897.0, 16838.0, 19000.0, 15300.0]),
+        atol=0.5,
     )
     assert_allclose(
-        problem["data:payload_range:sizing:grid:block_fuel"], np.array([8470.0, 11858.0]), atol=0.5
+        problem["data:payload_range:sizing:grid:block_fuel"],
+        np.array([8470.0, 11858.0, 11300.0, 15000.0]),
+        atol=0.5,
     )
     assert_allclose(
         problem.get_val("data:payload_range:sizing:grid:range", "km").squeeze(),
-        [4488.0, 6256.0],
+        [4488.0, 6256.0, 5649.0, 8298.0],
         atol=0.5,
     )
     assert_allclose(
         problem.get_val("data:payload_range:sizing:grid:duration", "min").squeeze(),
-        [330.0, 458.0],
+        [330.0, 458.0, 414.0, 605.0],
         atol=0.5,
     )
     assert_allclose(
         problem.get_val("data:payload_range:sizing:grid:specific_burned_fuel", "km**-1").squeeze(),
-        [1.463138e-4, 1.12571e-4],
+        [1.463138e-4, 1.12571e-4, 1.05282e-4, 1.18153e-4],
         rtol=1.0e-4,
     )
