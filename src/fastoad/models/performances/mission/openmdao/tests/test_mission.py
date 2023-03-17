@@ -108,7 +108,8 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
     # plot_flight(problem.model.component.flight_points, "test_mission.png")
 
     # Note: tested value are obtained by asking 1 meter of accuracy for distance routes
-
+    assert_allclose(problem["data:mission:operational:taxi_out:fuel"], 100.0, atol=1.0)
+    assert_allclose(problem["data:mission:operational:takeoff:fuel"], 95.0, atol=1.0)
     assert_allclose(
         problem["data:mission:operational:main_route:initial_climb:duration"], 34.0, atol=1.0
     )

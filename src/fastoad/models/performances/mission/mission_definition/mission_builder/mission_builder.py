@@ -1,6 +1,6 @@
 """Mission generator."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -77,8 +77,7 @@ class MissionBuilder:
         """
         self._structure_builders: Dict[str, AbstractStructureBuilder] = {}
 
-        #: The prefix for auto-generated variable names
-        self.variable_prefix: str = variable_prefix
+        self._variable_prefix: str = variable_prefix
 
         #: The definition of missions as provided in input file.
         self.definition: MissionDefinition = mission_definition
@@ -141,6 +140,16 @@ class MissionBuilder:
             raise FastMissionFileMissingMissionNameError(
                 f'No Mission named "{value}" in provided mission file.'
             )
+
+    @property
+    def variable_prefix(self):
+        """The prefix for auto-generated variable names."""
+        return self._variable_prefix
+
+    @variable_prefix.setter
+    def variable_prefix(self, value):
+        self._variable_prefix = value
+        self._update_structure_builders()
 
     def build(self, inputs: Optional[Mapping] = None, mission_name: str = None) -> Mission:
         """
@@ -272,7 +281,7 @@ class MissionBuilder:
     def _update_structure_builders(self):
         for mission_name in self._definition[MISSION_DEFINITION_TAG]:
             self._structure_builders[mission_name] = MissionStructureBuilder(
-                self._definition, mission_name, variable_prefix=self.variable_prefix
+                self._definition, mission_name, variable_prefix=self._variable_prefix
             )
 
             if self.get_input_weight_variable_name(mission_name) is None:
@@ -526,10 +535,12 @@ class MissionBuilder:
             }
         }
 
-        taxi_out = PhaseStructureBuilder(definition, "taxi_out", mission_name, self.variable_prefix)
+        taxi_out = PhaseStructureBuilder(
+            definition, "taxi_out", mission_name, self._variable_prefix
+        )
         taxi_out_structure = self._structure_builders[mission_name].process_builder(taxi_out)
         self._structure_builders[mission_name].structure[PARTS_TAG].insert(0, taxi_out_structure)
 
-        takeoff = PhaseStructureBuilder(definition, "takeoff", mission_name, self.variable_prefix)
+        takeoff = PhaseStructureBuilder(definition, "takeoff", mission_name, self._variable_prefix)
         takeoff_structure = self._structure_builders[mission_name].process_builder(takeoff)
         self._structure_builders[mission_name].structure[PARTS_TAG].insert(1, takeoff_structure)

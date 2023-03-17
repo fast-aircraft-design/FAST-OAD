@@ -24,15 +24,14 @@ from openmdao.vectors.vector import Vector
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IPropulsion
 from ..mission_definition.mission_builder import MissionBuilder
+from ..mission_definition.mission_builder.constants import NAME_TAG, TYPE_TAG
 from ..mission_definition.schema import (
     CLIMB_PARTS_TAG,
     DESCENT_PARTS_TAG,
-    MISSION_DEFINITION_TAG,
     MissionDefinition,
     PARTS_TAG,
     PHASE_TAG,
     RESERVE_TAG,
-    ROUTE_DEFINITIONS_TAG,
     ROUTE_TAG,
 )
 
@@ -182,46 +181,39 @@ class MissionWrapper(MissionBuilder):
 
         output_definition.update(self._add_vars(self.mission_name))
 
-        for part in self.definition[MISSION_DEFINITION_TAG][self.mission_name][PARTS_TAG]:
-            if PHASE_TAG in part:
-                phase_name = part[PHASE_TAG]
-                output_definition.update(self._add_vars(self.mission_name, phase_name=phase_name))
-            elif ROUTE_TAG in part:
-                route_name = part[ROUTE_TAG]
-                output_definition.update(self._add_vars(self.mission_name, route_name))
-                route_definition = self.definition[ROUTE_DEFINITIONS_TAG][route_name]
-                for part_definition in list(
-                    route_definition[CLIMB_PARTS_TAG] + route_definition[DESCENT_PARTS_TAG]
-                ):
-                    phase_name = part_definition[PHASE_TAG]
-                    output_definition.update(
-                        self._add_vars(self.mission_name, route_name, phase_name)
-                    )
-                output_definition.update(self._add_vars(self.mission_name, route_name, "cruise"))
-            elif RESERVE_TAG in part:
+        for part in self._structure_builders[self.mission_name].structure[PARTS_TAG]:
+            if RESERVE_TAG in part:
                 output_definition[self.get_reserve_variable_name()] = (
                     "kg",
                     f'reserve fuel for mission "{self.mission_name}"',
                 )
+            elif part[TYPE_TAG] == PHASE_TAG:
+                subpart_name = part[NAME_TAG]
+                output_definition.update(self._add_vars(subpart_name))
+            elif part[TYPE_TAG] == ROUTE_TAG:
+                route_name = part[NAME_TAG]
+                output_definition.update(self._add_vars(route_name))
+                for subpart in part[CLIMB_PARTS_TAG] + part[DESCENT_PARTS_TAG]:
+                    subpart_name = subpart[NAME_TAG]
+                    output_definition.update(self._add_vars(subpart_name))
+                output_definition.update(self._add_vars(route_name + ":cruise"))
 
         return output_definition
 
-    def _add_vars(self, mission_name, route_name=None, phase_name=None) -> dict:
+    def _add_vars(self, part_name) -> dict:
         """
         Builds names of OpenMDAO outputs for provided mission, route and phase names.
 
-        :param mission_name:
-        :param route_name:
-        :param phase_name:
+        :param part_name: part name in the form <mission_name>:<route_name:<phase_name>, route_name
+        and phase_name being independently optional.
         :return: dictionary with variable name as key and unit, description as value
         """
         output_definition = {}
 
-        name_root = ":".join(
-            name
-            for name in [f"{self.variable_prefix}", mission_name, route_name, phase_name]
-            if name
-        )
+        name_root = ":".join(name for name in [f"{self.variable_prefix}", part_name] if name)
+
+        names = part_name.split(":")
+        mission_name, route_name, phase_name = names + [""] * (3 - len(names))
         if route_name and phase_name:
             flight_part_desc = (
                 f'phase "{phase_name}" of route "{route_name}" in mission "{mission_name}"'
