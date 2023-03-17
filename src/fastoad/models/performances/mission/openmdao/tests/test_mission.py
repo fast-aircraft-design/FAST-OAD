@@ -89,6 +89,7 @@ def plot_flight(flight_points, fig_filename):
 
 
 def test_mission_component(cleanup, with_dummy_plugin_2):
+    # Also checking behavior when is_sizing is True
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
     ivc = DataFile(input_file_path).to_ivc()
@@ -102,6 +103,7 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
                 pth.join(DATA_FOLDER_PATH, "test_mission.yml"), mission_name="operational"
             ),
             reference_area_variable="data:geometry:aircraft:reference_area",
+            is_sizing=True,
         ),
         ivc,
     )
@@ -147,6 +149,12 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
         problem["data:mission:operational:distance"], 2000.0 * nautical_mile, atol=500.0
     )
     assert_allclose(problem["data:mission:operational:duration"], 16573.0, atol=10.0)
+
+    # Outputs when is_sizing is True
+    assert_allclose(problem["data:weight:aircraft:sizing_block_fuel"], 6590.0, atol=1.0)
+    assert_allclose(
+        problem["data:weight:aircraft:sizing_onboard_fuel_at_input_weight"], 6395.0, atol=1.0
+    )
 
 
 def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
@@ -302,6 +310,7 @@ def test_mission_group_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
 
 
 def test_mission_group_breguet_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
+    # Also checking behavior when is_sizing is True
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_breguet.xml")
     vars = DataFile(input_file_path)
@@ -316,6 +325,7 @@ def test_mission_group_breguet_with_fuel_adjustment(cleanup, with_dummy_plugin_2
             mission_file_path=pth.join(DATA_FOLDER_PATH, "test_breguet.yml"),
             add_solver=True,
             reference_area_variable="data:geometry:aircraft:reference_area",
+            is_sizing=True,
         ),
         ivc,
     )
@@ -323,11 +333,11 @@ def test_mission_group_breguet_with_fuel_adjustment(cleanup, with_dummy_plugin_2
     # check loop
     assert_allclose(
         problem["data:mission:operational:ZFW"],
-        problem["data:weight:aircraft:OWE"] + problem["data:mission:operational:payload"],
+        problem["data:weight:aircraft:OWE"] + problem["data:weight:aircraft:payload"],
         atol=1.0,
     )
     assert_allclose(
-        problem["data:mission:operational:block_fuel"] + problem["data:mission:operational:ZFW"],
+        problem["data:weight:aircraft:sizing_block_fuel"] + problem["data:mission:operational:ZFW"],
         problem["data:mission:operational:ramp_weight"]
         + problem["data:mission:operational:consumed_fuel_before_input_weight"],
         atol=1.0,
@@ -338,7 +348,12 @@ def test_mission_group_breguet_with_fuel_adjustment(cleanup, with_dummy_plugin_2
         problem["data:mission:operational:block_fuel"],
         atol=1.0,
     )
-    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 5525.0, atol=1.0)
+    assert_allclose(
+        problem["data:mission:operational:needed_block_fuel"],
+        problem["data:weight:aircraft:sizing_block_fuel"],
+        atol=1.0,
+    )
+    assert_allclose(problem["data:mission:operational:needed_block_fuel"], 5449.0, atol=1.0)
 
 
 def test_mission_group_with_fuel_objective(cleanup, with_dummy_plugin_2):
