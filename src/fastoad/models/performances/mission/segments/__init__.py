@@ -1,4 +1,8 @@
-"""Classes for simulating flight segments."""
+"""
+Classes for simulating flight segments.
+
+Be sure to import this package before interpreting a mission input file.
+"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -11,3 +15,22 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# pylint: disable=unused-import
+# flake8: noqa
+
+# With these imports, importing only the current package ensures to have all
+# these segments available when interpreting a mission input file
+from . import (
+    altitude_change,
+    cruise,
+    end_of_takeoff,
+    ground_speed_change,
+    hold,
+    mass_input,
+    rotation,
+    speed_change,
+    start,
+    taxi,
+    transition,
+)
