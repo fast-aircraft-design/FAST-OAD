@@ -2,7 +2,7 @@
 Module for testing VariableList.py
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -19,9 +19,11 @@ from typing import List
 
 import numpy as np
 import openmdao.api as om
+import pandas as pd
 import pytest
 
 import fastoad.models
+from fastoad.module_management._plugins import FastoadLoader
 from .openmdao_sellar_example.disc1 import Disc1
 from .openmdao_sellar_example.disc2 import Disc2
 from .openmdao_sellar_example.functions import Functions
@@ -34,10 +36,11 @@ def cleanup():
     Variable.read_variable_descriptions(pth.dirname(fastoad.models.__file__), update_existing=False)
 
 
-def test_variables():
+def test_variables(with_dummy_plugin_2):
     """Tests features of Variable and VariableList class"""
 
     # Test description overloading
+    FastoadLoader()  # needed to ensure loading of variable description file.
     x = Variable("test:test_variable", val=500)
     assert x.description == "for testing (do not remove, keep first)"
 
@@ -158,7 +161,10 @@ def test_df_from_to_variables():
 
     df = vars.to_dataframe()
     assert np.all(df["name"] == ["a", "b", "c", "d"])
-    assert np.all(df["val"] == [5, [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], "my value is a string"])
+    assert np.all(
+        df["val"]
+        == pd.Series(name="val", data=[5, [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], "my value is a string"])
+    )  # There is a need for Series in the right term because of the non-homogeneous shape.
     assert np.all(df["units"].to_list() == [None, "m", "kg/s", None])
     assert np.all(df["desc"].to_list() == ["", "", "some test", ""])
 
