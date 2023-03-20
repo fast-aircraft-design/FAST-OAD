@@ -2,7 +2,7 @@
 Utility functions for OpenMDAO classes/instances
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -47,11 +47,21 @@ def problem_without_mpi(problem: om.Problem) -> om.Problem:
     actual_comm = problem.comm
     problem.comm = FakeComm()
 
+    metadata_were_added = False
     try:
+        if not problem._metadata:
+            # Adding temporarily this attribute ensures that the post-hook for N2 reports
+            # will not crash. Indeed, due to the copy, it tries to post-process
+            # the 'problem' instance at the end of setup of the 'problem_copy' instance.
+            problem._metadata = {"saved_errors": []}
+            metadata_were_added = True
         problem_copy = deepcopy(problem)
         problem_copy.comm = problem.comm
+
         yield problem_copy
     finally:
+        if metadata_were_added:
+            problem._metadata = None
         problem.comm = actual_comm
 
 
