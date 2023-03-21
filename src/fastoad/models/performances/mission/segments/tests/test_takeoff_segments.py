@@ -19,7 +19,7 @@ from pandas._testing import assert_frame_equal
 from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import AbstractFuelPropulsion, FuelEngineSet
-from fastoad.models.performances.mission.segments.takeoff.end_of_takeoff import EndOfTakoffSegment
+from fastoad.models.performances.mission.segments.takeoff.end_of_takeoff import EndOfTakeoffSegment
 from fastoad.models.performances.mission.segments.takeoff.rotation import RotationSegment
 from ..ground_speed_change import GroundSpeedChangeSegment
 from ..takeoff.takeoff import TakeOffSequence
@@ -129,7 +129,7 @@ def test_end_of_takeoff(polar, polar_modifier):
     propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     # initialisation then change instance attributes
-    segment = EndOfTakoffSegment(
+    segment = EndOfTakeoffSegment(
         target=FlightPoint(altitude=12.0),
         propulsion=propulsion,
         reference_area=120.0,
@@ -186,7 +186,7 @@ def test_takeoff(polar, polar_modifier):
         thrust_rate=1.0,
         time_step=0.2,
     )
-    end_segment = EndOfTakoffSegment(
+    end_segment = EndOfTakeoffSegment(
         target=FlightPoint(altitude=12.0),
         propulsion=propulsion,
         reference_area=120.0,

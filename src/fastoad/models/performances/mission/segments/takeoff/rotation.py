@@ -31,7 +31,7 @@ class RotationSegment(GroundSegment, mission_file_keyword="rotation"):
     Computes a flight path segment with constant rotation rate while on ground
     and accelerating.
 
-    The target is the lift-off. A protection is included is the aicraft reaches
+    The target is the lift-off. A protection is included is the aircraft reaches
     alpha_limit (tail-strike).
     """
 
@@ -77,7 +77,7 @@ class RotationSegment(GroundSegment, mission_file_keyword="rotation"):
         if alpha >= self.alpha_limit:
             # Tail strick, issue warning and continue accelerating without rotation
             self.rotation_rate = 0.0
-            _LOGGER.warning("TAIL STRICK during take-off, consider increasing VR.")
+            _LOGGER.warning("TAIL STRIKE during take-off, consider increasing VR.")
 
         return lift - mass * g
 

@@ -27,7 +27,7 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 @dataclass
-class EndOfTakoffSegment(TakeOffSegment, mission_file_keyword="end_of_takeoff"):
+class EndOfTakeoffSegment(TakeOffSegment, mission_file_keyword="end_of_takeoff"):
     """
     Computes a flight path segment where altitude is modified with constant pitch angle.
     As a result, the slope angle and angle of attack are changing through time.
@@ -87,7 +87,8 @@ class EndOfTakoffSegment(TakeOffSegment, mission_file_keyword="end_of_takeoff"):
             "No valid target definition for altitude change."
         )
 
-    def compute_next_alpha(self, next_point: FlightPoint, previous_point: FlightPoint):
+    @staticmethod
+    def compute_next_alpha(next_point: FlightPoint, previous_point: FlightPoint):
         """
         Computes angle of attack (alpha) based on gamma_dot, using constant pitch angle assumption
 
@@ -99,7 +100,8 @@ class EndOfTakoffSegment(TakeOffSegment, mission_file_keyword="end_of_takeoff"):
         # Constant pitch angle hypothesis
         next_point.alpha = previous_point.alpha - time_step * previous_point.slope_angle_derivative
 
-    def compute_next_gamma(self, next_point: FlightPoint, previous_point: FlightPoint):
+    @staticmethod
+    def compute_next_gamma(next_point: FlightPoint, previous_point: FlightPoint):
         """
         Computes slope angle (gamma) based on gamma_dot
 

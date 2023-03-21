@@ -637,7 +637,7 @@ class AbstractFixedDurationSegment(AbstractTimeStepFlightSegment, ABC):
 @dataclass
 class TakeOffSegment(AbstractManualThrustSegment, ABC):
     """
-    Class for computing takeoff segment
+    Class for computing takeoff segment.
     """
 
     # Default time step for this dynamic segment
