@@ -1,8 +1,7 @@
 # Documentation of variables used in FAST-OAD models
-# Each line shoud be like:
+# Each line should be like:
 # my:variable||The description of my:variable, as long as needed, but on one line.
 # The separator "||" can be surrounded with spaces (that will be ignored)
-test:test_variable || for testing (do not remove, keep first)
 data:TLAR:cruise_mach || top-level requirement: cruise Mach number
 data:TLAR:range || top-level requirement: design range
 data:aerodynamics:aircraft:cruise:CD || drag coefficient in cruise conditions w.r.t. data:aerodynamics:aircraft:cruise:CL

@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -10,17 +10,13 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import os
-import warnings
 from copy import deepcopy
 from typing import Tuple
 
 import numpy as np
-import openmdao
 import openmdao.api as om
 from openmdao.core.constants import _SetupStatus
-from openmdao.core.system import System, _MetadataDict
-from packaging import version
+from openmdao.core.system import System
 
 from fastoad.io import DataFile, VariableIO
 from fastoad.module_management.service_registry import RegisterSubmodel
@@ -47,15 +43,9 @@ class FASTOADProblem(om.Problem):
     """
 
     def __init__(self, *args, **kwargs):
-        if (
-            version.parse(openmdao.__version__) >= version.parse("3.17")
-            and "OPENMDAO_REPORTS" not in os.environ
-            and "reports" not in kwargs
-            and len(args) < 5
-        ):
-            # Automatic reports are deactivated for FAST-OAD, unless OPENMDAO_REPORTS env
-            # variable is set.
-            kwargs["reports"] = None
+        # Automatic reports are deactivated for FAST-OAD, unless OPENMDAO_REPORTS env
+        # variable is set.
+        kwargs["reports"] = None
         super().__init__(*args, **kwargs)
 
         #: File path where :meth:`read_inputs` will read inputs
@@ -234,12 +224,12 @@ class FASTOADProblem(om.Problem):
         # output, its shaped will be determined.
         output_var_names = []
         for system in problem.model.system_iter(recurse=False):
-            io_metadata = cls._get_io_metadata(system, "output")
+            io_metadata = system.get_io_metadata("output")
             output_var_names += [meta["prom_name"] for meta in io_metadata.values()]
 
         dynamic_vars = {}
         for system in problem.model.system_iter(recurse=False):
-            io_metadata = cls._get_io_metadata(system, "input")
+            io_metadata = system.get_io_metadata("input")
             dynamic_vars.update(
                 {
                     meta["prom_name"]: meta
@@ -248,43 +238,6 @@ class FASTOADProblem(om.Problem):
                 }
             )
         return dynamic_vars
-
-    @staticmethod
-    def _get_io_metadata(
-        system,
-        iotypes,
-    ):
-        # In OpenMDAO >3.16, get_io_metadata() won't complain after dynamically shaped, non-
-        # connected inputs.
-        if version.parse(openmdao.__version__) >= version.parse("3.17"):
-            return system.get_io_metadata(iotypes)
-
-        # For OpenMDAO<=3.16, we try the vanilla get_io_metadata() and if it fails, we
-        # try with our simplified implementation.
-        try:
-            return system.get_io_metadata(iotypes)
-        except RuntimeError:
-            prefix = system.pathname + "." if system.pathname else ""
-            rel_idx = len(prefix)
-            if isinstance(iotypes, str):
-                iotypes = (iotypes,)
-
-            result = {}
-            for iotype in iotypes:
-                for abs_name, prom in system._var_abs2prom[iotype].items():
-                    rel_name = abs_name[rel_idx:]
-                    meta = system._var_allprocs_abs2meta[iotype].get(abs_name)
-                    ret_meta = _MetadataDict(meta) if meta is not None else None
-                    if ret_meta is not None:
-                        ret_meta["prom_name"] = prom
-                        result[rel_name] = ret_meta
-
-            warnings.warn(
-                "Dynamically shaped problem inputs are better managed with OpenMDAO>3.16 "
-                "Upgrade is recommended.",
-                DeprecationWarning,
-            )
-            return result
 
 
 class AutoUnitsDefaultGroup(om.Group):

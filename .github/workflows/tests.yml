@@ -23,7 +23,7 @@ jobs:
       - uses: mpi4py/setup-mpi@v1
 
       - name: Install poetry
-        run: pipx install poetry==1.1.15
+        run: pipx install poetry==${{ vars.POETRY_VERSION }}
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
