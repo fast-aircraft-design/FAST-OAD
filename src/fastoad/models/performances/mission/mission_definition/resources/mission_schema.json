@@ -139,7 +139,7 @@
         }
       ]
     },
-    "CL_CD": {
+    "polar_value": {
       "type": [
         "string",
         "array"
@@ -165,12 +165,27 @@
         "CD"
       ],
       "properties": {
+        "alpha": {
+          "$ref": "#/definitions/polar_value"
+        },
         "CL": {
-          "$ref": "#/definitions/CL_CD"
+          "$ref": "#/definitions/polar_value"
         },
         "CD": {
-          "$ref": "#/definitions/CL_CD"
+          "$ref": "#/definitions/polar_value"
         }
+      }
+    },
+    "polar_modifier": {
+      "type": [
+        "string",
+        "object"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/string_parameter_value"
+        },
+        "additionalProperties": true
       }
     },
     "base_part": {
@@ -181,6 +196,9 @@
         },
         "polar": {
           "$ref": "#/definitions/polar"
+        },
+        "polar_modifier": {
+          "$ref": "#/definitions/polar_modifier"
         },
         "thrust_rate": {
           "$ref": "#/definitions/parameter_value_without_unit"
