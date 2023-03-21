@@ -24,13 +24,12 @@ Be sure to import this package before interpreting a mission input file.
 from . import (
     altitude_change,
     cruise,
-    end_of_takeoff,
     ground_speed_change,
     hold,
     mass_input,
-    rotation,
     speed_change,
     start,
+    takeoff,
     taxi,
     transition,
 )

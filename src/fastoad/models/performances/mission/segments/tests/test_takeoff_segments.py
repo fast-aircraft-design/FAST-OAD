@@ -19,9 +19,9 @@ from pandas._testing import assert_frame_equal
 from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import AbstractFuelPropulsion, FuelEngineSet
-from ..end_of_takeoff import EndOfTakoffSegment
+from fastoad.models.performances.mission.segments.takeoff.end_of_takeoff import EndOfTakoffSegment
+from fastoad.models.performances.mission.segments.takeoff.rotation import RotationSegment
 from ..ground_speed_change import GroundSpeedChangeSegment
-from ..rotation import RotationSegment
 from ..takeoff.takeoff import TakeOffSequence
 from ...base import FlightSequence
 from ...polar import Polar

@@ -1,6 +1,6 @@
 """Classes for climb/descent segments."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -20,8 +20,8 @@ from numpy import cos, sin
 from scipy.constants import g
 
 from fastoad.model_base import FlightPoint
-from .base import TakeOffSegment
-from ..exceptions import FastFlightSegmentIncompleteFlightPoint
+from fastoad.models.performances.mission.exceptions import FastFlightSegmentIncompleteFlightPoint
+from fastoad.models.performances.mission.segments.base import TakeOffSegment
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
