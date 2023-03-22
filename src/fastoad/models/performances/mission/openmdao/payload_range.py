@@ -12,6 +12,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from dataclasses import dataclass
 from typing import Dict
 
 import numpy as np
@@ -29,6 +30,11 @@ from .mission_run import MissionComp
 @RegisterOpenMDAOSystem("fastoad.performances.payload_range", domain=ModelDomain.PERFORMANCE)
 class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
     """OpenMDAO component for computing data for payload-range plots."""
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._contour_names = None
+        self._grid_names = None
 
     def initialize(self):
         super().initialize()
@@ -58,7 +64,7 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
         )
         self.options.declare(
             "grid_lhs_criterion",
-            default="center",
+            default="maximin",
             types=str,
             allow_none=True,
             desc="Criterion for the Latin Hypercube Sampling algorithm, as asked by pyDOE2.lhs.",
@@ -90,6 +96,12 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
 
     def setup(self):
         super().setup()
+        self._contour_names = _VariableNamer(
+            self.options["variable_prefix"], self.mission_name, grid=False
+        )
+        self._grid_names = _VariableNamer(
+            self.options["variable_prefix"], self.mission_name, grid=True
+        )
 
         self._add_payload_range_contour_group()
         if self.options["nb_grid_points"] > 0:
@@ -102,8 +114,6 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
 
     def _add_payload_range_contour_group(self):
         """Creates the group for computing payload-range contour."""
-        mission_name = self._mission_wrapper.mission_name
-        var_prefix = self._mission_wrapper.variable_prefix
         nb_contour_points = self.options["nb_contour_points"]
 
         group = om.Group()
@@ -111,32 +121,39 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
         group.add_subsystem(
             "input_values",
             PayloadRangeContourInputValues(
-                mission_name=mission_name,
+                mission_name=self.mission_name,
                 nb_points=nb_contour_points,
-                PR_variable_prefix=var_prefix,
+                PR_variable_prefix=self.variable_prefix,
             ),
             promotes=["*"],
         )
 
         var_connections = {"block_fuel": "block_fuel", "TOW": "TOW"}
-        self._add_mission_runs(group, nb_contour_points, var_connections)
+        self._add_mission_runs(group, nb_contour_points, var_connections, "mux_contour")
 
-        mux_comp = group.add_subsystem(name="mux", subsys=om.MuxComp(vec_size=nb_contour_points))
+        mux_comp = group.add_subsystem(
+            name="mux_contour", subsys=om.MuxComp(vec_size=nb_contour_points)
+        )
         mux_comp.add_var("range", shape=(1,), axis=0, units="m")
         mux_comp.add_var("duration", shape=(1,), axis=0, units="s")
-        group.promotes("mux", outputs=[("range", f"{var_prefix}:{mission_name}:range")])
-        group.promotes("mux", outputs=[("duration", f"{var_prefix}:{mission_name}:duration")])
+        group.promotes(
+            "mux_contour",
+            outputs=[
+                ("range", self._contour_names.range),
+                ("duration", self._contour_names.duration),
+            ],
+        )
 
         self.add_subsystem(
             "contour_calc",
             group,
             promotes_inputs=["*"],
             promotes_outputs=[
-                f"{var_prefix}:{mission_name}:block_fuel",
-                f"{var_prefix}:{mission_name}:payload",
-                f"{var_prefix}:{mission_name}:TOW",
-                f"{var_prefix}:{mission_name}:range",
-                f"{var_prefix}:{mission_name}:duration",
+                self._contour_names.block_fuel,
+                self._contour_names.payload,
+                self._contour_names.TOW,
+                self._contour_names.range,
+                self._contour_names.duration,
             ],
         )
 
@@ -144,18 +161,17 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
 
     def _add_payload_range_grid_group(self):
         """Creates the group for computing payload-range inner grid values."""
-        mission_name = self._mission_wrapper.mission_name
-        var_prefix = self._mission_wrapper.variable_prefix
         nb_grid_points = self.options["nb_grid_points"]
 
         group = om.Group()
 
+        # Build grid inputs
         group.add_subsystem(
             "input_values",
             PayloadRangeGridInputValues(
-                mission_name=mission_name,
+                mission_name=self.mission_name,
                 nb_points=nb_grid_points,
-                PR_variable_prefix=var_prefix,
+                PR_variable_prefix=self.variable_prefix,
                 random_seed=self.options["grid_random_seed"],
                 lhs_criterion=self.options["grid_lhs_criterion"],
                 min_payload_ratio=self.options["min_payload_ratio"],
@@ -164,40 +180,83 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
             promotes=["*"],
         )
 
+        # Run computations
         var_connections = {"grid:block_fuel": "block_fuel", "grid:TOW": "TOW"}
-        self._add_mission_runs(group, nb_grid_points, var_connections)
+        self._add_mission_runs(group, nb_grid_points, var_connections, "mux_grid")
 
-        mux_comp = group.add_subsystem(name="mux", subsys=om.MuxComp(vec_size=nb_grid_points))
+        # Assemble mission results in variables
+        # 2 points are added to include the 2 MTOW points of the contour in the grid points.
+        # (These 2 points are already added in grid inputs by PayloadRangeGridInputValues)
+        mux_comp = group.add_subsystem(
+            name="mux_grid", subsys=om.MuxComp(vec_size=nb_grid_points + 2)
+        )
         mux_comp.add_var("range", shape=(1,), axis=0, units="m")
         mux_comp.add_var("duration", shape=(1,), axis=0, units="s")
-        group.promotes("mux", outputs=[("range", f"{var_prefix}:{mission_name}:grid:range")])
-        group.promotes("mux", outputs=[("duration", f"{var_prefix}:{mission_name}:grid:duration")])
+        group.promotes(
+            "mux_grid",
+            outputs=[
+                ("range", self._grid_names.range),
+                ("duration", self._grid_names.duration),
+            ],
+        )
 
+        # Adding the results of the 2 MTOW points of the contour.
+        for i in range(2):
+            self.connect(
+                self._contour_names.range,
+                f"mux_grid.range_{nb_grid_points+i}",
+                src_indices=[i + 1],
+            )
+            self.connect(
+                self._contour_names.duration,
+                f"mux_grid.duration_{nb_grid_points+i}",
+                src_indices=om.slicer[i + 1],
+            )
+
+        # Computation of specific burned fuel
+        group.add_subsystem(
+            "sbf_comp",
+            om.ExecComp(
+                "sbf = block_fuel / range / payload",
+                block_fuel={"units": "kg", "shape_by_conn": True},
+                range={"units": "NM", "copy_shape": "block_fuel"},
+                payload={"units": "kg", "copy_shape": "block_fuel"},
+                sbf={"units": "NM**-1", "copy_shape": "block_fuel"},
+            ),
+            promotes_inputs=[
+                ("payload", self._grid_names.payload),
+                ("range", self._grid_names.range),
+                ("block_fuel", self._grid_names.block_fuel),
+            ],
+            promotes_outputs=[("sbf", self._grid_names.specific_burned_fuel)],
+        )
+
+        # Adding the whole group
         self.add_subsystem(
             "grid_calc",
             group,
             promotes_inputs=["*"],
             promotes_outputs=[
-                f"{var_prefix}:{mission_name}:grid:block_fuel",
-                f"{var_prefix}:{mission_name}:grid:payload",
-                f"{var_prefix}:{mission_name}:grid:TOW",
-                f"{var_prefix}:{mission_name}:grid:range",
-                f"{var_prefix}:{mission_name}:grid:duration",
+                self._grid_names.block_fuel,
+                self._grid_names.payload,
+                self._grid_names.TOW,
+                self._grid_names.range,
+                self._grid_names.duration,
+                self._grid_names.specific_burned_fuel,
             ],
         )
 
         return group
 
     def _add_mission_runs(
-        self, group: om.Group, nb_missions: int, input_var_connections: Dict[str, str]
+        self, group: om.Group, nb_missions: int, input_var_connections: Dict[str, str], mux_name
     ):
         """Adds MissionRun components to the provided group."""
 
-        mission_name = self._mission_wrapper.mission_name
-        var_prefix = self._mission_wrapper.variable_prefix
-
         input_var_connections = {
-            f"{var_prefix}:{mission_name}:{name1}": f"data:mission:{mission_name}:{name2}"
+            self._contour_names.get_variable_name(
+                name1
+            ): f"data:mission:{self.mission_name}:{name2}"
             for name1, name2 in input_var_connections.items()
         }
 
@@ -212,7 +271,6 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
             MissionComp(**mission_options), io_status="inputs"
         )
 
-        first_route_name = self._mission_wrapper.get_route_names()[0]
         for i in range(nb_missions):
             subsys_name = f"mission_{i}"
             group.add_subsystem(subsys_name, MissionComp(**mission_options))
@@ -235,12 +293,12 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
             group.promotes(subsys_name, inputs=promoted_inputs)
 
             group.connect(
-                f"{subsys_name}.data:mission:{mission_name}:{first_route_name}:distance",
-                f"mux.range_{i}",
+                f"{subsys_name}.data:mission:{self.mission_name}:{self.first_route_name}:distance",
+                f"{mux_name}.range_{i}",
             )
             group.connect(
-                f"{subsys_name}.data:mission:{mission_name}:{first_route_name}:duration",
-                f"mux.duration_{i}",
+                f"{subsys_name}.data:mission:{self.mission_name}:{self.first_route_name}:duration",
+                f"{mux_name}.duration_{i}",
             )
 
 
@@ -251,6 +309,10 @@ class PayloadRangeContourInputValues(
     This class provides input values for missions that will compute the contour
     of the payload-range diagram.
     """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._names = None
 
     def initialize(self):
         super().initialize()
@@ -270,9 +332,9 @@ class PayloadRangeContourInputValues(
 
     def setup(self):
         super().setup()
-
-        mission_name = self._mission_wrapper.mission_name
-        var_prefix = self.options["PR_variable_prefix"]
+        self._names = _VariableNamer(
+            self.options["PR_variable_prefix"], self.mission_name, grid=False
+        )
         nb_points = self.options["nb_points"]
 
         self.add_input("data:weight:aircraft:max_payload", val=np.nan, units="kg")
@@ -280,18 +342,16 @@ class PayloadRangeContourInputValues(
         self.add_input(self.options["OWE_variable"], val=np.nan, units="kg")
         self.add_input(self.options["MFW_variable"], val=np.nan, units="kg")
         self.add_input(
-            f"data:mission:{mission_name}:consumed_fuel_before_input_weight",
+            self.name_provider.CONSUMED_FUEL_BEFORE_INPUT_WEIGHT.value,
             val=np.nan,
             units="kg",
         )
 
-        self.add_output(f"{var_prefix}:{mission_name}:payload", shape=(nb_points,), units="kg")
-        self.add_output(f"{var_prefix}:{mission_name}:block_fuel", shape=(nb_points,), units="kg")
-        self.add_output(f"{var_prefix}:{mission_name}:TOW", shape=(nb_points,), units="kg")
+        self.add_output(self._names.payload, shape=(nb_points,), units="kg")
+        self.add_output(self._names.block_fuel, shape=(nb_points,), units="kg")
+        self.add_output(self._names.TOW, shape=(nb_points,), units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        mission_name = self._mission_wrapper.mission_name
-        var_prefix = self.options["PR_variable_prefix"]
         nb_points = self.options["nb_points"]
 
         max_payload = inputs["data:weight:aircraft:max_payload"]
@@ -299,9 +359,9 @@ class PayloadRangeContourInputValues(
             self._calculate_payload_at_max_takeoff_weight_and_max_fuel_weight(inputs)
         )
 
-        payload_values = outputs[f"{var_prefix}:{mission_name}:payload"]
-        block_fuel_values = outputs[f"{var_prefix}:{mission_name}:block_fuel"]
-        TOW_values = outputs[f"{var_prefix}:{mission_name}:TOW"]
+        payload_values = outputs[self._names.payload]
+        block_fuel_values = outputs[self._names.block_fuel]
+        tow_values = outputs[self._names.TOW]
 
         payload_values[0:2] = max_payload
         payload_values[2:] = np.linspace(
@@ -312,8 +372,8 @@ class PayloadRangeContourInputValues(
         block_fuel_values[1] = self._calculate_block_fuel_at_max_takeoff_weight(inputs, max_payload)
         block_fuel_values[2:] = inputs[self.options["MFW_variable"]]
 
-        TOW_values[:2] = inputs[self.options["MTOW_variable"]]
-        TOW_values[2:] = self._calculate_takeoff_weight_at_max_fuel_weight(
+        tow_values[:2] = inputs[self.options["MTOW_variable"]]
+        tow_values[2:] = self._calculate_takeoff_weight_at_max_fuel_weight(
             inputs, payload_values[2:]
         )
 
@@ -322,19 +382,14 @@ class PayloadRangeContourInputValues(
             inputs[self.options["MTOW_variable"]] - payload - inputs[self.options["OWE_variable"]]
         )
         block_fuel_at_max_takeoff_weight = (
-            fuel_at_takeoff
-            + inputs[
-                f"data:mission:{self.options['mission_name']}:consumed_fuel_before_input_weight"
-            ]
+            fuel_at_takeoff + inputs[self.name_provider.CONSUMED_FUEL_BEFORE_INPUT_WEIGHT.value]
         )
         return block_fuel_at_max_takeoff_weight
 
     def _calculate_takeoff_weight_at_max_fuel_weight(self, inputs, payload):
         fuel_at_takeoff = (
             inputs[self.options["MFW_variable"]]
-            - inputs[
-                f"data:mission:{self.options['mission_name']}:consumed_fuel_before_input_weight"
-            ]
+            - inputs[self.name_provider.CONSUMED_FUEL_BEFORE_INPUT_WEIGHT.value]
         )
         takeoff_weight_at_max_fuel_weight = (
             fuel_at_takeoff + payload + inputs[self.options["OWE_variable"]]
@@ -343,7 +398,7 @@ class PayloadRangeContourInputValues(
 
     def _calculate_payload_at_max_takeoff_weight_and_max_fuel_weight(self, inputs):
         consumed_fuel_before_takeoff = inputs[
-            f"data:mission:{self.options['mission_name']}:consumed_fuel_before_input_weight"
+            self.name_provider.CONSUMED_FUEL_BEFORE_INPUT_WEIGHT.value
         ]
 
         fuel_at_takeoff = inputs[self.options["MFW_variable"]] - consumed_fuel_before_takeoff
@@ -360,6 +415,11 @@ class PayloadRangeGridInputValues(om.ExplicitComponent, BaseMissionComp, NeedsOW
     This class provides input values for missions that will compute points inside the contour
     of the payload-range diagram.
     """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._contour_names = None
+        self._grid_names = None
 
     def initialize(self):
         super().initialize()
@@ -386,7 +446,7 @@ class PayloadRangeGridInputValues(om.ExplicitComponent, BaseMissionComp, NeedsOW
         )
         self.options.declare(
             "lhs_criterion",
-            default=None,
+            default="maximin",
             types=str,
             allow_none=True,
             desc="Criterion for the Latin Hypercube Sampling algorithm, as asked by pyDOE2.lhs.",
@@ -409,41 +469,31 @@ class PayloadRangeGridInputValues(om.ExplicitComponent, BaseMissionComp, NeedsOW
 
     def setup(self):
         super().setup()
-
-        mission_name = self._mission_wrapper.mission_name
-        var_prefix = self.options["PR_variable_prefix"]
+        self._contour_names = _VariableNamer(
+            self.options["PR_variable_prefix"], self.mission_name, grid=False
+        )
+        self._grid_names = _VariableNamer(
+            self.options["PR_variable_prefix"], self.mission_name, grid=True
+        )
         nb_points = self.options["nb_points"]
 
-        self.add_input(
-            f"{var_prefix}:{mission_name}:payload", val=np.nan, shape_by_conn=True, units="kg"
-        )
-        self.add_input(
-            f"{var_prefix}:{mission_name}:block_fuel",
-            val=np.nan,
-            shape_by_conn=True,
-            units="kg",
-        )
+        self.add_input(self._contour_names.payload, val=np.nan, shape_by_conn=True, units="kg")
+        self.add_input(self._contour_names.block_fuel, val=np.nan, shape_by_conn=True, units="kg")
         self.add_input(self.options["OWE_variable"], val=np.nan, units="kg")
         self.add_input(
-            self.name_provider.CONSUMED_FUEL_BEFORE_INPUT_WEIGHT.value,
-            val=np.nan,
-            units="kg",
+            self.name_provider.CONSUMED_FUEL_BEFORE_INPUT_WEIGHT.value, val=np.nan, units="kg"
         )
 
-        self.add_output(f"{var_prefix}:{mission_name}:grid:payload", shape=(nb_points,), units="kg")
-        self.add_output(
-            f"{var_prefix}:{mission_name}:grid:block_fuel", shape=(nb_points,), units="kg"
-        )
-        self.add_output(f"{var_prefix}:{mission_name}:grid:TOW", shape=(nb_points,), units="kg")
+        self.add_output(self._grid_names.payload, shape=(nb_points + 2,), units="kg")
+        self.add_output(self._grid_names.block_fuel, shape=(nb_points + 2,), units="kg")
+        self.add_output(self._grid_names.TOW, shape=(nb_points + 2,), units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        mission_name = self._mission_wrapper.mission_name
-        var_prefix = self.options["PR_variable_prefix"]
         min_payload_ratio = self.options["min_payload_ratio"]
         min_block_fuel_ratio = self.options["min_block_fuel_ratio"]
 
-        payload_contour_values = inputs[f"{var_prefix}:{mission_name}:payload"]
-        block_fuel_contour_values = inputs[f"{var_prefix}:{mission_name}:block_fuel"]
+        payload_contour_values = inputs[self._contour_names.payload]
+        block_fuel_contour_values = inputs[self._contour_names.block_fuel]
 
         max_payload = payload_contour_values[0]
         get_max_block_fuel = interp1d(payload_contour_values[1:], block_fuel_contour_values[1:])
@@ -455,26 +505,60 @@ class PayloadRangeGridInputValues(om.ExplicitComponent, BaseMissionComp, NeedsOW
             random_state=self.options["random_seed"],
         )
         payload_values = (
-            min_payload_ratio + (1.0 - min_payload_ratio) * lhs_grid[:, 1]
-        ) * max_payload
+            ((min_payload_ratio + (1.0 - min_payload_ratio) * lhs_grid[:, 1]) * max_payload),
+        )
         block_fuel_values = (
             min_block_fuel_ratio + (1.0 - min_block_fuel_ratio) * lhs_grid[:, 0]
         ) * get_max_block_fuel(payload_values)
 
-        outputs[f"{var_prefix}:{mission_name}:grid:payload"] = payload_values
-        outputs[f"{var_prefix}:{mission_name}:grid:block_fuel"] = block_fuel_values
-        outputs[f"{var_prefix}:{mission_name}:grid:TOW"] = self._calculate_takeoff_weight(
+        payload_values = np.append(payload_values, payload_contour_values[1:3])
+        block_fuel_values = np.append(block_fuel_values, block_fuel_contour_values[1:3])
+
+        outputs[self._grid_names.payload] = payload_values
+        outputs[self._grid_names.block_fuel] = block_fuel_values
+        outputs[self._grid_names.TOW] = self._calculate_takeoff_weight(
             inputs, payload_values, block_fuel_values
         )
 
     def _calculate_takeoff_weight(self, inputs, payload, block_fuel):
         fuel_at_takeoff = (
-            block_fuel
-            - inputs[
-                f"data:mission:{self.options['mission_name']}:consumed_fuel_before_input_weight"
-            ]
+            block_fuel - inputs[self.name_provider.CONSUMED_FUEL_BEFORE_INPUT_WEIGHT.value]
         )
         takeoff_weight_at_max_fuel_weight = (
             fuel_at_takeoff + payload + inputs[self.options["OWE_variable"]]
         )
         return takeoff_weight_at_max_fuel_weight
+
+
+@dataclass
+class _VariableNamer:
+    """Provides variable names."""
+
+    variable_prefix: str
+    mission_name: str
+    grid: bool = False
+
+    def get_variable_name(self, suffix: str):
+        """returns variable name w.r.t. provided instance attributes."""
+        grid_part = ":grid" if self.grid else ""
+        return f"{self.variable_prefix}:{self.mission_name}{grid_part}:{suffix}"
+
+
+# Here we add properties to _VariableNamer for convenience
+def _get_property(suffix):
+    def prop(self):
+        return self.get_variable_name(suffix)
+
+    return property(prop)
+
+
+for main_name in [
+    "payload",
+    "block_fuel",
+    "range",
+    "duration",
+    "TOW",
+    "specific_burned_fuel",
+]:
+
+    setattr(_VariableNamer, main_name, _get_property(main_name))

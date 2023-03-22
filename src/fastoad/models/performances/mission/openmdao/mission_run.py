@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -56,10 +56,9 @@ class MissionComp(om.ExplicitComponent, BaseMissionComp):
         self._engine_wrapper.setup(self)
 
         self._mission_wrapper.setup(self)
-        mission_name = self._mission_wrapper.mission_name
 
         self._input_weight_variable_name = self._mission_wrapper.get_input_weight_variable_name(
-            mission_name
+            self.mission_name
         )
 
         try:
@@ -71,12 +70,12 @@ class MissionComp(om.ExplicitComponent, BaseMissionComp):
         self.add_output(
             self.name_provider.NEEDED_BLOCK_FUEL.value,
             units="kg",
-            desc=f'Needed fuel to complete mission "{mission_name}", including reserve fuel',
+            desc=f'Needed fuel to complete mission "{self.mission_name}", including reserve fuel',
         )
         self.add_output(
             self.name_provider.CONSUMED_FUEL_BEFORE_INPUT_WEIGHT.value,
             units="kg",
-            desc=f'consumed fuel quantity before target mass defined for "{mission_name}",'
+            desc=f'consumed fuel quantity before target mass defined for "{self.mission_name}",'
             f" if any (e.g. TakeOff Weight)",
         )
 

@@ -126,8 +126,23 @@ class BaseMissionComp(System, metaclass=ABCMeta):
 
     @property
     def name_provider(self) -> Enum:
-        """Enum class that provide mission variable names."""
+        """Enum class that provides mission variable names."""
         return self._name_provider
+
+    @property
+    def variable_prefix(self) -> str:
+        """The prefix of variable names dedicated to the mission ."""
+        return self._mission_wrapper.variable_prefix
+
+    @property
+    def mission_name(self) -> str:
+        """The name of considered mission."""
+        return self._mission_wrapper.mission_name
+
+    @property
+    def first_route_name(self) -> str:
+        """The name of first route (and normally the main one) in the mission."""
+        return self._mission_wrapper.get_route_names()[0]
 
     @staticmethod
     def get_mission_definition(
@@ -191,19 +206,17 @@ class BaseMissionComp(System, metaclass=ABCMeta):
                 mission_name=mission_name,
             )
 
-        self._mission_wrapper.variable_prefix = variable_prefix
-        self._name_provider = self._get_variable_name_provider()
+        try:
+            self._mission_wrapper.variable_prefix = variable_prefix
+            self._name_provider = self._get_variable_name_provider()
+        except FastMissionFileMissingMissionNameError:
+            return
 
     def _get_variable_name_provider(self) -> Optional[type]:
         """Factory that returns an enum class that provide mission variable names."""
 
-        try:
-            mission_name = self._mission_wrapper.mission_name
-        except FastMissionFileMissingMissionNameError:
-            return
-
         def get_variable_name(suffix):
-            return f"{self._mission_wrapper.variable_prefix}:{mission_name}:{suffix}"
+            return f"{self.variable_prefix}:{self.mission_name}:{suffix}"
 
         class VariableNames(Enum):
             """Enum with mission-related variable names."""
@@ -215,5 +228,6 @@ class BaseMissionComp(System, metaclass=ABCMeta):
             CONSUMED_FUEL_BEFORE_INPUT_WEIGHT = get_variable_name(
                 "consumed_fuel_before_input_weight"
             )
+            SPECIFIC_BURNED_FUEL = get_variable_name("specific_burned_fuel")
 
         return VariableNames

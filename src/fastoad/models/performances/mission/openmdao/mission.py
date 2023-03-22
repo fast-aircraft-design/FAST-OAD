@@ -2,7 +2,7 @@
 FAST-OAD model for mission computation.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,7 +15,9 @@ FAST-OAD model for mission computation.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+from enum import EnumMeta
 
+import numpy as np
 import openmdao.api as om
 import pandas as pd
 
@@ -135,6 +137,17 @@ class OMMission(om.Group, BaseMissionComp, NeedsOWE):
                 promotes=["*"],
             )
 
+        self.add_subsystem(
+            "specific_burned_fuel",
+            SpecificBurnedFuelComputation(
+                name_provider=self.name_provider,
+                mission_name=self.mission_name,
+                first_route_name=self.first_route_name,
+                payload_variable=self._get_payload_variable(),
+            ),
+            promotes=["*"],
+        )
+
     @property
     def flight_points(self) -> pd.DataFrame:
         """Dataframe that lists all computed flight point data."""
@@ -145,19 +158,14 @@ class OMMission(om.Group, BaseMissionComp, NeedsOWE):
 
         :return: component that computes Zero Fuel Weight from OWE and mission payload
         """
-        mission_name = self._mission_wrapper.mission_name
-
-        if self.options["is_sizing"]:
-            payload_var = "data:weight:aircraft:payload"
-        else:
-            payload_var = self.name_provider.PAYLOAD.value
+        payload_var = self._get_payload_variable()
 
         zfw_computation = om.AddSubtractComp()
         zfw_computation.add_equation(
             self.name_provider.ZFW.value,
             [self.options["OWE_variable"], payload_var],
             units="kg",
-            desc=f'Zero Fuel Weight for mission "{mission_name}"',
+            desc=f'Zero Fuel Weight for mission "{self.mission_name}"',
         )
         return zfw_computation
 
@@ -166,9 +174,9 @@ class OMMission(om.Group, BaseMissionComp, NeedsOWE):
 
         :return: component that computes input weight
         """
-        mission_name = self._mission_wrapper.mission_name
-
-        input_weight_variable = self._mission_wrapper.get_input_weight_variable_name(mission_name)
+        input_weight_variable = self._mission_wrapper.get_input_weight_variable_name(
+            self.mission_name
+        )
         if not input_weight_variable:
             return None
 
@@ -182,7 +190,7 @@ class OMMission(om.Group, BaseMissionComp, NeedsOWE):
             ],
             units="kg",
             scaling_factors=[1, 1, -1],
-            desc=f'Loaded fuel at beginning for mission "{mission_name}"',
+            desc=f'Loaded fuel at beginning for mission "{self.mission_name}"',
         )
 
         return computation
@@ -192,9 +200,9 @@ class OMMission(om.Group, BaseMissionComp, NeedsOWE):
 
         :return: component that computes block fuel from ramp weight and ZFW
         """
-        mission_name = self._mission_wrapper.mission_name
-
-        input_weight_variable = self._mission_wrapper.get_input_weight_variable_name(mission_name)
+        input_weight_variable = self._mission_wrapper.get_input_weight_variable_name(
+            self.mission_name
+        )
 
         block_fuel_computation = om.AddSubtractComp()
         block_fuel_computation.add_equation(
@@ -206,7 +214,62 @@ class OMMission(om.Group, BaseMissionComp, NeedsOWE):
             ],
             units="kg",
             scaling_factors=[1, 1, -1],
-            desc=f'Loaded fuel at beginning for mission "{mission_name}"',
+            desc=f'Loaded fuel at beginning for mission "{self.mission_name}"',
         )
 
         return block_fuel_computation
+
+    def _get_payload_variable(self):
+        if self.options["is_sizing"]:
+            return "data:weight:aircraft:payload"
+
+        return self.name_provider.PAYLOAD.value
+
+
+class SpecificBurnedFuelComputation(
+    om.ExplicitComponent,
+):
+    """Computation of specific burned fuel (mission fuel / payload / mission range)."""
+
+    def initialize(self):
+        self.options.declare("name_provider", types=EnumMeta)
+        self.options.declare("mission_name", types=str)
+        self.options.declare("first_route_name", types=str)
+        self.options.declare("payload_variable", types=str)
+
+    @property
+    def range_variable(self):
+        """Name of range variable."""
+        return (
+            "data:mission:"
+            f"{self.options['mission_name']}:{self.options['first_route_name']}:"
+            "distance"
+        )
+
+    @property
+    def burned_fuel_variable(self):
+        """Name of burned fuel variable."""
+        return self.options["name_provider"].NEEDED_BLOCK_FUEL.value
+
+    @property
+    def specific_burned_fuel_variable(self):
+        """Name of specific burned fuel variable (mission fuel / payload / mission range)."""
+        return self.options["name_provider"].SPECIFIC_BURNED_FUEL.value
+
+    @property
+    def payload_variable(self):
+        """Name of payload variable."""
+        return self.options["payload_variable"]
+
+    def setup(self):
+        self.add_input(self.payload_variable, units="kg")
+        self.add_input(self.burned_fuel_variable, val=np.nan, units="kg")
+        self.add_input(self.range_variable, val=np.nan, units="NM")
+        self.add_output(self.specific_burned_fuel_variable, units="NM**-1")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        payload = inputs[self.payload_variable]
+        burned_fuel = inputs[self.burned_fuel_variable]
+        mission_range = inputs[self.range_variable]
+
+        outputs[self.specific_burned_fuel_variable] = burned_fuel / payload / mission_range
