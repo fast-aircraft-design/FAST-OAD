@@ -85,7 +85,7 @@ class SegmentDefinitions(Enum):
 
 class RegisteredSegment(IFlightPart, ABC):
     """
-    Base class for classes that can be associated with a keyword in missiond definition file.
+    Base class for classes that can be associated with a keyword in mission definition file.
 
     When subclassing this class, the attribute "mission_file_keyword" can be set,
     so that the segment can be used in mission file definition with this keyword:

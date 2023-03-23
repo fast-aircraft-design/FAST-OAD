@@ -122,6 +122,7 @@ def test_rotation(polar, polar_modifier):
     assert_allclose(last_point.time, 32.58, rtol=1e-2)
     assert_allclose(last_point.mass, 69995.0, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 200.64, rtol=1e-3)
+    assert_allclose(np.degrees(last_point.alpha), 7.713, rtol=1e-3)
     assert last_point.engine_setting == EngineSetting.CLIMB
 
 
