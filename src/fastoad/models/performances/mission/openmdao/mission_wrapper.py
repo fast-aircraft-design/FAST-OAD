@@ -106,7 +106,7 @@ class MissionWrapper(MissionBuilder):
             component.add_input(**variable.get_openmdao_kwargs())
 
         for name, (units, desc) in output_definition.items():
-            component.add_output(name, units=units, desc=desc)
+            component.add_output(name, 0.0, units=units, desc=desc)
 
     def compute(
         self, start_flight_point: FlightPoint, inputs: Vector, outputs: Vector

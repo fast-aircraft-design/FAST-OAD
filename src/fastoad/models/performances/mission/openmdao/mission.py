@@ -268,8 +268,9 @@ class SpecificBurnedFuelComputation(
         self.add_output(self.specific_burned_fuel_variable, units="NM**-1")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        payload = inputs[self.payload_variable]
         burned_fuel = inputs[self.burned_fuel_variable]
-        mission_range = inputs[self.range_variable]
+        # Denominators may be null at first iterations, so we avoid that.
+        payload = np.maximum(1.0, inputs[self.payload_variable])
+        mission_range = np.maximum(1.0, inputs[self.range_variable])
 
         outputs[self.specific_burned_fuel_variable] = burned_fuel / payload / mission_range
