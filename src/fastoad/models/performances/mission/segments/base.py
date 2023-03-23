@@ -1,6 +1,6 @@
 """Base classes for simulating flight segments."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,7 +16,7 @@ import logging
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Type
+from typing import List, Optional, Tuple, Type
 
 import numpy as np
 import pandas as pd
@@ -47,23 +47,23 @@ class SegmentDefinitions(Enum):
     """
 
     @classmethod
-    def add_segment(cls, segment_name: str, segment_class: Type["AbstractFlightSegment"]):
+    def add_segment(cls, segment_name: str, segment_class: Type[IFlightPart]):
         """
         Adds a segment definition.
 
         :param segment_name: segment names (mission file keyword)
         :param segment_class: segment implementation (derived of :class:`~FlightSegment`)
         """
-        if issubclass(segment_class, AbstractFlightSegment):
+        if issubclass(segment_class, IFlightPart):
             extend_enum(cls, segment_name, segment_class)
         else:
             raise RuntimeWarning(
                 f'"{segment_name}" is ignored as segment name because its associated class '
-                "does not derive from FlightSegment."
+                "does not derive from IFlightPart."
             )
 
     @classmethod
-    def get_segment_class(cls, segment_name) -> Optional[Type["AbstractFlightSegment"]]:
+    def get_segment_class(cls, segment_name) -> Optional[Type["IFlightPart"]]:
         """
         Provides the segment implementation for provided name.
 
@@ -83,12 +83,9 @@ class SegmentDefinitions(Enum):
         raise FastUnknownMissionSegmentError(segment_name)
 
 
-@dataclass
-class AbstractFlightSegment(IFlightPart, ABC):
+class RegisteredSegment(IFlightPart, ABC):
     """
-    Base class for flight path segment.
-
-    As a dataclass, attributes can be set at instantiation.
+    Base class for classes that can be associated with a keyword in mission definition file.
 
     When subclassing this class, the attribute "mission_file_keyword" can be set,
     so that the segment can be used in mission file definition with this keyword:
@@ -104,6 +101,20 @@ class AbstractFlightSegment(IFlightPart, ABC):
             my_phase:
                 parts:
                     - segment: new_segment
+    """
+
+    @classmethod
+    def __init_subclass__(cls, *, mission_file_keyword=""):
+        if mission_file_keyword:
+            SegmentDefinitions.add_segment(mission_file_keyword, cls)
+
+
+@dataclass
+class AbstractFlightSegment(RegisteredSegment, IFlightPart, ABC):
+    """
+    Base class for flight path segment.
+
+    As a dataclass, attributes can be set at instantiation.
 
     .. Important::
 
@@ -147,12 +158,8 @@ class AbstractFlightSegment(IFlightPart, ABC):
         """
 
     @classmethod
-    def __init_subclass__(cls, *, mission_file_keyword="", attribute_units: Dict[str, str] = None):
-        if mission_file_keyword:
-            SegmentDefinitions.add_segment(mission_file_keyword, cls)
-        cls._attribute_units = cls._attribute_units.copy()
-        if attribute_units:
-            cls._attribute_units.update(attribute_units)
+    def __init_subclass__(cls, *, mission_file_keyword=""):
+        super().__init_subclass__(mission_file_keyword=mission_file_keyword)
 
         # We want to have self.target as a property to ensure it gets always "scalarized".
         # But properties and dataclasses do not mix very well. It would be possible to
@@ -172,11 +179,6 @@ class AbstractFlightSegment(IFlightPart, ABC):
             self._target = value
 
         cls.target = property(_get_target, _set_target)
-
-    @classmethod
-    def get_attribute_unit(cls, attribute_name: str) -> str:
-        """Returns unit for specified attribute."""
-        return cls._attribute_units.get(attribute_name)
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         """
@@ -635,7 +637,7 @@ class AbstractFixedDurationSegment(AbstractTimeStepFlightSegment, ABC):
 @dataclass
 class TakeOffSegment(AbstractManualThrustSegment, ABC):
     """
-    Class for computing takeoff segment
+    Class for computing takeoff segment.
     """
 
     # Default time step for this dynamic segment

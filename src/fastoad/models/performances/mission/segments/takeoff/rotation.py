@@ -1,6 +1,6 @@
 """Classes for acceleration/deceleration segments."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,11 +16,11 @@ import logging
 from dataclasses import dataclass
 from typing import List
 
-from numpy import pi, sin, cos
+from numpy import cos, pi, sin
 from scipy.constants import g
 
 from fastoad.model_base import FlightPoint
-from .base import GroundSegment
+from fastoad.models.performances.mission.segments.base import GroundSegment
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -31,7 +31,7 @@ class RotationSegment(GroundSegment, mission_file_keyword="rotation"):
     Computes a flight path segment with constant rotation rate while on ground
     and accelerating.
 
-    The target is the lift-off. A protection is included is the aicraft reaches
+    The target is the lift-off. A protection is included is the aircraft reaches
     alpha_limit (tail-strike).
     """
 
@@ -77,7 +77,7 @@ class RotationSegment(GroundSegment, mission_file_keyword="rotation"):
         if alpha >= self.alpha_limit:
             # Tail strick, issue warning and continue accelerating without rotation
             self.rotation_rate = 0.0
-            _LOGGER.warning("TAIL STRICK during take-off, consider increasing VR.")
+            _LOGGER.warning("TAIL STRIKE during take-off, consider increasing VR.")
 
         return lift - mass * g
 

@@ -1,6 +1,6 @@
 """Classes for climb/descent segments."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -20,14 +20,14 @@ from numpy import cos, sin
 from scipy.constants import g
 
 from fastoad.model_base import FlightPoint
-from .base import TakeOffSegment
-from ..exceptions import FastFlightSegmentIncompleteFlightPoint
+from fastoad.models.performances.mission.exceptions import FastFlightSegmentIncompleteFlightPoint
+from fastoad.models.performances.mission.segments.base import TakeOffSegment
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 @dataclass
-class EndOfTakoffSegment(TakeOffSegment, mission_file_keyword="end_of_takeoff"):
+class EndOfTakeoffSegment(TakeOffSegment, mission_file_keyword="end_of_takeoff"):
     """
     Computes a flight path segment where altitude is modified with constant pitch angle.
     As a result, the slope angle and angle of attack are changing through time.
@@ -87,7 +87,8 @@ class EndOfTakoffSegment(TakeOffSegment, mission_file_keyword="end_of_takeoff"):
             "No valid target definition for altitude change."
         )
 
-    def compute_next_alpha(self, next_point: FlightPoint, previous_point: FlightPoint):
+    @staticmethod
+    def compute_next_alpha(next_point: FlightPoint, previous_point: FlightPoint):
         """
         Computes angle of attack (alpha) based on gamma_dot, using constant pitch angle assumption
 
@@ -99,7 +100,8 @@ class EndOfTakoffSegment(TakeOffSegment, mission_file_keyword="end_of_takeoff"):
         # Constant pitch angle hypothesis
         next_point.alpha = previous_point.alpha - time_step * previous_point.slope_angle_derivative
 
-    def compute_next_gamma(self, next_point: FlightPoint, previous_point: FlightPoint):
+    @staticmethod
+    def compute_next_gamma(next_point: FlightPoint, previous_point: FlightPoint):
         """
         Computes slope angle (gamma) based on gamma_dot
 
