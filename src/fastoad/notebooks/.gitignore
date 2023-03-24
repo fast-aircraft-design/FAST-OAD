@@ -1,2 +1,4 @@
-*/workdir/*
-*/.ipynb_checkpoints/*
+workdir/
+.ipynb_checkpoints/
+n2.html
+**/working_folder/**/*.xml
