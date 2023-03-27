@@ -532,6 +532,8 @@ def _get_expected_structure():
                                             use_opposite=False,
                                             variable_name="data:aerodynamics:aircraft:takeoff:CL",
                                         ),
+                                        "name": "operational:main:initial_climb",
+                                        "type": "polar",
                                     },
                                     "segment_type": "speed_change",
                                     "target": {
@@ -580,6 +582,8 @@ def _get_expected_structure():
                                             use_opposite=False,
                                             variable_name="data:aerodynamics:aircraft:takeoff:CL",
                                         ),
+                                        "name": "operational:main:initial_climb",
+                                        "type": "polar",
                                     },
                                     "segment_type": "altitude_change",
                                     "target": {
@@ -627,6 +631,8 @@ def _get_expected_structure():
                                     use_opposite=False,
                                     variable_name=None,
                                 ),
+                                "name": "operational:main:initial_climb",
+                                "type": "polar",
                                 "CL": InputDefinition(
                                     parameter_name="CL",
                                     input_value=[0.0, 0.5, 1.0],
@@ -832,6 +838,8 @@ def _get_expected_structure():
                                     use_opposite=False,
                                     variable_name="data:aerodynamics:aircraft:cruise:CL",
                                 ),
+                                "name": "operational:main:climb",
+                                "type": "polar",
                             },
                             "thrust_rate": InputDefinition(
                                 parameter_name="thrust_rate",
@@ -904,6 +912,8 @@ def _get_expected_structure():
                                 use_opposite=False,
                                 variable_name="data:aerodynamics:aircraft:cruise:CL",
                             ),
+                            "name": "operational:main:cruise",
+                            "type": "polar",
                         },
                         "segment_type": "optimal_cruise",
                         "type": "segment",
@@ -1072,6 +1082,8 @@ def _get_expected_structure():
                                     use_opposite=False,
                                     variable_name="data:aerodynamics:aircraft:cruise:CL",
                                 ),
+                                "name": "operational:main:descent",
+                                "type": "polar",
                             },
                             "thrust_rate": InputDefinition(
                                 parameter_name="thrust_rate",
@@ -1470,6 +1482,8 @@ def _get_expected_structure():
                                             use_opposite=False,
                                             variable_name="data:aerodynamics:aircraft:takeoff:CL",
                                         ),
+                                        "name": "sizing:main:initial_climb",
+                                        "type": "polar",
                                     },
                                     "segment_type": "speed_change",
                                     "target": {
@@ -1518,6 +1532,8 @@ def _get_expected_structure():
                                             use_opposite=False,
                                             variable_name="data:aerodynamics:aircraft:takeoff:CL",
                                         ),
+                                        "name": "sizing:main:initial_climb",
+                                        "type": "polar",
                                     },
                                     "segment_type": "altitude_change",
                                     "target": {
@@ -1578,6 +1594,8 @@ def _get_expected_structure():
                                     use_opposite=False,
                                     variable_name=None,
                                 ),
+                                "name": "sizing:main:initial_climb",
+                                "type": "polar",
                             },
                             "thrust_rate": InputDefinition(
                                 parameter_name="thrust_rate",
@@ -1770,6 +1788,8 @@ def _get_expected_structure():
                                     use_opposite=False,
                                     variable_name="data:aerodynamics:aircraft:cruise:CL",
                                 ),
+                                "name": "sizing:main:climb",
+                                "type": "polar",
                             },
                             "thrust_rate": InputDefinition(
                                 parameter_name="thrust_rate",
@@ -1842,6 +1862,8 @@ def _get_expected_structure():
                                 use_opposite=False,
                                 variable_name="data:aerodynamics:aircraft:cruise:CL",
                             ),
+                            "name": "sizing:main:cruise",
+                            "type": "polar",
                         },
                         "segment_type": "optimal_cruise",
                         "type": "segment",
@@ -2010,6 +2032,8 @@ def _get_expected_structure():
                                     use_opposite=False,
                                     variable_name="data:aerodynamics:aircraft:cruise:CL",
                                 ),
+                                "name": "sizing:main:descent",
+                                "type": "polar",
                             },
                             "thrust_rate": InputDefinition(
                                 parameter_name="thrust_rate",
@@ -2188,6 +2212,8 @@ def _get_expected_structure():
                                     use_opposite=False,
                                     variable_name="data:aerodynamics:aircraft:cruise:CL",
                                 ),
+                                "name": "sizing:diversion:diversion_climb",
+                                "type": "polar",
                             },
                             "thrust_rate": InputDefinition(
                                 parameter_name="thrust_rate",
@@ -2260,6 +2286,8 @@ def _get_expected_structure():
                                 use_opposite=False,
                                 variable_name="data:aerodynamics:aircraft:cruise:CL",
                             ),
+                            "name": "sizing:diversion:cruise",
+                            "type": "polar",
                         },
                         "segment_type": "cruise",
                         "type": "segment",
@@ -2428,6 +2456,8 @@ def _get_expected_structure():
                                     use_opposite=False,
                                     variable_name="data:aerodynamics:aircraft:cruise:CL",
                                 ),
+                                "name": "sizing:diversion:descent",
+                                "type": "polar",
                             },
                             "thrust_rate": InputDefinition(
                                 parameter_name="thrust_rate",
@@ -2506,6 +2536,8 @@ def _get_expected_structure():
                                     use_opposite=False,
                                     variable_name="data:aerodynamics:aircraft:cruise:CL",
                                 ),
+                                "name": "sizing:holding",
+                                "type": "polar",
                             },
                             "segment_type": "holding",
                             "target": {
@@ -2762,6 +2794,8 @@ def _get_expected_structure():
                                             use_opposite=False,
                                             variable_name="data:aerodynamics:aircraft:takeoff:CL",
                                         ),
+                                        "name": "fuel_as_objective:main:initial_climb",
+                                        "type": "polar",
                                     },
                                     "segment_type": "speed_change",
                                     "target": {
@@ -2810,6 +2844,8 @@ def _get_expected_structure():
                                             use_opposite=False,
                                             variable_name="data:aerodynamics:aircraft:takeoff:CL",
                                         ),
+                                        "name": "fuel_as_objective:main:initial_climb",
+                                        "type": "polar",
                                     },
                                     "segment_type": "altitude_change",
                                     "target": {
@@ -2870,6 +2906,8 @@ def _get_expected_structure():
                                     use_opposite=False,
                                     variable_name=None,
                                 ),
+                                "name": "fuel_as_objective:main:initial_climb",
+                                "type": "polar",
                             },
                             "thrust_rate": InputDefinition(
                                 parameter_name="thrust_rate",
@@ -3062,6 +3100,8 @@ def _get_expected_structure():
                                     use_opposite=False,
                                     variable_name="data:aerodynamics:aircraft:cruise:CL",
                                 ),
+                                "name": "fuel_as_objective:main:climb",
+                                "type": "polar",
                             },
                             "thrust_rate": InputDefinition(
                                 parameter_name="thrust_rate",
@@ -3134,6 +3174,8 @@ def _get_expected_structure():
                                 use_opposite=False,
                                 variable_name="data:aerodynamics:aircraft:cruise:CL",
                             ),
+                            "name": "fuel_as_objective:main:cruise",
+                            "type": "polar",
                         },
                         "segment_type": "optimal_cruise",
                         "type": "segment",
@@ -3302,6 +3344,8 @@ def _get_expected_structure():
                                     use_opposite=False,
                                     variable_name="data:aerodynamics:aircraft:cruise:CL",
                                 ),
+                                "name": "fuel_as_objective:main:descent",
+                                "type": "polar",
                             },
                             "thrust_rate": InputDefinition(
                                 parameter_name="thrust_rate",

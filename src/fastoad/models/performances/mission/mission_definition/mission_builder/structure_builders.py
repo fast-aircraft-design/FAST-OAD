@@ -3,7 +3,7 @@ Classes for managing internal structures of missions.
 
 The mission file provides a "human" definition of the mission.
 Structures are the translation of this human definition, that is ready to
-be transformed in a Python implementation.
+be transformed into a Python implementation.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2023 ONERA & ISAE-SUPAERO
@@ -36,6 +36,7 @@ from ..schema import (
     PARTS_TAG,
     PHASE_DEFINITIONS_TAG,
     PHASE_TAG,
+    POLAR_TAG,
     ROUTE_DEFINITIONS_TAG,
     ROUTE_TAG,
     SEGMENT_TAG,
@@ -81,9 +82,10 @@ class AbstractStructureBuilder(ABC):
 
     def __post_init__(self, definition):
         self._structure = self._build(definition)
-        self._structure[NAME_TAG] = self.qualified_name
         if self.__class__.type:
             self._structure[TYPE_TAG] = self.__class__.type
+        self._structure[NAME_TAG] = self.qualified_name
+        self._process_polar(self._structure)
         self._parse_inputs(self._structure, self._input_definitions)
 
     @property
@@ -170,9 +172,6 @@ class AbstractStructureBuilder(ABC):
         """
 
         if isinstance(structure, dict):
-            if "polar" in structure:
-                structure["polar"] = self._process_polar(structure["polar"])
-
             if "value" in structure:
                 input_definition = InputDefinition.from_dict(
                     parent, structure, part_identifier=part_identifier, prefix=self.variable_prefix
@@ -215,6 +214,8 @@ class AbstractStructureBuilder(ABC):
 
         # Here structure is not a dict, hence a directly given value.
         key, value = parent, structure
+        if key == POLAR_TAG:
+            return None
         input_definition = InputDefinition(
             key, value, part_identifier=part_identifier, prefix=self.variable_prefix
         )
@@ -232,10 +233,9 @@ class AbstractStructureBuilder(ABC):
         segment_fields = [fld for fld in fields(segment_class) if fld.name == key]
         return len(segment_fields) == 1 and issubclass(segment_fields[0].type, (list, np.ndarray))
 
-    @staticmethod
-    def _process_polar(polar_structure):
+    def _process_polar(self, structure):
         """
-        Polar data are handled specifically, as it a particular parameter of segments (
+        Polar data are handled specifically, as it is a particular parameter of segments (
         a Polar class).
 
         If "foo:bar:baz" is provided as `polar_structure`, it is replaced by the dict
@@ -245,20 +245,11 @@ class AbstractStructureBuilder(ABC):
         Also, even if `polar_structure` is a dict, it is ensured that it has the structure above.
         """
 
-        if isinstance(polar_structure, str):
-            polar_structure = {
-                "CL": {"value": polar_structure + ":CL", "shape_by_conn": True},
-                "CD": {"value": polar_structure + ":CD", "shape_by_conn": True},
-            }
-
-        elif isinstance(polar_structure, dict):
-            for key in ["CL", "CD"]:
-                if isinstance(polar_structure[key], str):
-                    polar_structure[key] = {"value": polar_structure[key], "shape_by_conn": True}
-                elif isinstance(polar_structure[key], dict):
-                    polar_structure[key]["shape_by_conn"] = True
-
-        return polar_structure
+        if POLAR_TAG in structure:
+            builder = PolarStructureBuilder(
+                structure[POLAR_TAG], "", self.qualified_name, self.variable_prefix
+            )
+            structure[POLAR_TAG] = self.process_builder(builder)
 
 
 class DefaultStructureBuilder(AbstractStructureBuilder):
@@ -270,6 +261,32 @@ class DefaultStructureBuilder(AbstractStructureBuilder):
 
     def _build(self, definition: dict) -> dict:
         return deepcopy(definition)
+
+
+class PolarStructureBuilder(AbstractStructureBuilder, structure_type=POLAR_TAG):
+    """
+    Structure builder for polar definition.
+
+    :param definition: the definition for the polar only
+    """
+
+    def _build(self, definition: dict) -> dict:
+        polar_structure = {}
+        if isinstance(definition, str):
+            polar_structure = {
+                "CL": {"value": definition + ":CL", "shape_by_conn": True},
+                "CD": {"value": definition + ":CD", "shape_by_conn": True},
+            }
+
+        elif isinstance(definition, dict):
+            polar_structure = deepcopy(definition)
+            for key in ["CL", "CD"]:
+                if isinstance(polar_structure[key], str):
+                    polar_structure[key] = {"value": polar_structure[key], "shape_by_conn": True}
+                elif isinstance(polar_structure[key], dict):
+                    polar_structure[key]["shape_by_conn"] = True
+
+        return polar_structure
 
 
 class SegmentStructureBuilder(AbstractStructureBuilder, structure_type=SEGMENT_TAG):
@@ -310,7 +327,6 @@ class PhaseStructureBuilder(AbstractStructureBuilder, structure_type=PHASE_TAG):
             else:
                 raise RuntimeError(f"Unexpected structure in definition of phase {self.name}")
 
-            phase_structure[PARTS_TAG][i] = {}
             phase_structure[PARTS_TAG][i] = self.process_builder(builder)
 
         return phase_structure
@@ -340,6 +356,11 @@ class RouteStructureBuilder(AbstractStructureBuilder, structure_type=ROUTE_TAG):
             definition, route_definition[DESCENT_PARTS_TAG]
         )
 
+        if POLAR_TAG in route_structure:
+            builder = PolarStructureBuilder(
+                route_structure[POLAR_TAG], "", self.qualified_name, self.variable_prefix
+            )
+            route_structure[POLAR_TAG] = self.process_builder(builder)
         return route_structure
 
     def _get_route_climb_or_descent_structure(self, global_definition, parts_definition):

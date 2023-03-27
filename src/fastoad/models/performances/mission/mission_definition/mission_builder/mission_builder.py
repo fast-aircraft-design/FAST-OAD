@@ -38,6 +38,7 @@ from ..schema import (
     MissionDefinition,
     PARTS_TAG,
     PHASE_TAG,
+    POLAR_TAG,
     RESERVE_TAG,
     ROUTE_TAG,
     SEGMENT_TAG,
@@ -71,9 +72,6 @@ class MissionBuilder:
                                set before calling :meth:`build`
         :param mission_name: name of chosen mission, if already decided.
         :param variable_prefix: prefix for auto-generated variable names.
-        :param force_all_block_fuel_usage: if True and if `mission_name` is provided, the mission
-                                           definition will be modified to set the target fuel
-                                           consumption to variable  "~:block_fuel"
         """
         self._structure_builders: Dict[str, AbstractStructureBuilder] = {}
 
@@ -399,13 +397,12 @@ class MissionBuilder:
 
         return phase
 
-    def _build_segment(self, segment_definition: Mapping, kwargs: Mapping) -> AbstractFlightSegment:
+    def _build_segment(self, segment_definition: Mapping, kwargs: dict) -> AbstractFlightSegment:
         """
         Builds a flight segment according to provided definition.
 
         :param segment_definition: the segment definition from mission file
         :param kwargs: a preset of keyword arguments for AbstractFlightSegment instantiation
-        :param tag: the expected tag for specifying the segment type
         :return: the FlightSegment instance
         """
         segment_class = RegisterSegment.get_class(segment_definition[SEGMENT_TYPE_TAG])
@@ -413,7 +410,7 @@ class MissionBuilder:
         part_kwargs.update(segment_definition)
         part_kwargs.update(self._base_kwargs)
         for key, value in part_kwargs.items():
-            if key == "polar":
+            if key == POLAR_TAG:
                 value = Polar(value["CL"].value, value["CD"].value)
             elif key == "target":
                 if not isinstance(value, FlightPoint):
