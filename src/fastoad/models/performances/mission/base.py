@@ -47,7 +47,7 @@ class IFlightPart(ABC, BaseDataClass):
 
 
 @dataclass
-class FlightSequence(IFlightPart, list):
+class FlightSequence(IFlightPart):
     """
     Defines and computes a flight sequence.
 
@@ -61,6 +61,8 @@ class FlightSequence(IFlightPart, list):
     #  running :meth:`compute_from`
     part_flight_points: List[pd.DataFrame] = field(default_factory=list, init=False)
 
+    _sequence: List[IFlightPart] = field(default_factory=list, init=False)
+
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         self.part_flight_points = []
         part_start = deepcopy(start)
@@ -68,7 +70,7 @@ class FlightSequence(IFlightPart, list):
 
         self.consumed_mass_before_input_weight = 0.0
         consumed_mass = 0.0
-        for part in self:
+        for part in self._sequence:
             # This check has to be done first because relative target parameters
             # will be made absolute during compute_from()
             part_has_target_mass = not (part.target.mass is None or part.target.is_relative("mass"))
@@ -117,15 +119,42 @@ class FlightSequence(IFlightPart, list):
     @property
     def target(self) -> Optional[FlightPoint]:
         """Target of the last element of current sequence."""
-        if len(self) > 0:
-            return self[-1].target
+        if len(self._sequence) > 0:
+            return self._sequence[-1].target
 
         return None
+
+    def append(self, flight_part: IFlightPart):
+        """Append flight part to the end of the sequence."""
+        self._sequence.append(flight_part)
+
+    def clear(self):
+        """Remove all parts from flight sequence."""
+        self._sequence.clear()
+        self.part_flight_points.clear()
+        self.consumed_mass_before_input_weight = 0.0
+
+    def extend(self, seq):
+        """Extend flight sequence by appending elements from the iterable."""
+        self._sequence.extend(seq)
+
+    def index(self, *args, **kwargs):
+        """Return first index of value (see list.index())."""
+        return self._sequence.index(*args, **kwargs)
+
+    def __len__(self):
+        return len(self._sequence)
+
+    def __getitem__(self, item):
+        return self._sequence[item]
 
     def __add__(self, other):
         result = self.__class__()
         result.extend(other)
         return result
+
+    def __iter__(self):
+        return iter(self._sequence)
 
 
 class RegisterElement:
