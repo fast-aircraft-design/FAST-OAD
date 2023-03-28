@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -26,7 +26,10 @@ from fastoad.model_base.datacls import MANDATORY_FIELD
 from fastoad.model_base.propulsion import IPropulsion
 from fastoad.models.performances.mission.base import FlightSequence
 from fastoad.models.performances.mission.segments.altitude_change import AltitudeChangeSegment
-from fastoad.models.performances.mission.segments.base import AbstractFlightSegment
+from fastoad.models.performances.mission.segments.base import (
+    AbstractFlightSegment,
+    RegisteredSegment,
+)
 from fastoad.models.performances.mission.segments.hold import HoldSegment
 from fastoad.models.performances.mission.segments.mass_input import MassTargetSegment
 from fastoad.models.performances.mission.segments.speed_change import SpeedChangeSegment
@@ -42,8 +45,9 @@ from ...schema import MissionDefinition
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 
 
+# For this class, we purposely use the deprecated inheritance mechanism
 @dataclass
-class TestSegment(AbstractFlightSegment, mission_file_keyword="test_segment_B"):
+class TestSegment(AbstractFlightSegment, RegisteredSegment, mission_file_keyword="test_segment_B"):
     scalar_parameter: float = MANDATORY_FIELD
     vector_parameter_1: np.ndarray = MANDATORY_FIELD
     vector_parameter_2: np.ndarray = MANDATORY_FIELD

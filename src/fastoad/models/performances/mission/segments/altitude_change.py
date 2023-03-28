@@ -1,6 +1,6 @@
 """Classes for climb/descent segments."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -21,18 +21,16 @@ import pandas as pd
 from scipy.constants import foot, g
 
 from fastoad.model_base import FlightPoint
-from .base import AbstractManualThrustSegment
+from .base import AbstractManualThrustSegment, RegisterSegment
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
 from ..util import get_closest_flight_level
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
+@RegisterSegment("altitude_change")
 @dataclass
-class AltitudeChangeSegment(
-    AbstractManualThrustSegment,
-    mission_file_keyword="altitude_change",
-):
+class AltitudeChangeSegment(AbstractManualThrustSegment):
     """
     Computes a flight path segment where altitude is modified with constant speed.
 

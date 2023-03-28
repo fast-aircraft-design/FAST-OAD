@@ -1,6 +1,6 @@
 """Class for very simple transition in some flight phases."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -18,13 +18,12 @@ from dataclasses import dataclass
 import pandas as pd
 
 from fastoad.model_base import FlightPoint
-from fastoad.models.performances.mission.segments.base import (
-    AbstractFlightSegment,
-)
+from .base import AbstractFlightSegment, RegisterSegment
 
 
+@RegisterSegment("transition")
 @dataclass
-class DummyTransitionSegment(AbstractFlightSegment, mission_file_keyword="transition"):
+class DummyTransitionSegment(AbstractFlightSegment):
     """
     Computes a transient flight part in a very quick and dummy way.
 

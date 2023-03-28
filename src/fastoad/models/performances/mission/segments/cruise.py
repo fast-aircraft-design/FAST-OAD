@@ -22,7 +22,7 @@ from scipy.constants import foot, g
 
 from fastoad.model_base import FlightPoint
 from .altitude_change import AltitudeChangeSegment
-from .base import AbstractRegulatedThrustSegment, AbstractTimeStepFlightSegment
+from .base import AbstractRegulatedThrustSegment, AbstractTimeStepFlightSegment, RegisterSegment
 from ..util import get_closest_flight_level
 
 
@@ -56,8 +56,9 @@ class CruiseSegment(AbstractRegulatedThrustSegment):
         return target.ground_distance - current.ground_distance
 
 
+@RegisterSegment("optimal_cruise")
 @dataclass
-class OptimalCruiseSegment(CruiseSegment, mission_file_keyword="optimal_cruise"):
+class OptimalCruiseSegment(CruiseSegment):
     """
     Class for computing cruise flight segment at maximum lift/drag ratio.
 
@@ -80,8 +81,9 @@ class OptimalCruiseSegment(CruiseSegment, mission_file_keyword="optimal_cruise")
         )
 
 
+@RegisterSegment("cruise")
 @dataclass
-class ClimbAndCruiseSegment(CruiseSegment, mission_file_keyword="cruise"):
+class ClimbAndCruiseSegment(CruiseSegment):
     """
     Class for computing cruise flight segment at constant altitude.
 
@@ -192,11 +194,9 @@ class ClimbAndCruiseSegment(CruiseSegment, mission_file_keyword="cruise"):
         return pd.concat([climb_points, cruise_points]).reset_index(drop=True)
 
 
+@RegisterSegment("breguet")
 @dataclass
-class BreguetCruiseSegment(
-    CruiseSegment,
-    mission_file_keyword="breguet",
-):
+class BreguetCruiseSegment(CruiseSegment):
     """
     Class for computing cruise flight segment at constant altitude using Breguet-Leduc formula.
 

@@ -117,7 +117,7 @@ class RegisteredSegment(IFlightPart, ABC):
 
 
 @dataclass
-class AbstractFlightSegment(RegisteredSegment, ABC):
+class AbstractFlightSegment(IFlightPart, ABC):
     """
     Base class for flight path segment.
 

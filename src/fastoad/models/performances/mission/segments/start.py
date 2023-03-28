@@ -1,6 +1,6 @@
 """Class for mission start point."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,12 +17,13 @@ from dataclasses import dataclass
 import pandas as pd
 
 from fastoad.model_base import FlightPoint
-from .base import AbstractFlightSegment
+from .base import AbstractFlightSegment, RegisterSegment
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
 
 
+@RegisterSegment("start")
 @dataclass
-class Start(AbstractFlightSegment, mission_file_keyword="start"):
+class Start(AbstractFlightSegment):
     """
     Provides a starting point for a mission.
 

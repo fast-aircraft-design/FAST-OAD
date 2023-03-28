@@ -24,7 +24,7 @@ from fastoad.io import DataFile
 from fastoad.model_base.datacls import MANDATORY_FIELD
 from ..mission_run import AdvancedMissionComp
 from ..mission_wrapper import MissionWrapper
-from ...segments.base import AbstractFlightSegment
+from ...segments.base import AbstractFlightSegment, RegisterSegment
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
@@ -35,8 +35,9 @@ def cleanup():
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
+@RegisterSegment("test_segment_A")
 @dataclass
-class TestSegment(AbstractFlightSegment, mission_file_keyword="test_segment_A"):
+class TestSegment(AbstractFlightSegment):
     scalar_parameter: float = MANDATORY_FIELD
     vector_parameter_1: np.ndarray = MANDATORY_FIELD
     vector_parameter_2: np.ndarray = MANDATORY_FIELD

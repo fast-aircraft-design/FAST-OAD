@@ -20,15 +20,16 @@ from fastoad.model_base.datacls import MANDATORY_FIELD
 from fastoad.model_base.propulsion import IPropulsion
 from .end_of_takeoff import EndOfTakeoffSegment
 from .rotation import RotationSegment
-from ..base import DEFAULT_TIME_STEP, RegisteredSegment
+from ..base import DEFAULT_TIME_STEP, RegisterSegment
 from ..ground_speed_change import GroundSpeedChangeSegment
 from ...base import FlightSequence
 from ...polar import Polar
 from ...polar_modifier import AbstractPolarModifier, UnchangedPolar
 
 
+@RegisterSegment("takeoff")
 @dataclass
-class TakeOffSequence(RegisteredSegment, FlightSequence, mission_file_keyword="takeoff"):
+class TakeOffSequence(FlightSequence):
     """
     This class does a time-step simulation of a full takeoff:
 

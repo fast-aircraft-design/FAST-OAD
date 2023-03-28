@@ -1,6 +1,6 @@
 """Classes for acceleration/deceleration segments."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,14 +17,15 @@ from dataclasses import dataclass
 from typing import List, Tuple
 
 from fastoad.model_base import FlightPoint
-from .base import AbstractManualThrustSegment
+from .base import AbstractManualThrustSegment, RegisterSegment
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
+@RegisterSegment("speed_change")
 @dataclass
-class SpeedChangeSegment(AbstractManualThrustSegment, mission_file_keyword="speed_change"):
+class SpeedChangeSegment(AbstractManualThrustSegment):
     """
     Computes a flight path segment where speed is modified with no change in altitude.
 

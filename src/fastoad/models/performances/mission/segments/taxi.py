@@ -20,17 +20,15 @@ import pandas as pd
 from fastoad.model_base import FlightPoint
 from fastoad.models.performances.mission.segments.base import (
     AbstractFixedDurationSegment,
+    RegisterSegment,
 )
 from .base import AbstractManualThrustSegment
 from ..polar import Polar
 
 
+@RegisterSegment("taxi")
 @dataclass
-class TaxiSegment(
-    AbstractManualThrustSegment,
-    AbstractFixedDurationSegment,
-    mission_file_keyword="taxi",
-):
+class TaxiSegment(AbstractManualThrustSegment, AbstractFixedDurationSegment):
     """
     Class for computing Taxi phases.
 
