@@ -1,6 +1,6 @@
 """Exceptions for mission package."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -31,3 +31,14 @@ class FastFlightSegmentIncompleteFlightPoint(FastError):
     """
     Raised when a segment computation encounters a FlightPoint instance without needed parameters.
     """
+
+
+class FastUnknownMissionElementError(FastError):
+    """Raised when an undeclared element type is requested."""
+
+    def __init__(self, element_type: str):
+        self.segment_type = element_type
+
+        msg = f'Element type "{element_type}" has not been declared.'
+
+        super().__init__(self, msg)

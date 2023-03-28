@@ -1,6 +1,6 @@
 """Base classes for mission computation."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,12 +15,13 @@
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import pandas as pd
 
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.datacls import BaseDataClass
+from .exceptions import FastUnknownMissionElementError
 
 
 @dataclass
@@ -125,3 +126,80 @@ class FlightSequence(IFlightPart, list):
         result = self.__class__()
         result.extend(other)
         return result
+
+
+class RegisterElement:
+    """
+    Base class for decorators that can associate a class with a keyword.
+
+    When subclassing, the argument 'base_class' allow to specify a class that should be
+    a parent of all registered classes. A specific check will be done at register time.
+
+        >>> class RegisterFeature(RegisterElement, base_class=AbstractFeature)
+        >>>   ...
+
+    Then the newly created class may be used as decorator like:
+
+        >>> @RegisterFeature("identifier_foo")
+        >>> class FooFeature(AbstractFeature):
+        >>>     ...
+
+    Then the registered class can be obtained by:
+
+        >>> my_class = RegisterFeature.get_class("identifier_foo")
+    """
+
+    _base_class = object
+    _keyword_vs_implementation: Dict[str, type] = {}
+
+    @classmethod
+    def __init_subclass__(cls, *, base_class=object):
+        cls._base_class = base_class
+
+    def __init__(self, keyword=""):
+        self._keyword = keyword
+
+    def __call__(self, class_to_register):
+        cls = type(self)
+        cls._add_element(self._keyword, class_to_register)
+        return class_to_register
+
+    @classmethod
+    def _add_element(cls, keyword: str, element_class: type):
+        """
+        Adds an element definition.
+
+        :param keyword: element name (mission file keyword)
+        :param element_class: element implementation
+        """
+        if issubclass(element_class, cls._base_class):
+            cls._keyword_vs_implementation[keyword] = element_class
+        else:
+            raise RuntimeWarning(
+                f'"{element_class}" is not registered because it'
+                f"does not derive from {cls._base_class}."
+            )
+
+    @classmethod
+    def get_class(cls, keyword) -> Optional[type]:
+        """
+        Provides the element implementation for provided name.
+
+        :param keyword:
+        :return: the element implementation
+        :raise FastUnknownMissionElementError: if element has not been declared.
+        """
+        element_class = cls._keyword_vs_implementation.get(keyword)
+
+        if element_class is None:
+            raise FastUnknownMissionElementError(keyword)
+
+        return element_class
+
+    @classmethod
+    def get_classes(cls) -> Dict[str, type]:
+        """
+
+        :return: dict that associates keywords to their registered class.
+        """
+        return cls._keyword_vs_implementation.copy()

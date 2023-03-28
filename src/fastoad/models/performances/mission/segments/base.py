@@ -20,7 +20,6 @@ from typing import List, Optional, Tuple, Type
 
 import numpy as np
 import pandas as pd
-from aenum import Enum, extend_enum
 from deprecated import deprecated
 from scipy.constants import g
 from scipy.optimize import root_scalar
@@ -31,8 +30,7 @@ from fastoad.model_base import FlightPoint
 from fastoad.model_base.datacls import MANDATORY_FIELD
 from fastoad.model_base.propulsion import IPropulsion
 from fastoad.models.performances.mission.polar import Polar
-from .exceptions import FastUnknownMissionSegmentError
-from ..base import IFlightPart
+from ..base import IFlightPart, RegisterElement
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
 from ..polar_modifier import AbstractPolarModifier, UnchangedPolar
 
@@ -41,7 +39,26 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 DEFAULT_TIME_STEP = 0.2
 
 
-class SegmentDefinitions(Enum):
+class RegisterSegment(RegisterElement, base_class=IFlightPart):
+    """
+    Decorator for registering IFlightPart classes.
+
+        >>> @RegisterSegment("segment_foo")
+        >>> class FooSegment(IFlightPart):
+        >>>     ...
+
+    Then the registered class can be obtained by:
+
+        >>> my_class = RegisterSegment.get_class("segment_foo")
+    """
+
+
+@deprecated(
+    "The way to get registered segments is now to use RegisterSegment.get_class(). "
+    "SegmentDefinitions will be removed in FAST-OAD 2.0",
+    version="1.5.0",
+)
+class SegmentDefinitions:
     """
     Class that associates segment names (mission file keywords) and their implementation.
     """
@@ -54,13 +71,7 @@ class SegmentDefinitions(Enum):
         :param segment_name: segment names (mission file keyword)
         :param segment_class: segment implementation (derived of :class:`~FlightSegment`)
         """
-        if issubclass(segment_class, IFlightPart):
-            extend_enum(cls, segment_name, segment_class)
-        else:
-            raise RuntimeWarning(
-                f'"{segment_name}" is ignored as segment name because its associated class '
-                "does not derive from IFlightPart."
-            )
+        RegisterSegment(segment_name)(segment_class)
 
     @classmethod
     def get_segment_class(cls, segment_name) -> Optional[Type["IFlightPart"]]:
@@ -68,21 +79,17 @@ class SegmentDefinitions(Enum):
         Provides the segment implementation for provided name.
 
         :param segment_name:
-        :return: the segment implementation (derived of :class:`~FlightSegment`),
-                 or None if segment_name is not known
+        :return: the segment implementation (derived of :class:`~FlightSegment`)
         :raise FastUnknownMissionSegmentError: if segment type has not been declared.
         """
-        try:
-            enum = cls[segment_name]
-        except KeyError:
-            enum = None
-
-        if enum:
-            return enum.value
-
-        raise FastUnknownMissionSegmentError(segment_name)
+        return RegisterSegment.get_class(segment_name)
 
 
+@deprecated(
+    "The way to register segments is now to use decorator RegisterSegment. "
+    "RegisteredSegment will be removed in FAST-OAD 2.0",
+    version="1.5.0",
+)
 class RegisteredSegment(IFlightPart, ABC):
     """
     Base class for classes that can be associated with a keyword in mission definition file.
@@ -106,11 +113,11 @@ class RegisteredSegment(IFlightPart, ABC):
     @classmethod
     def __init_subclass__(cls, *, mission_file_keyword=""):
         if mission_file_keyword:
-            SegmentDefinitions.add_segment(mission_file_keyword, cls)
+            RegisterSegment(mission_file_keyword)(cls)
 
 
 @dataclass
-class AbstractFlightSegment(RegisteredSegment, IFlightPart, ABC):
+class AbstractFlightSegment(RegisteredSegment, ABC):
     """
     Base class for flight path segment.
 
@@ -158,8 +165,8 @@ class AbstractFlightSegment(RegisteredSegment, IFlightPart, ABC):
         """
 
     @classmethod
-    def __init_subclass__(cls, *, mission_file_keyword=""):
-        super().__init_subclass__(mission_file_keyword=mission_file_keyword)
+    def __init_subclass__(cls, *args, **kwargs):
+        super().__init_subclass__(*args, **kwargs)
 
         # We want to have self.target as a property to ensure it gets always "scalarized".
         # But properties and dataclasses do not mix very well. It would be possible to
