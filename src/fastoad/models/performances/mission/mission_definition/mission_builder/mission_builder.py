@@ -12,7 +12,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from collections import ChainMap, OrderedDict
+from collections import ChainMap
 from dataclasses import fields
 from typing import Dict, List, Mapping, Optional, Union
 
@@ -287,7 +287,7 @@ class MissionBuilder:
             if self.get_input_weight_variable_name(mission_name) is None:
                 self._add_default_taxi_takeoff(mission_name)
 
-    def _build_mission(self, mission_structure: OrderedDict) -> Mission:
+    def _build_mission(self, mission_structure: dict) -> Mission:
         """
         Builds mission instance from provided structure.
 
@@ -327,7 +327,7 @@ class MissionBuilder:
 
         return mission
 
-    def _build_route(self, route_structure: OrderedDict, kwargs: Mapping = None):
+    def _build_route(self, route_structure: dict, kwargs: Mapping = None):
         """
         Builds route instance.
 

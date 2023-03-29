@@ -19,7 +19,6 @@ be transformed in a Python implementation.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from abc import ABC, abstractmethod
-from collections import OrderedDict
 from copy import deepcopy
 from dataclasses import InitVar, dataclass, field, fields
 from itertools import chain
@@ -67,7 +66,7 @@ class AbstractStructureBuilder(ABC):
     parent_name: str = None
     variable_prefix: str = ""
 
-    _structure: OrderedDict = field(default=None, init=False)
+    _structure: dict = field(default=None, init=False)
 
     _input_definitions: List[InputDefinition] = field(default_factory=list, init=False)
     _builders: List[Tuple["AbstractStructureBuilder", dict]] = field(
@@ -88,7 +87,7 @@ class AbstractStructureBuilder(ABC):
         self._parse_inputs(self._structure, self._input_definitions)
 
     @property
-    def structure(self) -> OrderedDict:
+    def structure(self) -> dict:
         """A dictionary that is ready to be translated to the matching implementation."""
         for builder, placeholder in self._builders:
             placeholder.update(builder.structure)
@@ -124,7 +123,7 @@ class AbstractStructureBuilder(ABC):
         return placeholder
 
     @abstractmethod
-    def _build(self, definition: dict) -> OrderedDict:
+    def _build(self, definition: dict) -> dict:
         """
         This method creates the needed structure dict.
 
@@ -247,12 +246,11 @@ class AbstractStructureBuilder(ABC):
         """
 
         if isinstance(polar_structure, str):
-            polar_structure = OrderedDict(
-                {
-                    "CL": {"value": polar_structure + ":CL", "shape_by_conn": True},
-                    "CD": {"value": polar_structure + ":CD", "shape_by_conn": True},
-                }
-            )
+            polar_structure = {
+                "CL": {"value": polar_structure + ":CL", "shape_by_conn": True},
+                "CD": {"value": polar_structure + ":CD", "shape_by_conn": True},
+            }
+
         elif isinstance(polar_structure, dict):
             for key in ["CL", "CD"]:
                 if isinstance(polar_structure[key], str):
@@ -270,8 +268,8 @@ class DefaultStructureBuilder(AbstractStructureBuilder):
     :param definition: the definition for the part only
     """
 
-    def _build(self, definition: dict) -> OrderedDict:
-        return OrderedDict(deepcopy(definition))
+    def _build(self, definition: dict) -> dict:
+        return deepcopy(definition)
 
 
 class SegmentStructureBuilder(AbstractStructureBuilder, structure_type=SEGMENT_TAG):
@@ -281,8 +279,8 @@ class SegmentStructureBuilder(AbstractStructureBuilder, structure_type=SEGMENT_T
     :param definition: the definition for the segment only
     """
 
-    def _build(self, definition: dict) -> OrderedDict:
-        segment_structure = OrderedDict(deepcopy(definition))
+    def _build(self, definition: dict) -> dict:
+        segment_structure = deepcopy(definition)
         del segment_structure[SEGMENT_TAG]
         segment_structure[SEGMENT_TYPE_TAG] = definition[SEGMENT_TAG]
 
@@ -296,9 +294,9 @@ class PhaseStructureBuilder(AbstractStructureBuilder, structure_type=PHASE_TAG):
     :param definition: the whole content of definition file
     """
 
-    def _build(self, definition: dict) -> OrderedDict:
+    def _build(self, definition: dict) -> dict:
         phase_definition = definition[PHASE_DEFINITIONS_TAG][self.name]
-        phase_structure = OrderedDict(deepcopy(phase_definition))
+        phase_structure = deepcopy(phase_definition)
 
         for i, part in enumerate(phase_definition[PARTS_TAG]):
             if PHASE_TAG in part:
@@ -325,9 +323,9 @@ class RouteStructureBuilder(AbstractStructureBuilder, structure_type=ROUTE_TAG):
     :param definition: the whole content of definition file
     """
 
-    def _build(self, definition: dict) -> OrderedDict:
+    def _build(self, definition: dict) -> dict:
         route_definition = definition[ROUTE_DEFINITIONS_TAG][self.name]
-        route_structure = OrderedDict(deepcopy(route_definition))
+        route_structure = deepcopy(route_definition)
 
         route_structure[CLIMB_PARTS_TAG] = self._get_route_climb_or_descent_structure(
             definition, route_definition[CLIMB_PARTS_TAG]
@@ -363,9 +361,9 @@ class MissionStructureBuilder(AbstractStructureBuilder, structure_type="mission"
     :param definition: the whole content of definition file
     """
 
-    def _build(self, definition: dict) -> OrderedDict:
+    def _build(self, definition: dict) -> dict:
         mission_definition = definition[MISSION_DEFINITION_TAG][self.name]
-        mission_structure = OrderedDict(deepcopy(mission_definition))
+        mission_structure = deepcopy(mission_definition)
 
         mission_parts = []
         for part_definition in mission_definition[PARTS_TAG]:
