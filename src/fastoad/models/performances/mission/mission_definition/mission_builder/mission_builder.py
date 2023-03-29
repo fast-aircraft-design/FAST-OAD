@@ -13,6 +13,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from collections import ChainMap
+from copy import deepcopy
 from dataclasses import fields
 from typing import Dict, List, Mapping, Optional, Union
 
@@ -46,6 +47,7 @@ from ..schema import (
 from ...base import FlightSequence
 from ...mission import Mission
 from ...polar import Polar
+from ...polar_modifier import RegisterPolarModifier, UnchangedPolar
 from ...routes import RangedRoute
 from ...segments.base import AbstractFlightSegment, RegisterSegment
 
@@ -409,9 +411,22 @@ class MissionBuilder:
         part_kwargs = kwargs.copy()
         part_kwargs.update(segment_definition)
         part_kwargs.update(self._base_kwargs)
+        part_kwargs["polar_modifier"] = UnchangedPolar()
         for key, value in part_kwargs.items():
             if key == POLAR_TAG:
-                value = Polar(value["CL"].value, value["CD"].value)
+                modifier_kwargs = deepcopy(value.get("modifier"))
+                value = Polar(
+                    cl=value["CL"].value,
+                    cd=value["CD"].value,
+                    alpha=value["alpha"].value if "alpha" in value else None,
+                )
+                if modifier_kwargs:
+                    if isinstance(modifier_kwargs, InputDefinition):
+                        modifier_kwargs = {NAME_TAG: modifier_kwargs.value}
+                    modifier_class = RegisterPolarModifier.get_class(modifier_kwargs[NAME_TAG])
+                    del modifier_kwargs[NAME_TAG]
+                    self._replace_input_definitions_by_values(modifier_kwargs)
+                    part_kwargs["polar_modifier"] = modifier_class(**modifier_kwargs)
             elif key == "target":
                 if not isinstance(value, FlightPoint):
                     target_parameters = {

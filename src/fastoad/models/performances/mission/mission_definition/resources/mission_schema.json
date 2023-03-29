@@ -173,19 +173,19 @@
         },
         "CD": {
           "$ref": "#/definitions/polar_value"
-        }
-      }
-    },
-    "polar_modifier": {
-      "type": [
-        "string",
-        "object"
-      ],
-      "properties": {
-        "name": {
-          "$ref": "#/definitions/string_parameter_value"
         },
-        "additionalProperties": true
+        "modifier": {
+          "type": [
+            "string",
+            "object"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/definitions/string_parameter_value"
+            },
+            "additionalProperties": true
+          }
+        }
       }
     },
     "base_part": {

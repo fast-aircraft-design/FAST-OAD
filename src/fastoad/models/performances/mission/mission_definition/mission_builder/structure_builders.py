@@ -280,11 +280,15 @@ class PolarStructureBuilder(AbstractStructureBuilder, structure_type=POLAR_TAG):
 
         elif isinstance(definition, dict):
             polar_structure = deepcopy(definition)
-            for key in ["CL", "CD"]:
-                if isinstance(polar_structure[key], str):
-                    polar_structure[key] = {"value": polar_structure[key], "shape_by_conn": True}
-                elif isinstance(polar_structure[key], dict):
-                    polar_structure[key]["shape_by_conn"] = True
+            for key in ["CL", "CD", "alpha"]:
+                if key in polar_structure:
+                    if isinstance(polar_structure[key], str):
+                        polar_structure[key] = {
+                            "value": polar_structure[key],
+                            "shape_by_conn": True,
+                        }
+                    elif isinstance(polar_structure[key], dict):
+                        polar_structure[key]["shape_by_conn"] = True
 
         return polar_structure
 
