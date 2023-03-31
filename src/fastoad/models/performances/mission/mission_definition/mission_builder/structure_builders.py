@@ -6,7 +6,7 @@ Structures are the translation of this human definition, that is ready to
 be transformed in a Python implementation.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -41,7 +41,7 @@ from ..schema import (
     ROUTE_TAG,
     SEGMENT_TAG,
 )
-from ...segments.base import SegmentDefinitions
+from ...segments.base import RegisterSegment
 
 
 @dataclass
@@ -183,7 +183,7 @@ class AbstractStructureBuilder(ABC):
 
             part_identifier = structure.get(NAME_TAG, part_identifier)
             if SEGMENT_TYPE_TAG in structure:
-                segment_class = SegmentDefinitions.get_segment_class(structure[SEGMENT_TYPE_TAG])
+                segment_class = RegisterSegment.get_class(structure[SEGMENT_TYPE_TAG])
             else:
                 segment_class = None
             for key, value in structure.items():

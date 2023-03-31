@@ -1,6 +1,6 @@
 """ Aerodynamics polar modifier."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,6 +16,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
 from fastoad.model_base.flight_point import FlightPoint
+from .base import RegisterElement
 from .polar import Polar
 
 
@@ -36,6 +37,20 @@ class AbstractPolarModifier(ABC):
         """
 
 
+class RegisterPolarModifier(RegisterElement, base_class=AbstractPolarModifier):
+    """
+    Decorator for registering AbstractPolarModifier classes.
+
+        >>> @RegisterPolarModifier("polar_modifier_foo")
+        >>> class FooPolarModifier(IFlightPart):
+        >>>     ...
+
+    Then the registered class can be obtained by:
+
+        >>> my_class = RegisterPolarModifier.get_class("polar_modifier_foo")
+    """
+
+
 @dataclass
 class UnchangedPolar(AbstractPolarModifier):
     """
@@ -51,6 +66,7 @@ class UnchangedPolar(AbstractPolarModifier):
         return polar
 
 
+@RegisterPolarModifier("ground_effect_raymer")
 @dataclass
 class GroundEffectRaymer(AbstractPolarModifier):
 

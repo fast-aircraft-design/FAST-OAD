@@ -46,7 +46,7 @@ from ...base import FlightSequence
 from ...mission import Mission
 from ...polar import Polar
 from ...routes import RangedRoute
-from ...segments.base import AbstractFlightSegment, SegmentDefinitions
+from ...segments.base import AbstractFlightSegment, RegisterSegment
 
 
 class MissionBuilder:
@@ -408,7 +408,7 @@ class MissionBuilder:
         :param tag: the expected tag for specifying the segment type
         :return: the FlightSegment instance
         """
-        segment_class = SegmentDefinitions.get_segment_class(segment_definition[SEGMENT_TYPE_TAG])
+        segment_class = RegisterSegment.get_class(segment_definition[SEGMENT_TYPE_TAG])
         part_kwargs = kwargs.copy()
         part_kwargs.update(segment_definition)
         part_kwargs.update(self._base_kwargs)
