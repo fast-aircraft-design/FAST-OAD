@@ -16,7 +16,8 @@ import logging
 from dataclasses import dataclass
 from typing import List
 
-from numpy import cos, pi, sin
+import numpy as np
+from numpy import cos, sin
 from scipy.constants import g
 
 from fastoad.model_base import FlightPoint
@@ -36,10 +37,12 @@ class RotationSegment(GroundSegment):
     alpha_limit (tail-strike).
     """
 
-    # The following default values are good for SMR type of aircraft.
-    # But users may be willing to test takeoff by changing these values.
-    rotation_rate: float = 3 / 180 * pi  # CS-25 rotation rate
-    alpha_limit: float = 13.5 / 180 * pi
+    #: Rotation rate in radians. Default value is CS-25 specification.
+    rotation_rate: float = np.radians(3)
+
+    #: Angle of attack (in radians) where tail strike is expected. Default value
+    #: is good for SMR aircraft.
+    alpha_limit: float = np.radians(13.5)
 
     def compute_next_flight_point(
         self, flight_points: List[FlightPoint], time_step: float
@@ -76,7 +79,7 @@ class RotationSegment(GroundSegment):
         ) + thrust * sin(alpha)
 
         if alpha >= self.alpha_limit:
-            # Tail strick, issue warning and continue accelerating without rotation
+            # Tail strike, issue warning and continue accelerating without rotation
             self.rotation_rate = 0.0
             _LOGGER.warning("TAIL STRIKE during take-off, consider increasing VR.")
 
