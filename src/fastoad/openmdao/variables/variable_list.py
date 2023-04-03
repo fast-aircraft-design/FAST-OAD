@@ -2,7 +2,7 @@
 Class for managing a list of OpenMDAO variables.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -197,8 +197,11 @@ class VariableList(list):
         """
         variables = cls()
 
+        # Need setup on ivc to have get_io_metadata() working
         ivc = deepcopy(ivc)
-        om.Problem(ivc).setup()  # Need setup to have get_io_metadata working
+        problem = om.Problem()
+        problem.model.add_subsystem("ivc", ivc)
+        problem.setup()
 
         for name, metadata in ivc.get_io_metadata(
             metadata_keys=["val", "units", "upper", "lower"]
