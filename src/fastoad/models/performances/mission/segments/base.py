@@ -488,6 +488,7 @@ class AbstractTimeStepFlightSegment(
         previous = flight_points[-1]
         next_point = FlightPoint()
 
+        next_point.alpha = previous.alpha  # Default behavior
         next_point.mass = previous.mass - self.propulsion.get_consumed_mass(previous, time_step)
         next_point.time = previous.time + time_step
         next_point.ground_distance = (
@@ -664,9 +665,6 @@ class GroundSegment(TakeOffSegment, ABC):
     # Friction coefficient considered for acceleration at take-off.
     # The default value is representative of dry concrete/asphalte
     wheels_friction: float = 0.03
-
-    # The angle of attack of the aircraft at the beginning of the segment
-    alpha: float = 0.0
 
     def get_gamma_and_acceleration(self, flight_point: FlightPoint):
         """
