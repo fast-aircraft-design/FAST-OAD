@@ -1,4 +1,4 @@
-"""Class for specifying input mass at "any" point in the mission."""
+"""Class for simulating hold segment."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,26 +14,23 @@
 
 from dataclasses import dataclass
 
-import pandas as pd
+from fastoad.models.performances.mission.segments.base import (
+    RegisterSegment,
+)
+from fastoad.models.performances.mission.segments.time_step_base import (
+    AbstractFixedDurationSegment,
+    AbstractRegulatedThrustSegment,
+)
 
-from fastoad.model_base import FlightPoint
-from .base import AbstractFlightSegment, RegisterSegment
 
-
-@RegisterSegment("mass_input")
+@RegisterSegment("holding")
 @dataclass
-class MassTargetSegment(AbstractFlightSegment):
+class HoldSegment(AbstractRegulatedThrustSegment, AbstractFixedDurationSegment):
     """
-    Class that simply sets a target mass.
+    Class for computing hold flight segment.
 
-    :meth:`compute_from` returns a 1-row dataframe that is the start point with mass
-    set to provided target mass.
-
-    class:`~fastoad.models.performances.mission.base.FlightSequence` ensures that
-    mass is consistent for segments prior to this one.
+    Mach is considered constant, equal to Mach at starting point.
+    Altitude is constant.
+    Target is a specified time. The target definition indicates
+    the time duration of the segment, independently of the initial time value.
     """
-
-    def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
-        start.mass = target.mass
-        self.complete_flight_point(start)
-        return pd.DataFrame([start])

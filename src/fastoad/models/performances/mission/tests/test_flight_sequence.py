@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,8 +16,8 @@ from numpy.testing import assert_allclose
 
 from fastoad.model_base import FlightPoint
 from ..base import FlightSequence
-from ..segments.mass_input import MassTargetSegment
-from ..segments.taxi import TaxiSegment
+from ..segments.registered.mass_input import MassTargetSegment
+from ..segments.registered.taxi import TaxiSegment
 
 
 def get_taxi_definition(propulsion, target_mass=None):

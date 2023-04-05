@@ -23,23 +23,20 @@ from scipy.constants import foot, knot
 
 from fastoad.model_base.datacls import MANDATORY_FIELD
 from fastoad.model_base.propulsion import IPropulsion
-from fastoad.models.performances.mission.base import FlightSequence
-from fastoad.models.performances.mission.segments.altitude_change import AltitudeChangeSegment
-from fastoad.models.performances.mission.segments.base import (
-    AbstractFlightSegment,
-    RegisteredSegment,
-)
-from fastoad.models.performances.mission.segments.hold import HoldSegment
-from fastoad.models.performances.mission.segments.mass_input import MassTargetSegment
-from fastoad.models.performances.mission.segments.speed_change import SpeedChangeSegment
-from fastoad.models.performances.mission.segments.start import Start
-from fastoad.models.performances.mission.segments.taxi import TaxiSegment
-from fastoad.models.performances.mission.segments.transition import DummyTransitionSegment
 from fastoad.openmdao.variables import Variable
 from ..input_definition import InputDefinition
 from ..mission_builder import MissionBuilder
 from ...exceptions import FastMissionFileMissingMissionNameError
 from ...schema import MissionDefinition
+from ....base import FlightSequence
+from ....segments.base import AbstractFlightSegment, RegisteredSegment
+from ....segments.registered.altitude_change import AltitudeChangeSegment
+from ....segments.registered.hold import HoldSegment
+from ....segments.registered.mass_input import MassTargetSegment
+from ....segments.registered.speed_change import SpeedChangeSegment
+from ....segments.registered.start import Start
+from ....segments.registered.taxi import TaxiSegment
+from ....segments.registered.transition import DummyTransitionSegment
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 

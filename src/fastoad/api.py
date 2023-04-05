@@ -15,7 +15,8 @@
 # pylint: disable=unused-import
 # flake8: noqa
 
-
+# The comment below prevents PyCharm from "optimizing" (i.e. removing) these imports.
+# noinspection PyUnresolvedReferences
 from fastoad.cmd.api import (
     get_plugin_information,
     generate_notebooks,
@@ -32,35 +33,67 @@ from fastoad.cmd.api import (
     write_xdsm,
 )
 
+# noinspection PyUnresolvedReferences
 from fastoad.io.configuration import FASTOADProblemConfigurator
+
+# noinspection PyUnresolvedReferences
 from fastoad.openmdao.problem import FASTOADProblem
 
+# noinspection PyUnresolvedReferences
 from fastoad.io import DataFile
+
+# noinspection PyUnresolvedReferences
 from fastoad.openmdao.variables import Variable, VariableList
 
+# noinspection PyUnresolvedReferences
 from fastoad.model_base import Atmosphere, AtmosphereSI, FlightPoint
 
+# noinspection PyUnresolvedReferences
 from fastoad.module_management.service_registry import (
     RegisterOpenMDAOSystem,
     RegisterPropulsion,
     RegisterSpecializedService,
     RegisterSubmodel,
 )
+
+# noinspection PyUnresolvedReferences
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
+
+# noinspection PyUnresolvedReferences
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 
+# noinspection PyUnresolvedReferences
 from fastoad.model_base.datacls import MANDATORY_FIELD
+
+# noinspection PyUnresolvedReferences
 from fastoad.models.performances.mission.segments.base import (
+    IFlightPart,
     AbstractFlightSegment,
-    AbstractTimeStepFlightSegment,
-    AbstractManualThrustSegment,
-    AbstractFixedDurationSegment,
-    AbstractRegulatedThrustSegment,
+    RegisterSegment,
 )
 
+# noinspection PyUnresolvedReferences
+from fastoad.models.performances.mission.segments.time_step_base import (
+    AbstractTimeStepFlightSegment,
+    AbstractManualThrustSegment,
+    AbstractRegulatedThrustSegment,
+    AbstractFixedDurationSegment,
+    AbstractGroundSegment,
+    AbstractTakeOffSegment,
+    AbstractPolarModifier,
+    AbstractFlightSegment,
+)
+
+# noinspection PyUnresolvedReferences
 from fastoad.gui.mission_viewer import MissionViewer
+
+# noinspection PyUnresolvedReferences
 from fastoad.gui.optimization_viewer import OptimizationViewer
+
+# noinspection PyUnresolvedReferences
 from fastoad.gui.variable_viewer import VariableViewer
+
+# noinspection PyUnresolvedReferences
 from fastoad.gui.analysis_and_plots import (
     aircraft_geometry_plot,
     drag_polar_plot,

@@ -23,7 +23,7 @@ from fastoad.model_base.propulsion import IOMPropulsionWrapper
 from fastoad.module_management.service_registry import RegisterPropulsion
 from .base import BaseMissionComp
 from ..polar import Polar
-from ..segments.cruise import BreguetCruiseSegment
+from ..segments.registered.cruise import BreguetCruiseSegment
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 

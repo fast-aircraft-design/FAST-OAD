@@ -17,8 +17,8 @@ from dataclasses import dataclass
 import pandas as pd
 
 from fastoad.model_base import FlightPoint
-from .base import AbstractFlightSegment, RegisterSegment
-from ..exceptions import FastFlightSegmentIncompleteFlightPoint
+from fastoad.models.performances.mission.exceptions import FastFlightSegmentIncompleteFlightPoint
+from fastoad.models.performances.mission.segments.base import AbstractFlightSegment, RegisterSegment
 
 
 @RegisterSegment("start")

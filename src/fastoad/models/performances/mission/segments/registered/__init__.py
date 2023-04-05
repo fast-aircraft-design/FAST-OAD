@@ -1,4 +1,8 @@
-"""Class for simulating hold segment."""
+"""
+Classes for simulating flight segments.
+
+Be sure to import this package before interpreting a mission input file.
+"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -12,19 +16,20 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from dataclasses import dataclass
+# pylint: disable=unused-import
+# flake8: noqa
 
-from .base import AbstractFixedDurationSegment, AbstractRegulatedThrustSegment, RegisterSegment
-
-
-@RegisterSegment("holding")
-@dataclass
-class HoldSegment(AbstractRegulatedThrustSegment, AbstractFixedDurationSegment):
-    """
-    Class for computing hold flight segment.
-
-    Mach is considered constant, equal to Mach at starting point.
-    Altitude is constant.
-    Target is a specified time. The target definition indicates
-    the time duration of the segment, independently of the initial time value.
-    """
+# With these imports, importing only the current package ensures to have all
+# these segments available when interpreting a mission input file
+from . import (
+    altitude_change,
+    cruise,
+    ground_speed_change,
+    hold,
+    mass_input,
+    speed_change,
+    start,
+    takeoff,
+    taxi,
+    transition,
+)

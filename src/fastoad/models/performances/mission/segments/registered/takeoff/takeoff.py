@@ -18,11 +18,11 @@ import numpy as np
 
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.datacls import MANDATORY_FIELD
+from fastoad.models.performances.mission.segments.base import RegisterSegment
+from fastoad.models.performances.mission.segments.macro_segments import MacroSegmentMeta
 from .end_of_takeoff import EndOfTakeoffSegment
 from .rotation import RotationSegment
-from ..base import RegisterSegment
 from ..ground_speed_change import GroundSpeedChangeSegment
-from ..macro_segments import MacroSegmentMeta
 
 
 @RegisterSegment("takeoff")
