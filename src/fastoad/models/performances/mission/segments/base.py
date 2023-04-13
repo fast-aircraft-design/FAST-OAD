@@ -320,6 +320,9 @@ class AbstractTimeStepFlightSegment(
     This class implements the time computation. For this computation to work, subclasses must
     implement abstract methods :meth:`get_distance_to_target`,
     :meth:`get_gamma_and_acceleration` and :meth:`compute_propulsion`.
+
+    :meth:`compute_next_alpha` also has to be overloaded if angle of attack should be
+    different of 0.
     """
 
     #: A IPropulsion instance that will be called at each time step.
@@ -396,6 +399,17 @@ class AbstractTimeStepFlightSegment(
         :return: slope angle in radians and acceleration in m**2/s
         """
 
+    def get_next_alpha(
+        self, previous_point: FlightPoint, time_step: float  # pylint: disable=unused-argument
+    ) -> float:
+        """
+        Determine the next angle of attack.
+
+        :param previous_point: the flight point from which next alpha is computed
+        :param time_step: the duration between computed flight point and previous_point
+        """
+        return 0.0
+
     def complete_flight_point(self, flight_point: FlightPoint):
         super().complete_flight_point(flight_point)
         if flight_point.altitude is not None:
@@ -466,7 +480,7 @@ class AbstractTimeStepFlightSegment(
 
             msg = self._check_values(flight_points[-1])
             if msg:
-                _LOGGER.warning(msg + ' Segment computation interrupted in "%s".', self.name)
+                _LOGGER.warning('%s Segment computation interrupted in "%s".', msg, self.name)
                 break
 
             previous_point_to_target = last_point_to_target
@@ -488,13 +502,13 @@ class AbstractTimeStepFlightSegment(
         previous = flight_points[-1]
         next_point = FlightPoint()
 
-        next_point.alpha = previous.alpha  # Default behavior
         next_point.mass = previous.mass - self.propulsion.get_consumed_mass(previous, time_step)
         next_point.time = previous.time + time_step
         next_point.ground_distance = (
             previous.ground_distance
             + previous.true_airspeed * time_step * np.cos(previous.slope_angle)
         )
+        next_point.alpha = self.get_next_alpha(previous, time_step)
         self._compute_next_altitude(next_point, previous)
 
         if self.target.true_airspeed == self.CONSTANT_VALUE:
@@ -510,7 +524,7 @@ class AbstractTimeStepFlightSegment(
         next_point.name = self.name
         return next_point
 
-    def _check_values(self, flight_point: FlightPoint) -> str:
+    def _check_values(self, flight_point: FlightPoint) -> Optional[str]:
         """
         Checks that computed values are consistent.
 
@@ -526,6 +540,7 @@ class AbstractTimeStepFlightSegment(
             return f"Altitude value {flight_point.altitude:.0f}m is out of bound."
         if flight_point.mass <= 0.0:
             return "Negative mass value."
+        return None
 
     def _add_new_flight_point(self, flight_points: List[FlightPoint], time_step):
         """
