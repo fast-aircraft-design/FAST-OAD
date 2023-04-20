@@ -1,5 +1,5 @@
 ##########################
-Mission module
+Defining missions
 ##########################
 
 Here you will find information about the mission definition files for the FAST-OAD performance module.

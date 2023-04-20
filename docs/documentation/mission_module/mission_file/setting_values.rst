@@ -1,5 +1,3 @@
-.. include:: .special.rst
-
 .. _setting-values:
 
 ##############################
@@ -25,7 +23,7 @@ The standard way is to set the parameter as value, with or without unit.
 
     If no unit is provided while parameter needs one, SI units will be assumed.
 
-    Provided units have to match :ref:`OpenMDAO convention<openmdao:feature_units>`.
+    Provided units have to match `OpenMDAO convention <https://openmdao.org/newdocs/versions/latest/features/units.html>`_.
 
 Examples:
 
