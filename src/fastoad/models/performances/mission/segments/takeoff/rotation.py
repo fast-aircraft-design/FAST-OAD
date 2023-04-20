@@ -16,7 +16,8 @@ import logging
 from dataclasses import dataclass
 from typing import List
 
-from numpy import cos, pi, sin
+import numpy as np
+from numpy import cos, sin
 from scipy.constants import g
 
 from fastoad.model_base import FlightPoint
@@ -36,26 +37,13 @@ class RotationSegment(GroundSegment):
     alpha_limit (tail-strike).
     """
 
-    # The following default values are good for SMR type of aircraft.
-    # But users may be willing to test takeoff by changing these values.
-    rotation_rate: float = 3 / 180 * pi  # CS-25 rotation rate
-    alpha_limit: float = 13.5 / 180 * pi
+    #: Rotation rate in radians/s, i.e. derivative of angle of attack.
+    #: Default value is CS-25 specification.
+    rotation_rate: float = np.radians(3)
 
-    def compute_next_flight_point(
-        self, flight_points: List[FlightPoint], time_step: float
-    ) -> FlightPoint:
-        """
-        Computes time, altitude, speed, mass and ground distance of next flight point.
-
-        :param flight_points: previous flight points
-        :param time_step: time step for computing next point
-        :return: the computed next flight point
-        """
-        previous = flight_points[-1]
-        next_point = super().compute_next_flight_point(flight_points, time_step)
-
-        self.compute_next_alpha(next_point, previous)
-        return next_point
+    #: Angle of attack (in radians) where tail strike is expected. Default value
+    #: is good for SMR aircraft.
+    alpha_limit: float = np.radians(13.5)
 
     def get_distance_to_target(
         self, flight_points: List[FlightPoint], target: FlightPoint
@@ -76,18 +64,17 @@ class RotationSegment(GroundSegment):
         ) + thrust * sin(alpha)
 
         if alpha >= self.alpha_limit:
-            # Tail strick, issue warning and continue accelerating without rotation
+            # Tail strike, issue warning and continue accelerating without rotation
             self.rotation_rate = 0.0
             _LOGGER.warning("TAIL STRIKE during take-off, consider increasing VR.")
 
         return lift - mass * g
 
-    def compute_next_alpha(self, next_point: FlightPoint, previous_point: FlightPoint):
+    def get_next_alpha(self, previous_point: FlightPoint, time_step: float) -> float:
         """
-        Determine the next AoA based on imposed rotation rate
+        Determine the next AoA based on imposed rotation rate.
 
-        :param next_point: the next flight point
         :param previous_point: the flight point from which next alpha is computed
+        :param time_step: the duration between computed flight point and previous_point
         """
-        time_step = next_point.time - previous_point.time
-        next_point.alpha = previous_point.alpha + time_step * self.rotation_rate
+        return previous_point.alpha + time_step * self.rotation_rate

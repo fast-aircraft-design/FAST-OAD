@@ -12,7 +12,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from collections import ChainMap, OrderedDict
+from collections import ChainMap
+from copy import deepcopy
 from dataclasses import fields
 from typing import Dict, List, Mapping, Optional, Union
 
@@ -38,6 +39,7 @@ from ..schema import (
     MissionDefinition,
     PARTS_TAG,
     PHASE_TAG,
+    POLAR_TAG,
     RESERVE_TAG,
     ROUTE_TAG,
     SEGMENT_TAG,
@@ -45,6 +47,7 @@ from ..schema import (
 from ...base import FlightSequence
 from ...mission import Mission
 from ...polar import Polar
+from ...polar_modifier import RegisterPolarModifier, UnchangedPolar
 from ...routes import RangedRoute
 from ...segments.base import AbstractFlightSegment, RegisterSegment
 
@@ -71,9 +74,6 @@ class MissionBuilder:
                                set before calling :meth:`build`
         :param mission_name: name of chosen mission, if already decided.
         :param variable_prefix: prefix for auto-generated variable names.
-        :param force_all_block_fuel_usage: if True and if `mission_name` is provided, the mission
-                                           definition will be modified to set the target fuel
-                                           consumption to variable  "~:block_fuel"
         """
         self._structure_builders: Dict[str, AbstractStructureBuilder] = {}
 
@@ -287,7 +287,7 @@ class MissionBuilder:
             if self.get_input_weight_variable_name(mission_name) is None:
                 self._add_default_taxi_takeoff(mission_name)
 
-    def _build_mission(self, mission_structure: OrderedDict) -> Mission:
+    def _build_mission(self, mission_structure: dict) -> Mission:
         """
         Builds mission instance from provided structure.
 
@@ -327,7 +327,7 @@ class MissionBuilder:
 
         return mission
 
-    def _build_route(self, route_structure: OrderedDict, kwargs: Mapping = None):
+    def _build_route(self, route_structure: dict, kwargs: Mapping = None):
         """
         Builds route instance.
 
@@ -399,22 +399,34 @@ class MissionBuilder:
 
         return phase
 
-    def _build_segment(self, segment_definition: Mapping, kwargs: Mapping) -> AbstractFlightSegment:
+    def _build_segment(self, segment_definition: Mapping, kwargs: dict) -> AbstractFlightSegment:
         """
         Builds a flight segment according to provided definition.
 
         :param segment_definition: the segment definition from mission file
         :param kwargs: a preset of keyword arguments for AbstractFlightSegment instantiation
-        :param tag: the expected tag for specifying the segment type
         :return: the FlightSegment instance
         """
         segment_class = RegisterSegment.get_class(segment_definition[SEGMENT_TYPE_TAG])
         part_kwargs = kwargs.copy()
         part_kwargs.update(segment_definition)
         part_kwargs.update(self._base_kwargs)
+        part_kwargs["polar_modifier"] = UnchangedPolar()
         for key, value in part_kwargs.items():
-            if key == "polar":
-                value = Polar(value["CL"].value, value["CD"].value)
+            if key == POLAR_TAG:
+                modifier_kwargs = deepcopy(value.get("modifier"))
+                value = Polar(
+                    cl=value["CL"].value,
+                    cd=value["CD"].value,
+                    alpha=value["alpha"].value if "alpha" in value else None,
+                )
+                if modifier_kwargs:
+                    if isinstance(modifier_kwargs, InputDefinition):
+                        modifier_kwargs = {NAME_TAG: modifier_kwargs.value}
+                    modifier_class = RegisterPolarModifier.get_class(modifier_kwargs[NAME_TAG])
+                    del modifier_kwargs[NAME_TAG]
+                    self._replace_input_definitions_by_values(modifier_kwargs)
+                    part_kwargs["polar_modifier"] = modifier_class(**modifier_kwargs)
             elif key == "target":
                 if not isinstance(value, FlightPoint):
                     target_parameters = {

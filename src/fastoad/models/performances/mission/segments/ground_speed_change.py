@@ -32,14 +32,6 @@ class GroundSpeedChangeSegment(GroundSegment):
     The target must define an airspeed (equivalent, true or Mach) value.
     """
 
-    def complete_flight_point(self, flight_point: FlightPoint):
-        """
-        For this segment, alpha is constant
-        """
-        flight_point.alpha = self.alpha
-
-        super().complete_flight_point(flight_point)
-
     def get_distance_to_target(
         self, flight_points: List[FlightPoint], target: FlightPoint
     ) -> float:

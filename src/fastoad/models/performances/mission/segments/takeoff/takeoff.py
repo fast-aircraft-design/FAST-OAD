@@ -14,13 +14,15 @@
 
 from dataclasses import dataclass, field
 
+import numpy as np
+
 from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.datacls import MANDATORY_FIELD
 from fastoad.model_base.propulsion import IPropulsion
 from .end_of_takeoff import EndOfTakeoffSegment
 from .rotation import RotationSegment
-from ..base import DEFAULT_TIME_STEP, RegisterSegment
+from ..base import RegisterSegment
 from ..ground_speed_change import GroundSpeedChangeSegment
 from ...base import FlightSequence
 from ...polar import Polar
@@ -74,8 +76,18 @@ class TakeOffSequence(FlightSequence):
     #: Equivalent airspeed to reach for starting aircraft rotation.
     rotation_equivalent_airspeed: float = MANDATORY_FIELD
 
+    #: Rotation rate in radians. Default value is CS-25 specification.
+    rotation_rate: float = np.radians(3)
+
+    #: Angle of attack (in radians) where tail strike is expected. Default value
+    #: is good for SMR aircraft.
+    rotation_alpha_limit: float = np.radians(13.5)
+
+    #: The temperature offset for ISA atmosphere model.
+    isa_offset: float = 0.0
+
     #: Used time step for computing ground acceleration and rotation.
-    time_step: float = DEFAULT_TIME_STEP
+    time_step: float = 0.1
 
     # Used time step for computing the takeoff part after rotation.
     end_time_step: float = 0.05
@@ -97,7 +109,7 @@ class TakeOffSequence(FlightSequence):
             "engine_setting",
             "thrust_rate",
             "time_step",
-            "end_time_step",
+            "isa_offset",
         ]:
             self._segment_kwargs[key] = value
         elif key == "rotation_equivalent_airspeed":
@@ -116,8 +128,6 @@ class TakeOffSequence(FlightSequence):
         self.clear()
 
         kwargs = self._segment_kwargs.copy()
-        if "end_time_step" in kwargs:
-            del kwargs["end_time_step"]
 
         self.append(
             GroundSpeedChangeSegment(
@@ -130,6 +140,8 @@ class TakeOffSequence(FlightSequence):
             RotationSegment(
                 name=self.name,
                 target=FlightPoint(),
+                rotation_rate=self.rotation_rate,
+                alpha_limit=self.rotation_alpha_limit,
                 **kwargs,
             )
         )

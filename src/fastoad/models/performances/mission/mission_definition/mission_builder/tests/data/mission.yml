@@ -19,6 +19,8 @@ phases:
     polar:
       CL: [ 0.0, 0.5, 1.0 ]
       CD: [ 0., 0.03, 0.12 ]
+      modifier:
+        name: none
     thrust_rate:
       value: data:propulsion:initial_climb:thrust_rate
       default: 1.0
@@ -43,6 +45,7 @@ phases:
         polar:
           CL: data:aerodynamics:aircraft:takeoff:CL
           CD: data:aerodynamics:aircraft:takeoff:CD
+          modifier: none
         target:
           altitude:
             value: 1500.

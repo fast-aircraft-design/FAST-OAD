@@ -25,6 +25,10 @@ from ...exceptions import FastFlightSegmentIncompleteFlightPoint
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
+# FIXME: This class is a bit awkward, because get_gamma_and_acceleration() knows
+#       only the current flight point, which prevents from using the slope derivative.
+#       A redefinition of the abstract class is needed.
+
 
 @RegisterSegment("end_of_takeoff")
 @dataclass
@@ -54,7 +58,6 @@ class EndOfTakeoffSegment(TakeOffSegment):
         previous = flight_points[-1]
         next_point = super().compute_next_flight_point(flight_points, time_step)
 
-        self.compute_next_alpha(next_point, previous)
         self.compute_next_gamma(next_point, previous)
         return next_point
 
@@ -88,18 +91,15 @@ class EndOfTakeoffSegment(TakeOffSegment):
             "No valid target definition for altitude change."
         )
 
-    @staticmethod
-    def compute_next_alpha(next_point: FlightPoint, previous_point: FlightPoint):
+    def get_next_alpha(self, previous_point: FlightPoint, time_step: float) -> float:
         """
-        Computes angle of attack (alpha) based on gamma_dot, using constant pitch angle assumption
+        Computes angle of attack (alpha) based on gamma_dot, using constant pitch angle assumption.
 
-        :param next_point: the next flight point
         :param previous_point: the flight point from which next alpha is computed
+        :param time_step: the duration between computed flight point and previous_point
         """
-        time_step = next_point.time - previous_point.time
 
-        # Constant pitch angle hypothesis
-        next_point.alpha = previous_point.alpha - time_step * previous_point.slope_angle_derivative
+        return previous_point.alpha - time_step * previous_point.slope_angle_derivative
 
     @staticmethod
     def compute_next_gamma(next_point: FlightPoint, previous_point: FlightPoint):

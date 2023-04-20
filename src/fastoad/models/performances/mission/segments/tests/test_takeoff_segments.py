@@ -58,9 +58,9 @@ def polar() -> Polar:
     """Returns a dummy polar where max L/D ratio is around 16."""
     cl = np.arange(0.0, 1.5, 0.01) + 0.5
     cd = 0.5e-1 * cl ** 2 + 0.01
-    aoa = np.linspace(-2.2918311, 14.7823111, 150) / 180 * np.pi
+    alpha = np.linspace(-2.2918311, 14.7823111, 150) / 180 * np.pi
 
-    return Polar(cl, cd, aoa)
+    return Polar(cl, cd, alpha)
 
 
 @pytest.fixture
@@ -185,6 +185,8 @@ def test_takeoff(polar, polar_modifier):
         polar_modifier=polar_modifier,
         engine_setting=EngineSetting.CLIMB,
         thrust_rate=1.0,
+        rotation_rate=0.05,
+        alpha_limit=0.1,
         time_step=0.2,
     )
     end_segment = EndOfTakeoffSegment(
@@ -208,6 +210,8 @@ def test_takeoff(polar, polar_modifier):
         polar_modifier=polar_modifier,
         # engine_setting=EngineSetting.CLIMB,   # using default value
         rotation_equivalent_airspeed=75.0,
+        rotation_rate=0.05,
+        rotation_alpha_limit=0.1,
         # thrust_rate=1.0,                      # using default value
         time_step=0.2,
     )
@@ -237,6 +241,8 @@ def test_takeoff(polar, polar_modifier):
     segment_2.polar_modifier = polar_modifier
     segment_2.engine_setting = EngineSetting.CLIMB
     segment_2.rotation_equivalent_airspeed = 75.0
+    segment_2.rotation_rate = 0.05
+    segment_2.rotation_alpha_limit = 0.1
     segment_2.thrust_rate = 1.0
     segment_2.time_step = 0.2
 

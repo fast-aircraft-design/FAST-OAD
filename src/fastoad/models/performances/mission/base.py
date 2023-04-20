@@ -31,7 +31,7 @@ class IFlightPart(ABC, BaseDataClass):
     """
 
     name: str = ""
-    target: FlightPoint = field(init=False, default=None)
+    target: FlightPoint = field(init=False, default_factory=FlightPoint)
 
     @abstractmethod
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
@@ -63,7 +63,12 @@ class FlightSequence(IFlightPart):
 
     _sequence: List[IFlightPart] = field(default_factory=list, init=False)
 
+    _target: FlightPoint = None
+
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
+        if self._target is not None:
+            self._sequence[-1].target = self._target
+
         self.part_flight_points = []
         part_start = deepcopy(start)
         part_start.scalarize()
@@ -119,10 +124,17 @@ class FlightSequence(IFlightPart):
     @property
     def target(self) -> Optional[FlightPoint]:
         """Target of the last element of current sequence."""
-        if len(self._sequence) > 0:
+        if hasattr(self, "_sequence") and len(self._sequence) > 0:
             return self._sequence[-1].target
 
         return None
+
+    @target.setter
+    def target(self, value: FlightPoint):
+        if hasattr(self, "_sequence") and len(self._sequence) > 0:
+            self._sequence[-1].target = value
+        else:
+            self._target = value
 
     def append(self, flight_part: IFlightPart):
         """Append flight part to the end of the sequence."""

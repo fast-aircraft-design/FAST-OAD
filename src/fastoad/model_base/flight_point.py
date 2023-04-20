@@ -1,6 +1,6 @@
 """Structure for managing flight point data."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -102,7 +102,7 @@ class FlightPoint:
     sfc: float = None  #: Specific Fuel Consumption in kg/N/s.
     slope_angle: float = None  #: Slope angle in radians.
     acceleration: float = None  #: Acceleration value in m/s**2.
-    alpha: float = None  #: angle of attack in radians
+    alpha: float = 0.0  #: angle of attack in radians
     slope_angle_derivative: float = None  #: slope angle derivative in rad/s
     name: str = None  #: Name of current phase.
 

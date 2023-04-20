@@ -27,7 +27,9 @@ from ..mission_wrapper import MissionWrapper
 from ...segments.base import AbstractFlightSegment, RegisterSegment
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
-RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
+RESULTS_FOLDER_PATH = pth.join(
+    pth.dirname(__file__), "results", pth.splitext(pth.basename(__file__))[0]
+)
 
 
 @pytest.fixture(scope="module")

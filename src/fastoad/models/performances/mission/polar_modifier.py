@@ -51,6 +51,7 @@ class RegisterPolarModifier(RegisterElement, base_class=AbstractPolarModifier):
     """
 
 
+@RegisterPolarModifier("none")
 @dataclass
 class UnchangedPolar(AbstractPolarModifier):
     """

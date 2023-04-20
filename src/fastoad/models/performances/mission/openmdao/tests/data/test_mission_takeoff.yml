@@ -1,0 +1,237 @@
+phases:
+  taxi_out:
+    parts:
+      - segment: start
+        target:
+          altitude:
+            value: 1000
+            unit: m
+      - segment: taxi
+        isa_offset: 0.0
+        thrust_rate: data:mission:operational:taxi_out:thrust_rate
+        true_airspeed:
+          value: data:mission:operational:taxi_out:true_airspeed
+          default: 0.
+        target:
+          time: data:mission:operational:taxi_out:duration
+      - segment: mass_input
+        target:
+          mass: data:mission:operational:TOW
+  takeoff:
+    engine_setting: takeoff
+    polar:
+      CL: data:aerodynamics:aircraft:takeoff:CL
+      CD: data:aerodynamics:aircraft:takeoff:CD
+      alpha: data:aerodynamics:aircraft:takeoff:AoA
+      modifier:
+        name: ground_effect_raymer
+        span:
+          value: data:geometry:wing:span
+          unit: m
+        landing_gear_height:
+          value: data:geometry:landing_gear:height
+          unit: m
+        induced_drag_coef:
+          value: data:aerodynamics:aircraft:low_speed:induced_drag_coefficient
+        k_winglet:
+          value: tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k
+        k_cd:
+          value: tuning:aerodynamics:aircraft:cruise:CD:k
+    thrust_rate: 1.0
+    isa_offset: data:mission:operational:ISA_offset
+    parts:
+      - segment: ground_speed_change
+        target:
+          equivalent_airspeed:
+            value: data:mission:operational:takeoff:Vr
+      - segment: rotation
+        target:
+          delta_altitude:
+            value: 35
+            unit: ft
+      - segment: end_of_takeoff
+        time_step: 0.05
+        target:
+          delta_altitude:
+            value: 35
+            unit: ft
+  takeoff_wo_gnd_effect:
+    engine_setting: takeoff
+    polar:
+      CL: data:aerodynamics:aircraft:takeoff:CL
+      CD: data:aerodynamics:aircraft:takeoff:CD
+      alpha: data:aerodynamics:aircraft:takeoff:AoA
+    thrust_rate: 1.0
+    isa_offset: data:mission:operational:ISA_offset
+    parts:
+      - segment: takeoff
+        wheels_friction: 0.03
+        rotation_equivalent_airspeed:
+            value: data:mission:operational:takeoff:Vr
+        rotation_rate:
+          value: 0.0523
+          units: rad
+        rotation_alpha_limit_truc:
+          value: 0.3489
+          units: rad
+        end_time_step: 0.05
+        target:
+          delta_altitude:
+            value: 35
+            unit: ft
+  start_stop:
+    engine_setting: takeoff
+    polar:
+      CL: data:aerodynamics:aircraft:takeoff:CL
+      CD: data:aerodynamics:aircraft:takeoff:CD
+      alpha: data:aerodynamics:aircraft:takeoff:AoA
+      modifier:
+        name: ground_effect_raymer
+        span:
+          value: data:geometry:wing:span
+          unit: m
+        landing_gear_height:
+          value: data:geometry:landing_gear:height
+          unit: m
+        induced_drag_coef:
+          value: data:aerodynamics:aircraft:low_speed:induced_drag_coefficient
+        k_winglet:
+          value: tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k
+        k_cd:
+          value: tuning:aerodynamics:aircraft:cruise:CD:k
+    thrust_rate: 1.0
+    isa_offset: data:mission:operational:ISA_offset
+    parts:
+      - segment: ground_speed_change
+        wheels_friction: 0.03
+        time_step: 0.05
+        target:
+          equivalent_airspeed:
+            value: data:mission:operational:takeoff:V1
+      - segment: ground_speed_change
+        engine_setting: idle
+        thrust_rate: 0.07
+        wheels_friction: 0.5
+        time_step: 0.05
+        target:
+          true_airspeed:
+            value: 0
+            unit: m/s
+  initial_climb:
+    engine_setting: takeoff
+    polar: data:aerodynamics:aircraft:takeoff
+    thrust_rate: 1.0
+    time_step: 0.2
+    parts:
+      - segment: altitude_change
+        target:
+          delta_altitude:
+            value: 400.
+            unit: ft
+          equivalent_airspeed: constant
+      - segment: speed_change
+        target:
+          equivalent_airspeed:
+            value: 250
+            unit: kn
+      - segment: altitude_change
+        target:
+          delta_altitude:
+            value: 1500.
+            unit: ft
+          equivalent_airspeed: constant
+  climb:
+    engine_setting: climb
+    polar: data:aerodynamics:aircraft:cruise
+    thrust_rate: 0.9
+    time_step: 5.0
+    parts:
+      - segment: altitude_change
+        target:
+          altitude:
+            value: 10000.
+            unit: ft
+          equivalent_airspeed: constant
+      - segment: speed_change
+        target:
+          equivalent_airspeed:
+            value: 300.
+            unit: kn
+      - segment: altitude_change
+        target:
+          equivalent_airspeed: constant
+          mach: 0.78
+      - segment: altitude_change
+        target:
+          mach: constant
+          altitude:
+            value: optimal_flight_level
+  descent:
+    engine_setting: idle
+    polar: data:aerodynamics:aircraft:cruise
+    thrust_rate: 0.07
+    time_step: 5.0
+    parts:
+      - segment: altitude_change
+        target:
+          equivalent_airspeed:
+            value: 300
+            unit: kn
+          mach: constant
+      - segment: altitude_change
+        target:
+          altitude:
+            value: 10000.
+            unit: ft
+          equivalent_airspeed: constant
+      - segment: speed_change
+        target:
+          equivalent_airspeed:
+            value: 250.
+            unit: kn
+      - segment: altitude_change
+        target:
+          equivalent_airspeed: constant
+          altitude:
+            value: 1500.
+            unit: ft
+
+routes:
+  main_route:
+    range:
+      value: 2000.
+      unit: NM
+    climb_parts:
+      - phase: initial_climb
+      - phase: climb
+    cruise_part:
+      segment: cruise
+      engine_setting: cruise
+      polar: data:aerodynamics:aircraft:cruise
+    descent_parts:
+      - phase: descent
+
+missions:
+  unused:
+    parts:
+      - route: main_route
+  operational:
+    parts:
+      - phase: taxi_out
+      - phase: takeoff
+      - route: main_route
+      - reserve:
+          ref: main_route
+          multiplier: 0.03
+  operational_wo_gnd_effect:
+    parts:
+      - phase: taxi_out
+      - phase: takeoff_wo_gnd_effect
+      - route: main_route
+      - reserve:
+          ref: main_route
+          multiplier: 0.03
+  start_stop_mission:
+    parts:
+      - phase: taxi_out
+      - phase: start_stop
