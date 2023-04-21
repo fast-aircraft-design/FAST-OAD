@@ -42,9 +42,6 @@ class TakeOffSequence(
     #: Equivalent airspeed to reach for starting aircraft rotation.
     rotation_equivalent_airspeed: float = MANDATORY_FIELD
 
-    #: Rotation rate in radians. Default value is CS-25 specification.
-    rotation_rate: float = np.radians(3)
-
     #: Angle of attack (in radians) where tail strike is expected. Default value
     #: is good for SMR aircraft.
     rotation_alpha_limit: float = np.radians(13.5)
