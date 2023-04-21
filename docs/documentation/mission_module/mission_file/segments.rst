@@ -303,8 +303,7 @@ Such segment will be implemented in the future.*
 =======================
 
 A :code:`holding` segment simulates a flight part at constant speed and altitude, and regulated
-thrust rate (drag is compensated). It ends when
-the target time is covered.
+thrust rate (drag is compensated). It ends when the target time is covered.
 
 **Example:**
 
@@ -503,6 +502,46 @@ good accuracy on takeoff distance.
 .. seealso::
 
     Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.takeoff.end_of_takeoff.EndOfTakeoffSegment`
+
+.. _segment-takeoff:
+
+:code:`takeoff` segment
+=======================
+
+.. versionadded:: 1.5.0
+
+This segment is the sequence of `ground_speed_change segment`_, `rotation segment`_ and `end_of_takeoff segment`_.
+
+The parameters for this segment are the same as for its 3 components, except that:
+
+  - :code:`time_step` is used only for `ground_speed_change segment`_ and `rotation segment`_.
+  - time step for `end_of_takeoff segment`_ is driven by the additional parameter :code:`end_time_step`
+  - target speed at end of `ground_speed_change segment`_ is driven by the additional parameter :code:`rotation_equivalent_airspeed`
+  - the target of :code:`takeoff` segment is the target of `end_of_takeoff segment`_, meaning it sets the safety altitude.
+
+**Example:**
+
+.. code-block:: yaml
+
+    segment: takeoff
+    wheels_friction: 0.03
+    rotation_equivalent_airspeed:
+        value: data:mission:operational:takeoff:Vr
+    rotation_rate:
+      value: 0.0523
+      units: rad
+    rotation_alpha_limit_truc:
+      value: 0.3489
+      units: rad
+    end_time_step: 0.05
+    target:
+      delta_altitude:
+        value: 35
+        unit: ft
+
+.. seealso::
+
+    Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.takeoff.takeoff.TakeOffSequence`
 
 .. _segment-target:
 
