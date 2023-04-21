@@ -81,7 +81,7 @@ from fastoad.models.performances.mission.segments.time_step_base import (
     AbstractGroundSegment,
     AbstractTakeOffSegment,
     AbstractPolarModifier,
-    AbstractFlightSegment,
+    FlightSegment,
 )
 
 # noinspection PyUnresolvedReferences
