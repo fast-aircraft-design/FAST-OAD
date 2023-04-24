@@ -52,6 +52,24 @@ from ...routes import RangedRoute
 from ...segments.base import AbstractFlightSegment, RegisterSegment
 
 
+# Rationale:
+# The way we parse the mission definition file answers several needs:
+# - Producing an executable mission instance, able to compute the mission simulation.
+# - Allowing to replace variables in the mission definition by their values, knowing the
+#   name can be contextual: a same phase definition can be used in 2 different routes or missions
+#   and variable names in this phase may depend on the parent.
+# - Allowing to know all the needed variables before knowing their values, hence before
+#   building the mission instance.
+#
+# Therefore, we have first the structure_builders package, that will provide classes to parse the
+# definition file to create a global structure of the mission, ready to implement. This structure
+# will be able to provide the actual names of the variables used in the mission, but does not
+# have to know their values.
+#
+# Then we can use the MissionBuilder below to build the mission instance and provide information
+# on the mission, once variable values have been supplied.
+
+
 class MissionBuilder:
     """
     This class builds and computes a mission from a provided definition.

@@ -19,13 +19,13 @@ from pandas._testing import assert_frame_equal
 from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import AbstractFuelPropulsion, FuelEngineSet
-from fastoad.models.performances.mission.segments.takeoff.end_of_takeoff import EndOfTakeoffSegment
-from fastoad.models.performances.mission.segments.takeoff.rotation import RotationSegment
 from ..ground_speed_change import GroundSpeedChangeSegment
+from ..takeoff.end_of_takeoff import EndOfTakeoffSegment
+from ..takeoff.rotation import RotationSegment
 from ..takeoff.takeoff import TakeOffSequence
-from ...base import FlightSequence
-from ...polar import Polar
-from ...polar_modifier import AbstractPolarModifier, GroundEffectRaymer
+from ....base import FlightSequence
+from ....polar import Polar
+from ....polar_modifier import AbstractPolarModifier, GroundEffectRaymer
 
 
 class DummyEngine(AbstractFuelPropulsion):

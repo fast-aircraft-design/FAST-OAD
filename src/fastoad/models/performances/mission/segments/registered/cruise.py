@@ -21,9 +21,12 @@ import pandas as pd
 from scipy.constants import foot, g
 
 from fastoad.model_base import FlightPoint
+from fastoad.models.performances.mission.segments.base import (
+    RegisterSegment,
+)
+from fastoad.models.performances.mission.util import get_closest_flight_level
 from .altitude_change import AltitudeChangeSegment
-from .base import AbstractRegulatedThrustSegment, AbstractTimeStepFlightSegment, RegisterSegment
-from ..util import get_closest_flight_level
+from ..time_step_base import AbstractRegulatedThrustSegment, AbstractTimeStepFlightSegment
 
 
 @dataclass

@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -19,7 +19,7 @@ from fastoad.model_base import FlightPoint
 from .conftest import ClimbPhase, DescentPhase, InitialClimbPhase, TaxiPhase
 from ..mission import Mission
 from ..routes import RangedRoute
-from ..segments.cruise import CruiseSegment
+from ..segments.registered.cruise import CruiseSegment
 
 
 def test_mission(low_speed_polar, high_speed_polar, propulsion):

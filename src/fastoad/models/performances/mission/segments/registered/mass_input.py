@@ -1,4 +1,4 @@
-"""Classes for Taxi sequences."""
+"""Class for specifying input mass at "any" point in the mission."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -13,41 +13,27 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass
-from typing import Tuple
 
 import pandas as pd
 
 from fastoad.model_base import FlightPoint
-from fastoad.models.performances.mission.segments.base import (
-    AbstractFixedDurationSegment,
-    RegisterSegment,
-)
-from .base import AbstractManualThrustSegment
-from ..polar import Polar
+from fastoad.models.performances.mission.segments.base import AbstractFlightSegment, RegisterSegment
 
 
-@RegisterSegment("taxi")
+@RegisterSegment("mass_input")
 @dataclass
-class TaxiSegment(AbstractManualThrustSegment, AbstractFixedDurationSegment):
+class MassTargetSegment(AbstractFlightSegment):
     """
-    Class for computing Taxi phases.
+    Class that simply sets a target mass.
 
-    Taxi phase has a target duration (target.time should be provided) and is at
-    constant altitude, speed and thrust rate.
+    :meth:`compute_from` returns a 1-row dataframe that is the start point with mass
+    set to provided target mass.
+
+    class:`~fastoad.models.performances.mission.base.FlightSequence` ensures that
+    mass is consistent for segments prior to this one.
     """
-
-    polar: Polar = None
-    reference_area: float = 1.0
-    time_step: float = 60.0
-    true_airspeed: float = 0.0
-
-    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
-        return 0.0, 0.0
 
     def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
-        start.mach = None
-        start.equivalent_airspeed = None
-        start.true_airspeed = self.true_airspeed
+        start.mass = target.mass
         self.complete_flight_point(start)
-
-        return super().compute_from_start_to_target(start, target)
+        return pd.DataFrame([start])

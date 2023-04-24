@@ -21,9 +21,12 @@ import pandas as pd
 from scipy.constants import foot, g
 
 from fastoad.model_base import FlightPoint
-from .base import AbstractManualThrustSegment, RegisterSegment
-from ..exceptions import FastFlightSegmentIncompleteFlightPoint
-from ..util import get_closest_flight_level
+from fastoad.models.performances.mission.exceptions import FastFlightSegmentIncompleteFlightPoint
+from fastoad.models.performances.mission.segments.base import (
+    RegisterSegment,
+)
+from fastoad.models.performances.mission.segments.time_step_base import AbstractManualThrustSegment
+from fastoad.models.performances.mission.util import get_closest_flight_level
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 

@@ -21,14 +21,15 @@ from numpy import cos, sin
 from scipy.constants import g
 
 from fastoad.model_base import FlightPoint
-from ..base import GroundSegment, RegisterSegment
+from fastoad.models.performances.mission.segments.base import RegisterSegment
+from fastoad.models.performances.mission.segments.time_step_base import AbstractGroundSegment
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 @RegisterSegment("rotation")
 @dataclass
-class RotationSegment(GroundSegment):
+class RotationSegment(AbstractGroundSegment):
     """
     Computes a flight path segment with constant rotation rate while on ground
     and accelerating.

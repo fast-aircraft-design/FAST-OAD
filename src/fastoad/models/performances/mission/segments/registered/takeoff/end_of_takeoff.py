@@ -20,8 +20,9 @@ from numpy import cos, sin
 from scipy.constants import g
 
 from fastoad.model_base import FlightPoint
-from ..base import RegisterSegment, TakeOffSegment
-from ...exceptions import FastFlightSegmentIncompleteFlightPoint
+from fastoad.models.performances.mission.exceptions import FastFlightSegmentIncompleteFlightPoint
+from fastoad.models.performances.mission.segments.base import RegisterSegment
+from fastoad.models.performances.mission.segments.time_step_base import AbstractTakeOffSegment
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -32,7 +33,7 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 @RegisterSegment("end_of_takeoff")
 @dataclass
-class EndOfTakeoffSegment(TakeOffSegment):
+class EndOfTakeoffSegment(AbstractTakeOffSegment):
     """
     Computes a flight path segment where altitude is modified with constant pitch angle.
     As a result, the slope angle and angle of attack are changing through time.

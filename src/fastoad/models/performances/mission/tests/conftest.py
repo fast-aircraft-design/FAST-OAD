@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -26,9 +26,9 @@ from fastoad.model_base.datacls import MANDATORY_FIELD
 from fastoad.model_base.propulsion import FuelEngineSet, IPropulsion
 from fastoad.models.performances.mission.base import FlightSequence
 from ..polar import Polar
-from ..segments.altitude_change import AltitudeChangeSegment
-from ..segments.speed_change import SpeedChangeSegment
-from ..segments.taxi import TaxiSegment
+from ..segments.registered.altitude_change import AltitudeChangeSegment
+from ..segments.registered.speed_change import SpeedChangeSegment
+from ..segments.registered.taxi import TaxiSegment
 
 
 @pytest.fixture(scope="module")

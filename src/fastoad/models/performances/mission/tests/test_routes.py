@@ -1,6 +1,6 @@
 """Tests module for routes.py"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -24,7 +24,7 @@ from fastoad.constants import EngineSetting, FlightPhase
 from fastoad.model_base import FlightPoint
 from .conftest import ClimbPhase, DescentPhase, InitialClimbPhase
 from ..routes import RangedRoute
-from ..segments.cruise import CruiseSegment
+from ..segments.registered.cruise import CruiseSegment
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
