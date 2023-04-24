@@ -16,7 +16,7 @@ repos:
 
       - id: sync_doc_requirements
         name: sync_doc_requirements
-        entry: poetry export --dev --without-hashes -o docs/requirements.txt -f requirements.txt
+        entry: poetry export --with doc --without-hashes -o docs/requirements.txt -f requirements.txt
         language: python
         pass_filenames: false
         files: 'poetry.lock'
