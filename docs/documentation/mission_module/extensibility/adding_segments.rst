@@ -183,39 +183,39 @@ and a provided `target` (providing the result as a pandas DataFrame)
 The AbstractTimeStepFlightSegment class
 ***************************************
 
-:class:`~fastoad.models.performances.mission.segments.base.AbstractTimeStepFlightSegment` is a
+:class:`~fastoad.models.performances.mission.segments.time_step_base.AbstractTimeStepFlightSegment` is a
 base class for segments that do time step computations.
 
 This class has 4 main additional fields:
 
-    - :attr:`~fastoad.models.performances.mission.segments.base.AbstractTimeStepFlightSegment.propulsion`,
+    - :attr:`~fastoad.models.performances.mission.segments.time_step_base.AbstractTimeStepFlightSegment.propulsion`,
       that is expected to be an :class:`~fastoad.model_base.propulsion.IPropulsion` instance.
-    - :attr:`~fastoad.models.performances.mission.segments.base.AbstractTimeStepFlightSegment.polar`,
+    - :attr:`~fastoad.models.performances.mission.segments.time_step_base.AbstractTimeStepFlightSegment.polar`,
       that is expected to be a :class:`~fastoad.models.performances.mission.polar.Polar` instance.
-    - :attr:`~fastoad.models.performances.mission.segments.base.AbstractTimeStepFlightSegment.reference_area`,
+    - :attr:`~fastoad.models.performances.mission.segments.time_step_base.AbstractTimeStepFlightSegment.reference_area`,
       that provides the reference surface area consistently with provided aerodynamic polar.
-    - :attr:`~fastoad.models.performances.mission.segments.base.AbstractTimeStepFlightSegment.time_step`,
+    - :attr:`~fastoad.models.performances.mission.segments.time_step_base.AbstractTimeStepFlightSegment.time_step`,
       that sets the time step for resolution. It is set with a low enough default value.
 
 An inheritor class will have to provide the implementations for 3 methods that are used at each
 computed time step:
-:meth:`~fastoad.models.performances.mission.segments.base.AbstractTimeStepFlightSegment.get_distance_to_target`,
-:meth:`~fastoad.models.performances.mission.segments.base.AbstractTimeStepFlightSegment.compute_propulsion` and
-:meth:`~fastoad.models.performances.mission.segments.base.AbstractTimeStepFlightSegment.get_gamma_and_acceleration`.
+:meth:`~fastoad.models.performances.mission.segments.time_step_base.AbstractTimeStepFlightSegment.get_distance_to_target`,
+:meth:`~fastoad.models.performances.mission.segments.time_step_base.AbstractTimeStepFlightSegment.compute_propulsion` and
+:meth:`~fastoad.models.performances.mission.segments.time_step_base.AbstractTimeStepFlightSegment.get_gamma_and_acceleration`.
 (see each method documentation for more information)
 
 There are some specialized base classes that provide a partial implementation of
-:class:`~fastoad.models.performances.mission.segments.base.AbstractTimeStepFlightSegment`:
+:class:`~fastoad.models.performances.mission.segments.time_step_base.AbstractTimeStepFlightSegment`:
 
-    - :class:`~fastoad.models.performances.mission.segments.base.AbstractManualThrustSegment`
-      implements :meth:`~fastoad.models.performances.mission.segments.base.AbstractTimeStepFlightSegment.compute_propulsion`.
+    - :class:`~fastoad.models.performances.mission.segments.time_step_base.AbstractManualThrustSegment`
+      implements :meth:`~fastoad.models.performances.mission.segments.time_step_base.AbstractTimeStepFlightSegment.compute_propulsion`.
       It has its own field,
-      :attr:`~fastoad.models.performances.mission.segments.base.AbstractManualThrustSegment.thrust_rate`,
+      :attr:`~fastoad.models.performances.mission.segments.time_step_base.AbstractManualThrustSegment.thrust_rate`,
       that is used to compute thrust.
-    - :class:`~fastoad.models.performances.mission.segments.base.AbstractRegulatedThrustSegment` also
-      implements :meth:`~fastoad.models.performances.mission.segments.base.AbstractTimeStepFlightSegment.compute_propulsion`,
+    - :class:`~fastoad.models.performances.mission.segments.time_step_base.AbstractRegulatedThrustSegment` also
+      implements :meth:`~fastoad.models.performances.mission.segments.time_step_base.AbstractTimeStepFlightSegment.compute_propulsion`,
       but it adjusts the thrust rate to have aircraft thrust equal to its drag.
-    - :class:`~fastoad.models.performances.mission.segments.base.AbstractFixedDurationSegment`
-      implements :meth:`~fastoad.models.performances.mission.segments.base.AbstractTimeStepFlightSegment.get_distance_to_target`.
+    - :class:`~fastoad.models.performances.mission.segments.time_step_base.AbstractFixedDurationSegment`
+      implements :meth:`~fastoad.models.performances.mission.segments.time_step_base.AbstractTimeStepFlightSegment.get_distance_to_target`.
       It allows to compute a segment with a time duration set by the target.
 

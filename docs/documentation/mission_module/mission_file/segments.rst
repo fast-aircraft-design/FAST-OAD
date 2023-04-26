@@ -52,7 +52,8 @@ Available segments are:
 specify the starting point of the mission, preferably by defining variables so it can be
 controlled from FAST-OAD input file.
 
-Without no :code:`start` specified, the mission is assumed to start at altitude 0.0, speed 0.0.
+With no :code:`start` specified, the mission is assumed to start at altitude 0.0, speed 0.0.
+
 
 .. note::
 
@@ -93,11 +94,15 @@ Without no :code:`start` specified, the mission is assumed to start at altitude 
           - ...
 
 
+.. seealso::
+
+    Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.start.Start`
+
 
 .. _segment-mass_input:
 
 :code:`mass_input` segment
-==================
+==========================
 
 .. versionadded:: 1.4.0
 
@@ -108,6 +113,8 @@ taxi-out phase.
 
 The :code:`mass_input` segment is designed to address this need. It will ensure this mass is
 achieved at the specify instant in the mission by setting the start mass input accordingly.
+
+
 
 **Example:**
 
@@ -132,6 +139,10 @@ achieved at the specify instant in the mission by setting the start mass input a
     otherwise would require to solve an additional inner loop. Since it does not correspond to
     any use case we currently know of, it has been decided to stick to the simple case.
 
+.. seealso::
+
+    Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.mass_input.MassTargetSegment`
+
 .. _segment-speed_change:
 
 :code:`speed_change` segment
@@ -140,8 +151,6 @@ achieved at the specify instant in the mission by setting the start mass input a
 A :code:`speed_change` segment simulates an acceleration or deceleration flight part, at constant
 altitude and thrust rate. It ends when the target speed (mach, true_airspeed or
 equivalent_airspeed) is reached.
-
-Python documentation: :mod:`~fastoad.models.performances.mission.segments.speed_change.SpeedChangeSegment`
 
 **Example:**
 
@@ -157,6 +166,9 @@ Python documentation: :mod:`~fastoad.models.performances.mission.segments.speed_
         value: 250
         unit: kn
 
+.. seealso::
+
+    Python documentation: :mod:`~fastoad.models.performances.mission.segments.registered.speed_change.SpeedChangeSegment`
 
 .. _segment-altitude_change:
 
@@ -168,8 +180,6 @@ Typically, it ends when the target altitude is reached.
 
 But also, a target speed can be set, while keeping another speed constant (e.g. climbing up to
 Mach 0.8 while keeping equivalent_airspeed constant).
-
-Python documentation: :class:`~fastoad.models.performances.mission.segments.altitude_change.AltitudeChangeSegment`
 
 **Examples:**
 
@@ -184,7 +194,6 @@ Python documentation: :class:`~fastoad.models.performances.mission.segments.alti
         value: 10000.
         unit: ft
       equivalent_airspeed: constant
-
 
 .. code-block:: yaml
 
@@ -207,6 +216,9 @@ Python documentation: :class:`~fastoad.models.performances.mission.segments.alti
       altitude:                                 #  at current mass.
         value: optimal_flight_level
 
+.. seealso::
+
+    Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.altitude_change.AltitudeChangeSegment`
 
 .. _segment-cruise:
 
@@ -225,8 +237,6 @@ guaranty an optimal fuel consumption for the whole cruise.
 
 It ends when the target ground distance is covered (including the distance covered during
 prepending climb, if any).
-
-Python documentation: :class:`~fastoad.models.performances.mission.segments.cruise.ClimbAndCruiseSegment`
 
 **Examples:**
 
@@ -252,6 +262,10 @@ Python documentation: :class:`~fastoad.models.performances.mission.segments.crui
         value: 2000
         unit: NM
 
+.. seealso::
+
+    Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.cruise.ClimbAndCruiseSegment`
+
 .. _segment-optimal_cruise:
 
 :code:`optimal_cruise` segment
@@ -267,8 +281,6 @@ altitude.
 *The common way to optimize the fuel consumption for commercial aircraft is a step climb cruise.
 Such segment will be implemented in the future.*
 
-Python documentation: :class:`~fastoad.models.performances.mission.segments.cruise.OptimalCruiseSegment`
-
 **Example:**
 
 .. code-block:: yaml
@@ -281,16 +293,17 @@ Python documentation: :class:`~fastoad.models.performances.mission.segments.crui
         value: 2000
         unit: NM
 
+.. seealso::
+
+    Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.cruise.OptimalCruiseSegment`
+
 .. _segment-holding:
 
 :code:`holding` segment
 =======================
 
 A :code:`holding` segment simulates a flight part at constant speed and altitude, and regulated
-thrust rate (drag is compensated). It ends when
-the target time is covered.
-
-Python documentation: :class:`~fastoad.models.performances.mission.segments.hold.HoldSegment`
+thrust rate (drag is compensated). It ends when the target time is covered.
 
 **Example:**
 
@@ -304,6 +317,10 @@ Python documentation: :class:`~fastoad.models.performances.mission.segments.hold
         value: 20                               # 20 minutes holding
         unit: min
 
+.. seealso::
+
+    Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.hold.HoldSegment`
+
 .. _segment-taxi:
 
 :code:`taxi` segment
@@ -311,8 +328,6 @@ Python documentation: :class:`~fastoad.models.performances.mission.segments.hold
 
 A :code:`taxi` segment simulates the mission parts between gate and takeoff or landing, at constant
 thrust rate. It ends when the target time is covered.
-
-Python documentation: :class:`~fastoad.models.performances.mission.segments.taxi.TaxiSegment`
 
 **Example:**
 
@@ -323,6 +338,10 @@ Python documentation: :class:`~fastoad.models.performances.mission.segments.taxi
     target:
       time:
         value: 300              # taxi for 300 seconds (5 minutes)
+
+.. seealso::
+
+    Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.taxi.TaxiSegment`
 
 .. _segment-transition:
 
@@ -389,11 +408,140 @@ Typically, it will be used as last segment to compute a reserve based on the Zer
 
 **Example:**
 
+.. code-block:: yaml
+
     segment: transition # Rough reserve simulation
     reserve_mass_ratio: 0.06
     target:
       altitude: 0.
       mach: 0.
+
+.. seealso::
+
+    Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.transition.DummyTransitionSegment`
+
+.. _segment-ground_speed_change:
+
+:code:`ground_speed_change` segment
+===================================
+
+.. versionadded:: 1.5.0
+
+This segment is used specifically during accelerating or decelerating parts while still on the ground.
+The friction force with the ground is accounted in the equation of movements.
+Whilst on the ground, the key :code:`wheels_friction` is used to define the friction coefficient.
+The segment ends when the target velocity is reached.
+
+**Example:**
+
+.. code-block:: yaml
+
+    segment: ground_speed_change
+    wheels_friction: 0.03
+    target:
+      equivalent_airspeed:
+        value: data:mission:operational:takeoff:Vr
+
+.. seealso::
+
+    Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.ground_speed_change.GroundSpeedChangeSegment`
+
+.. _segment-rotation:
+
+:code:`rotation` segment
+========================
+
+.. versionadded:: 1.5.0
+
+This segment is used to represent a rotation while still on the ground. This segment is specifically used for takeoff.
+The specific keys are (in addition to wheel friction coefficient):
+
+:code:`rotation_rate` in (rad/s) is the rotation speed used to realise the manoeuvre (by default 3deg/s, compliant with CS-25 )
+
+:code:`alpha_limit` (in rad) is the maximum angle of attack possible before tail strike (by default 13.5deg).
+
+The segment ends when lift equals weight. Therefore, no target needs to be set.
+
+**Example:**
+
+.. code-block:: yaml
+
+    segment: rotation
+    wheels_friction: 0.03
+    rotation_rate:
+      value: 0.0523
+    alpha_limit:
+      value: 0.3489
+
+.. seealso::
+
+    Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.takeoff.rotation.RotationSegment`
+
+.. _segment-end_of_takeoff:
+
+:code:`end_of_takeoff` segment
+==============================
+
+.. versionadded:: 1.5.0
+
+This segment is used at the end of the takeoff phase, between lift off and before reaching the safety altitude. The target sets the safety altitude.
+Because this phase is quite dynamic, it is a good practice to lower the time step at least to 0.05s for a
+good accuracy on takeoff distance.
+
+**Example:**
+
+.. code-block:: yaml
+
+    segment: end_of_takeoff
+    time_step: 0.05
+    target:
+      delta_altitude:
+        value: 35
+        unit: ft
+
+.. seealso::
+
+    Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.takeoff.end_of_takeoff.EndOfTakeoffSegment`
+
+.. _segment-takeoff:
+
+:code:`takeoff` segment
+=======================
+
+.. versionadded:: 1.5.0
+
+This segment is the sequence of `ground_speed_change segment`_, `rotation segment`_ and `end_of_takeoff segment`_.
+
+The parameters for this segment are the same as for its 3 components, except that:
+
+  - :code:`time_step` is used only for `ground_speed_change segment`_ and `rotation segment`_.
+  - time step for `end_of_takeoff segment`_ is driven by the additional parameter :code:`end_time_step`
+  - target speed at end of `ground_speed_change segment`_ is driven by the additional parameter :code:`rotation_equivalent_airspeed`
+  - the target of :code:`takeoff` segment is the target of `end_of_takeoff segment`_, meaning it sets the safety altitude.
+
+**Example:**
+
+.. code-block:: yaml
+
+    segment: takeoff
+    wheels_friction: 0.03
+    rotation_equivalent_airspeed:
+      value: data:mission:operational:takeoff:Vr
+    rotation_rate:
+      value: 0.0523
+      units: rad/s
+    rotation_alpha_limit:
+      value: 0.3489
+      units: rad
+    end_time_step: 0.05
+    target:
+      delta_altitude:
+        value: 35
+        unit: ft
+
+.. seealso::
+
+    Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.takeoff.takeoff.TakeOffSequence`
 
 .. _segment-target:
 
@@ -471,7 +619,7 @@ Expected value for :code:`engine_setting` are :code:`takeoff`, :code:`climb`
 , :code:`cruise` or :code:`idle`
 
 This setting is used by the "rubber engine" propulsion model
-(see :class:`~fastoad.models.propulsion.fuel_propulsion.rubber_engine.rubber_engine.RubberEngine`).
+(see class `RubberEngine <https://fast-oad-cs25.readthedocs.io/en/latest/api/fastoad_cs25.models.propulsion.fuel_propulsion.rubber_engine.rubber_engine.html#fastoad_cs25.models.propulsion.fuel_propulsion.rubber_engine.rubber_engine.RubberEngine>`_).
 It roughly links the "turbine inlet temperature" (a.k.a. T4) to the flight conditions.
 
 If another propulsion model is used, this parameter may become irrelevant, and then can be omitted.

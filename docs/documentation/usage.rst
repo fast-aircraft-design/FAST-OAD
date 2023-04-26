@@ -1,5 +1,3 @@
-.. _usage:
-
 ######
 Usage
 ######
@@ -306,7 +304,7 @@ How to get information about available plugins
 ==============================================
 
 FAST-OAD is built on a plugin architecture where each plugin can provide FAST-OAD modules,
-Jupyter notebooks and sample configuration files (see :ref:`plugin addition<add-plugins>`),
+Jupyter notebooks and sample configuration files (see :ref:`plugin addition<add-plugin>`),
 
 A list of installed plugins can be obtained with:
 
