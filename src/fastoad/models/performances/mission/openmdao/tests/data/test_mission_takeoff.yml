@@ -31,7 +31,7 @@ phases:
         landing_gear_height:
           value: data:geometry:landing_gear:height
           unit: m
-        induced_drag_coef:
+        induced_drag_coefficient:
           value: data:aerodynamics:aircraft:low_speed:induced_drag_coefficient
         k_winglet:
           value: tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k
@@ -67,11 +67,11 @@ phases:
       - segment: takeoff
         wheels_friction: 0.03
         rotation_equivalent_airspeed:
-            value: data:mission:operational:takeoff:Vr
+          value: data:mission:operational:takeoff:Vr
         rotation_rate:
           value: 0.0523
-          units: rad
-        rotation_alpha_limit_truc:
+          units: rad/s
+        rotation_alpha_limit:
           value: 0.3489
           units: rad
         end_time_step: 0.05
@@ -93,7 +93,7 @@ phases:
         landing_gear_height:
           value: data:geometry:landing_gear:height
           unit: m
-        induced_drag_coef:
+        induced_drag_coefficient:
           value: data:aerodynamics:aircraft:low_speed:induced_drag_coefficient
         k_winglet:
           value: tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k

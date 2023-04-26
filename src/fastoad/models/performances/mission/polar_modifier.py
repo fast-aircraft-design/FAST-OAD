@@ -83,7 +83,7 @@ class GroundEffectRaymer(AbstractPolarModifier):
     landing_gear_height: float
 
     #: Induced drag coefficient, multiplies CL**2 to obtain the induced drag
-    induced_drag_coef: float
+    induced_drag_coefficient: float
 
     #: Winglet effect tuning coefficient
     k_winglet: float
@@ -112,7 +112,7 @@ class GroundEffectRaymer(AbstractPolarModifier):
         ) / self.span
         k_ground = 33.0 * h_b ** 1.5 / (1 + 33.0 * h_b ** 1.5)
         cd_ground = (
-            self.induced_drag_coef
+            self.induced_drag_coefficient
             * polar.definition_cl ** 2
             * self.k_winglet
             * self.k_cd

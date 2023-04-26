@@ -526,11 +526,11 @@ The parameters for this segment are the same as for its 3 components, except tha
     segment: takeoff
     wheels_friction: 0.03
     rotation_equivalent_airspeed:
-        value: data:mission:operational:takeoff:Vr
+      value: data:mission:operational:takeoff:Vr
     rotation_rate:
       value: 0.0523
-      units: rad
-    rotation_alpha_limit_truc:
+      units: rad/s
+    rotation_alpha_limit:
       value: 0.3489
       units: rad
     end_time_step: 0.05
