@@ -2,6 +2,26 @@
 Changelog
 =========
 
+Version 1.5.0
+=============
+- Added:
+    - Computation of payload-range data. (#471 and #482)
+    - Payload-range plot. (#480)
+    - Time-step simulation of takeoff in mission module (#481, #484, #487, #490)
+    - Introduced concept of macro-segment, for proposing assembly of several segments as one usable segment. (#488)
+    - Segment implementations can now be registered using decorators. (#485)
+    - Mission definition can now define a global target fuel consumption. (#467)
+    - A FAST-OAD plugin can now come with its own source data files, obtainable using `fastoad gen_source_data_file` command. (#477)
+
+- Changed:
+    - fast-oad (not fast-oad-core) now requires at least fast-oad-cs25 0.1.4. (#475)
+    - fast-oad (and fast-oad-core) now requires at least OpenMDAO 3.18. (#483)
+    - Variable viewer can now display discrete outputs of type string. (#479)
+
+- Fixed:
+    - MissionViewer was not able to show several missions. (#477)
+    - Fixed compatibility with OpenMDAO 3.26 (#486)
+
 Version 1.4.2
 =============
 - Fixed:
