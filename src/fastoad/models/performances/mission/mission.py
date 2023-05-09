@@ -79,7 +79,7 @@ class Mission(FlightSequence):
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         if self.target_fuel_consumption is None:
             flight_points = super().compute_from(start)
-            flight_points.name.loc[flight_points.name.isnull()] = ""
+            flight_points.loc[flight_points.name.isnull()].name = ""
             self._compute_reserve(flight_points)
             return flight_points
 
@@ -109,17 +109,12 @@ class Mission(FlightSequence):
                 base_route_name = self.reserve_base_route_name
 
             reserve_fuel = self.reserve_ratio * self._get_consumed_mass_in_route(base_route_name)
-            reserve_points = pd.DataFrame(
-                [
-                    deepcopy(flight_points.iloc[-1]),
-                    deepcopy(flight_points.iloc[-1]),
-                ]
-            )
+            last_flight_point = flight_points.iloc[-1]
 
-            # We are not using -= here because it would operate last_flight_point.mass can be
-            # an array. The operator would operate element-wise and would modify the original
-            # flight point, despite the deepcopy.
-            reserve_points.mass.iloc[-1] = reserve_points.mass.iloc[0] - reserve_fuel
+            after_reserve_point = deepcopy(last_flight_point)
+            after_reserve_point.mass = last_flight_point.mass - reserve_fuel
+
+            reserve_points = pd.DataFrame([last_flight_point, after_reserve_point])
             reserve_points["name"] = f"{self.name}:reserve"
 
             self.part_flight_points.append(reserve_points)
@@ -158,7 +153,7 @@ class Mission(FlightSequence):
         """
         self.first_route.cruise_distance = cruise_distance
         flight_points = super().compute_from(start)
-        flight_points.name.loc[flight_points.name.isnull()] = ""
+        flight_points.loc[flight_points.name.isnull()].name = ""
         self._compute_reserve(flight_points)
         self._flight_points = flight_points
         return self.target_fuel_consumption - self.consumed_fuel

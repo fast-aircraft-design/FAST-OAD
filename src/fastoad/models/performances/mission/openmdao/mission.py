@@ -73,10 +73,13 @@ class OMMission(om.Group, BaseMissionComp, NeedsOWE):
         )
         self.options.declare(
             "compute_TOW",
-            default=None,
+            default=False,
             types=bool,
-            deprecation='Option "compute_TOW" is deprecated for mission module. '
-            'Please use "compute_input_weight" instead.',
+            deprecation=(
+                'Option "compute_TOW" is deprecated for mission module. '
+                'Please use "compute_input_weight" instead.',
+                "compute_input_weight",
+            ),
             desc="If True, TakeOff Weight will be computed from onboard fuel at takeoff and ZFW.\n"
             "If False, block fuel will be computed from ramp weight and ZFW.\n"
             "Not used (actually forced to True) if adjust_fuel is True.",
@@ -101,9 +104,6 @@ class OMMission(om.Group, BaseMissionComp, NeedsOWE):
 
     def setup(self):
         super().setup()
-
-        if self.options["compute_TOW"] is not None:
-            self.options["compute_input_weight"] = self.options["compute_TOW"]
 
         mission_options = {
             key: val for key, val in self.options.items() if key in AdvancedMissionComp().options
