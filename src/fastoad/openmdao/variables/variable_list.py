@@ -536,6 +536,6 @@ class VariableList(list):
 
     def __add__(self, other) -> Union[List, "VariableList"]:
         if isinstance(other, VariableList):
-            return VariableList(super().__add__(other))
+            return type(self)(super().__add__(other))
         else:
             return super().__add__(other)
