@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 1.5.1
+=============
+- Fixed:
+    - Some warning were issued by pandas when using mission module. (#492)
+
 Version 1.5.0
 =============
 - Added:
