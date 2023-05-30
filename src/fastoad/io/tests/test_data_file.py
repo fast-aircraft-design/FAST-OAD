@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -10,10 +10,12 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import os.path as pth
 from shutil import rmtree
 from typing import IO, Union
 
+import openmdao.api as om
 import pytest
 
 from .. import IVariableIOFormatter
@@ -27,6 +29,11 @@ RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
 @pytest.fixture(scope="module")
 def cleanup():
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
+
+
+@pytest.fixture(scope="module")
+def variables_ref():
+    return VariableList([Variable("data:foo", value=5), Variable("data:bar", value=10)])
 
 
 class DummyFormatter(IVariableIOFormatter):
@@ -46,9 +53,7 @@ class DummyFormatter(IVariableIOFormatter):
         self.variables.update(variables, add_variables=True)
 
 
-def test_DataFile(cleanup):
-    variables_ref = VariableList([Variable("data:foo", value=5), Variable("data:bar", value=10)])
-
+def test_datafile_save_read(cleanup, variables_ref):
     file_path = pth.join(RESULTS_FOLDER_PATH, "dummy_data_file.xml")
     with pytest.raises(FileNotFoundError) as exc_info:
         _ = DataFile(file_path)
@@ -72,13 +77,31 @@ def test_DataFile(cleanup):
 
     assert set(data_file_2) == set(variables_ref)
 
-    # Test from_* methods
-    ivc = variables_ref.to_ivc()
-    data_file_3 = DataFile.from_ivc(ivc)
-    assert isinstance(data_file_3, DataFile)
-    assert set(data_file_3) == set(variables_ref)
 
+def test_datafile_from_ivc(variables_ref):
+    ivc = variables_ref.to_ivc()
+    data_file = DataFile.from_ivc(ivc)
+    assert isinstance(data_file, DataFile)
+    assert set(data_file) == set(variables_ref)
+
+
+def test_datafile_from_dataframe(variables_ref):
     df = variables_ref.to_dataframe()
-    data_file_4 = DataFile.from_dataframe(df)
-    assert isinstance(data_file_4, DataFile)
-    assert set(data_file_4) == set(variables_ref)
+    data_file = DataFile.from_dataframe(df)
+    assert isinstance(data_file, DataFile)
+    assert set(data_file) == set(variables_ref)
+
+
+def test_datafile_from_problem(variables_ref):
+    pb = om.Problem()
+    pb.model.add_subsystem("inputs", om.IndepVarComp("data:foo", val=5.0), promotes=["*"])
+    pb.model.add_subsystem(
+        "comp", om.ExecComp("b=2*a"), promotes=[("a", "data:foo"), ("b", "data:bar")]
+    )
+    pb.setup()
+    pb.run_model()
+
+    data_file = DataFile.from_problem(pb)
+
+    assert isinstance(data_file, DataFile)
+    assert set(data_file) == set(variables_ref)
