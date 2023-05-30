@@ -376,20 +376,6 @@ class VariableList(list):
         input_vars = cls.from_dict(final_inputs)
         output_vars = cls.from_dict(final_outputs)
 
-        # Use computed value instead of initial ones, if asked for, and if problem has been run.
-        # Note: using problem.get_val() if problem has not been run may lead to unexpected
-        # behaviour when actually running the problem.
-        if not use_initial_values and problem.model.iter_count > 0:
-            for variable in input_vars + output_vars:
-                try:
-                    # Maybe useless, but we force units to ensure it is consistent
-                    variable.value = problem.get_val(variable.name, units=variable.units)
-                except RuntimeError:
-                    # In case problem is incompletely set, problem.get_val() will fail.
-                    # In such case, falling back to the method for initial values
-                    # should be enough.
-                    pass
-
         if io_status == "all":
             variables = input_vars + output_vars
         elif io_status == "inputs":
@@ -398,6 +384,20 @@ class VariableList(list):
             variables = output_vars
         else:
             raise ValueError("Unknown value for io_status")
+
+        # Use computed value instead of initial ones, if asked for, and if problem has been run.
+        # Note: using problem.get_val() if problem has not been run may lead to unexpected
+        # behaviour when actually running the problem.
+        if not use_initial_values and problem.model.iter_count > 0:
+            for variable in variables:
+                try:
+                    # Maybe useless, but we force units to ensure it is consistent
+                    variable.value = problem.get_val(variable.name, units=variable.units)
+                except RuntimeError:
+                    # In case problem is incompletely set, problem.get_val() will fail.
+                    # In such case, falling back to the method for initial values
+                    # should be enough.
+                    pass
 
         return variables
 
