@@ -1,3 +1,4 @@
+"""Utilities for VariableList."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -20,12 +21,17 @@ from openmdao.core.constants import _SetupStatus
 from fastoad.openmdao._utils import problem_without_mpi
 
 
-def get_problem_variables(problem, get_promoted_names, promoted_only) -> Tuple[dict, dict]:
+def get_problem_variables(
+    problem,
+    get_promoted_names: bool = True,
+    promoted_only: bool = True,
+) -> Tuple[dict, dict]:
     """
-    Creates dict instances containing inputs and outputs of an OpenMDAO Problem.
+    Creates dict instances (var_name vs metadata) containing inputs and outputs of an OpenMDAO
+    Problem.
 
     The inputs (is_input=True) correspond to the variables of IndepVarComp
-    components and all the unconnected variables.
+    components and all the unconnected input variables.
 
     .. note::
 
@@ -35,12 +41,13 @@ def get_problem_variables(problem, get_promoted_names, promoted_only) -> Tuple[d
     :param get_promoted_names: if True, promoted names will be returned instead of absolute ones
                                (if no promotion, absolute name will be returned)
     :param promoted_only: if True, only promoted variable names will be returned
-    :return: VariableList instance
+    :return: input dict, output dict
     """
     if not problem._metadata or problem._metadata["setup_status"] < _SetupStatus.POST_SETUP:
         with problem_without_mpi(problem) as problem_copy:
             problem_copy.setup()
             problem = problem_copy
+
     # Get inputs and outputs
     metadata_keys = (
         "val",
@@ -68,14 +75,11 @@ def get_problem_variables(problem, get_promoted_names, promoted_only) -> Tuple[d
     for abs_name, metadata in indep_outputs.items():
         del outputs[abs_name]
         inputs[abs_name] = metadata
+
     # Remove non-promoted variables if needed
     if promoted_only:
-        inputs = {
-            name: metadata for name, metadata in inputs.items() if "." not in metadata["prom_name"]
-        }
-        outputs = {
-            name: metadata for name, metadata in outputs.items() if "." not in metadata["prom_name"]
-        }
+        _remove_non_promoted(inputs)
+        _remove_non_promoted(outputs)
 
         if get_promoted_names:
             # Check connections
@@ -86,6 +90,7 @@ def get_problem_variables(problem, get_promoted_names, promoted_only) -> Tuple[d
                     # not an actual problem input. Let's move it to outputs.
                     del inputs[name]
                     outputs[name] = metadata
+
     # Add "is_input" field
     for metadata in inputs.values():
         metadata["is_input"] = True
@@ -95,31 +100,44 @@ def get_problem_variables(problem, get_promoted_names, promoted_only) -> Tuple[d
     # Manage variable promotion
     if not get_promoted_names:
         final_inputs = inputs
-
         final_outputs = outputs
     else:
-        final_inputs = {
-            metadata["prom_name"]: dict(metadata, is_input=True) for metadata in inputs.values()
-        }
-        final_outputs = _get_promoted_outputs(outputs)
+        final_inputs, final_outputs = _get_promoted_names(inputs, outputs)
 
-        # Remove possible duplicates due to Indeps
-        for input_name in final_inputs:
-            if input_name in final_outputs:
-                del final_outputs[input_name]
+    return final_inputs, final_outputs
 
-        # When variables are promoted, we may have retained a definition of the variable
-        # that does not have any description, whereas a description is available in
-        # another related definition (issue #319).
-        # Therefore, we iterate again through original variable definitions to find
-        # possible descriptions.
-        for metadata in itertools.chain(inputs.values(), outputs.values()):
-            prom_name = metadata["prom_name"]
-            if not metadata["desc"]:
-                continue
-            for final in final_inputs, final_outputs:
-                if prom_name in final and not final[prom_name]["desc"]:
-                    final[prom_name]["desc"] = metadata["desc"]
+
+def _remove_non_promoted(var_dict: dict):
+    new_dict = {
+        name: metadata for name, metadata in var_dict.items() if "." not in metadata["prom_name"]
+    }
+    var_dict.clear()
+    var_dict.update(new_dict)
+
+
+def _get_promoted_names(inputs, outputs):
+    final_inputs = {
+        metadata["prom_name"]: dict(metadata, is_input=True) for metadata in inputs.values()
+    }
+    final_outputs = _get_promoted_outputs(outputs)
+
+    # Remove possible duplicates due to Indeps
+    for input_name in final_inputs:
+        if input_name in final_outputs:
+            del final_outputs[input_name]
+
+    # When variables are promoted, we may have retained a definition of the variable
+    # that does not have any description, whereas a description is available in
+    # another related definition (issue #319).
+    # Therefore, we iterate again through original variable definitions to find
+    # possible descriptions.
+    for metadata in itertools.chain(inputs.values(), outputs.values()):
+        prom_name = metadata["prom_name"]
+        if not metadata["desc"]:
+            continue
+        for final in final_inputs, final_outputs:
+            if prom_name in final and not final[prom_name]["desc"]:
+                final[prom_name]["desc"] = metadata["desc"]
     return final_inputs, final_outputs
 
 

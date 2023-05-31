@@ -264,7 +264,7 @@ class VariableList(list):
         Creates a VariableList instance containing inputs and outputs of an OpenMDAO Problem.
 
         The inputs (is_input=True) correspond to the variables of IndepVarComp
-        components and all the unconnected variables.
+        components and all the unconnected input variables.
 
         .. note::
 
@@ -280,13 +280,15 @@ class VariableList(list):
         :return: VariableList instance
         """
 
-        final_inputs, final_outputs = get_problem_variables(
-            problem, get_promoted_names=get_promoted_names, promoted_only=promoted_only
+        inputs, outputs = get_problem_variables(
+            problem,
+            get_promoted_names=get_promoted_names,
+            promoted_only=promoted_only,
         )
 
         # Conversion to VariableList instances
-        input_vars = cls.from_dict(final_inputs)
-        output_vars = cls.from_dict(final_outputs)
+        input_vars = cls.from_dict(inputs)
+        output_vars = cls.from_dict(outputs)
 
         if io_status == "all":
             variables = input_vars + output_vars
