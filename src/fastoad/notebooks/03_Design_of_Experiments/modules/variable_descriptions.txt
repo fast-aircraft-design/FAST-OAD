@@ -1,0 +1,11 @@
+# Custom modules variables description file
+data:geometry:l || Beam section width
+data:geometry:h || Beam section height
+data:geometry:L || Beam length
+data:geometry:Ixx || Beam section second moment of area w.r.t. x axis
+data:material:density || Material density
+data:material:yield_stress || Material yield stress
+data:material:E || Material Young's modulus
+data:weight:linear_weight || Beam linear weight
+data:displacements:target || Beam targeted displacement when loads are applied
+data:forces:F || Force applied at the tip of the beam
