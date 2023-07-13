@@ -30,7 +30,7 @@ def cleanup():
 
 
 @pytest.mark.skipif(
-    str(os.environ.get("RUN_WEB_REQUESTS")).lower() in ["true", "1", "t", "y", "yes"],
+    str(os.environ.get("RUN_WEB_REQUESTS")).lower() not in ["true", "1", "t", "y", "yes"],
     reason="Using web access during tests should not be the default behavior.",
 )
 def test_write_xdsm(cleanup):

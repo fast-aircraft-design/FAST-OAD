@@ -52,7 +52,7 @@ jobs:
       - name: Unit tests
         if: ${{ runner.os == 'Linux' }} # WhatsOpt tests will be run only on Linux to avoid unneeded traffic
         env:
-          RUN_WEB_REQUESTS: True
+          RUN_WEB_REQUESTS: 'True'
         run: pytest --no-cov src
         shell: bash
 
