@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -10,7 +10,7 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+import os
 import os.path as pth
 from shutil import rmtree
 
@@ -29,6 +29,10 @@ def cleanup():
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
+@pytest.mark.skipif(
+    str(os.environ.get("RUN_WEB_REQUESTS")).lower() in ["true", "1", "t", "y", "yes"],
+    reason="Using web access during tests should not be the default behavior.",
+)
 def test_write_xdsm(cleanup):
 
     problem = FASTOADProblem()
