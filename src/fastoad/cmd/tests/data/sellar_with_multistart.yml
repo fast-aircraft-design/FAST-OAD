@@ -19,7 +19,7 @@ model:
 
 optimization:
   options:
-    - multistart: false
+    - multistart: true
       samples: 10
       criterion: maximin
       num_proc: 4

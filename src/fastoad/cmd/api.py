@@ -691,7 +691,15 @@ def _run_problem(
         problem.run_model()
         problem.optim_failed = False  # Actually, we don't know
     else:
-        problem.optim_failed = problem.run_driver()
+        optimization_options = conf._get_optimization_options()
+        if optimization_options:
+            for optimization_option in optimization_options:
+                if optimization_option.get("multistart"):
+                    problem = conf._run_multistart()
+                else:
+                    problem.optim_failed = problem.run_driver()
+        else:
+            problem.optim_failed = problem.run_driver()
     end_time = time()
     computation_time = round(end_time - start_time, 2)
 

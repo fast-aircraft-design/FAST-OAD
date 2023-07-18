@@ -19,13 +19,14 @@ import logging
 import os.path as pth
 from abc import ABC, abstractmethod
 from importlib.resources import open_text
-from typing import Dict
+from typing import Dict, Tuple
 
 import numpy as np
 import openmdao.api as om
 import tomlkit
 from jsonschema import validate
 from ruamel.yaml import YAML
+from pyDOE2 import lhs
 
 from fastoad._utils.files import make_parent_dir
 from fastoad.io import DataFile, IVariableIOFormatter
@@ -49,6 +50,7 @@ KEY_MODEL = "model"
 KEY_SUBMODELS = "submodels"
 KEY_DRIVER = "driver"
 KEY_OPTIMIZATION = "optimization"
+KEY_OPTIMIZATION_OPTIONS = "options"
 KEY_DESIGN_VARIABLES = "design_variables"
 KEY_CONSTRAINTS = "constraints"
 KEY_OBJECTIVE = "objective"
@@ -244,6 +246,7 @@ class FASTOADProblemConfigurator:
     def get_optimization_definition(self) -> Dict:
         """
         Returns information related to the optimization problem:
+            - Options
             - Design Variables
             - Constraints
             - Objectives
@@ -255,7 +258,10 @@ class FASTOADProblemConfigurator:
         conf_dict = self._serializer.data.get(KEY_OPTIMIZATION)
         if conf_dict:
             for sec, elements in conf_dict.items():
-                optimization_definition[sec] = {elem["name"]: elem for elem in elements}
+                if sec != KEY_OPTIMIZATION_OPTIONS:
+                    optimization_definition[sec] = {elem["name"]: elem for elem in elements}
+                else:
+                    optimization_definition[sec] = elements
         return optimization_definition
 
     def set_optimization_definition(self, optimization_definition: Dict):
@@ -263,7 +269,7 @@ class FASTOADProblemConfigurator:
         Updates configuration with the list of design variables, constraints, objectives
         contained in the optimization_definition dictionary.
 
-        Keys of the dictionary are: "design_var", "constraint", "objective".
+        Keys of the dictionary are: "options", "design_variables", "constraint", "objective".
 
         Configuration file will not be modified until :meth:`save` is used.
 
@@ -363,7 +369,6 @@ class FASTOADProblemConfigurator:
 
         :param model:
         :param auto_scaling:
-        :return:
         """
         optimization_definition = self.get_optimization_definition()
         # Constraints
@@ -381,17 +386,34 @@ class FASTOADProblemConfigurator:
                 constraint_table["ref"] = constraint_table["upper"]
             model.add_constraint(**constraint_table)
 
+    def _get_constraints(self) -> dict:
+        """
+        Get the objectives defined in the configuration file
+        :return: the table with the design variables
+        """
+        optimization_definition = self.get_optimization_definition()
+        constraint_tables = optimization_definition.get(KEY_CONSTRAINTS, {})
+        return constraint_tables
+
     def _add_objectives(self, model):
         """
         Adds objectives to provided model as instructed in current configuration
 
         :param model:
-        :return:
         """
         optimization_definition = self.get_optimization_definition()
         objective_tables = optimization_definition.get(KEY_OBJECTIVE, {})
         for objective_table in objective_tables.values():
             model.add_objective(**objective_table)
+
+    def _get_objectives(self) -> dict:
+        """
+        Get the objectives defined in the configuration file
+        :return: the table with the design variables
+        """
+        optimization_definition = self.get_optimization_definition()
+        objective_tables = optimization_definition.get(KEY_OBJECTIVE, {})
+        return objective_tables
 
     def _add_design_vars(self, model, auto_scaling):
         """
@@ -399,7 +421,6 @@ class FASTOADProblemConfigurator:
 
         :param model:
         :param auto_scaling:
-        :return:
         """
         optimization_definition = self.get_optimization_definition()
         design_var_tables = optimization_definition.get(KEY_DESIGN_VARIABLES, {})
@@ -416,8 +437,130 @@ class FASTOADProblemConfigurator:
                 design_var_table["ref"] = design_var_table["upper"]
             model.add_design_var(**design_var_table)
 
+    def _get_design_vars(self) -> dict:
+        """
+        Get the design variables defined in the configuration file
+        :return: the table with the design variables
+        """
+        optimization_definition = self.get_optimization_definition()
+        design_var_tables = optimization_definition.get(KEY_DESIGN_VARIABLES, {})
+        return design_var_tables
+
+    def _get_optimization_options(self) -> dict:
+        """
+        Adds design variables to provided model as instructed in current configuration
+
+        :return: dict with optimization options
+        """
+        optimization_definition = self.get_optimization_definition()
+        options_tables = optimization_definition.get(KEY_OPTIMIZATION_OPTIONS, {})
+        return options_tables
+
     def _set_configuration_modifier(self, modifier: "_IConfigurationModifier"):
         self._configuration_modifier = modifier
+
+    def _get_multistart_options(self) -> Tuple[int, str]:
+        """
+        Returns the options for multistart optimization
+
+        :return: tuple with the options (number of samples, criterion for LHS)
+        """
+        optimization_options = self._get_optimization_options()
+        for optimization_option in optimization_options:
+            # Retrieving options for multistart
+            if optimization_option.get("multistart"):
+                if optimization_option.get("samples") is not None:
+                    num_samples = optimization_option.get("samples")
+                else:
+                    num_samples = None
+                if optimization_option.get("criterion") is not None:
+                    criterion = optimization_option.get("criterion")
+                else:
+                    criterion = None
+
+        return num_samples, criterion
+
+    def _run_multistart(self):
+        """
+        Runs a multistart optimization and returns the best result
+
+        :return: instance of the problem with the best result
+        """
+        # Get multistart options
+        num_samples, criterion = self._get_multistart_options()
+
+        # Estimate the number of design variables required for the doe
+        design_variables = self._get_design_vars()
+        num_design_var = len(design_variables.values())
+
+        # Build the doe
+        doe = lhs(num_design_var, samples=num_samples, criterion=criterion)
+
+        # Adapt the doe to design variable bounds
+        samples = []
+        for i in range(num_samples):
+            sample = {}
+            for j in range(num_design_var):
+                dv = list(design_variables.values())
+                name = dv[j]["name"]
+                lower = dv[j]["lower"]
+                upper = dv[j]["upper"]
+                # Key = name, value = initial value
+                sample[name] = doe[i][j] * (upper - lower) + lower
+            samples.append(sample)
+
+        objectives = self._get_objectives()
+        # We do not consider multiobjective, therefore take the first
+        objective_infos = list(objectives.values())[0]
+        objective_name = objective_infos["name"]
+        if "scaler" in objective_infos:
+            scaler = objective_infos["scaler"]
+            if scaler > 0:
+                scaler_sign = "positive"
+            else:
+                scaler_sign = "negative"
+        else:
+            scaler_sign = "positive"
+
+        def _run_sample(sample, problem):
+            # Set initial values of design variables
+            for name, value in sample.items():
+                problem.set_val(name, val=value)
+
+            # Run the problem
+            problem.optim_failed = problem.run_driver()
+
+            return problem
+
+        successful_problems = []
+
+        problem = self.get_problem(read_inputs=True, auto_scaling=False)
+        # TODO: Implement multiprocessing to parallelize the evaluation of each sample
+        for sample in samples:
+            problem_copy = problem.copy()
+            problem_copy.setup()
+            runned_problem = _run_sample(sample, problem_copy)
+            # Keep only the problems that converged correctly
+            if not runned_problem.optim_failed:
+                successful_problems.append(
+                    tuple([runned_problem.get_val(name=objective_name), runned_problem])
+                )
+
+        # We check that at least one sample converged
+        if successful_problems:
+            # Find the best result
+            if scaler_sign == "positive":
+                best_problem = min(successful_problems, key=lambda t: t[0])
+            else:
+                best_problem = max(successful_problems, key=lambda t: t[0])
+            final_problem = best_problem[1]
+            final_problem.optim_failed = False
+        else:
+            # If not sample converged return the original problem
+            final_problem = problem
+            final_problem.optim_failed = True
+
+        return final_problem
 
 
 def _om_eval(string_to_eval: str):

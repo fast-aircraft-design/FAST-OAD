@@ -305,3 +305,24 @@ def test_set_optimization_definition(cleanup):
         conf_dict_opt = conf_dict["optimization"]
         # Should be equal
         assert optimization_conf == conf_dict_opt
+
+
+def test_multistart_optimization_problem(cleanup):
+    """
+    Tests the multistart feature
+    """
+    for extension in ["yml"]:
+        clear_openmdao_registry()
+        reference_file = pth.join(
+            DATA_FOLDER_PATH, "valid_sellar_with_newton_multistart.%s" % extension
+        )
+        conf = FASTOADProblemConfigurator(reference_file)
+
+        result_folder_path = pth.join(RESULTS_FOLDER_PATH, "problem_with_multistart_run_optim")
+        conf.input_file_path = pth.join(result_folder_path, "inputs.xml")
+        input_data = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
+        conf.write_needed_inputs(input_data)
+
+        problem = conf._run_multistart()
+
+    assert problem["f"] == pytest.approx(3.18339395, abs=1e-8)
