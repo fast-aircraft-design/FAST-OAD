@@ -14,7 +14,6 @@ Class for managing a list of OpenMDAO variables.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import itertools
 from copy import deepcopy
 from typing import Iterable, List, Mapping, Tuple, Union
 
@@ -22,9 +21,9 @@ import numpy as np
 import openmdao.api as om
 import pandas as pd
 from deprecated import deprecated
-from openmdao.core.constants import _SetupStatus
 
-from fastoad.openmdao._utils import get_unconnected_input_names, problem_without_mpi
+from fastoad.openmdao._utils import get_unconnected_input_names
+from ._util import get_problem_variables
 from .variable import METADATA_TO_IGNORE, Variable
 
 
@@ -265,7 +264,7 @@ class VariableList(list):
         Creates a VariableList instance containing inputs and outputs of an OpenMDAO Problem.
 
         The inputs (is_input=True) correspond to the variables of IndepVarComp
-        components and all the unconnected variables.
+        components and all the unconnected input variables.
 
         .. note::
 
@@ -281,114 +280,15 @@ class VariableList(list):
         :return: VariableList instance
         """
 
-        if not problem._metadata or problem._metadata["setup_status"] < _SetupStatus.POST_SETUP:
-            with problem_without_mpi(problem) as problem_copy:
-                problem_copy.setup()
-                problem = problem_copy
-
-        # Get inputs and outputs
-        metadata_keys = (
-            "val",
-            "units",
-            "shape",
-            "size",
-            "desc",
-            "ref",
-            "ref0",
-            "lower",
-            "upper",
-            "tags",
+        inputs, outputs = get_problem_variables(
+            problem,
+            get_promoted_names=get_promoted_names,
+            promoted_only=promoted_only,
         )
-        inputs = problem.model.get_io_metadata("input", metadata_keys=metadata_keys)
-        outputs = problem.model.get_io_metadata(
-            "output", metadata_keys=metadata_keys, excludes="_auto_ivc.*"
-        )
-        indep_outputs = problem.model.get_io_metadata(
-            "output",
-            metadata_keys=metadata_keys,
-            tags=["indep_var", "openmdao:indep_var"],
-            excludes="_auto_ivc.*",
-        )
-        # Move outputs from IndepVarComps into inputs
-        for abs_name, metadata in indep_outputs.items():
-            del outputs[abs_name]
-            inputs[abs_name] = metadata
-
-        # Remove non-promoted variables if needed
-        if promoted_only:
-            inputs = {
-                name: metadata
-                for name, metadata in inputs.items()
-                if "." not in metadata["prom_name"]
-            }
-            outputs = {
-                name: metadata
-                for name, metadata in outputs.items()
-                if "." not in metadata["prom_name"]
-            }
-
-            if get_promoted_names:
-                # Check connections
-                for name, metadata in inputs.copy().items():
-                    source_name = problem.model.get_source(name)
-                    if not (source_name.startswith("_auto_ivc.")) and source_name != name:
-                        # This variable is connected to another variable of the problem: it is
-                        # not an actual problem input. Let's move it to outputs.
-                        del inputs[name]
-                        outputs[name] = metadata
-
-        # Add "is_input" field
-        for metadata in inputs.values():
-            metadata["is_input"] = True
-        for metadata in outputs.values():
-            metadata["is_input"] = False
-
-        # Manage variable promotion
-        if not get_promoted_names:
-            final_inputs = inputs
-
-            final_outputs = outputs
-        else:
-            final_inputs = {
-                metadata["prom_name"]: dict(metadata, is_input=True) for metadata in inputs.values()
-            }
-            final_outputs = cls._get_promoted_outputs(outputs)
-
-            # Remove possible duplicates due to Indeps
-            for input_name in final_inputs:
-                if input_name in final_outputs:
-                    del final_outputs[input_name]
-
-            # When variables are promoted, we may have retained a definition of the variable
-            # that does not have any description, whereas a description is available in
-            # another related definition (issue #319).
-            # Therefore, we iterate again through original variable definitions to find
-            # possible descriptions.
-            for metadata in itertools.chain(inputs.values(), outputs.values()):
-                prom_name = metadata["prom_name"]
-                if not metadata["desc"]:
-                    continue
-                for final in final_inputs, final_outputs:
-                    if prom_name in final and not final[prom_name]["desc"]:
-                        final[prom_name]["desc"] = metadata["desc"]
 
         # Conversion to VariableList instances
-        input_vars = cls.from_dict(final_inputs)
-        output_vars = cls.from_dict(final_outputs)
-
-        # Use computed value instead of initial ones, if asked for, and if problem has been run.
-        # Note: using problem.get_val() if problem has not been run may lead to unexpected
-        # behaviour when actually running the problem.
-        if not use_initial_values and problem.model.iter_count > 0:
-            for variable in input_vars + output_vars:
-                try:
-                    # Maybe useless, but we force units to ensure it is consistent
-                    variable.value = problem.get_val(variable.name, units=variable.units)
-                except RuntimeError:
-                    # In case problem is incompletely set, problem.get_val() will fail.
-                    # In such case, falling back to the method for initial values
-                    # should be enough.
-                    pass
+        input_vars = cls.from_dict(inputs)
+        output_vars = cls.from_dict(outputs)
 
         if io_status == "all":
             variables = input_vars + output_vars
@@ -399,49 +299,21 @@ class VariableList(list):
         else:
             raise ValueError("Unknown value for io_status")
 
+        # Use computed value instead of initial ones, if asked for, and if problem has been run.
+        # Note: using problem.get_val() if problem has not been run may lead to unexpected
+        # behaviour when actually running the problem.
+        if not use_initial_values and problem.model.iter_count > 0:
+            for variable in variables:
+                try:
+                    # Maybe useless, but we force units to ensure it is consistent
+                    variable.value = problem.get_val(variable.name, units=variable.units)
+                except RuntimeError:
+                    # In case problem is incompletely set, problem.get_val() will fail.
+                    # In such case, falling back to the method for initial values
+                    # should be enough.
+                    pass
+
         return variables
-
-    @classmethod
-    def _get_promoted_outputs(cls, outputs: dict) -> dict:
-        """
-
-        :param outputs: dict (name, metadata) with non-promoted names as keys
-        :return: dict (name, metadata) with promoted names as keys
-        """
-        promoted_outputs = {}
-        for metadata in outputs.values():
-            prom_name = metadata["prom_name"]
-            # In case we get promoted names, several variables can match the same
-            # promoted name, with possibly different declaration for default values.
-            # We retain the first non-NaN value with defined units. If no units is
-            # ever defined, the first non-NaN value is kept.
-            # A non-NaN value with no units will be retained against a NaN value with
-            # defined units.
-
-            if prom_name in promoted_outputs:
-                # prom_name has already been encountered.
-                # Note: the succession of "if" is to help understanding, hopefully :)
-
-                if not np.all(np.isnan(promoted_outputs[prom_name]["val"])):
-                    if promoted_outputs[prom_name]["units"] is not None:
-                        # We already have a non-NaN value with defined units for current
-                        # promoted name. No need for using the current variable.
-                        continue
-                    if np.all(np.isnan(metadata["val"])):
-                        # We already have a non-NaN value and current variable has a NaN value,
-                        # so it can only add information about units. We keep the non-NaN value
-                        continue
-
-                if (
-                    np.all(np.isnan(promoted_outputs[prom_name]["val"]))
-                    and metadata["units"] is None
-                ):
-                    # We already have a non-NaN value and current variable provides no unit.
-                    # No need for using the current variable.
-                    continue
-            promoted_outputs[prom_name] = metadata
-
-        return promoted_outputs
 
     @classmethod
     @deprecated(
@@ -536,6 +408,6 @@ class VariableList(list):
 
     def __add__(self, other) -> Union[List, "VariableList"]:
         if isinstance(other, VariableList):
-            return VariableList(super().__add__(other))
+            return type(self)(super().__add__(other))
         else:
             return super().__add__(other)
