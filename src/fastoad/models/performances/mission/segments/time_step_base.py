@@ -187,7 +187,10 @@ class AbstractTimeStepFlightSegment(
                     return self.get_distance_to_target(flight_points, target)
 
                 root_scalar(
-                    replace_last_point, x0=self.time_step, x1=self.time_step / 2.0, rtol=tol
+                    replace_last_point,
+                    x0=self.time_step,
+                    x1=self.time_step / 2.0,
+                    rtol=tol * 1.0e-2,
                 )
                 last_point_to_target = self.get_distance_to_target(flight_points, target)
             elif (
