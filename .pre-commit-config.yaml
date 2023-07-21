@@ -17,7 +17,7 @@ repos:
       - id: sync_doc_requirements
         name: sync_doc_requirements
         entry: poetry export --with doc --without-hashes -o docs/requirements.txt -f requirements.txt
-        language: python
+        language: system
         pass_filenames: false
         files: 'poetry.lock'
 
@@ -25,5 +25,5 @@ repos:
         name: nbstripout
         description: 'nbstripout: strip output from Jupyter and IPython notebooks'
         entry: nbstripout
-        language: python
+        language: system
         types: [ jupyter ]
