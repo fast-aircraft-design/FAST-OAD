@@ -2,7 +2,7 @@
     Basic settings for tests
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -246,7 +246,8 @@ def with_dummy_plugins():
     """
     _setup()
     dummy_dist_1 = Mock(importlib_metadata.Distribution)
-    dummy_dist_1.name = "dummy-dist-1"
+    # Here we intentionally use an unconventional name (upper case, with underscore)
+    dummy_dist_1.name = "DUMMY_DIST-1"
     dummy_dist_2 = Mock(importlib_metadata.Distribution)
     dummy_dist_2.name = "dummy-dist-2"
     dummy_dist_3 = Mock(importlib_metadata.Distribution)
