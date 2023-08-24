@@ -166,7 +166,10 @@ class AbstractTimeStepFlightSegment(
             self._add_new_flight_point(flight_points, self.time_step)
             last_point_to_target = self.get_distance_to_target(flight_points, target)
 
-            if last_point_to_target * previous_point_to_target < 0.0:
+            if (
+                np.abs(last_point_to_target) > tol
+                and last_point_to_target * previous_point_to_target < 0.0
+            ):
 
                 # Target has been exceeded. Let's look for the exact time step using root_scalar.
                 def replace_last_point(time_step):
@@ -186,13 +189,16 @@ class AbstractTimeStepFlightSegment(
                     self._add_new_flight_point(flight_points, time_step)
                     return self.get_distance_to_target(flight_points, target)
 
-                root_scalar(
-                    replace_last_point,
-                    x0=self.time_step,
-                    x1=self.time_step / 2.0,
-                    rtol=tol * 1.0e-2,
-                )
-                last_point_to_target = self.get_distance_to_target(flight_points, target)
+                rtol = tol
+                while np.abs(last_point_to_target) > tol:
+                    rtol *= 0.1
+                    root_scalar(
+                        replace_last_point,
+                        x0=self.time_step,
+                        x1=self.time_step / 2.0,
+                        rtol=rtol,
+                    )
+                    last_point_to_target = self.get_distance_to_target(flight_points, target)
             elif (
                 np.abs(last_point_to_target) > np.abs(previous_point_to_target)
                 # If self.target.CL is defined, it means that we look for an optimal altitude and
