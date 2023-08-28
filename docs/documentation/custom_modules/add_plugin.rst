@@ -12,13 +12,13 @@ you may want to share them with other users, which can be done in two ways:
     - Packaging your code as a FAST-OAD plugin and have them install it through :code:`pip`
       or equivalent. This is the subject of current chapter.
 
-A FAST-OAD plugin can provide additional FAST-OAD modules, Jupyter notebooks and configuration files:
+A FAST-OAD plugin can provide additional FAST-OAD modules, Jupyter notebooks, configuration files and source data files:
 
     - plugin-provided FAST-OAD modules are usable in :ref:`configuration files <configuration-file>`,
       and can be :ref:`listed<get-module-list>` and :ref:`used<configuration-file-problem-definition>`
       in the same way as native modules.
-    - Command line can be used by users to retrieve :ref:`notebooks<python-usage>` and
-      :ref:`configuration files<generate-conf-file>`.
+    - Command line can be used by users to retrieve :ref:`notebooks<python-usage>`,
+      :ref:`configuration files<generate-conf-file>` and :ref:`source data files<generate-source-data_file>`.
 
 Plugin structure
 ################
@@ -37,12 +37,17 @@ In your source folder, a typical plugin structure would be like this::
     │       ├── __init__.py
     │       └── some_more_code.py
     └── notebooks/
+    │   ├── __init__.py
+    │   ├── any_data/
+    │   │   ├── __init__.py
+    │   │   └── some_data.xml
+    │   ├── awesome_notebook.ipynb
+    │   └── good_notebook.ipynb
+    └── source_data_files
         ├── __init__.py
-        ├── any_data/
-        │   ├── __init__.py
-        │   └── some_data.xml
-        ├── awesome_notebook.ipynb
-        └── good_notebook.ipynb
+        ├── source_data_file_1.xml
+        ├── source_data_file_2.xml
+        └── source_data_file_3.xml
 
 As shown above, the expected structure is composed of Python **packages**, i.e. every folder should
 contain a :code:`__init__.py` file, **even if it contains only non-Python files** (e.g. data for notebooks).
@@ -58,6 +63,7 @@ Expected folders in a plugin package are:
       or API method :meth:`~fastoad.cmd.api.generate_configuration_file`.
     - :code:`notebooks`: contains any number of Jupyter notebooks and associated data, that will
       be made available to users through :ref:`command line<python-usage>`.
+    - :code:`source_data_files`: contains only source data files in XML format. As for the :code:`configurations` package, no sub-folder is allowed. These source data files will be usable through :ref:`command line<generate-source-data_file>` or API method :meth:`~fastoad.cmd.api.generate_source_data_file`.
 
 Any of these folders is optional. Any other folder will be ignored.
 
@@ -104,7 +110,7 @@ that your project structure contains::
     └── ...
 
 As previously stated, your folder :code:`src/star_trek/drives` does not have to contain all of the
-folders :code:`models`, :code:`configurations` nor :code:`notebooks`.
+folders :code:`models`, :code:`configurations`, :code:`notebooks` nor :code:`source_data_files`.
 
 Assuming you project contains the package :code:`star_trek.drives` that contains
 models you want to share, you can declare your plugin in your :code:`pyproject.toml`

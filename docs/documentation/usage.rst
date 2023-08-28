@@ -399,8 +399,23 @@ your new input files with:
 
     $ fastoad gen_inputs my_conf.yml my_ref_values.xml
 
-If you are using the configuration file provided by the gen_conf sub-command (see :ref`Generate conf file`), you may download our `CeRAS01_baseline.xml <https://github.com/fast-aircraft-design/FAST-OAD/raw/v0.1a/src/fastoad/notebooks/tutorial/data/CeRAS01_baseline.xml>`_ and use it as source for generating your input file.
+If you are using the configuration file provided by the gen_conf sub-command (see :ref:`how to generate a configuration file<generate-conf-file>`), you may download our `CeRAS01_baseline.xml <https://github.com/fast-aircraft-design/FAST-OAD/raw/v0.1a/src/fastoad/notebooks/tutorial/data/CeRAS01_baseline.xml>`_ and use it as source for generating your input file. You may also generate a source data file using the appropriate command (see :ref:`how to generate a source data file<generate-source-data_file>`)
 
+.. _generate-source-data_file:
+
+How to generate a source data file
+==================================
+
+As for the configuration file, FAST-OAD can provide a source data file usable for the generation of your input file.
+
+.. code:: shell-session
+
+    $ fastoad gen_source_data_file my_source_data_file.xml --from_package my_plugin_package --source sample_source_data_file_1.xml
+
+This copies the file :code:`sample_source_data_file_1.xml` provided by installed package
+:code:`my_plugin_package` to file :code:`my_source_data_file.xml`.
+
+The remarks made in section :ref:`how to generate a configuration file<generate-conf-file>` on options :code:`--from_package` and :code:`--source` remain valid when generating a source data file.
 
 .. _view-problem:
 
