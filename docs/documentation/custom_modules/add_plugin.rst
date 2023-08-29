@@ -36,7 +36,7 @@ In your source folder, a typical plugin structure would be like this::
     │   └── some_subpackage/
     │       ├── __init__.py
     │       └── some_more_code.py
-    └── notebooks/
+    ├── notebooks/
     │   ├── __init__.py
     │   ├── any_data/
     │   │   ├── __init__.py

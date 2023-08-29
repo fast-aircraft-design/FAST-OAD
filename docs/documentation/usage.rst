@@ -399,7 +399,7 @@ your new input files with:
 
     $ fastoad gen_inputs my_conf.yml my_ref_values.xml
 
-If you are using the configuration file provided by the gen_conf sub-command (see :ref:`how to generate a configuration file<generate-conf-file>`), you may download our `CeRAS01_baseline.xml <https://github.com/fast-aircraft-design/FAST-OAD/raw/v0.1a/src/fastoad/notebooks/tutorial/data/CeRAS01_baseline.xml>`_ and use it as source for generating your input file. You may also generate a source data file using the appropriate command (see :ref:`how to generate a source data file<generate-source-data_file>`)
+If you are using the configuration file provided by the gen_conf sub-command (see :ref:`generate-conf-file`), you may download our `CeRAS01_baseline.xml <https://github.com/fast-aircraft-design/FAST-OAD/raw/v0.1a/src/fastoad/notebooks/tutorial/data/CeRAS01_baseline.xml>`_ and use it as source for generating your input file. You may also generate a source data file using the appropriate command (see :ref:`generate-source-data_file`)
 
 .. _generate-source-data_file:
 
