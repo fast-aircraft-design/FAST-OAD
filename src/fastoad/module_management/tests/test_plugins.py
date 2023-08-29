@@ -20,14 +20,14 @@ from .._plugins import FastoadLoader, SubPackageNames
 from ..exceptions import (
     FastBundleLoaderUnknownFactoryNameError,
     FastNoAvailableConfigurationFileError,
+    FastNoAvailableSourceDataFileError,
     FastNoDistPluginError,
     FastSeveralConfigurationFilesError,
     FastSeveralDistPluginsError,
+    FastSeveralSourceDataFilesError,
     FastUnknownConfigurationFileError,
     FastUnknownDistPluginError,
-    FastNoAvailableSourceDataFileError,
     FastUnknownSourceDataFileError,
-    FastSeveralSourceDataFilesError,
 )
 from ..service_registry import RegisterService
 
@@ -140,7 +140,9 @@ def test_get_plugin_configuration_file_list(with_dummy_plugins):
     def extract_info(file_list):
         return {(item.name, item.plugin_name) for item in file_list}
 
-    file_list = FastoadLoader().get_configuration_file_list("dummy-dist-1")
+    # Provided distribution name is intentionally upper case with underscores.
+    # Should be treated as "dummy-dist-1".
+    file_list = FastoadLoader().get_configuration_file_list("DUMMY_DIST_1")
     assert extract_info(file_list) == {("dummy_conf_1-1.yml", "test_plugin_1")}
 
     file_list = FastoadLoader().get_configuration_file_list("dummy-dist-2")
@@ -162,7 +164,9 @@ def test_get_plugin_source_data_file_list(with_dummy_plugins):
     def extract_info(file_list):
         return {(item.name, item.plugin_name) for item in file_list}
 
-    file_list = FastoadLoader().get_source_data_file_list("dummy-dist-1")
+    # Provided distribution name is intentionally upper case with underscores.
+    # Should be treated as "dummy-dist-1".
+    file_list = FastoadLoader().get_source_data_file_list("DUMMY_DIST-1")
     assert extract_info(file_list) == {("dummy_source_data_4-1.xml", "test_plugin_4")}
 
     file_list = FastoadLoader().get_source_data_file_list("dummy-dist-2")
@@ -209,7 +213,9 @@ def test_get_plugin_notebook_folder_list_with_plugins(with_dummy_plugins):
         ("dummy-dist-1", "tests.dummy_plugins.dist_1.dummy_plugin_4.notebooks"),
         ("dummy-dist-3", "tests.dummy_plugins.dist_3.dummy_plugin_5.notebooks"),
     }
-    folder_list = FastoadLoader().get_notebook_folder_list("dummy-dist-1")
+    # Provided distribution name is intentionally upper case with underscores.
+    # Should be treated as "dummy-dist-1".
+    folder_list = FastoadLoader().get_notebook_folder_list("DUMMY-dist_1")
     assert extract_info(folder_list) == {
         ("dummy-dist-1", "tests.dummy_plugins.dist_1.dummy_plugin_1.notebooks"),
         ("dummy-dist-1", "tests.dummy_plugins.dist_1.dummy_plugin_4.notebooks"),

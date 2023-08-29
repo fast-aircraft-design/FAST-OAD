@@ -2,7 +2,7 @@
 Plugin system for declaration of FAST-OAD models.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,13 +14,18 @@ Plugin system for declaration of FAST-OAD models.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+
+# We need __future__ to allow using DistributionNameDict as annotation in FastoadLoader
+# Otherwise, in Python 3.8, we get "TypeError: 'ABCMeta' object is not subscriptable"
+from __future__ import annotations
+
 import logging
 import os.path as pth
 import sys
 import warnings
-from dataclasses import dataclass, field
+from dataclasses import InitVar, dataclass, field
 from enum import Enum
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Optional
 
 import numpy as np
 
@@ -28,15 +33,16 @@ from fastoad.openmdao.variables import Variable
 from ._bundle_loader import BundleLoader
 from .exceptions import (
     FastNoAvailableConfigurationFileError,
+    FastNoAvailableSourceDataFileError,
     FastNoDistPluginError,
     FastSeveralConfigurationFilesError,
     FastSeveralDistPluginsError,
+    FastSeveralSourceDataFilesError,
     FastUnknownConfigurationFileError,
     FastUnknownDistPluginError,
-    FastNoAvailableSourceDataFileError,
     FastUnknownSourceDataFileError,
-    FastSeveralSourceDataFilesError,
 )
+from .._utils.dicts import AbstractNormalizedDict
 from .._utils.resource_management.contents import PackageReader
 
 if sys.version_info >= (3, 10):
@@ -48,6 +54,29 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 OLD_MODEL_PLUGIN_ID = "fastoad_model"
 MODEL_PLUGIN_ID = "fastoad.plugins"
+
+
+class DistributionNameDict(AbstractNormalizedDict):
+    """
+    Dictionary where keys are distribution names.
+
+    As per PEP 426, "all comparisons of distribution names MUST be case-insensitive, and MUST
+    consider hyphens and underscores to be equivalent."
+    This equivalence is implemented by forcing keys to be lower case with only hyphens.
+    """
+
+    @staticmethod
+    def normalize(dist_name: Optional[str]):  # pylint: disable=arguments-differ
+        """
+        Returns a normalized distribution name for PEP-426-compliant comparison of distribution
+        names.
+
+        :param dist_name:
+        :return: dist_name in lower case with hyphens ("-") instead of underscores ("_")
+        """
+        if dist_name:
+            return dist_name.lower().replace("_", "-")
+        return dist_name
 
 
 class SubPackageNames(Enum):
@@ -112,7 +141,9 @@ class PluginDefinition:
         return []
 
     def get_source_data_file_list(self) -> List[ResourceInfo]:
-
+        """
+        :return: List of data files that are provided by the distribution.
+        """
         if SubPackageNames.SOURCE_DATA_FILES in self.subpackages:
             return [
                 ResourceInfo(
@@ -130,13 +161,25 @@ class PluginDefinition:
         return []
 
 
-@dataclass()
+@dataclass
 class DistributionPluginDefinition(dict):
     """
     Stores and provides data for FAST-OAD plugins provided by a Python distribution.
     """
 
-    dist_name: str = None
+    dist_name: InitVar[str] = None
+
+    def __post_init__(self, dist_name):
+        self._dist_name = dist_name
+
+    @property
+    def dist_name(self):
+        """Name of the distribution that contains the defined plugin."""
+        return self._dist_name
+
+    @dist_name.setter
+    def dist_name(self, dist_name):
+        self._dist_name = DistributionNameDict.normalize(dist_name)
 
     def read_entry_point(self, entry_point: importlib_metadata.EntryPoint, group: str):
         """
@@ -147,7 +190,7 @@ class DistributionPluginDefinition(dict):
         :param entry_point:
         :param group:
         """
-        if self.dist_name != entry_point.dist.name:
+        if self.dist_name != DistributionNameDict.normalize(entry_point.dist.name):
             return
 
         plugin_definition = PluginDefinition(
@@ -316,12 +359,12 @@ class FastoadLoader(BundleLoader):
     """
     Specialized :class:`BundleLoader` that will load plugins at first instantiation.
 
-    I also provides data from available plugins
+    It also provides data from available plugins.
     """
 
     # This class attribute is private and is accessed through a property to ensure
     # that the class has been instantiated before the attribute is used.
-    _dist_plugin_definitions: Dict[str, DistributionPluginDefinition]
+    _dist_plugin_definitions: DistributionNameDict[str, DistributionPluginDefinition]
 
     _loaded = False
 
@@ -331,7 +374,7 @@ class FastoadLoader(BundleLoader):
             # Setting cls.loaded to True already ensures that a second instantiation
             # during loading will not result in an import cycle.
             self.__class__._loaded = True
-            self.__class__._dist_plugin_definitions = {}
+            self.__class__._dist_plugin_definitions = DistributionNameDict()
             self.read_entry_points()
             self.load()
 
@@ -431,12 +474,11 @@ class FastoadLoader(BundleLoader):
 
         for group in [OLD_MODEL_PLUGIN_ID, MODEL_PLUGIN_ID]:
             for entry_point in importlib_metadata.entry_points(group=group):
-                if entry_point.dist.name not in cls._dist_plugin_definitions:
-                    cls._dist_plugin_definitions[
-                        entry_point.dist.name
-                    ] = DistributionPluginDefinition()
-                plugin_dist = cls._dist_plugin_definitions[entry_point.dist.name]
-                plugin_dist.dist_name = entry_point.dist.name
+                dist_name = entry_point.dist.name
+                if dist_name not in cls._dist_plugin_definitions:
+                    cls._dist_plugin_definitions[dist_name] = DistributionPluginDefinition()
+                plugin_dist = cls._dist_plugin_definitions[dist_name]
+                plugin_dist.dist_name = dist_name
                 plugin_dist.read_entry_point(entry_point, group)
 
     @classmethod
