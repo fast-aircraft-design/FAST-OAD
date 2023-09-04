@@ -2,6 +2,16 @@
 Changelog
 =========
 
+Version 1.5.2
+=============
+- Added:
+    - Added sphinx documentation for source data file generation. (#500)
+
+- Fixed:
+    - Fix for climb segment going far too high when asked for optimal altitude in some cases. (#497 and #498)
+    - Now accepting upper case distribution names for FAST-OAD plugins. (#499)
+    - Now DataFile.from_problem() returns a DataFile instance, and not a VariableList instance. (#494)
+
 Version 1.5.1
 =============
 - Fixed:
