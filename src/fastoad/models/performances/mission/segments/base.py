@@ -211,6 +211,7 @@ class AbstractFlightSegment(IFlightPart, ABC):
             except FastFlightSegmentIncompleteFlightPoint:
                 pass
         start_copy.scalarize()
+        start_copy.isa_offset = self.isa_offset
 
         target_copy = self._target.make_absolute(start_copy)
         target_copy.scalarize()
