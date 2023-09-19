@@ -2,7 +2,7 @@
 Defines how OpenMDAO variables are serialized to XML using a conversion table
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -94,9 +94,11 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
         # element described a variable.
         previous_variable_name = None
 
-        parser = etree.XMLParser(remove_blank_text=True, remove_comments=False)
-        tree = etree.parse(data_source, parser)
-        root = tree.getroot()
+        root = etree.parse(
+            data_source,
+            etree.XMLParser(remove_blank_text=True, remove_comments=False),
+        ).getroot()
+
         for elem in root.iter():
             if isinstance(elem, _Comment) and previous_variable_name is not None:
                 variables[previous_variable_name].description = elem.text.strip()
@@ -104,7 +106,6 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
                 continue
 
             units = elem.attrib.get(self.xml_unit_attribute, None)
-            is_input = elem.attrib.get(self.xml_io_attribute, None)
             if units:
                 # Ensures compatibility with OpenMDAO units
                 for legacy_chars, om_chars in self.unit_translation.items():
@@ -124,13 +125,14 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
                     name = self._translator.get_variable_name(xpath)
                 except FastXpathTranslatorXPathError as err:
                     _LOGGER.warning(
-                        "The xpath %s does not have any variable " "affected in the translator.",
+                        "The xpath %s does not have any variable affected in the translator.",
                         err.xpath,
                     )
                     continue
 
                 if name not in variables.names():
                     # Add Variable
+                    is_input = elem.attrib.get(self.xml_io_attribute, None)
                     if is_input is not None:
                         is_input = is_input == "True"
 
@@ -138,8 +140,7 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
                     previous_variable_name = name
                 else:
                     raise FastXmlFormatterDuplicateVariableError(
-                        "Variable %s is defined in more than one place in file %s"
-                        % (name, data_source)
+                        f"Variable {name} is defined in more than one place in file {data_source}"
                     )
 
         return variables
@@ -197,8 +198,8 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
         for path_component in path_components:
             try:
                 children = element.xpath(path_component)
-            except XPathEvalError:
-                raise FastXPathEvalError('Could not resolve XPath "%s"' % path_component)
+            except XPathEvalError as err:
+                raise FastXPathEvalError(f'Could not resolve XPath "{path_component}"') from err
             if not children:
                 # Build path
                 new_element = etree.Element(path_component)
