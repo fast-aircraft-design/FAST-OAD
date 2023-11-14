@@ -10,7 +10,6 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import os
 import os.path as pth
 from shutil import rmtree
 
@@ -29,9 +28,9 @@ def cleanup():
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
-@pytest.mark.skipif(
-    str(os.environ.get("RUN_WEB_REQUESTS")).lower() not in ["true", "1", "t", "y", "yes"],
-    reason="Using web access during tests should not be the default behavior.",
+@pytest.mark.skip(
+    reason="Using web access during tests should not be the default behavior. "
+    "Moreover, fastoad/cmd/tests/test_apy.py:test_write_xdsm dose a similar test."
 )
 def test_write_xdsm(cleanup):
 
