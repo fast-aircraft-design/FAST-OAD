@@ -2,7 +2,7 @@
 Tests for basic API
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -407,6 +407,10 @@ def test_write_n2(cleanup):
     assert pth.exists(n2_file_path)
 
 
+@pytest.mark.skipif(
+    str(os.environ.get("RUN_WEB_REQUESTS")).lower() not in ["true", "1", "t", "y", "yes"],
+    reason="Using web access during tests should not be the default behavior.",
+)
 def test_write_xdsm(cleanup):
     # By default, XDSM file will be generated in same folder as configuration file
     default_xdsm_file_path = pth.join(DATA_FOLDER_PATH, "xdsm.html")
