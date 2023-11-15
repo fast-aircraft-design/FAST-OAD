@@ -50,14 +50,6 @@ jobs:
           path: requirements.txt
 
       - name: Unit tests
-        if: ${{ runner.os == 'Linux' && github.event.schedule == '12 4 * * *' }} # WhatsOpt tests will be run only on Linux on scheduled runs to avoid unneeded traffic
-        env:
-          RUN_WEB_REQUESTS: 'True'
-        run: pytest --no-cov src
-        shell: bash
-
-      - name: Unit tests
-        if: ${{ runner.os != 'Linux' }}
         run: pytest --no-cov src
         shell: bash
 
