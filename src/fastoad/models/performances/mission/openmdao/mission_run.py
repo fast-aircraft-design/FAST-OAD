@@ -121,11 +121,8 @@ class MissionComp(om.ExplicitComponent, BaseMissionComp):
 
     def _compute_outputs(self, outputs, flight_points):
         # Final ================================================================
-        start_of_mission = FlightPoint.create(flight_points.iloc[0])
         end_of_mission = FlightPoint.create(flight_points.iloc[-1])
-        outputs[self.name_provider.NEEDED_BLOCK_FUEL.value] = (
-            start_of_mission.mass - end_of_mission.mass
-        )
+        outputs[self.name_provider.NEEDED_BLOCK_FUEL.value] = end_of_mission.consumed_fuel
         reserve_var_name = self._mission_wrapper.get_reserve_variable_name()
         if reserve_var_name in outputs:
             outputs[self.name_provider.NEEDED_BLOCK_FUEL.value] += outputs[

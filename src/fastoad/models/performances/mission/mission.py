@@ -55,11 +55,7 @@ class Mission(FlightSequence):
         if self._flight_points is None:
             return None
 
-        return (
-            self._flight_points.mass.iloc[0]
-            - self._flight_points.mass.iloc[-1]
-            + self.get_reserve_fuel()
-        )
+        return self._flight_points.iloc[-1].consumed_fuel + self.get_reserve_fuel()
 
     @property
     def first_route(self) -> RangedRoute:

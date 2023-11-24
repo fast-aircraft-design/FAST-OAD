@@ -74,15 +74,12 @@ class FlightSequence(IFlightPart):
         part_start.scalarize()
 
         self.consumed_mass_before_input_weight = 0.0
-        consumed_mass = 0.0
         for part in self._sequence:
             # This check has to be done first because relative target parameters
             # will be made absolute during compute_from()
             part_has_target_mass = not (part.target.mass is None or part.target.is_relative("mass"))
 
             flight_points = part.compute_from(part_start)
-
-            consumed_mass += flight_points.iloc[0].mass - flight_points.iloc[-1].mass
 
             if isinstance(part, FlightSequence):
                 self.consumed_mass_before_input_weight += part.consumed_mass_before_input_weight
@@ -94,7 +91,7 @@ class FlightSequence(IFlightPart):
                 mass_offset = flight_points.iloc[0].mass - part_start.mass
                 for previous_flight_points in self.part_flight_points:
                     previous_flight_points.mass += mass_offset
-                self.consumed_mass_before_input_weight = float(consumed_mass)
+                self.consumed_mass_before_input_weight = flight_points.iloc[-1].consumed_fuel
 
             if len(self.part_flight_points) > 0 and len(flight_points) > 1:
                 # First point of the segment is omitted, as it is the last of previous segment.
