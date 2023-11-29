@@ -54,9 +54,9 @@ class DummyTransitionSegment(AbstractFlightSegment):
         end.name = self.name
 
         if end.mass is None:
-            end.mass = start.mass * self.mass_ratio
-
-        end.consumed_mass = start.consumed_mass + start.mass - end.mass
+            self.consume_fuel(end, previous=start, mass_ratio=self.mass_ratio)
+        else:
+            end.consumed_fuel = start.consumed_fuel + start.mass - end.mass
 
         self.complete_flight_point_from(end, start)
         self.complete_flight_point(end)
@@ -66,7 +66,9 @@ class DummyTransitionSegment(AbstractFlightSegment):
         if self.reserve_mass_ratio > 0.0:
             reserve = deepcopy(end)
             reserve.mass = end.mass / (1.0 + self.reserve_mass_ratio)
-            reserve.consumed_mass = reserve.consumed_mass + end.mass - reserve.mass
+            self.consume_fuel(
+                reserve, previous=end, mass_ratio=1.0 / (1.0 + self.reserve_mass_ratio)
+            )
             flight_points.append(reserve)
 
         return pd.DataFrame(flight_points)

@@ -244,7 +244,7 @@ class AbstractTimeStepFlightSegment(
         next_point.isa_offset = self.isa_offset
         consumed_mass = self.propulsion.get_consumed_mass(previous, time_step)
         next_point.mass = previous.mass - consumed_mass
-        next_point.consumed_mass = previous.consumed_mass + consumed_mass
+        next_point.consumed_fuel = previous.consumed_fuel + consumed_mass
 
         next_point.time = previous.time + time_step
         next_point.ground_distance = (

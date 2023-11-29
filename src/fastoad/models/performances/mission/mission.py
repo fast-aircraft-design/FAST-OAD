@@ -19,7 +19,6 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 import pandas as pd
-from numpy.testing import assert_allclose
 from scipy.optimize import root_scalar
 
 from fastoad.model_base import FlightPoint
@@ -88,24 +87,6 @@ class Mission(FlightSequence):
         else:
             self._solve_cruise_distance(start)
 
-        try:
-            # Custom segment implementations may omit to update the "consumed_mass" field.
-            # It is better to check that.
-            assert_allclose(
-                self._flight_points.iloc[0].mass - self._flight_points.iloc[-1].mass,
-                self._flight_points.iloc[-1].consumed_mass,
-                atol=1e-10,
-                rtol=1e-6,
-            )
-        except AssertionError:
-            _LOGGER.warning(
-                'Inconsistency between final value of "consumed_field" (%.1f kg) '
-                "and mass difference between start and end of mission (%.1f kg). "
-                "The latter one is assumed correct. Probably some "
-                'flight segment implementation does not update "consumed_field".',
-                self._flight_points.iloc[-1].consumed_mass,
-                self._flight_points.iloc[0].mass - self._flight_points.iloc[-1].mass,
-            )
         return self._flight_points
 
     def get_reserve_fuel(self):

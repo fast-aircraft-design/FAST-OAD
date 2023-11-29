@@ -83,7 +83,7 @@ class FlightPoint:
     isa_offset: float = 0.0  #: temperature deviation from Standard Atmosphere
     ground_distance: float = 0.0  #: Covered ground distance in meters.
     mass: float = None  #: Mass in kg.
-    consumed_mass: float = 0.0  #: Consumed mass since mission start, in kg.
+    consumed_fuel: float = 0.0  #: Consumed fuel since mission start, in kg.
     true_airspeed: float = None  #: True airspeed (TAS) in m/s.
     equivalent_airspeed: float = None  #: Equivalent airspeed (EAS) in m/s.
     mach: float = None  #: Mach number.
@@ -113,7 +113,7 @@ class FlightPoint:
         altitude="m",
         ground_distance="m",
         mass="kg",
-        consumed_mass="kg",
+        consumed_fuel="kg",
         true_airspeed="m/s",
         equivalent_airspeed="m/s",
         mach="-",
