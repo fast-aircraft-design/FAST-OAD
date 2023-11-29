@@ -222,6 +222,7 @@ class BreguetCruiseSegment(CruiseSegment):
 
         end = deepcopy(start)
         end.mass = start.mass * cruise_mass_ratio
+        end.consumed_mass = start.consumed_mass + start.mass - end.mass
         end.ground_distance = target.ground_distance
         end.time = start.time + (end.ground_distance - start.ground_distance) / end.true_airspeed
         end.name = self.name

@@ -13,17 +13,21 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Optional
 
 import pandas as pd
+from numpy.testing import assert_allclose
 from scipy.optimize import root_scalar
 
 from fastoad.model_base import FlightPoint
 from .base import FlightSequence
 from .routes import RangedRoute
 from .segments.registered.cruise import CruiseSegment
+
+_LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 @dataclass
@@ -78,12 +82,31 @@ class Mission(FlightSequence):
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         if self.target_fuel_consumption is None:
-            flight_points = super().compute_from(start)
-            flight_points.loc[flight_points.name.isnull()].name = ""
-            self._compute_reserve(flight_points)
-            return flight_points
+            self._flight_points = super().compute_from(start)
+            self._flight_points.loc[self._flight_points.name.isnull()].name = ""
+            self._compute_reserve(self._flight_points)
+        else:
+            self._solve_cruise_distance(start)
 
-        return self._solve_cruise_distance(start)
+        try:
+            # Custom segment implementations may omit to update the "consumed_mass" field.
+            # It is better to check that.
+            assert_allclose(
+                self._flight_points.iloc[0].mass - self._flight_points.iloc[-1].mass,
+                self._flight_points.iloc[-1].consumed_mass,
+                atol=1e-10,
+                rtol=1e-6,
+            )
+        except AssertionError:
+            _LOGGER.warning(
+                'Inconsistency between final value of "consumed_field" (%.1f kg) '
+                "and mass difference between start and end of mission (%.1f kg). "
+                "The latter one is assumed correct. Probably some "
+                'flight segment implementation does not update "consumed_field".',
+                self._flight_points.iloc[-1].consumed_mass,
+                self._flight_points.iloc[0].mass - self._flight_points.iloc[-1].mass,
+            )
+        return self._flight_points
 
     def get_reserve_fuel(self):
         """:returns: the fuel quantity for reserve, obtained after mission computation."""
