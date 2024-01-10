@@ -2,7 +2,7 @@
 Utility functions for OpenMDAO classes/instances
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,30 +16,41 @@ Utility functions for OpenMDAO classes/instances
 
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import List, Tuple
+from typing import List, Tuple, TypeVar
 
 import numpy as np
 import openmdao.api as om
 from deprecated import deprecated
 from openmdao.utils.mpi import FakeComm
 
+T = TypeVar("T", bound=om.Problem)
 
-@contextmanager
-def problem_without_mpi(problem: om.Problem) -> om.Problem:
+
+def get_problem_copy_without_mpi(problem: T) -> T:
     """
-    Context manager that delivers a copy of the given OpenMDAO problem.
-
-    A deepcopy operation may crash if problem.comm is not pickle-able, like a
+    This function does a deep copy of input OpenMDAO problem while avoiding
+    the crash that can occur if problem.comm is not pickle-able, like a
     mpi4py.MPI.Intracomm object.
 
-    This context manager temporarily sets a FakeComm object as problem.comm and
-    does the copy.
+    :param problem:
+    :return: a copy of the problem with a FakeComm object as problem.comm
+    """
+    with copyable_problem(problem) as no_mpi_problem:
+        problem_copy = deepcopy(no_mpi_problem)
 
-    It ensures the original problem gets back its original communicator after
+    return problem_copy
+
+
+@contextmanager
+def copyable_problem(problem: om.Problem) -> om.Problem:
+    """
+    Context manager that temporarily makes the input problem compatible with deepcopy.
+
+    It ensures the problem gets back its original attributes after
     the `with` block is ended.
 
     :param problem: any openMDAO problem
-    :return: A copy of the given problem with a FakeComm object as problem.comm
+    :return: The given problem with a FakeComm object as problem.comm
     """
     # An actual MPI communicator will make the deepcopy crash if an MPI
     # library is installed.
@@ -55,10 +66,7 @@ def problem_without_mpi(problem: om.Problem) -> om.Problem:
             # the 'problem' instance at the end of setup of the 'problem_copy' instance.
             problem._metadata = {"saved_errors": []}
             metadata_were_added = True
-        problem_copy = deepcopy(problem)
-        problem_copy.comm = problem.comm
-
-        yield problem_copy
+        yield problem
     finally:
         if metadata_were_added:
             problem._metadata = None

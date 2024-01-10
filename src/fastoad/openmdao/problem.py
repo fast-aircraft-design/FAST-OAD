@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -10,7 +10,7 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from copy import deepcopy
+
 from typing import Tuple
 
 import numpy as np
@@ -22,7 +22,7 @@ from fastoad.io import DataFile, VariableIO
 from fastoad.module_management.service_registry import RegisterSubmodel
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 from fastoad.openmdao.variables import VariableList
-from ._utils import problem_without_mpi
+from ._utils import get_problem_copy_without_mpi
 from .exceptions import FASTOpenMDAONanInInputFile
 from ..module_management._bundle_loader import BundleLoader
 
@@ -77,21 +77,21 @@ class FASTOADProblem(om.Problem):
         """
         Set up the problem before run.
         """
-        with problem_without_mpi(self) as problem_copy:
-            try:
-                super(FASTOADProblem, problem_copy).setup(*args, **kwargs)
-            except RuntimeError:
-                vars_metadata = self._get_undetermined_dynamic_vars_metadata(problem_copy)
-                if vars_metadata:
-                    # If vars_metadata is empty, it means the RuntimeError was not because
-                    # of dynamic shapes, and the incoming self.setup() will raise it.
-                    ivc = om.IndepVarComp()
-                    for name, meta in vars_metadata.items():
-                        # We use a (2,)-shaped array as value here. This way, it will be easier
-                        # to identify dynamic-shaped data in an input file generated from current
-                        # problem.
-                        ivc.add_output(name, [np.nan, np.nan], units=meta["units"])
-                    self.model.add_subsystem(SHAPER_SYSTEM_NAME, ivc, promotes=["*"])
+        problem_copy = get_problem_copy_without_mpi(self)
+        try:
+            super(FASTOADProblem, problem_copy).setup(*args, **kwargs)
+        except RuntimeError:
+            vars_metadata = self._get_undetermined_dynamic_vars_metadata(problem_copy)
+            if vars_metadata:
+                # If vars_metadata is empty, it means the RuntimeError was not because
+                # of dynamic shapes, and the incoming self.setup() will raise it.
+                ivc = om.IndepVarComp()
+                for name, meta in vars_metadata.items():
+                    # We use a (2,)-shaped array as value here. This way, it will be easier
+                    # to identify dynamic-shaped data in an input file generated from current
+                    # problem.
+                    ivc.add_output(name, [np.nan, np.nan], units=meta["units"])
+                self.model.add_subsystem(SHAPER_SYSTEM_NAME, ivc, promotes=["*"])
 
         super().setup(*args, **kwargs)
 
@@ -176,17 +176,17 @@ class FASTOADProblem(om.Problem):
         """
         input_variables, unused_variables = self._get_problem_inputs()
         self.additional_variables = unused_variables
-        with problem_without_mpi(self):
-            tmp_prob = deepcopy(self)
-            tmp_prob.setup()
-            # At this point, there may be non-fed dynamically shaped inputs, so the setup may
-            # create the "shaper" IVC, but we ignore it because we need to redefine these variables
-            # in input file.
-            ivc_vars = tmp_prob.model.get_io_metadata(
-                "output",
-                tags=["indep_var", "openmdao:indep_var"],
-                excludes=f"{SHAPER_SYSTEM_NAME}.*",
-            )
+        tmp_prob = get_problem_copy_without_mpi(self)
+        tmp_prob.setup()
+        # At this point, there may be non-fed dynamically shaped inputs, so the setup may
+        # create the "shaper" IVC, but we ignore it because we need to redefine these variables
+        # in input file.
+        ivc_vars = tmp_prob.model.get_io_metadata(
+            "output",
+            tags=["indep_var", "openmdao:indep_var"],
+            excludes=f"{SHAPER_SYSTEM_NAME}.*",
+        )
+
         for meta in ivc_vars.values():
             try:
                 del input_variables[meta["prom_name"]]
@@ -196,16 +196,16 @@ class FASTOADProblem(om.Problem):
             self._insert_input_ivc(input_variables.to_ivc())
 
     def _insert_input_ivc(self, ivc: om.IndepVarComp, subsystem_name=INPUT_SYSTEM_NAME):
-        with problem_without_mpi(self) as tmp_prob:
-            tmp_prob.setup()
+        tmp_prob = get_problem_copy_without_mpi(self)
+        tmp_prob.setup()
 
-            # We get order from copied problem, but we have to ignore the "shaper"
-            # and the auto IVCs.
-            previous_order = [
-                system.name
-                for system in tmp_prob.model.system_iter(recurse=False)
-                if system.name != "_auto_ivc" and system.name != SHAPER_SYSTEM_NAME
-            ]
+        # We get order from copied problem, but we have to ignore the "shaper"
+        # and the auto IVCs.
+        previous_order = [
+            system.name
+            for system in tmp_prob.model.system_iter(recurse=False)
+            if system.name != "_auto_ivc" and system.name != SHAPER_SYSTEM_NAME
+        ]
 
         self.model.add_subsystem(subsystem_name, ivc, promotes=["*"])
         self.model.set_order([subsystem_name] + previous_order)

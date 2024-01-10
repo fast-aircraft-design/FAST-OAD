@@ -1,6 +1,6 @@
 """Utilities for VariableList."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -18,7 +18,7 @@ from typing import Tuple
 import numpy as np
 from openmdao.core.constants import _SetupStatus
 
-from fastoad.openmdao._utils import problem_without_mpi
+from fastoad.openmdao._utils import get_problem_copy_without_mpi
 
 
 def get_problem_variables(
@@ -44,9 +44,8 @@ def get_problem_variables(
     :return: input dict, output dict
     """
     if not problem._metadata or problem._metadata["setup_status"] < _SetupStatus.POST_SETUP:
-        with problem_without_mpi(problem) as problem_copy:
-            problem_copy.setup()
-            problem = problem_copy
+        problem = get_problem_copy_without_mpi(problem)
+        problem.setup()
 
     # Get inputs and outputs
     metadata_keys = (
