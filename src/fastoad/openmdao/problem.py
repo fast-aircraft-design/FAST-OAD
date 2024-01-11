@@ -61,6 +61,8 @@ class FASTOADProblem(om.Problem):
 
         self.model = FASTOADModel()
 
+        self._copy = None
+
     def run_model(self, case_prefix=None, reset_iter_counts=True):
         status = super().run_model(case_prefix, reset_iter_counts)
         ValidityDomainChecker.check_problem_variables(self)
@@ -77,11 +79,10 @@ class FASTOADProblem(om.Problem):
         """
         Set up the problem before run.
         """
-        problem_copy = get_problem_copy_without_mpi(self)
         try:
-            super(FASTOADProblem, problem_copy).setup(*args, **kwargs)
+            super(FASTOADProblem, self._problem_copy).setup(*args, **kwargs)
         except RuntimeError:
-            vars_metadata = self._get_undetermined_dynamic_vars_metadata(problem_copy)
+            vars_metadata = self._get_undetermined_dynamic_vars_metadata(self._problem_copy)
             if vars_metadata:
                 # If vars_metadata is empty, it means the RuntimeError was not because
                 # of dynamic shapes, and the incoming self.setup() will raise it.
@@ -92,6 +93,7 @@ class FASTOADProblem(om.Problem):
                     # problem.
                     ivc.add_output(name, [np.nan, np.nan], units=meta["units"])
                 self.model.add_subsystem(SHAPER_SYSTEM_NAME, ivc, promotes=["*"])
+                self._reset_problem_copy()
 
         super().setup(*args, **kwargs)
 
@@ -128,6 +130,16 @@ class FASTOADProblem(om.Problem):
             # will be properly set by new inputs.
             self._read_inputs_after_setup = True
 
+    @property
+    def _problem_copy(self) -> "FASTOADProblem":
+        if self._copy is None:
+            self._copy = get_problem_copy_without_mpi(self)
+
+        return self._copy
+
+    def _reset_problem_copy(self):
+        self._copy = None
+
     def _get_problem_inputs(self) -> Tuple[VariableList, VariableList]:
         """
         Reads input file for the configured problem.
@@ -138,7 +150,7 @@ class FASTOADProblem(om.Problem):
         :return: VariableList of needed input variables, VariableList with unused variables.
         """
 
-        problem_variables = VariableList().from_problem(self)
+        problem_variables = VariableList().from_problem(self._problem_copy)
         problem_inputs_names = [var.name for var in problem_variables if var.is_input]
 
         input_variables = DataFile(self.input_file_path)
@@ -174,14 +186,15 @@ class FASTOADProblem(om.Problem):
 
         Input values that match an existing IVC are not taken into account
         """
+        self._problem_copy.setup()
+
         input_variables, unused_variables = self._get_problem_inputs()
         self.additional_variables = unused_variables
-        tmp_prob = get_problem_copy_without_mpi(self)
-        tmp_prob.setup()
+
         # At this point, there may be non-fed dynamically shaped inputs, so the setup may
         # create the "shaper" IVC, but we ignore it because we need to redefine these variables
         # in input file.
-        ivc_vars = tmp_prob.model.get_io_metadata(
+        ivc_vars = self._problem_copy.model.get_io_metadata(
             "output",
             tags=["indep_var", "openmdao:indep_var"],
             excludes=f"{SHAPER_SYSTEM_NAME}.*",
@@ -195,19 +208,20 @@ class FASTOADProblem(om.Problem):
         if input_variables:
             self._insert_input_ivc(
                 input_variables.to_ivc(),
-                previous_order=self._get_order_of_subsystems(tmp_prob),
+                previous_order=self._get_order_of_subsystems(self._problem_copy),
             )
 
     def _insert_input_ivc(
         self, ivc: om.IndepVarComp, subsystem_name=INPUT_SYSTEM_NAME, previous_order=None
     ):
         if previous_order is None:
-            tmp_prob = get_problem_copy_without_mpi(self)
-            tmp_prob.setup()
-            previous_order = self._get_order_of_subsystems(tmp_prob)
+            self._problem_copy.setup()
+            previous_order = self._get_order_of_subsystems(self._problem_copy)
 
         self.model.add_subsystem(subsystem_name, ivc, promotes=["*"])
         self.model.set_order([subsystem_name] + previous_order)
+
+        self._reset_problem_copy()
 
     @staticmethod
     def _get_order_of_subsystems(problem, ignored_system_names=("_auto_ivc", SHAPER_SYSTEM_NAME)):
