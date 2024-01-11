@@ -2,7 +2,7 @@
 Module for building OpenMDAO problem from configuration file
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -351,9 +351,19 @@ class FASTOADProblemConfigurator:
                 for connection_def in value:
                     group.connect(connection_def["source"], connection_def["target"])
             else:
-                # value is an attribute of current component and will be literally interpreted
+                # value may have to be literally interpreted
+                if key.endswith(("solver", "driver")):
+                    try:
+                        value = _om_eval(str(value))
+                    except Exception as err:
+                        raise FASTConfigurationBadOpenMDAOInstructionError(err, key, value)
+
+                # value is an option or an attribute
                 try:
-                    setattr(group, key, _om_eval(str(value)))  # pylint:disable=eval-used
+                    if key in group.options:
+                        group.options[key] = value
+                    else:
+                        setattr(group, key, value)
                 except Exception as err:
                     raise FASTConfigurationBadOpenMDAOInstructionError(err, key, value)
 

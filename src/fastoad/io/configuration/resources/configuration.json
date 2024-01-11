@@ -5,6 +5,9 @@
   "description": "Schema for FAST-OAD configuration files",
   "type": "object",
   "definitions": {
+    "option": {
+      "$comment": "Setting of an OpenMDAO option"
+    },
     "component": {
       "$comment": "Definition of an OpenMDAO component/FAST-OAD module",
       "type": "object",
@@ -27,6 +30,9 @@
           },
           {
             "$ref": "#/definitions/component"
+          },
+          {
+            "$ref": "#/definitions/option"
           }
         ]
       },
@@ -137,7 +143,10 @@
     },
     "submodels": {
       "additionalProperties": {
-        "type": ["string", "null"]
+        "type": [
+          "string",
+          "null"
+        ]
       }
     },
     "optimization": {
@@ -169,7 +178,10 @@
           }
         }
       },
-      "required": ["design_variables", "objective"]
+      "required": [
+        "design_variables",
+        "objective"
+      ]
     }
   },
   "required": [
