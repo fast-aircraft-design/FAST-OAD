@@ -9,6 +9,7 @@ output_file: ../results/outputs.xml
 
 driver: om.ScipyOptimizeDriver(optimizer='SLSQP')
 model:
+  assembled_jac_type: csc  # Tests the ability to set options for groups
   connections:
     - source: y1
       target: yy1

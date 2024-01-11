@@ -2,7 +2,7 @@
 Test module for configuration.py
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -146,6 +146,7 @@ def test_problem_definition_with_xml_ref(cleanup, caplog):
         # runs evaluation without optimization loop to check that inputs are taken into account
         problem.setup()
         problem.run_model()
+        assert problem.model.options["assembled_jac_type"] == "csc"
         assert problem["f"] == pytest.approx(28.58830817, abs=1e-6)
         problem.write_outputs()
 
@@ -161,6 +162,7 @@ def test_problem_definition_with_xml_ref(cleanup, caplog):
         alt_problem.run_model()
         alt_problem.write_outputs()
 
+        assert alt_problem.model.options["assembled_jac_type"] == "dense"
         assert alt_problem["f"] == pytest.approx(0.58830817, abs=1e-6)
         assert alt_problem["g2"] == pytest.approx(-11.94151185, abs=1e-6)
         with pytest.raises(KeyError):

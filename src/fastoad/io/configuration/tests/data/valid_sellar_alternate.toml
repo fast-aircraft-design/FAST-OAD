@@ -12,6 +12,7 @@ output_file = "../results/outputs.xml"
 
 driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
 [model]
+    assembled_jac_type = "dense"  # Tests the ability to set options for groups
     [[model.connections]]
         source = "y1"
         target = "yy1"
