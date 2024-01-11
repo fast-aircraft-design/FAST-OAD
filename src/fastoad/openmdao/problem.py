@@ -193,22 +193,29 @@ class FASTOADProblem(om.Problem):
             except ValueError:
                 pass
         if input_variables:
-            self._insert_input_ivc(input_variables.to_ivc())
+            self._insert_input_ivc(
+                input_variables.to_ivc(),
+                previous_order=self._get_order_of_subsystems(tmp_prob),
+            )
 
-    def _insert_input_ivc(self, ivc: om.IndepVarComp, subsystem_name=INPUT_SYSTEM_NAME):
-        tmp_prob = get_problem_copy_without_mpi(self)
-        tmp_prob.setup()
-
-        # We get order from copied problem, but we have to ignore the "shaper"
-        # and the auto IVCs.
-        previous_order = [
-            system.name
-            for system in tmp_prob.model.system_iter(recurse=False)
-            if system.name != "_auto_ivc" and system.name != SHAPER_SYSTEM_NAME
-        ]
+    def _insert_input_ivc(
+        self, ivc: om.IndepVarComp, subsystem_name=INPUT_SYSTEM_NAME, previous_order=None
+    ):
+        if previous_order is None:
+            tmp_prob = get_problem_copy_without_mpi(self)
+            tmp_prob.setup()
+            previous_order = self._get_order_of_subsystems(tmp_prob)
 
         self.model.add_subsystem(subsystem_name, ivc, promotes=["*"])
         self.model.set_order([subsystem_name] + previous_order)
+
+    @staticmethod
+    def _get_order_of_subsystems(problem, ignored_system_names=("_auto_ivc", SHAPER_SYSTEM_NAME)):
+        return [
+            system.name
+            for system in problem.model.system_iter(recurse=False)
+            if system.name not in ignored_system_names
+        ]
 
     @classmethod
     def _get_undetermined_dynamic_vars_metadata(cls, problem):
