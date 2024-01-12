@@ -158,6 +158,10 @@ Problem definition
 
 .. code:: yaml
 
+    model:
+      nonlinear_solver: om.NonlinearBlockGS(maxiter=100, atol=1e-2)
+      linear_solver: om.DirectSolver()
+
       # Components can be put in sub-groups
       subgroup:
 
@@ -202,14 +206,21 @@ Problem definition
 Components of the model can be modules, or sub-groups. They are defined as a sub-section of
 :code:`model:`. Sub-sections and sub-components can be freely named by user.
 
-A sub-group gathers several modules and can be set with its own solvers to resolve cycles it may contains.
+A sub-group gathers several modules and/or other sub-groups and can be set with its own solvers
+to resolve cycles it may contains, using keys :code:`linear_solver` and :code:`nonlinear_solver`,
+like :code:`model` (that is merely the root group).
 
 Here above, a sub-group with geometric, weight, handling-qualities and aerodynamic modules is defined and
 internal solvers are activated. Performance and wing area computation modules are set apart.
 
-A module is defined by its :code:`id:` key that refers to the module registered name, but additional keys can be
-used, depending on the options of the module. The list of available options of a module is
-available through the :code:`list_modules` sub-command (see :ref:`get-module-list`).
+A module is defined by its :code:`id:` key that refers to the module registered name.
+
+Additional keys can be used in :code:`model`, sub-groups and modules. They are interpreted
+as option settings:
+
+- For :code:`model` and sub-groups, the OpenMDAO options for Group class apply.
+- For FAST-OAD modules, the list of available options is available through the :code:`list_modules`
+  sub-command (see :ref:`get-module-list`).
 
 
 Optimization settings
