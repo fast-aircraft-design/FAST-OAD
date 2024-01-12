@@ -11,6 +11,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 from dataclasses import dataclass, field
 from typing import Optional, Tuple
 
@@ -19,13 +20,15 @@ import openmdao.api as om
 from openmdao.core.constants import _SetupStatus
 from openmdao.core.system import System
 
-from fastoad.io import DataFile, VariableIO
+from fastoad.io import DataFile, IVariableIOFormatter, VariableIO
 from fastoad.module_management.service_registry import RegisterSubmodel
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 from fastoad.openmdao.variables import Variable, VariableList
 from ._utils import get_problem_copy_without_mpi
 from .exceptions import FASTOpenMDAONanInInputFile
 from ..module_management._bundle_loader import BundleLoader
+
+_LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 # Name of IVC that will contain input values
 INPUT_SYSTEM_NAME = "fastoad_inputs"
@@ -91,6 +94,46 @@ class FASTOADProblem(om.Problem):
         if self._read_inputs_after_setup:
             self._read_inputs_with_setup_done()
         BundleLoader().clean_memory()
+
+    def write_needed_inputs(
+        self, source_file_path: str = None, source_formatter: IVariableIOFormatter = None
+    ):
+        """
+        Writes the input file of the problem using its unconnected inputs.
+
+        Written value of each variable will be taken:
+
+            1. from input_data if it contains the variable
+            2. from defined default values in component definitions
+
+        :param source_file_path: if provided, variable values will be read from it
+        :param source_formatter: the class that defines format of input file. if
+                                 not provided, expected format will be the default one.
+        """
+        self.self_analysis()
+
+        variables = DataFile(self.input_file_path, load_data=False)
+
+        unconnected_inputs = VariableList(
+            [variable for variable in self._analysis.problem_variables if variable.is_input]
+        )
+
+        variables.update(
+            unconnected_inputs,
+            add_variables=True,
+        )
+        if source_file_path:
+            ref_vars = DataFile(source_file_path, formatter=source_formatter)
+            variables.update(ref_vars, add_variables=False)
+            nan_variable_names = []
+            for var in variables:
+                var.is_input = True
+                # Checking if variables have NaN values
+                if np.any(np.isnan(var.value)):
+                    nan_variable_names.append(var.name)
+            if nan_variable_names:
+                _LOGGER.warning("The following variables have NaN values: %s", nan_variable_names)
+        variables.save()
 
     def write_outputs(self):
         """

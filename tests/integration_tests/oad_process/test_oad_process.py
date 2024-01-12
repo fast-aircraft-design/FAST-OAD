@@ -2,7 +2,7 @@
 Test module for Overall Aircraft Design process
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -50,12 +50,11 @@ def test_oad_process(cleanup):
 
     configurator = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "oad_process.yml"))
 
-    # Create inputs
     ref_inputs = pth.join(DATA_FOLDER_PATH, "CeRAS01_legacy.xml")
-    configurator.write_needed_inputs(ref_inputs)
+    problem = configurator.get_problem()
+    problem.write_needed_inputs(ref_inputs)
+    problem.read_inputs()
 
-    # Create problems with inputs
-    problem = configurator.get_problem(read_inputs=True)
     problem.setup()
     problem.run_model()
     problem.write_outputs()
