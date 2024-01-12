@@ -11,7 +11,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Tuple
+from dataclasses import dataclass, field
+from typing import Optional, Tuple
 
 import numpy as np
 import openmdao.api as om
@@ -21,7 +22,7 @@ from openmdao.core.system import System
 from fastoad.io import DataFile, VariableIO
 from fastoad.module_management.service_registry import RegisterSubmodel
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
-from fastoad.openmdao.variables import VariableList
+from fastoad.openmdao.variables import Variable, VariableList
 from ._utils import get_problem_copy_without_mpi
 from .exceptions import FASTOpenMDAONanInInputFile
 from ..module_management._bundle_loader import BundleLoader
@@ -63,6 +64,8 @@ class FASTOADProblem(om.Problem):
 
         self._copy = None
 
+        self._analysis: Optional[ProblemAnalysis] = None
+
     def run_model(self, case_prefix=None, reset_iter_counts=True):
         status = super().run_model(case_prefix, reset_iter_counts)
         ValidityDomainChecker.check_problem_variables(self)
@@ -79,21 +82,9 @@ class FASTOADProblem(om.Problem):
         """
         Set up the problem before run.
         """
-        try:
-            super(FASTOADProblem, self._problem_copy).setup(*args, **kwargs)
-        except RuntimeError:
-            vars_metadata = self._get_undetermined_dynamic_vars_metadata(self._problem_copy)
-            if vars_metadata:
-                # If vars_metadata is empty, it means the RuntimeError was not because
-                # of dynamic shapes, and the incoming self.setup() will raise it.
-                ivc = om.IndepVarComp()
-                for name, meta in vars_metadata.items():
-                    # We use a (2,)-shaped array as value here. This way, it will be easier
-                    # to identify dynamic-shaped data in an input file generated from current
-                    # problem.
-                    ivc.add_output(name, [np.nan, np.nan], units=meta["units"])
-                self.model.add_subsystem(SHAPER_SYSTEM_NAME, ivc, promotes=["*"])
-                self._reset_problem_copy()
+        self.self_analysis()
+
+        self._analysis.fills_dynamically_shaped_inputs(self)
 
         super().setup(*args, **kwargs)
 
@@ -122,6 +113,7 @@ class FASTOADProblem(om.Problem):
         """
         Reads inputs of the problem.
         """
+        self.self_analysis()
         if self._metadata and self._metadata["setup_status"] == _SetupStatus.POST_SETUP:
             self._read_inputs_with_setup_done()
         else:
@@ -130,15 +122,23 @@ class FASTOADProblem(om.Problem):
             # will be properly set by new inputs.
             self._read_inputs_after_setup = True
 
-    @property
-    def _problem_copy(self) -> "FASTOADProblem":
-        if self._copy is None:
-            self._copy = get_problem_copy_without_mpi(self)
+    def self_analysis(self, force: bool = False):
+        """
+        Gets information about inner structure of this problem.
 
-        return self._copy
+        The collected data (internally stored) are used in several steps of the computation.
 
-    def _reset_problem_copy(self):
-        self._copy = None
+        This analysis is performed once. Each subsequent call reuses the obtained data,
+        unless 'force' is set to True.
+
+        This method is already called whenever needed in this class. Therefore, an
+        outside call is needed (and mandatory) only if the problem has been modified after its
+        initial building. In this case, force=True should be used.
+
+        :type force: True to force the analysis
+        """
+        if force or self._analysis is None:
+            self._analysis = ProblemAnalysis(self)
 
     def _get_problem_inputs(self) -> Tuple[VariableList, VariableList]:
         """
@@ -149,9 +149,9 @@ class FASTOADProblem(om.Problem):
 
         :return: VariableList of needed input variables, VariableList with unused variables.
         """
-
-        problem_variables = VariableList().from_problem(self._problem_copy)
-        problem_inputs_names = [var.name for var in problem_variables if var.is_input]
+        problem_inputs_names = [
+            var.name for var in self._analysis.problem_variables if var.is_input
+        ]
 
         input_variables = DataFile(self.input_file_path)
 
@@ -186,79 +186,30 @@ class FASTOADProblem(om.Problem):
 
         Input values that match an existing IVC are not taken into account
         """
-        self._problem_copy.setup()
-
         input_variables, unused_variables = self._get_problem_inputs()
         self.additional_variables = unused_variables
 
-        # At this point, there may be non-fed dynamically shaped inputs, so the setup may
-        # create the "shaper" IVC, but we ignore it because we need to redefine these variables
-        # in input file.
-        ivc_vars = self._problem_copy.model.get_io_metadata(
-            "output",
-            tags=["indep_var", "openmdao:indep_var"],
-            excludes=f"{SHAPER_SYSTEM_NAME}.*",
+        input_variables = VariableList(
+            [
+                variable
+                for variable in input_variables
+                if variable.name not in self._analysis.ivc_var_names
+            ]
         )
 
-        for meta in ivc_vars.values():
-            try:
-                del input_variables[meta["prom_name"]]
-            except ValueError:
-                pass
         if input_variables:
-            self._insert_input_ivc(
-                input_variables.to_ivc(),
-                previous_order=self._get_order_of_subsystems(self._problem_copy),
+            self._analysis.dynamic_input_vars = VariableList(
+                [
+                    variable
+                    for variable in self._analysis.dynamic_input_vars
+                    if variable.name not in input_variables.names()
+                ]
             )
+            self._insert_input_ivc(input_variables.to_ivc())
 
-    def _insert_input_ivc(
-        self, ivc: om.IndepVarComp, subsystem_name=INPUT_SYSTEM_NAME, previous_order=None
-    ):
-        if previous_order is None:
-            self._problem_copy.setup()
-            previous_order = self._get_order_of_subsystems(self._problem_copy)
-
+    def _insert_input_ivc(self, ivc: om.IndepVarComp, subsystem_name=INPUT_SYSTEM_NAME):
         self.model.add_subsystem(subsystem_name, ivc, promotes=["*"])
-        self.model.set_order([subsystem_name] + previous_order)
-
-        self._reset_problem_copy()
-
-    @staticmethod
-    def _get_order_of_subsystems(problem, ignored_system_names=("_auto_ivc", SHAPER_SYSTEM_NAME)):
-        return [
-            system.name
-            for system in problem.model.system_iter(recurse=False)
-            if system.name not in ignored_system_names
-        ]
-
-    @classmethod
-    def _get_undetermined_dynamic_vars_metadata(cls, problem):
-        """
-        Provides dict (name, metadata) for dynamically shaped inputs that are not
-        fed by an existing output (assuming overall variable promotion).
-
-        Assumes problem.setup() has been run, at least partially.
-
-        :param problem:
-        """
-        # First all outputs are identified. If a dynamically shaped input is fed by a matching
-        # output, its shaped will be determined.
-        output_var_names = []
-        for system in problem.model.system_iter(recurse=False):
-            io_metadata = system.get_io_metadata("output")
-            output_var_names += [meta["prom_name"] for meta in io_metadata.values()]
-
-        dynamic_vars = {}
-        for system in problem.model.system_iter(recurse=False):
-            io_metadata = system.get_io_metadata("input")
-            dynamic_vars.update(
-                {
-                    meta["prom_name"]: meta
-                    for name, meta in io_metadata.items()
-                    if meta["shape_by_conn"] and meta["prom_name"] not in output_var_names
-                }
-            )
-        return dynamic_vars
+        self.model.set_order([subsystem_name] + self._analysis.subsystem_order)
 
 
 class AutoUnitsDefaultGroup(om.Group):
@@ -328,3 +279,121 @@ def get_variable_list_from_system(
         promoted_only=promoted_only,
         io_status=io_status,
     )
+
+
+@dataclass
+class ProblemAnalysis:
+    """Class for retrieving information about the input OpenMDAO problem.
+
+    At least one setup operation is done on a copy of the problem.
+    Two setup operations will be done if the problem has unfed dynamically
+    shaped inputs.
+    """
+
+    #: The analyzed problem
+    problem: om.Problem
+
+    #: All variables of the problem
+    problem_variables: VariableList = field(default_factory=VariableList, init=False)
+
+    #: List variables that are inputs OF THE PROBLEM and dynamically shaped.
+    dynamic_input_vars: VariableList = field(default_factory=VariableList, init=False)
+
+    #: Order of subsystems
+    subsystem_order: list = field(default_factory=list, init=False)
+
+    #: Names of variables that are output of an IndepVarComp
+    ivc_var_names: list = field(default_factory=list, init=False)
+
+    def __post_init__(self):
+        self.analyze()
+
+    def analyze(self):
+        """
+        Gets information about inner structure of the associated problem.
+        """
+        problem_copy = get_problem_copy_without_mpi(self.problem)
+        try:
+            om.Problem.setup(problem_copy)
+        except RuntimeError:
+            self.dynamic_input_vars = self._get_undetermined_dynamic_vars(problem_copy)
+
+            problem_copy = get_problem_copy_without_mpi(self.problem)
+            self.fills_dynamically_shaped_inputs(problem_copy)
+            om.Problem.setup(problem_copy)
+
+        self.problem_variables = VariableList().from_problem(problem_copy)
+
+        self.ivc_var_names = [
+            meta["prom_name"]
+            for meta in problem_copy.model.get_io_metadata(
+                "output",
+                tags=["indep_var", "openmdao:indep_var"],
+                excludes=f"{SHAPER_SYSTEM_NAME}.*",
+            ).values()
+        ]
+
+        self.subsystem_order = self._get_order_of_subsystems(problem_copy)
+
+    def fills_dynamically_shaped_inputs(self, problem: om.Problem):
+        """
+        Adds to the problem an IndepVarComp, that provides dummy variables to fit the
+        dynamically shaped inputs of the analyzed problem.
+
+        Adding this IVC to the problem will allow to complete the setup operation.
+
+        The input problem should be the analyzed problem or a copy of it.
+        """
+        if self.dynamic_input_vars:
+            # If vars_metadata is empty, it means the RuntimeError was not because
+            # of dynamic shapes, and the incoming self.setup() will raise it.
+            ivc = om.IndepVarComp()
+            for variable in self.dynamic_input_vars:
+                # We use a (2,)-shaped array as value here. This way, it will be easier
+                # to identify dynamic-shaped data in an input file generated from current
+                # problem.
+                ivc.add_output(variable.name, [np.nan, np.nan], units=variable.units)
+            problem.model.add_subsystem(SHAPER_SYSTEM_NAME, ivc, promotes=["*"])
+
+    @staticmethod
+    def _get_undetermined_dynamic_vars(problem) -> VariableList:
+        """
+        Provides variable list of dynamically shaped inputs that are not
+        fed by an existing output (assuming overall variable promotion).
+
+        Assumes problem.setup() has been run, at least partially.
+
+        :param problem:
+        :return: the variable list
+        """
+        # First all outputs are identified. If a dynamically shaped input is fed by a matching
+        # output, its shaped will be determined.
+        output_var_names = []
+        for system in problem.model.system_iter(recurse=False):
+            io_metadata = system.get_io_metadata("output")
+            output_var_names += [meta["prom_name"] for meta in io_metadata.values()]
+
+        dynamic_vars_metadata = {}
+        for system in problem.model.system_iter(recurse=False):
+            io_metadata = system.get_io_metadata("input")
+            dynamic_vars_metadata.update(
+                {
+                    meta["prom_name"]: meta
+                    for name, meta in io_metadata.items()
+                    if meta["shape_by_conn"] and meta["prom_name"] not in output_var_names
+                }
+            )
+
+        dynamic_vars = VariableList(
+            [Variable(meta["prom_name"], **meta) for meta in dynamic_vars_metadata.values()]
+        )
+
+        return dynamic_vars
+
+    @staticmethod
+    def _get_order_of_subsystems(problem, ignored_system_names=("_auto_ivc", SHAPER_SYSTEM_NAME)):
+        return [
+            system.name
+            for system in problem.model.system_iter(recurse=False)
+            if system.name not in ignored_system_names
+        ]
