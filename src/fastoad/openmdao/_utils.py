@@ -21,6 +21,7 @@ from typing import List, Tuple, TypeVar
 import numpy as np
 import openmdao.api as om
 from deprecated import deprecated
+from openmdao.core.constants import _SetupStatus
 from openmdao.utils.mpi import FakeComm
 
 T = TypeVar("T", bound=om.Problem)
@@ -52,24 +53,20 @@ def copyable_problem(problem: om.Problem) -> om.Problem:
     :param problem: any openMDAO problem
     :return: The given problem with a FakeComm object as problem.comm
     """
+
     # An actual MPI communicator will make the deepcopy crash if an MPI
     # library is installed.
-
     actual_comm = problem.comm
     problem.comm = FakeComm()
 
-    metadata_were_added = False
     try:
         if not problem._metadata:
-            # Adding temporarily this attribute ensures that the post-hook for N2 reports
+            # Adding this attribute ensures that the post-hook for N2 reports
             # will not crash. Indeed, due to the copy, it tries to post-process
             # the 'problem' instance at the end of setup of the 'problem_copy' instance.
-            problem._metadata = {"saved_errors": []}
-            metadata_were_added = True
+            problem._metadata = {"saved_errors": [], "setup_status": _SetupStatus.PRE_SETUP}
         yield problem
     finally:
-        if metadata_were_added:
-            problem._metadata = None
         problem.comm = actual_comm
 
 
