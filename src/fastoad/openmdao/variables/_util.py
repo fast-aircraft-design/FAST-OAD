@@ -18,7 +18,7 @@ from typing import Tuple
 import numpy as np
 from openmdao.core.constants import _SetupStatus
 
-from fastoad.openmdao._utils import get_problem_copy_without_mpi
+from fastoad.openmdao._utils import get_mpi_safe_problem_copy
 
 
 def get_problem_variables(
@@ -44,7 +44,7 @@ def get_problem_variables(
     :return: input dict, output dict
     """
     if not problem._metadata or problem._metadata["setup_status"] < _SetupStatus.POST_SETUP:
-        problem = get_problem_copy_without_mpi(problem)
+        problem = get_mpi_safe_problem_copy(problem)
         problem.setup()
 
     # Get inputs and outputs

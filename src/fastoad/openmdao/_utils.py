@@ -27,7 +27,7 @@ from openmdao.utils.mpi import FakeComm
 T = TypeVar("T", bound=om.Problem)
 
 
-def get_problem_copy_without_mpi(problem: T) -> T:
+def get_mpi_safe_problem_copy(problem: T) -> T:
     """
     This function does a deep copy of input OpenMDAO problem while avoiding
     the crash that can occur if problem.comm is not pickle-able, like a

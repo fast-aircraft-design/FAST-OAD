@@ -24,7 +24,7 @@ from fastoad.io import DataFile, IVariableIOFormatter, VariableIO
 from fastoad.module_management.service_registry import RegisterSubmodel
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 from fastoad.openmdao.variables import Variable, VariableList
-from ._utils import get_problem_copy_without_mpi
+from ._utils import get_mpi_safe_problem_copy
 from .exceptions import FASTOpenMDAONanInInputFile
 from ..module_management._bundle_loader import BundleLoader
 
@@ -355,13 +355,13 @@ class ProblemAnalysis:
         """
         Gets information about inner structure of the associated problem.
         """
-        problem_copy = get_problem_copy_without_mpi(self.problem)
+        problem_copy = get_mpi_safe_problem_copy(self.problem)
         try:
             om.Problem.setup(problem_copy)
         except RuntimeError:
             self.dynamic_input_vars = self._get_undetermined_dynamic_vars(problem_copy)
 
-            problem_copy = get_problem_copy_without_mpi(self.problem)
+            problem_copy = get_mpi_safe_problem_copy(self.problem)
             self.fills_dynamically_shaped_inputs(problem_copy)
             om.Problem.setup(problem_copy)
 
