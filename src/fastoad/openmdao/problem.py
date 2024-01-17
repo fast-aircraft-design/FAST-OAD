@@ -85,9 +85,7 @@ class FASTOADProblem(om.Problem):
         """
         Set up the problem before run.
         """
-        self.self_analysis()
-
-        self._analysis.fills_dynamically_shaped_inputs(self)
+        self.analysis.fills_dynamically_shaped_inputs(self)
 
         super().setup(*args, **kwargs)
 
@@ -110,12 +108,10 @@ class FASTOADProblem(om.Problem):
         :param source_formatter: the class that defines format of input file. if
                                  not provided, expected format will be the default one.
         """
-        self.self_analysis()
-
         variables = DataFile(self.input_file_path, load_data=False)
 
         unconnected_inputs = VariableList(
-            [variable for variable in self._analysis.problem_variables if variable.is_input]
+            [variable for variable in self.analysis.problem_variables if variable.is_input]
         )
 
         variables.update(
@@ -156,7 +152,6 @@ class FASTOADProblem(om.Problem):
         """
         Reads inputs of the problem.
         """
-        self.self_analysis()
         if self._metadata and self._metadata["setup_status"] == _SetupStatus.POST_SETUP:
             self._read_inputs_with_setup_done()
         else:
@@ -165,23 +160,27 @@ class FASTOADProblem(om.Problem):
             # will be properly set by new inputs.
             self._read_inputs_after_setup = True
 
-    def self_analysis(self, force: bool = False):
+    @property
+    def analysis(self) -> "ProblemAnalysis":
         """
-        Gets information about inner structure of this problem.
+        Information about inner structure of this problem.
 
         The collected data (internally stored) are used in several steps of the computation.
 
-        This analysis is performed once. Each subsequent call reuses the obtained data,
-        unless 'force' is set to True.
+        This analysis is performed once. Each subsequent usage reuses the obtained data.
 
-        This method is already called whenever needed in this class. Therefore, an
-        outside call is needed (and mandatory) only if the problem has been modified after its
-        initial building. In this case, force=True should be used.
-
-        :type force: True to force the analysis
+        To ensure the analysis is run again, use :meth:`reset_analysis`.
         """
-        if force or self._analysis is None:
+        if self._analysis is None:
             self._analysis = ProblemAnalysis(self)
+
+        return self._analysis
+
+    def reset_analysis(self):
+        """
+        Ensure a new problem analysis is done at new usage of :attr:`analysis`.
+        """
+        self._analysis = None
 
     def _get_problem_inputs(self) -> Tuple[VariableList, VariableList]:
         """
@@ -192,9 +191,7 @@ class FASTOADProblem(om.Problem):
 
         :return: VariableList of needed input variables, VariableList with unused variables.
         """
-        problem_inputs_names = [
-            var.name for var in self._analysis.problem_variables if var.is_input
-        ]
+        problem_inputs_names = [var.name for var in self.analysis.problem_variables if var.is_input]
 
         input_variables = DataFile(self.input_file_path)
 
@@ -236,15 +233,15 @@ class FASTOADProblem(om.Problem):
             [
                 variable
                 for variable in input_variables
-                if variable.name not in self._analysis.ivc_var_names
+                if variable.name not in self.analysis.ivc_var_names
             ]
         )
 
         if input_variables:
-            self._analysis.dynamic_input_vars = VariableList(
+            self.analysis.dynamic_input_vars = VariableList(
                 [
                     variable
-                    for variable in self._analysis.dynamic_input_vars
+                    for variable in self.analysis.dynamic_input_vars
                     if variable.name not in input_variables.names()
                 ]
             )
@@ -252,7 +249,7 @@ class FASTOADProblem(om.Problem):
 
     def _insert_input_ivc(self, ivc: om.IndepVarComp, subsystem_name=INPUT_SYSTEM_NAME):
         self.model.add_subsystem(subsystem_name, ivc, promotes=["*"])
-        self.model.set_order([subsystem_name] + self._analysis.subsystem_order)
+        self.model.set_order([subsystem_name] + self.analysis.subsystem_order)
 
 
 class AutoUnitsDefaultGroup(om.Group):
