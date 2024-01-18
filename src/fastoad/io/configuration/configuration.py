@@ -21,17 +21,15 @@ from abc import ABC, abstractmethod
 from importlib.resources import open_text
 from typing import Dict
 
-import numpy as np
 import openmdao.api as om
 import tomlkit
 from jsonschema import validate
 from ruamel.yaml import YAML
 
 from fastoad._utils.files import make_parent_dir
-from fastoad.io import DataFile, IVariableIOFormatter
+from fastoad.io import IVariableIOFormatter
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from fastoad.openmdao.problem import FASTOADProblem
-from fastoad.openmdao.variables import VariableList
 from . import resources
 from .exceptions import (
     FASTConfigurationBadOpenMDAOInstructionError,
@@ -115,6 +113,10 @@ class FASTOADProblemConfigurator:
 
         problem = FASTOADProblem()
         self._build_model(problem)
+
+        if self._configuration_modifier:
+            self._configuration_modifier.modify(problem)
+
         problem.input_file_path = self.input_file_path
         problem.output_file_path = self.output_file_path
 
@@ -131,9 +133,6 @@ class FASTOADProblemConfigurator:
 
         if read_inputs:
             self._add_design_vars(problem.model, auto_scaling)
-
-        if self._configuration_modifier:
-            self._configuration_modifier.modify(problem)
 
         return problem
 
@@ -213,33 +212,7 @@ class FASTOADProblemConfigurator:
                                  not provided, expected format will be the default one.
         """
         problem = self.get_problem(read_inputs=False)
-        problem.setup()
-        variables = DataFile(self.input_file_path, load_data=False)
-
-        unconnected_inputs = VariableList.from_problem(
-            problem,
-            use_initial_values=True,
-            get_promoted_names=True,
-            promoted_only=True,
-            io_status="inputs",
-        )
-
-        variables.update(
-            unconnected_inputs,
-            add_variables=True,
-        )
-        if source_file_path:
-            ref_vars = DataFile(source_file_path, formatter=source_formatter)
-            variables.update(ref_vars, add_variables=False)
-            nan_variable_names = []
-            for var in variables:
-                var.is_input = True
-                # Checking if variables have NaN values
-                if np.any(np.isnan(var.value)):
-                    nan_variable_names.append(var.name)
-            if nan_variable_names:
-                _LOGGER.warning("The following variables have NaN values: %s", nan_variable_names)
-        variables.save()
+        problem.write_needed_inputs(source_file_path, source_formatter)
 
     def get_optimization_definition(self) -> Dict:
         """
