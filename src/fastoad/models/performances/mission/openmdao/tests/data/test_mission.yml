@@ -83,7 +83,7 @@ phases:
           mach: constant
           altitude:
             value: optimal_flight_level
-        maximum_CL: ~max_CL
+        maximum_CL: ~~max_CL
   climb_optimal:
     engine_setting: climb
     polar: data:aerodynamics:aircraft:cruise
@@ -110,7 +110,7 @@ phases:
           mach: constant
           altitude:
             value: optimal_altitude
-        maximum_CL: ~max_CL
+        maximum_CL: ~~max_CL
   descent:
     engine_setting: idle
     polar: data:aerodynamics:aircraft:cruise
@@ -183,7 +183,7 @@ routes:
       segment: cruise
       engine_setting: cruise
       polar: data:aerodynamics:aircraft:cruise
-      maximum_CL: ~max_CL
+      maximum_CL: ~~max_CL
     descent_parts:
       - phase: descent
   main_route_optimal:
@@ -204,7 +204,7 @@ routes:
       target:
         altitude:
           value: optimal_altitude
-      maximum_CL: ~max_CL
+      maximum_CL: ~~max_CL
     descent_parts:
       - phase: descent
   diversion:

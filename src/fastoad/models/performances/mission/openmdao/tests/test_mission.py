@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -400,22 +400,16 @@ def test_mission_group_with_fuel_objective(cleanup, with_dummy_plugin_2):
 def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
 
     input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
-    vars = VariableIO(input_file_path).read(
-        ignore=[
-            "data:mission:operational:main_route:climb:max_CL",
-            "data:mission:operational:main_route:cruise:max_CL",
-        ]
-    )
+    vars = VariableIO(input_file_path).read(ignore=["data:mission:operational:max_CL"])
     ivc = vars.to_ivc()
 
     # Activate CL limitation during cruise and climb
-    ivc.add_output("data:mission:operational:main_route:climb:max_CL", val=0.45)
-    ivc.add_output("data:mission:operational:main_route:cruise:max_CL", val=0.45)
+    ivc.add_output("data:mission:operational:max_CL", val=0.45)
 
     problem = run_system(
         AdvancedMissionComp(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=pth.join(RESULTS_FOLDER_PATH, "CL_limitation.csv"),
+            out_file=pth.join(RESULTS_FOLDER_PATH, "CL_limitation_1.csv"),
             use_initializer_iteration=False,
             mission_file_path=MissionWrapper(
                 pth.join(DATA_FOLDER_PATH, "test_mission.yml"), mission_name="operational"
@@ -435,10 +429,7 @@ def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
     assert_allclose(altitude_end_climb, 9753.6, atol=1e-1)
 
     # Now check climbing cruise with contant CL
-    ivc.add_output(
-        "data:mission:operational_optimal:main_route_optimal:climb_optimal:max_CL", val=0.45
-    )
-    ivc.add_output("data:mission:operational_optimal:main_route_optimal:cruise:max_CL", val=0.45)
+    ivc.add_output("data:mission:operational_optimal:max_CL", val=0.45)
     ivc.add_output("data:mission:operational_optimal:taxi_out:thrust_rate", val=0.3)
     ivc.add_output("data:mission:operational_optimal:taxi_out:duration", val=300, units="s")
     ivc.add_output("data:mission:operational_optimal:takeoff:fuel", val=100, units="kg")
@@ -448,7 +439,7 @@ def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
     problem = run_system(
         AdvancedMissionComp(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=pth.join(RESULTS_FOLDER_PATH, "CL_limitation.csv"),
+            out_file=pth.join(RESULTS_FOLDER_PATH, "CL_limitation_2.csv"),
             use_initializer_iteration=False,
             mission_file_path=MissionWrapper(
                 pth.join(DATA_FOLDER_PATH, "test_mission.yml"), mission_name="operational_optimal"
