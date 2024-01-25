@@ -69,8 +69,8 @@ class AbstractTimeStepFlightSegment(
     #: the flight path).
     time_step: float = DEFAULT_TIME_STEP
 
-    # The lift coefficient at which the cruise phase will be realised
-    CL_cruise: float = None
+    # The maximum lift coefficient for optimal climb and cruise segments
+    maximum_CL: float = None
 
     #: Minimum and maximum authorized altitude values. If computed altitude gets beyond these
     #: limits, computation will be interrupted and a warning message will be issued in logger.
@@ -318,8 +318,8 @@ class AbstractTimeStepFlightSegment(
         def distance_to_optimum(altitude):
             atm = self._get_atmosphere_point(altitude)
             true_airspeed = mach * atm.speed_of_sound
-            if self.CL_cruise is not None:
-                CL_optimal = min(self.polar.optimal_cl, self.CL_cruise)
+            if self.maximum_CL is not None:
+                CL_optimal = min(self.polar.optimal_cl, self.maximum_CL)
             else:
                 CL_optimal = self.polar.optimal_cl
             optimal_air_density = (

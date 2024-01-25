@@ -20,7 +20,7 @@ from numpy.testing import assert_allclose
 from scipy.constants import foot, knot, nautical_mile
 
 from fastoad._utils.testing import run_system
-from fastoad.io import DataFile
+from fastoad.io import DataFile, VariableIO
 from ..mission import OMMission
 from ..mission_run import AdvancedMissionComp
 from ..mission_wrapper import MissionWrapper
@@ -395,3 +395,83 @@ def test_mission_group_with_fuel_objective(cleanup, with_dummy_plugin_2):
 
     assert_allclose(problem["data:mission:fuel_as_objective:needed_block_fuel"], 10000.0, atol=1.0)
     assert_allclose(problem["data:mission:fuel_as_objective:reserve:fuel"], 260.0, atol=1.0)
+
+
+def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
+
+    input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
+    vars = VariableIO(input_file_path).read(
+        ignore=[
+            "data:mission:operational:main_route:climb:max_CL",
+            "data:mission:operational:main_route:cruise:max_CL",
+        ]
+    )
+    ivc = vars.to_ivc()
+
+    # Activate CL limitation during cruise and climb
+    ivc.add_output("data:mission:operational:main_route:climb:max_CL", val=0.45)
+    ivc.add_output("data:mission:operational:main_route:cruise:max_CL", val=0.45)
+
+    problem = run_system(
+        AdvancedMissionComp(
+            propulsion_id="test.wrapper.propulsion.dummy_engine",
+            out_file=pth.join(RESULTS_FOLDER_PATH, "CL_limitation.csv"),
+            use_initializer_iteration=False,
+            mission_file_path=MissionWrapper(
+                pth.join(DATA_FOLDER_PATH, "test_mission.yml"), mission_name="operational"
+            ),
+            reference_area_variable="data:geometry:aircraft:reference_area",
+        ),
+        ivc,
+    )
+
+    flight_points = problem.model.component.flight_points
+    climb_points = flight_points.loc[flight_points["name"] == "operational:main_route:climb"]
+    CL_end_climb = climb_points.CL.iloc[-1]
+    altitude_end_climb = climb_points.altitude.iloc[-1]
+
+    # check CL and flight level, CL is lower than 0.45 because the climb phase stops at the closest flight level.
+    assert_allclose(CL_end_climb, 0.445, atol=1e-3)
+    assert_allclose(altitude_end_climb, 9753.6, atol=1e-1)
+
+    # Now check climbing cruise with contant CL
+    ivc.add_output(
+        "data:mission:operational_optimal:main_route_optimal:climb_optimal:max_CL", val=0.45
+    )
+    ivc.add_output("data:mission:operational_optimal:main_route_optimal:cruise:max_CL", val=0.45)
+    ivc.add_output("data:mission:operational_optimal:taxi_out:thrust_rate", val=0.3)
+    ivc.add_output("data:mission:operational_optimal:taxi_out:duration", val=300, units="s")
+    ivc.add_output("data:mission:operational_optimal:takeoff:fuel", val=100, units="kg")
+    ivc.add_output("data:mission:operational_optimal:takeoff:V2", val=70, units="m/s")
+    ivc.add_output("data:mission:operational_optimal:TOW", val=70000, units="kg")
+
+    problem = run_system(
+        AdvancedMissionComp(
+            propulsion_id="test.wrapper.propulsion.dummy_engine",
+            out_file=pth.join(RESULTS_FOLDER_PATH, "CL_limitation.csv"),
+            use_initializer_iteration=False,
+            mission_file_path=MissionWrapper(
+                pth.join(DATA_FOLDER_PATH, "test_mission.yml"), mission_name="operational_optimal"
+            ),
+            reference_area_variable="data:geometry:aircraft:reference_area",
+        ),
+        ivc,
+    )
+
+    flight_points = problem.model.component.flight_points
+    climb_points = flight_points.loc[
+        flight_points["name"] == "operational_optimal:main_route_optimal:climb_optimal"
+    ]
+    cruise_points = flight_points.loc[
+        flight_points["name"] == "operational_optimal:main_route_optimal:cruise"
+    ]
+    CL_end_climb = climb_points.CL.iloc[-1]
+    altitude_end_climb = climb_points.altitude.iloc[-1]
+    altitude_end_cruise = cruise_points.altitude.iloc[-1]
+    CL_end_cruise = cruise_points.CL.iloc[-1]
+
+    # Check CL and altitude for a climbing cruise at constant CL.
+    assert_allclose(CL_end_climb, 0.45, atol=1e-3)
+    assert_allclose(CL_end_cruise, 0.45, atol=1e-3)
+    assert_allclose(altitude_end_climb, 9821.85, atol=1e-1)
+    assert_allclose(altitude_end_cruise, 10343.68, atol=1e-1)

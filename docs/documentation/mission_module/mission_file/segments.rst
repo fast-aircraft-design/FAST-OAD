@@ -215,6 +215,9 @@ Mach 0.8 while keeping equivalent_airspeed constant).
       mach: constant                            #  level that provides maximum lift/drag
       altitude:                                 #  at current mass.
         value: optimal_flight_level
+    maximum_CL: 0.6                             # Limitation on lift coefficient.
+                                                # The altitude will be limited to the closest
+                                                # flight level within the CL limitation.
 
 .. seealso::
 
@@ -274,9 +277,11 @@ prepending climb, if any).
 An :code:`optimal_cruise` segment simulates a cruise climb, i.e. a cruise where the aircraft
 climbs gradually to keep being at altitude of maximum lift/drag ratio.
 
-It assumed the segment actually starts at altitude of maximum lift/drag ratio, which can be
+The :code:`optimal_cruise` segment can be realised at a constant lift coefficient using the parameter :code:`maximum_CL`.
+
+It assumed the segment actually starts at altitude of maximum lift/drag ratio or the altitude given by :code:`maximum_CL`, which can be
 achieved with an :ref:`segment-altitude_change` segment with :code:`optimal_altitude` as target
-altitude.
+altitude and :code:`maximum_CL` as parameter.
 
 *The common way to optimize the fuel consumption for commercial aircraft is a step climb cruise.
 Such segment will be implemented in the future.*
@@ -288,6 +293,7 @@ Such segment will be implemented in the future.*
     segment: optimal_cruise
     polar: data:aerodynamics:aircraft:cruise    # High speed aerodynamic polar
     engine_setting: cruise
+    maximum_CL: 0.6
     target:
       ground_distance:                          # Cruise for 2000 nautical miles
         value: 2000
