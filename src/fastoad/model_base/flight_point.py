@@ -80,6 +80,7 @@ class FlightPoint:
 
     time: float = 0.0  #: Time in seconds.
     altitude: float = None  #: Altitude in meters.
+    isa_offset: float = 0.0  #: temperature deviation from Standard Atmosphere
     ground_distance: float = 0.0  #: Covered ground distance in meters.
     mass: float = None  #: Mass in kg.
     true_airspeed: float = None  #: True airspeed (TAS) in m/s.
