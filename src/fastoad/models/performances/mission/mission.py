@@ -13,6 +13,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Optional
@@ -24,6 +25,8 @@ from fastoad.model_base import FlightPoint
 from .base import FlightSequence
 from .routes import RangedRoute
 from .segments.registered.cruise import CruiseSegment
+
+_LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 @dataclass
@@ -52,11 +55,7 @@ class Mission(FlightSequence):
         if self._flight_points is None:
             return None
 
-        return (
-            self._flight_points.mass.iloc[0]
-            - self._flight_points.mass.iloc[-1]
-            + self.get_reserve_fuel()
-        )
+        return self._flight_points.iloc[-1].consumed_fuel + self.get_reserve_fuel()
 
     @property
     def first_route(self) -> RangedRoute:
@@ -78,12 +77,13 @@ class Mission(FlightSequence):
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         if self.target_fuel_consumption is None:
-            flight_points = super().compute_from(start)
-            flight_points.loc[flight_points.name.isnull()].name = ""
-            self._compute_reserve(flight_points)
-            return flight_points
+            self._flight_points = super().compute_from(start)
+            self._flight_points.loc[self._flight_points.name.isnull()].name = ""
+            self._compute_reserve(self._flight_points)
+        else:
+            self._solve_cruise_distance(start)
 
-        return self._solve_cruise_distance(start)
+        return self._flight_points
 
     def get_reserve_fuel(self):
         """:returns: the fuel quantity for reserve, obtained after mission computation."""

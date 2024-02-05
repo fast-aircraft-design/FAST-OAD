@@ -114,7 +114,7 @@ def test_mission(low_speed_polar, high_speed_polar, propulsion):
         ground_distance=100000.0,
     )
 
-    # Test mission with fixed route distances
+    # Test mission with fixed route distances ----------------------------------
     mission_1 = Mission(name="mission1")
     mission_1.extend([first_route, second_route])
 
@@ -132,8 +132,14 @@ def test_mission(low_speed_polar, high_speed_polar, propulsion):
         26953.0,
         atol=1.0,
     )
+    assert_allclose(
+        flight_points.iloc[0].mass - flight_points.iloc[-1].mass,
+        flight_points.iloc[-1].consumed_fuel,
+        atol=1e-10,
+        rtol=1e-6,
+    )
 
-    # Test mission with fixed route distances and reserve
+    # Test mission with fixed route distances and reserve ----------------------
     mission_2 = Mission(name="mission2", reserve_ratio=0.03)
     mission_2.extend([first_route, second_route])
 
@@ -152,7 +158,14 @@ def test_mission(low_speed_polar, high_speed_polar, propulsion):
         atol=1.0,
     )
 
-    # Test with objective fuel, with 2 routes
+    assert_allclose(
+        flight_points.iloc[0].mass - flight_points.iloc[-1].mass,
+        flight_points.iloc[-1].consumed_fuel,
+        atol=1e-10,
+        rtol=1e-6,
+    )
+
+    # Test with objective fuel, with 2 routes ----------------------------------
     mission_3 = Mission(
         name="mission3",
         target_fuel_consumption=20000.0,
@@ -164,7 +177,14 @@ def test_mission(low_speed_polar, high_speed_polar, propulsion):
         20000.0,
         mission_3.fuel_accuracy,
     )
-    # Test with objective fuel, when mission does not start with a route
+    assert_allclose(
+        flight_points.iloc[0].mass - flight_points.iloc[-1].mass,
+        flight_points.iloc[-1].consumed_fuel,
+        atol=1e-10,
+        rtol=1e-6,
+    )
+
+    # Test with objective fuel, when mission does not start with a route -------
     mission_4 = Mission(name="mission4", target_fuel_consumption=20000.0)
     mission_4.extend([taxi_out, first_route, second_route])
 
@@ -173,4 +193,11 @@ def test_mission(low_speed_polar, high_speed_polar, propulsion):
         flight_points.mass.iloc[0] - flight_points.mass.iloc[-1],
         20000.0,
         mission_4.fuel_accuracy,
+    )
+
+    assert_allclose(
+        flight_points.iloc[0].mass - flight_points.iloc[-1].mass,
+        flight_points.iloc[-1].consumed_fuel,
+        atol=1e-10,
+        rtol=1e-6,
     )

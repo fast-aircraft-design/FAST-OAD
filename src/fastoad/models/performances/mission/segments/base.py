@@ -1,6 +1,6 @@
 """Base classes for simulating flight segments."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -122,7 +122,6 @@ class AbstractFlightSegment(IFlightPart, ABC):
         However, when subclassing, the method to overload is :meth:`compute_from_start_to_target`.
         Generic reprocessing of start and target flight points is done in :meth:`compute_from`
         before calling :meth:`compute_from_start_to_target`
-
     """
 
     #: A FlightPoint instance that provides parameter values that should all be reached at the
@@ -191,8 +190,9 @@ class AbstractFlightSegment(IFlightPart, ABC):
         .. Important::
 
             When subclasssing, if you need to overload :meth:`compute_from`, you should consider
-            overriding :meth:`_compute_from` instead. Therefore, you will take benefit of the
-            preprocessing of start and target flight points that is done in :meth:`compute_from`
+            overriding :meth:`compute_from_start_to_target` instead. Therefore, you will take
+            benefit of the preprocessing of start and target flight points that is done in
+            :meth:`compute_from`.
 
 
         :param start: the initial flight point, defined for `altitude`, `mass` and speed
@@ -263,6 +263,37 @@ class AbstractFlightSegment(IFlightPart, ABC):
         for field_name in other_fields + speeds_are_missing * list(speed_fields):
             if getattr(flight_point, field_name) is None and not source.is_relative(field_name):
                 setattr(flight_point, field_name, getattr(source, field_name))
+
+    @staticmethod
+    def consume_fuel(
+        flight_point: FlightPoint,
+        previous: FlightPoint,
+        fuel_consumption: float = None,
+        mass_ratio: float = None,
+    ):
+        """
+        This method should be used whenever fuel consumption has to be stored.
+
+        It ensures that "mass" and "consumed_fuel" fields will be kept consistent.
+
+        Mass can be modified using the 'fuel_consumption" argument, or the 'mass_ratio'
+        argument. One of them should be provided.
+
+        :param flight_point: the FlightPoint instance where "mass" and "consumed_fuel"
+                             fields will get new values
+        :param previous: FlightPoint instance that will be the base for the computation
+        :param fuel_consumption: consumed fuel, in kg, between 'previous' and 'flight_point'.
+                                 Positive when fuel is consumed.
+        :param mass_ratio: the ratio flight_point.mass/previous.mass
+        """
+        flight_point.mass = previous.mass
+        flight_point.consumed_fuel = previous.consumed_fuel
+        if fuel_consumption is not None:
+            flight_point.mass -= fuel_consumption
+            flight_point.consumed_fuel += fuel_consumption
+        if mass_ratio is not None:
+            flight_point.mass *= mass_ratio
+            flight_point.consumed_fuel += previous.mass - flight_point.mass
 
     def _complete_speed_values(
         self, flight_point: FlightPoint, raise_error_on_missing_speeds=True
