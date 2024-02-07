@@ -20,7 +20,7 @@ A clear and concise description of what you expected to happen.
 
 **Error message**
 Please copy/paste here the whole error message you obtain (text only, no screenshot please).
-For GUI-related bugs, you may add add screenshots to show the unwanted result.
+For GUI-related bugs, you may add screenshots to show the unwanted result.
 
 **Environment**
 - Operating System: <e.g. macOS 11.4, Windows 10, Ubuntu 20.04.2>
