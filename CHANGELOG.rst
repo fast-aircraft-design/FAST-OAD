@@ -2,6 +2,18 @@
 Changelog
 =========
 
+Version 1.6.0
+=============
+- Added:
+    - FAST-OAD is now officially compatible with Python 3.10. Support of Python 3.7 has been abandoned. (#496)
+    - OpenMDAO group options can now be set from configuration file. (#502)
+    - Mission computation:
+        - A value for maximum lift coefficient can now be set for climb and cruise segments. (#504)
+        - Added the field consumed_fuel, computed for each time step and present in CSV output file. (#505)
+
+- Fixed:
+    - Decreased execution time by avoiding unnecessary setup operations. (#503)
+
 Version 1.5.2
 =============
 - Added:
