@@ -33,10 +33,10 @@ jobs:
       - name: Install
         # Development version of OpenMDAO is installed to ensure preview of any problem.
         # Installing pytest-cov is needed because of pytest.ini
+        # Note: nbval 0.10 incompatible with pytest 8.1
         run: |
           pip install git+https://github.com/OpenMDAO/OpenMDAO.git
           pip install .
-        # nbval 0.10 incompatible with pytest 8.1
           pip install pytest==8.0.2 pytest-cov nbval
         shell: bash
 
