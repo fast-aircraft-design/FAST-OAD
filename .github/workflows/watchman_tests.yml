@@ -36,7 +36,8 @@ jobs:
         run: |
           pip install git+https://github.com/OpenMDAO/OpenMDAO.git
           pip install .
-          pip install pytest pytest-cov nbval
+        # nbval 0.10 incompatible with pytest 8.1
+          pip install pytest==8.0.2 pytest-cov nbval
         shell: bash
 
       - name: List installed packages
