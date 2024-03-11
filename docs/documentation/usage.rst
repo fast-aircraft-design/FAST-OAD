@@ -133,6 +133,30 @@ optimization problems. It is defined as in Python when assuming the OpenMDAO con
 
 For more details, please see the OpenMDAO documentation on `drivers <http://openmdao.org/twodocs/versions/latest/features/building_blocks/drivers/index.html>`_.
 
+Model options
+==============
+
+OpenMDAO 3.27 introduced a new way to set options for any component in the problem, using the
+:code:`model_options` attribute of the :code:`Problem` object (see OpenMDAO documentation `here <https://openmdao.org/newdocs/versions/latest/features/core_features/options/options.html#setting-options-throughout-a-problem-model-problem-model-options>`_).
+
+This can be controlled from FAST-OAD configuration file, using for instance:
+
+.. code:: yaml
+
+    model_options:
+      "*":
+        propulsion_id: fastoad.wrapper.propulsion.rubber_engine
+        use_xfoil: true
+
+With above lines, any OpenMDAO component in the FAST-OAD problem, that has any of these options,
+will use the provided value for the option.
+
+.. note::
+
+  - Please note that the wildcards have to be (double) quoted.
+  - This feature is especially convenient to set options for sub-components of the declared models,
+    since these options are not directly accessible from the configuration file.
+
 Solvers
 =======
 
