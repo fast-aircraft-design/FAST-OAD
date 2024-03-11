@@ -46,6 +46,7 @@ KEY_CONNECTION_ID = "connections"
 KEY_MODEL = "model"
 KEY_SUBMODELS = "submodels"
 KEY_DRIVER = "driver"
+KEY_MODEL_OPTIONS = "model_options"
 KEY_OPTIMIZATION = "optimization"
 KEY_DESIGN_VARIABLES = "design_variables"
 KEY_CONSTRAINTS = "constraints"
@@ -126,6 +127,10 @@ class FASTOADProblemConfigurator:
         driver = self._serializer.data.get(KEY_DRIVER, "")
         if driver:
             problem.driver = _om_eval(driver)
+
+        model_options = self._serializer.data.get(KEY_MODEL_OPTIONS)
+        if model_options:
+            problem.model_options = model_options
 
         if self.get_optimization_definition():
             self._add_constraints(problem.model, auto_scaling)

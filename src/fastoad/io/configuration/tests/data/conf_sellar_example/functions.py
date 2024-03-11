@@ -1,6 +1,6 @@
 """Sellar functions"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -40,6 +40,11 @@ class Functions(om.Group):
 @RegisterSubmodel(SERVICE_FUNCTION_F, "function.f.default")
 class FunctionF(om.ExplicitComponent):
     """An OpenMDAO component to encapsulate Functions discipline"""
+
+    def initialize(self):
+        # These options have no effect and are used for checks
+        self.options.declare("dummy_f_option", types=int, default=0)
+        self.options.declare("dummy_generic_option", types=str, default="")
 
     def setup(self):
         self.add_input("x", val=2, desc="")

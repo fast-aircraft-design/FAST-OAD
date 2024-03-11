@@ -11,6 +11,13 @@ input_file = "../results/inputs.xml"
 output_file = "../results/outputs.xml"
 
 driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
+[model_options."*"]
+  dummy_f_option = 10
+  dummy_disc1_option = false
+  dummy_generic_option = "it works"
+[model_options."cycle.*"]
+  dummy_generic_option = "it works here also"
+
 [model]
     assembled_jac_type = "csc"  # Tests the ability to set options for groups
     [[model.connections]]

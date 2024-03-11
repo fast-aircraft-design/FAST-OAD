@@ -138,6 +138,22 @@
       "type": "string",
       "default": "om.ScipyOptimizeDriver(tol=1e-6, optimizer='SLSQP')"
     },
+    "model_options": {
+      "type": "object",
+      "additionalProperties": {
+        "additionalProperties": {
+          "anyOf": [
+            {
+              "not": {
+                "type": [
+                  "object"
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
     "model": {
       "$ref": "#/definitions/group"
     },
