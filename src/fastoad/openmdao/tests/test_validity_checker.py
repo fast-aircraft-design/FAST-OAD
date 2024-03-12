@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -20,8 +20,11 @@ from shutil import rmtree
 import openmdao.api as om
 import pytest
 
-from fastoad.openmdao.validity_checker import ValidityDomainChecker, ValidityStatus
-from fastoad.openmdao.variables import VariableList, Variable
+from .openmdao_sellar_example.disc1 import Disc1Bis, Disc1Ter
+from .openmdao_sellar_example.disc2 import Disc2
+from ..problem import FASTOADProblem
+from ..validity_checker import ValidityDomainChecker, ValidityStatus
+from ..variables import VariableList, Variable
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -230,3 +233,39 @@ def test_register_checks_as_decorator(cleanup):
     ValidityDomainChecker.log_records(records)
     with open(log_file_path) as log_file:
         assert len(log_file.readlines()) == 4
+
+
+def test_sellar(caplog):
+    # Case 1 ===================================================================
+    problem = FASTOADProblem()
+    model = problem.model
+
+    model.add_subsystem("sellar_discipline_1", Disc1Bis(), ["*"])
+    model.add_subsystem("sellar_discipline_2", Disc2(), ["*"])
+
+    model.nonlinear_solver = om.NonlinearBlockGS()
+    model.nonlinear_solver.options["iprint"] = 2
+    model.nonlinear_solver.options["maxiter"] = 25
+    model.nonlinear_solver.options["rtol"] = 1e-5
+
+    problem.setup()
+
+    problem.run_model()
+    assert 'Variable "x" out of bound' not in caplog.text
+
+    # Case 2 ===================================================================
+    problem = FASTOADProblem()
+    model = problem.model
+
+    model.add_subsystem("sellar_discipline_1", Disc1Ter(), ["*"])
+    model.add_subsystem("sellar_discipline_2", Disc2(), ["*"])
+
+    model.nonlinear_solver = om.NonlinearBlockGS()
+    model.nonlinear_solver.options["iprint"] = 2
+    model.nonlinear_solver.options["maxiter"] = 25
+    model.nonlinear_solver.options["rtol"] = 1e-5
+
+    problem.setup()
+
+    problem.run_model()
+    assert 'Variable "x" out of bound: value [2.] is over upper limit ( 1 )' in caplog.text
