@@ -1,6 +1,6 @@
 """For checking validity domain of OpenMDAO variables."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -160,6 +160,8 @@ class ValidityDomainChecker:
         :param problem:
         :return: the list of checks
         """
+        for limit_definitions in cls._limit_definitions.values():
+            limit_definitions.activated = False
 
         cls._update_problem_limit_definitions(problem)
 
@@ -169,18 +171,23 @@ class ValidityDomainChecker:
         return records
 
     @classmethod
-    def check_variables(cls, variables: VariableList) -> List[CheckRecord]:
+    def check_variables(
+        cls, variables: VariableList, activated_only: bool = True
+    ) -> List[CheckRecord]:
         """
         Check values of provided variables against registered limits.
 
         :param variables:
+        :param ignore_deactivated:
         :return: the list of checks
         """
         records: List[CheckRecord] = []
 
         for var in variables:
             for limit_definitions in cls._limit_definitions.values():
-                if var.name in limit_definitions:
+                if (
+                    limit_definitions.activated or not activated_only
+                ) and var.name in limit_definitions:
                     limit_def = limit_definitions[var.name]
                     value = convert_units(var.value, var.units, limit_def.units)
                     if value < limit_def.lower:
@@ -244,6 +251,7 @@ class ValidityDomainChecker:
         variables = VariableList.from_problem(
             problem, get_promoted_names=False, promoted_only=False
         )
+
         for var in variables:
             system_path = var.name.split(".")
             system = problem.model
@@ -254,6 +262,7 @@ class ValidityDomainChecker:
             if hasattr(system, "_fastoad_limit_definitions"):
 
                 limit_definitions = system._fastoad_limit_definitions
+                limit_definitions.activated = True
 
                 if var_name in limit_definitions:
                     # Get units for already defined limits
@@ -295,6 +304,7 @@ class _LimitDefinitions(dict):
 
     source_file: str
     logger_name: str
+    activated: bool = False
 
 
 @dataclass

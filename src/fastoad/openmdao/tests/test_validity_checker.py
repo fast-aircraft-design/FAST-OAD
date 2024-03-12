@@ -79,7 +79,7 @@ def test_register_checks_instantiation(cleanup):
         ]
     )
 
-    records = ValidityDomainChecker.check_variables(variables)
+    records = ValidityDomainChecker.check_variables(variables, activated_only=False)
     assert [
         (
             rec.variable_name,
@@ -116,7 +116,7 @@ def test_register_checks_instantiation(cleanup):
         ]
     )
 
-    records = ValidityDomainChecker.check_variables(variables)
+    records = ValidityDomainChecker.check_variables(variables, activated_only=False)
     assert [
         (
             rec.variable_name,
@@ -152,7 +152,7 @@ def test_register_checks_instantiation(cleanup):
         ]
     )
 
-    records = ValidityDomainChecker.check_variables(variables)
+    records = ValidityDomainChecker.check_variables(variables, activated_only=False)
     assert [
         (
             rec.variable_name,
@@ -243,13 +243,7 @@ def test_sellar(caplog):
     model.add_subsystem("sellar_discipline_1", Disc1Bis(), ["*"])
     model.add_subsystem("sellar_discipline_2", Disc2(), ["*"])
 
-    model.nonlinear_solver = om.NonlinearBlockGS()
-    model.nonlinear_solver.options["iprint"] = 2
-    model.nonlinear_solver.options["maxiter"] = 25
-    model.nonlinear_solver.options["rtol"] = 1e-5
-
     problem.setup()
-
     problem.run_model()
     assert 'Variable "x" out of bound' not in caplog.text
 
@@ -260,12 +254,6 @@ def test_sellar(caplog):
     model.add_subsystem("sellar_discipline_1", Disc1Ter(), ["*"])
     model.add_subsystem("sellar_discipline_2", Disc2(), ["*"])
 
-    model.nonlinear_solver = om.NonlinearBlockGS()
-    model.nonlinear_solver.options["iprint"] = 2
-    model.nonlinear_solver.options["maxiter"] = 25
-    model.nonlinear_solver.options["rtol"] = 1e-5
-
     problem.setup()
-
     problem.run_model()
     assert 'Variable "x" out of bound: value [2.] is over upper limit ( 1 )' in caplog.text
