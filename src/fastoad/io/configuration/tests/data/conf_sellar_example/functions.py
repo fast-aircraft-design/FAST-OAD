@@ -70,24 +70,12 @@ class FunctionF(om.ExplicitComponent):
 
 
 @RegisterSubmodel(SERVICE_FUNCTION_F, "function.f.alternate")
-class FunctionFAlt(om.ExplicitComponent):
+class FunctionFAlt(FunctionF):
     """An OpenMDAO component to encapsulate Functions discipline"""
 
     def initialize(self):
         # This option has no effect and is used for checks
         self.options.declare("dummy_generic_option", types=str, default="")
-
-    def setup(self):
-        self.add_input("x", val=2, desc="")
-        self.add_input(
-            "z", val=[np.nan, np.nan], desc="", units="m**2"
-        )  # NaN as default for testing connection check
-        self.add_input("yy1", val=1.0, desc="")
-        self.add_input("yy2", val=1.0, desc="")
-
-        self.add_output("f", val=1.0, desc="")
-
-        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         """Functions computation"""
