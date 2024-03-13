@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -25,7 +25,7 @@ from fastoad.openmdao.exceptions import (
 )
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.openmdao.variables import Variable, VariableList
-from .openmdao_sellar_example.sellar import Sellar
+from .openmdao_sellar_example.sellar import SellarModel
 from ...io import VariableIO
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
@@ -40,7 +40,7 @@ def cleanup():
 
 def test_write_outputs():
     problem = FASTOADProblem()
-    problem.model.add_subsystem("sellar", Sellar(), promotes=["*"])
+    problem.model.add_subsystem("sellar", SellarModel(), promotes=["*"])
     problem.output_file_path = pth.join(RESULTS_FOLDER_PATH, "output.xml")
     problem.setup()
 
@@ -78,7 +78,7 @@ def test_problem_read_inputs_after_setup(cleanup):
     """Tests what happens when reading inputs using existing XML with correct var"""
 
     problem = FASTOADProblem()
-    problem.model.add_subsystem("sellar", Sellar(), promotes=["*"])
+    problem.model.add_subsystem("sellar", SellarModel(), promotes=["*"])
 
     problem.input_file_path = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
 
@@ -102,7 +102,7 @@ def test_problem_read_inputs_before_setup(cleanup):
     """Tests what happens when reading inputs using existing XML with correct var"""
 
     problem = FASTOADProblem()
-    problem.model.add_subsystem("sellar", Sellar(), promotes=["*"])
+    problem.model.add_subsystem("sellar", SellarModel(), promotes=["*"])
 
     problem.input_file_path = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
 
@@ -120,7 +120,7 @@ def test_problem_with_case_recorder(cleanup):
     # Adding a case recorder may cause a crash in case of deepcopy.
 
     problem = FASTOADProblem()
-    sellar = Sellar()
+    sellar = SellarModel()
     sellar.nonlinear_solver = om.NonlinearBlockGS()  # Solver that is compatible with deepcopy
     sellar.add_recorder(om.SqliteRecorder(pth.join(RESULTS_FOLDER_PATH, "cases.sql")))
 
@@ -141,7 +141,7 @@ def test_problem_read_inputs_with_nan_inputs(cleanup):
     """Tests that when reading inputs using existing XML with some nan values an exception is raised"""
 
     problem = FASTOADProblem()
-    problem.model.add_subsystem("sellar", Sellar(), promotes=["*"])
+    problem.model.add_subsystem("sellar", SellarModel(), promotes=["*"])
 
     input_data_path = pth.join(DATA_FOLDER_PATH, "nan_inputs.xml")
 

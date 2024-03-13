@@ -2,7 +2,7 @@
 Module for testing VariableList.py
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -26,7 +26,7 @@ import fastoad.models
 from fastoad.module_management._plugins import FastoadLoader
 from .openmdao_sellar_example.disc1 import Disc1
 from .openmdao_sellar_example.disc2 import Disc2
-from .openmdao_sellar_example.functions import Functions
+from .openmdao_sellar_example.functions import FunctionF, FunctionG1, FunctionG2
 from ..variables import Variable, VariableList
 
 
@@ -244,7 +244,9 @@ def test_get_variables_from_problem_sellar_with_promotion_without_computation():
     indeps.add_output("z", [5.0, 2.0], units="m**2")
     group.add_subsystem("disc1", Disc1(), promotes=["*"])
     group.add_subsystem("disc2", Disc2(), promotes=["*"])
-    group.add_subsystem("functions", Functions(), promotes=["*"])
+    group.add_subsystem("objective", FunctionF(), promotes=["*"])
+    group.add_subsystem("constraint1", FunctionG1(), promotes=["*"])
+    group.add_subsystem("constraint2", FunctionG2(), promotes=["*"])
     group.nonlinear_solver = om.NonlinearBlockGS()
     problem = om.Problem(group)
     problem.setup()
@@ -276,13 +278,15 @@ def test_get_variables_from_problem_sellar_with_promotion_without_computation():
         ),
         Variable(name="disc2.y1", val=np.array([1.0]), units=None, is_input=True),
         Variable(name="disc2.y2", val=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.x", val=np.array([2]), units=None, is_input=True),
-        Variable(name="functions.z", val=np.array([np.nan, np.nan]), units="m**2", is_input=True),
-        Variable(name="functions.y1", val=np.array([1.0]), units=None, is_input=True),
-        Variable(name="functions.y2", val=np.array([1.0]), units=None, is_input=True),
-        Variable(name="functions.g1", val=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.g2", val=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.f", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="objective.x", val=np.array([2]), units=None, is_input=True),
+        Variable(name="objective.z", val=np.array([np.nan, np.nan]), units="m**2", is_input=True),
+        Variable(name="objective.y1", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="objective.y2", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="objective.f", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="constraint1.y1", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="constraint1.g1", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="constraint2.y2", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="constraint2.g2", val=np.array([1.0]), units=None, is_input=False),
     ]
 
     vars = VariableList.from_problem(problem, use_initial_values=True, get_promoted_names=True)
@@ -306,7 +310,9 @@ def test_get_variables_from_problem_sellar_with_promotion_with_computation():
     indeps.add_output("z", [5.0, 2.0], units="m**2")
     group.add_subsystem("disc1", Disc1(), promotes=["*"])
     group.add_subsystem("disc2", Disc2(), promotes=["*"])
-    group.add_subsystem("functions", Functions(), promotes=["*"])
+    group.add_subsystem("objective", FunctionF(), promotes=["*"])
+    group.add_subsystem("constraint1", FunctionG1(), promotes=["*"])
+    group.add_subsystem("constraint2", FunctionG2(), promotes=["*"])
     group.nonlinear_solver = om.NonlinearBlockGS()
     problem = om.Problem(group)
     problem.setup()
@@ -353,13 +359,15 @@ def test_get_variables_from_problem_sellar_with_promotion_with_computation():
         ),
         Variable(name="disc2.y1", val=np.array([1.0]), units=None, is_input=True),
         Variable(name="disc2.y2", val=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.x", val=np.array([2]), units=None, is_input=True),
-        Variable(name="functions.z", val=np.array([np.nan, np.nan]), units="m**2", is_input=True),
-        Variable(name="functions.y1", val=np.array([1.0]), units=None, is_input=True),
-        Variable(name="functions.y2", val=np.array([1.0]), units=None, is_input=True),
-        Variable(name="functions.g1", val=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.g2", val=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.f", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="objective.x", val=np.array([2]), units=None, is_input=True),
+        Variable(name="objective.z", val=np.array([np.nan, np.nan]), units="m**2", is_input=True),
+        Variable(name="objective.y1", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="objective.y2", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="objective.f", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="constraint1.y1", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="constraint1.g1", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="constraint2.y2", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="constraint2.g2", val=np.array([1.0]), units=None, is_input=False),
     ]
     expected_vars_non_promoted_computed = [
         Variable(name="indeps.x", val=np.array([1.0]), units="Pa", is_input=True),
@@ -385,13 +393,15 @@ def test_get_variables_from_problem_sellar_with_promotion_with_computation():
         ),
         Variable(name="disc2.y1", val=np.array([25.58830237]), units=None, is_input=True),
         Variable(name="disc2.y2", val=np.array([12.05848815]), units=None, is_input=False),
-        Variable(name="functions.x", val=np.array([1.0]), units=None, is_input=True),
-        Variable(name="functions.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="functions.y1", val=np.array([25.58830237]), units=None, is_input=True),
-        Variable(name="functions.y2", val=np.array([12.05848815]), units=None, is_input=True),
-        Variable(name="functions.g1", val=np.array([-22.42830237]), units=None, is_input=False),
-        Variable(name="functions.g2", val=np.array([-11.94151185]), units=None, is_input=False),
-        Variable(name="functions.f", val=np.array([28.58830817]), units=None, is_input=False),
+        Variable(name="objective.x", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="objective.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="objective.y1", val=np.array([25.58830237]), units=None, is_input=True),
+        Variable(name="objective.y2", val=np.array([12.05848815]), units=None, is_input=True),
+        Variable(name="objective.f", val=np.array([28.58830817]), units=None, is_input=False),
+        Variable(name="constraint1.y1", val=np.array([25.58830237]), units=None, is_input=True),
+        Variable(name="constraint1.g1", val=np.array([-22.42830237]), units=None, is_input=False),
+        Variable(name="constraint2.y2", val=np.array([12.05848815]), units=None, is_input=True),
+        Variable(name="constraint2.g2", val=np.array([-11.94151185]), units=None, is_input=False),
     ]
 
     problem.run_model()
@@ -416,17 +426,14 @@ def test_get_variables_from_problem_sellar_without_promotion_without_computation
     indeps.add_output("z", [5.0, 2.0], units="m**2")
     group.add_subsystem("disc2", Disc2())
     group.add_subsystem("disc1", Disc1())
-    group.add_subsystem("functions", Functions())
+    group.add_subsystem("objective", FunctionF())
+    group.add_subsystem("constraint1", FunctionG1())
+    group.add_subsystem("constraint2", FunctionG2())
     group.nonlinear_solver = om.NonlinearBlockGS()
-    group.connect("indeps.x", "disc1.x")
-    group.connect("indeps.x", "functions.x")
-    group.connect("indeps.z", "disc1.z")
-    group.connect("indeps.z", "disc2.z")
-    group.connect("indeps.z", "functions.z")
-    group.connect("disc1.y1", "disc2.y1")
-    group.connect("disc1.y1", "functions.y1")
-    group.connect("disc2.y2", "disc1.y2")
-    group.connect("disc2.y2", "functions.y2")
+    group.connect("indeps.x", ["disc1.x", "objective.x"])
+    group.connect("indeps.z", ["disc1.z", "disc2.z", "objective.z"])
+    group.connect("disc1.y1", ["disc2.y1", "objective.y1", "constraint1.y1"])
+    group.connect("disc2.y2", ["disc1.y2", "objective.y2", "constraint2.y2"])
 
     problem = om.Problem(group)
     problem.setup()
@@ -447,13 +454,15 @@ def test_get_variables_from_problem_sellar_without_promotion_without_computation
         ),
         Variable(name="disc2.y1", val=np.array([1.0]), units=None, is_input=True),
         Variable(name="disc2.y2", val=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.x", val=np.array([2]), units=None, is_input=True),
-        Variable(name="functions.z", val=np.array([np.nan, np.nan]), units="m**2", is_input=True),
-        Variable(name="functions.y1", val=np.array([1.0]), units=None, is_input=True),
-        Variable(name="functions.y2", val=np.array([1.0]), units=None, is_input=True),
-        Variable(name="functions.g1", val=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.g2", val=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.f", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="objective.x", val=np.array([2]), units=None, is_input=True),
+        Variable(name="objective.z", val=np.array([np.nan, np.nan]), units="m**2", is_input=True),
+        Variable(name="objective.y1", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="objective.y2", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="objective.f", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="constraint1.y1", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="constraint1.g1", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="constraint2.y2", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="constraint2.g2", val=np.array([1.0]), units=None, is_input=False),
     ]
 
     vars = VariableList.from_problem(
@@ -495,17 +504,14 @@ def test_get_variables_from_problem_sellar_without_promotion_with_computation():
     indeps.add_output("z", [5.0, 2.0], units="m**2")
     group.add_subsystem("disc2", Disc2())
     group.add_subsystem("disc1", Disc1())
-    group.add_subsystem("functions", Functions())
+    group.add_subsystem("objective", FunctionF())
+    group.add_subsystem("constraint1", FunctionG1())
+    group.add_subsystem("constraint2", FunctionG2())
     group.nonlinear_solver = om.NonlinearBlockGS()
-    group.connect("indeps.x", "disc1.x")
-    group.connect("indeps.x", "functions.x")
-    group.connect("indeps.z", "disc1.z")
-    group.connect("indeps.z", "disc2.z")
-    group.connect("indeps.z", "functions.z")
-    group.connect("disc1.y1", "disc2.y1")
-    group.connect("disc1.y1", "functions.y1")
-    group.connect("disc2.y2", "disc1.y2")
-    group.connect("disc2.y2", "functions.y2")
+    group.connect("indeps.x", ["disc1.x", "objective.x"])
+    group.connect("indeps.z", ["disc1.z", "disc2.z", "objective.z"])
+    group.connect("disc1.y1", ["disc2.y1", "objective.y1", "constraint1.y1"])
+    group.connect("disc2.y2", ["disc1.y2", "objective.y2", "constraint2.y2"])
 
     problem = om.Problem(group)
     problem.setup()
@@ -526,13 +532,15 @@ def test_get_variables_from_problem_sellar_without_promotion_with_computation():
         ),
         Variable(name="disc2.y1", val=np.array([1.0]), units=None, is_input=True),
         Variable(name="disc2.y2", val=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.x", val=np.array([2]), units=None, is_input=True),
-        Variable(name="functions.z", val=np.array([np.nan, np.nan]), units="m**2", is_input=True),
-        Variable(name="functions.y1", val=np.array([1.0]), units=None, is_input=True),
-        Variable(name="functions.y2", val=np.array([1.0]), units=None, is_input=True),
-        Variable(name="functions.g1", val=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.g2", val=np.array([1.0]), units=None, is_input=False),
-        Variable(name="functions.f", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="objective.x", val=np.array([2]), units=None, is_input=True),
+        Variable(name="objective.z", val=np.array([np.nan, np.nan]), units="m**2", is_input=True),
+        Variable(name="objective.y1", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="objective.y2", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="objective.f", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="constraint1.y1", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="constraint1.g1", val=np.array([1.0]), units=None, is_input=False),
+        Variable(name="constraint2.y2", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="constraint2.g2", val=np.array([1.0]), units=None, is_input=False),
     ]
     expected_vars_computed = [
         Variable(name="indeps.x", val=np.array([1.0]), units="Pa", is_input=True),
@@ -558,13 +566,15 @@ def test_get_variables_from_problem_sellar_without_promotion_with_computation():
         ),
         Variable(name="disc2.y1", val=np.array([25.58830237]), units=None, is_input=True),
         Variable(name="disc2.y2", val=np.array([12.05848815]), units=None, is_input=False),
-        Variable(name="functions.x", val=np.array([1.0]), units=None, is_input=True),
-        Variable(name="functions.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
-        Variable(name="functions.y1", val=np.array([25.58830237]), units=None, is_input=True),
-        Variable(name="functions.y2", val=np.array([12.05848815]), units=None, is_input=True),
-        Variable(name="functions.g1", val=np.array([-22.42830237]), units=None, is_input=False),
-        Variable(name="functions.g2", val=np.array([-11.94151185]), units=None, is_input=False),
-        Variable(name="functions.f", val=np.array([28.58830817]), units=None, is_input=False),
+        Variable(name="objective.x", val=np.array([1.0]), units=None, is_input=True),
+        Variable(name="objective.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
+        Variable(name="objective.y1", val=np.array([25.58830237]), units=None, is_input=True),
+        Variable(name="objective.y2", val=np.array([12.05848815]), units=None, is_input=True),
+        Variable(name="objective.f", val=np.array([28.58830817]), units=None, is_input=False),
+        Variable(name="constraint1.y1", val=np.array([25.58830237]), units=None, is_input=True),
+        Variable(name="constraint2.y2", val=np.array([12.05848815]), units=None, is_input=True),
+        Variable(name="constraint1.g1", val=np.array([-22.42830237]), units=None, is_input=False),
+        Variable(name="constraint2.g2", val=np.array([-11.94151185]), units=None, is_input=False),
     ]
     problem.run_model()
 
@@ -684,7 +694,9 @@ def test_variables_from_unconnected_inputs_with_sellar_problem(cleanup):
     group = om.Group()
     group.add_subsystem("disc1", Disc1(), promotes=["*"])
     group.add_subsystem("disc2", Disc2(), promotes=["*"])
-    group.add_subsystem("functions", Functions(), promotes=["*"])
+    group.add_subsystem("objective", FunctionF(), promotes=["*"])
+    group.add_subsystem("constaint1", FunctionG1(), promotes=["*"])
+    group.add_subsystem("constaint2", FunctionG2(), promotes=["*"])
     problem = om.Problem(group)
 
     expected_mandatory_vars = [
@@ -726,7 +738,9 @@ def test_get_variables_from_problem_sellar_with_promotion_and_connect():
     indeps.add_output("z", [5.0, 2.0])
     group.add_subsystem("disc1", Disc1(), promotes=["x", "z"])
     group.add_subsystem("disc2", Disc2(), promotes=["z"])
-    group.add_subsystem("functions", Functions(), promotes=["*"])
+    group.add_subsystem("objective", FunctionF(), promotes=["*"])
+    group.add_subsystem("constaint1", FunctionG1(), promotes=["*"])
+    group.add_subsystem("constaint2", FunctionG2(), promotes=["*"])
 
     # Connections
     group.connect("indep:x", "x")

@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,7 +15,7 @@ from shutil import rmtree
 
 import pytest
 
-from .openmdao_sellar_example.sellar import Sellar
+from .openmdao_sellar_example.sellar import SellarModel
 from ..problem import FASTOADProblem
 from ..whatsopt import write_xdsm
 
@@ -35,7 +35,7 @@ def cleanup():
 def test_write_xdsm(cleanup):
 
     problem = FASTOADProblem()
-    problem.model.add_subsystem("sellar", Sellar(), promotes=["*"])
+    problem.model.add_subsystem("sellar", SellarModel(), promotes=["*"])
     problem.output_file_path = pth.join(RESULTS_FOLDER_PATH, "output.xml")
     problem.setup()
     problem.final_setup()

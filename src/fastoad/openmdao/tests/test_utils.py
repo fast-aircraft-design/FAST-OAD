@@ -2,7 +2,7 @@
 Test module for OpenMDAO checks
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -18,8 +18,8 @@ import openmdao.api as om
 
 from .openmdao_sellar_example.disc1 import Disc1
 from .openmdao_sellar_example.disc2 import Disc2
-from .openmdao_sellar_example.functions import Functions
-from .openmdao_sellar_example.sellar import Sellar
+from .openmdao_sellar_example.functions import FunctionF, FunctionG1, FunctionG2
+from .openmdao_sellar_example.sellar import SellarModel
 from .._utils import get_unconnected_input_names
 
 
@@ -60,7 +60,9 @@ def test_get_unconnected_input_names_sellar_components():
     group = om.Group()
     group.add_subsystem("disc1", Disc1(), promotes=["*"])
     group.add_subsystem("disc2", Disc2(), promotes=["*"])
-    group.add_subsystem("functions", Functions(), promotes=["*"])
+    group.add_subsystem("functions", FunctionF(), promotes=["*"])
+    group.add_subsystem("constaint1", FunctionG1(), promotes=["*"])
+    group.add_subsystem("constaint2", FunctionG2(), promotes=["*"])
 
     expected_mandatory_variables = {"disc1.x", "functions.z"}
     expected_optional_variables = {"disc1.z", "disc2.z", "functions.x"}
@@ -76,15 +78,15 @@ def test_get_unconnected_input_names_sellar_components():
 
 
 def test_get_unconnected_input_names_full_sellar():
-    expected_mandatory_variables = {"Functions.z"}
-    expected_optional_variables = {"Disc1.z", "Disc2.z"}
+    expected_mandatory_variables = {"objective.z"}
+    expected_optional_variables = {"disc1.z", "disc2.z"}
     _test_problem(
-        om.Problem(Sellar()), expected_mandatory_variables, expected_optional_variables, False
+        om.Problem(SellarModel()), expected_mandatory_variables, expected_optional_variables, False
     )
     expected_mandatory_variables = {"z"}
     expected_optional_variables = set()
     _test_problem(
-        om.Problem(Sellar()), expected_mandatory_variables, expected_optional_variables, True
+        om.Problem(SellarModel()), expected_mandatory_variables, expected_optional_variables, True
     )
 
 
