@@ -241,7 +241,9 @@ class ValidityDomainChecker:
     @classmethod
     def _update_problem_limit_definitions(cls, problem: om.Problem):
         """
-        Updates limit definitions using variable declarations of provided OpenMDAO system.
+        Updates limit definitions using variable declarations of provided OpenMDAO problem.
+
+        Ensures limit definitions of encountered components are activated.
 
         problem.setup() must have been run.
 
