@@ -3,7 +3,7 @@ Demonstrates the alternate way register components in RegisterOpenMDAOSystem.
 The main way would be to use the decorator directly on class definition.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,6 +17,8 @@ The main way would be to use the decorator directly on class definition.
 
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
-from .disc2.disc2 import Disc2
+from .disc2.disc2 import RegisteredDisc2
 
-RegisterOpenMDAOSystem("module_management_test.sellar.disc2", domain=ModelDomain.GEOMETRY)(Disc2)
+RegisterOpenMDAOSystem("module_management_test.sellar.disc2", domain=ModelDomain.GEOMETRY)(
+    RegisteredDisc2
+)
