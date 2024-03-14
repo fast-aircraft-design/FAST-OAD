@@ -166,7 +166,7 @@ class ValidityDomainChecker:
         cls._update_problem_limit_definitions(problem)
 
         variables = VariableList.from_problem(problem)
-        records = cls.check_variables(variables)
+        records = cls.check_variables(variables, activated_only=True)
         cls.log_records(records)
         return records
 
@@ -178,7 +178,7 @@ class ValidityDomainChecker:
         Check values of provided variables against registered limits.
 
         :param variables:
-        :param ignore_deactivated:
+        :param activated_only: if True, only activated checkers are considered.
         :return: the list of checks
         """
         records: List[CheckRecord] = []
