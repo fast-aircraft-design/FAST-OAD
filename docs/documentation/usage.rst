@@ -222,6 +222,35 @@ as option settings:
 - For FAST-OAD modules, the list of available options is available through the :code:`list_modules`
   sub-command (see :ref:`get-module-list`).
 
+Model options
+==============
+
+OpenMDAO 3.27 introduced a new way to set options for any component in the problem, using the
+:code:`model_options` attribute of the :code:`Problem` object (see OpenMDAO documentation
+`here <https://openmdao.org/newdocs/versions/latest/features/core_features/options/options.html#setting-options-throughout-a-problem-model-problem-model-options>`_).
+
+This can be controlled from the configuration file, using for instance:
+
+.. code:: yaml
+
+    model_options:
+      "*":
+        propulsion_id: fastoad.wrapper.propulsion.rubber_engine
+      "aerodynamics.*":
+        use_xfoil: true
+
+With above lines, we set the :code:`"propulsion_id"` option for all concerned components
+in the problem, and we set the :code:`"use_xfoil"` option for all components inside the
+:code:`aerodynamics` module (please see
+`OpenMDAO documentation <https://openmdao.org/newdocs/versions/latest/features/core_features/options/options.html#using-glob-patterns-to-set-different-option-values-in-different-systems>`_
+for more examples using wildcards).
+
+.. note::
+
+  - Please note that the wildcards have to be (double) quoted.
+  - This feature is especially convenient to set options for sub-components of the declared models,
+    since these options are not directly accessible from the configuration file.
+
 
 Optimization settings
 =====================
@@ -470,7 +499,9 @@ You can create a :code:`xdsm.html` file with:
 
     $ fastoad xdsm my_conf.yml
 
-*Note: it may take a couple of minutes*
+.. note::
+
+    It may take a couple of minutes
 
 Also, you may see `WhatsOpt developer documentation <https://whatsopt.readthedocs.io/en/latest/install.html>`_
 to run your own server.
@@ -497,7 +528,9 @@ Once your problem is defined in `my_conf.yml`, you can simply run it with:
 
     $ fastoad eval my_conf.yml
 
-*Note: this is equivalent to OpenMDAO's run_model()*
+.. note::
+
+    This is equivalent to OpenMDAO's run_model()
 
 
 .. _run-problem-optim:
@@ -511,7 +544,9 @@ You can also run the defined optimization with:
 
     $ fastoad optim my_conf.yml
 
-*Note: this is equivalent to OpenMDAO's run_driver()*
+.. note::
+
+    This is equivalent to OpenMDAO's run_driver()
 
 
 .. _python-usage:

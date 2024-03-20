@@ -25,6 +25,14 @@ model:
   functions:
     id: configuration_test.sellar.functions
 
+model_options:
+  "*":
+    dummy_f_option: 10   # has no effect in this alternate version
+    dummy_disc1_option: false
+    dummy_generic_option: "it works"
+  "cycle.*":
+    dummy_generic_option: "it works here also"
+
 submodels:
   service.function.f: function.f.alternate
   service.function.g1: null

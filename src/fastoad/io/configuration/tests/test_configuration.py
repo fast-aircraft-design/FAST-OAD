@@ -117,7 +117,7 @@ def test_problem_definition_correct_configuration(cleanup):
 
 def test_problem_definition_with_xml_ref(cleanup, caplog):
     """Tests what happens when writing inputs using data from existing XML file"""
-    for extension in ["toml", "yml"]:
+    for extension in ["yml", "toml"]:
         clear_openmdao_registry()
         conf = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "valid_sellar.%s" % extension))
 
@@ -143,8 +143,14 @@ def test_problem_definition_with_xml_ref(cleanup, caplog):
         assert "z" in input_data.names()
 
         problem = conf.get_problem(read_inputs=True, auto_scaling=True)
-        # runs evaluation without optimization loop to check that inputs are taken into account
         problem.setup()
+        # check the global way to set options
+        assert problem.model.functions.f.options["dummy_f_option"] == 10
+        assert problem.model.functions.f.options["dummy_generic_option"] == "it works"
+        assert problem.model.cycle.disc1.options["dummy_disc1_option"] is False
+        assert problem.model.cycle.disc1.options["dummy_generic_option"] == "it works here also"
+
+        # runs evaluation without optimization loop to check that inputs are taken into account
         problem.run_model()
         assert problem.model.options["assembled_jac_type"] == "csc"
         assert problem["f"] == pytest.approx(28.58830817, abs=1e-6)
@@ -159,6 +165,13 @@ def test_problem_definition_with_xml_ref(cleanup, caplog):
         alt_problem = alt_conf.get_problem(read_inputs=True, auto_scaling=True)
         # runs evaluation without optimization loop to check that inputs are taken into account
         alt_problem.setup()
+        # check the global way to set options
+        with pytest.raises(KeyError):
+            _ = alt_problem.model.functions.f.options["dummy_f_option"]
+        assert alt_problem.model.functions.f.options["dummy_generic_option"] == "it works"
+        assert alt_problem.model.cycle.disc1.options["dummy_disc1_option"] is False
+        assert alt_problem.model.cycle.disc1.options["dummy_generic_option"] == "it works here also"
+
         alt_problem.run_model()
         alt_problem.write_outputs()
 
