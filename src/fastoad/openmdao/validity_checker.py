@@ -71,7 +71,7 @@ class ValidityDomainChecker:
     .. code-block::
 
         @ValidityDomainChecker
-        class MyComponent(om.explicitComponent):
+        class MyComponent(om.ExplicitComponent):
             ...
 
     The above code will check values against lower and upper bounds that have
@@ -89,7 +89,7 @@ class ValidityDomainChecker:
                 "a:variable:with:upper:bound:only": (None, 4.2),
             },
         )
-        class MyComponent(om.explicitComponent):
+        class MyComponent(om.ExplicitComponent):
             ...
 
     The defined domain limits supersedes lower and upper bounds from
