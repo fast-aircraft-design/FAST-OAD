@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 1.7.0
+=============
+- Added:
+    - Centralized way to set options from configuration file. (#510)
+
+- Fixed:
+    - Fix for validity domain checker. (#511)
+
 Version 1.6.0
 =============
 - Added:
