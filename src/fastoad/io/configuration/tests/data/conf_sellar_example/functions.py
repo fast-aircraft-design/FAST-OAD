@@ -73,6 +73,10 @@ class FunctionF(om.ExplicitComponent):
 class FunctionFAlt(om.ExplicitComponent):
     """An OpenMDAO component to encapsulate Functions discipline"""
 
+    def initialize(self):
+        # This option has no effect and is used for checks
+        self.options.declare("dummy_generic_option", types=str, default="")
+
     def setup(self):
         self.add_input("x", val=2, desc="")
         self.add_input(

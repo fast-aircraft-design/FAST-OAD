@@ -165,6 +165,13 @@ def test_problem_definition_with_xml_ref(cleanup, caplog):
         alt_problem = alt_conf.get_problem(read_inputs=True, auto_scaling=True)
         # runs evaluation without optimization loop to check that inputs are taken into account
         alt_problem.setup()
+        # check the global way to set options
+        with pytest.raises(KeyError):
+            _ = alt_problem.model.functions.f.options["dummy_f_option"]
+        assert alt_problem.model.functions.f.options["dummy_generic_option"] == "it works"
+        assert alt_problem.model.cycle.disc1.options["dummy_disc1_option"] is False
+        assert alt_problem.model.cycle.disc1.options["dummy_generic_option"] == "it works here also"
+
         alt_problem.run_model()
         alt_problem.write_outputs()
 
