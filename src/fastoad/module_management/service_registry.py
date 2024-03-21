@@ -1,6 +1,6 @@
 """Module for registering services."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -12,12 +12,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 import logging
-from types import MethodType
 from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 
 import openmdao.api as om
+import wrapt
 from openmdao.core.system import System
 
 from ._plugins import FastoadLoader
@@ -36,6 +35,7 @@ from .exceptions import (
     FastTooManySubmodelsError,
     FastUnknownSubmodelError,
 )
+from .._utils.wrapt import CopyableFunctionWrapper
 from ..model_base.propulsion import IOMPropulsionWrapper
 from ..openmdao.variables import Variable
 
@@ -245,60 +245,32 @@ class _RegisterOpenMDAOService(RegisterService, base_class=System):
             if invalid_options:
                 raise FastBadSystemOptionError(identifier, invalid_options)
 
-        decorated_system = cls._option_decorator(system)
-        return decorated_system
+        system.setup = cls._option_decorator(system.setup)
+        return system
 
     @staticmethod
-    def _option_decorator(instance: System) -> System:
+    @wrapt.decorator(proxy=CopyableFunctionWrapper)
+    def _option_decorator(setup, system, args, kwargs):
         """
-        Decorates provided OpenMDAO instance so that instance.options are populated
+        Decorates provided OpenMDAO setup method so that self.options are populated
         using iPOPO property named after OPTION_PROPERTY_NAME constant.
 
-        :param instance: the instance to decorate
-        :return: the decorated instance
+        :param setup: the setup method to decorate
+        :return: the decorated setup method
         """
 
         # Rationale:
         #   The idea here is to populate the options at `setup()` time while keeping
         #   all the operations that are in the original `setup()` of the class.
         #
-        #   This could have been done by making all our OpenMDAO classes inherit from
-        #   a base class where the option values are retrieved, but modifying each
-        #   OpenMDAO class looks overkill. Moreover, it would add to them a dependency
-        #   to FAST-OAD after having avoided to introduce dependencies outside OpenMDAO.
-        #   Last but not least, we would need future contributor to stick to this practice
-        #   of inheritance.
-        #
-        #   Therefore, the most obvious alternative is a decorator. In this decorator, we
-        #   could have produced a new instance of the same class that has its own `setup()`
-        #   that calls the original `setup()` (i.e. the original Decorator pattern AIUI)
-        #   but the new instance would be out of iPOPO's scope.
-        #   So we just modify the original instance where we need to "replace"
-        #   the `setup()` method to have our code called automagically, without losing the
-        #   initial code of `setup()` where there is probably important things. So the trick
-        #   is to rename the original `setup()` as `_setup_before_option_decorator()`, and create a
-        #   new `setup()` that does its job and then calls `_setup_before_option_decorator()`.
+        #   This is done through the wrapping of the setup method.
+        #   Use values from iPOPO option properties
+        option_dict = getattr(system, "_" + OPTION_PROPERTY_NAME, None)
+        if option_dict:
+            for name, value in option_dict.items():
+                system.options[name] = value
 
-        def setup(self):
-            """Will replace the original setup() method"""
-
-            # Use values from iPOPO option properties
-            option_dict = getattr(self, "_" + OPTION_PROPERTY_NAME, None)
-            if option_dict:
-                for name, value in option_dict.items():
-                    self.options[name] = value
-
-            # Call the original setup method
-            self._setup_before_option_decorator()
-
-        # Move the (already bound) method "setup" to "_setup_before_option_decorator"
-        setattr(instance, "_setup_before_option_decorator", instance.setup)
-
-        # Create and bind the new "setup" method
-        setup_method = MethodType(setup, instance)
-        setattr(instance, "setup", setup_method)
-
-        return instance
+        return setup(*args, **kwargs)
 
 
 class RegisterSpecializedService(RegisterService):
