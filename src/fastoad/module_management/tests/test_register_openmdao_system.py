@@ -2,7 +2,7 @@
 Test module for openmdao_system_registry.py
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -19,14 +19,13 @@ import os.path as pth
 
 import openmdao.api as om
 import pytest
-from openmdao.api import Problem, ScipyOptimizeDriver
 
-from .data.module_sellar_example.disc2.disc2 import Disc2
-from .data.module_sellar_example.sellar import ISellarFactory, Sellar
+from .data.module_sellar_example.disc2.disc2 import RegisteredDisc2
 from .._bundle_loader import BundleLoader
 from ..constants import ModelDomain, SERVICE_OPENMDAO_SYSTEM
 from ..exceptions import FastBadSystemOptionError, FastBundleLoaderUnknownFactoryNameError
 from ..service_registry import RegisterOpenMDAOSystem
+from ..._utils.sellar.sellar_base import BasicSellarModel, BasicSellarProblem, ISellarFactory
 from ...openmdao.variables import Variable
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
@@ -99,7 +98,9 @@ def test_get_system(load):
         RegisterOpenMDAOSystem.get_provider_domain(disc2_component).value
         == ModelDomain.GEOMETRY.value
     )
-    assert RegisterOpenMDAOSystem.get_provider_description(disc2_component) == Disc2.__doc__
+    assert (
+        RegisterOpenMDAOSystem.get_provider_description(disc2_component) == RegisteredDisc2.__doc__
+    )
     assert (
         disc2_component.options["answer"] == 42
     )  # still the initial value as setup() has not been run
@@ -143,72 +144,42 @@ def test_sellar(load):
     Demonstrates usage of RegisterOpenMDAOSystem in a simple Sellar problem
     """
 
-    def sellar_setup(sellar_instance: Sellar):
-        """
-        Sets up the Sellar problem, given a Sellar Group() instance.
-
-        Pure OpenMDAO scripting.
-        """
-        problem = Problem()
-        problem.model = sellar_instance
-
-        problem.driver = ScipyOptimizeDriver()
-
-        problem.driver.options["optimizer"] = "SLSQP"
-        problem.driver.options["tol"] = 1.0e-08
-        # pb.driver.options['maxiter'] = 100
-        problem.driver.options["disp"] = True
-
-        problem.model.add_design_var("x", lower=0, upper=10)
-        problem.model.add_design_var("z", lower=0, upper=10)
-
-        problem.model.add_objective("f")
-
-        problem.model.add_constraint("g1", upper=0.0)
-        problem.model.add_constraint("g2", upper=0.0)
-
-        problem.setup()
-
-        return problem
-
     class SellarComponentProviderByFast(ISellarFactory):
         """
         Provides Sellar components using RegisterOpenMDAOSystem
         """
 
-        @staticmethod
-        def create_disc1():
+        def create_disc1(self):
             return RegisterOpenMDAOSystem.get_system("module_management_test.sellar.disc1")
 
-        @staticmethod
-        def create_disc2():
+        def create_disc2(self):
             return RegisterOpenMDAOSystem.get_system("module_management_test.sellar.disc2")
 
-        @staticmethod
-        def create_functions():
-            functions = om.Group()
-            functions.add_subsystem(
-                "function_f",
-                RegisterOpenMDAOSystem.get_system("module_management_test.sellar.function_f"),
-                promotes=["*"],
-            )
-            functions.add_subsystem(
+        def create_objective_function(self):
+            return RegisterOpenMDAOSystem.get_system("module_management_test.sellar.function_f")
+
+        def create_constraints(self):
+            constraints = om.Group()
+            constraints.add_subsystem(
                 "function_g1",
                 RegisterOpenMDAOSystem.get_system("module_management_test.sellar.function_g1"),
                 promotes=["*"],
             )
-            functions.add_subsystem(
+            constraints.add_subsystem(
                 "function_g2",
                 RegisterOpenMDAOSystem.get_system("module_management_test.sellar.function_g2"),
                 promotes=["*"],
             )
 
-            return functions
+            return constraints
 
-    classical_problem = sellar_setup(Sellar())  # Reference
-    fastoad_problem = sellar_setup(
-        Sellar(SellarComponentProviderByFast)
+    classical_problem = BasicSellarProblem(BasicSellarModel())  # Reference
+    classical_problem.setup()
+
+    fastoad_problem = BasicSellarProblem(
+        BasicSellarModel(sellar_factory=SellarComponentProviderByFast())
     )  # Using RegisterOpenMDAOSystem
+    fastoad_problem.setup()
 
     classical_problem.run_driver()
     assert classical_problem["f"] != fastoad_problem["f"]  # fastoad_problem has not run yet

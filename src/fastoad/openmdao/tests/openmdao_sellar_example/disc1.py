@@ -13,13 +13,13 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-import openmdao.api as om
 
+from fastoad._utils.sellar.disc1 import BasicDisc1
 from ...validity_checker import ValidityDomainChecker
 
 
 @ValidityDomainChecker({"x": (-1, 1)})  # This validity domain should not apply
-class Disc1(om.ExplicitComponent):
+class Disc1(BasicDisc1):
     """An OpenMDAO component to encapsulate Disc1 discipline"""
 
     def setup(self):
@@ -31,24 +31,9 @@ class Disc1(om.ExplicitComponent):
 
         self.add_output("y1", val=1.0, desc="variable y1")  # for testing output description capture
 
-    def setup_partials(self):
-        self.declare_partials("*", "*", method="fd")
-
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        """
-        Evaluates the equation
-        y1 = z1**2 + z2 + x1 - 0.2*y2
-        """
-        z1 = inputs["z"][0]
-        z2 = inputs["z"][1]
-        x1 = inputs["x"]
-        y2 = inputs["y2"]
-
-        outputs["y1"] = z1 ** 2 + z2 + x1 - 0.2 * y2
-
 
 @ValidityDomainChecker({"x": (0, 4)})  # This validity domain should apply in case 1
-class Disc1Bis(om.ExplicitComponent):
+class Disc1Bis(BasicDisc1):
     """An OpenMDAO component to encapsulate Disc1 discipline"""
 
     def setup(self):
@@ -57,21 +42,6 @@ class Disc1Bis(om.ExplicitComponent):
         self.add_input("y2", val=1.0, desc="variable y2")  # for testing input description capture
 
         self.add_output("y1", val=1.0, desc="variable y1")  # for testing output description capture
-
-    def setup_partials(self):
-        self.declare_partials("*", "*", method="fd")
-
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        """
-        Evaluates the equation
-        y1 = z1**2 + z2 + x1 - 0.2*y2
-        """
-        z1 = inputs["z"][0]
-        z2 = inputs["z"][1]
-        x1 = inputs["x"]
-        y2 = inputs["y2"]
-
-        outputs["y1"] = z1 ** 2 + z2 + x1 - 0.2 * y2
 
 
 @ValidityDomainChecker({"x": (0, 1)})  # This validity domain should apply in case 2

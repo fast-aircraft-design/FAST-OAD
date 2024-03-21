@@ -1,4 +1,6 @@
-"""Sellar functions"""
+"""
+Registered Sellar components
+"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -12,13 +14,28 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import openmdao.api as om
+
+from fastoad._utils.sellar.disc1 import BasicDisc1
+from fastoad._utils.sellar.disc2 import BasicDisc2
 from fastoad._utils.sellar.function_f import BasicFunctionF
+from fastoad._utils.sellar.functions_g import BasicFunctionG1, BasicFunctionG2
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 
 
-@RegisterOpenMDAOSystem(
-    "module_management_test.sellar.function_f", desc="computation of f", options={"best_doctor": 11}
-)
-class RegisteredFunctionF(BasicFunctionF):
-    def initialize(self):
-        self.options.declare("best_doctor", 10)
+@RegisterOpenMDAOSystem("postproc_test.sellar.disc1")
+class Disc1(BasicDisc1):
+    pass
+
+
+@RegisterOpenMDAOSystem("postproc_test.sellar.disc2")
+class Disc2(BasicDisc2):
+    pass
+
+
+@RegisterOpenMDAOSystem("postproc_test.sellar.functions")
+class Functions(om.Group):
+    def setup(self):
+        self.add_subsystem("f", BasicFunctionF(), promotes=["*"])
+        self.add_subsystem("g1", BasicFunctionG1(), promotes=["*"])
+        self.add_subsystem("g2", BasicFunctionG2(), promotes=["*"])
