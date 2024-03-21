@@ -74,16 +74,18 @@ class RegisterService:
 
         cls._base_class = base_class
 
-    def __init__(self, service_id: str, provider_id: str, desc=None):
+    def __init__(self, service_id: str, provider_id: str, desc: str = None, options: dict = None):
         """
         :param service_id: the identifier of the provided service
         :param provider_id: the identifier of the service provider to register
         :param desc: description of the service provider. If not provided, the docstring
                      of decorated class will be used.
+        :param options: a dictionary of options that will be defaults when instantiating the system
         """
         self._service_id = service_id
         self._id = provider_id
         self._desc = desc
+        self._options = options
 
     def __call__(self, service_class: Type[T]) -> Type[T]:
         if not issubclass(service_class, self._base_class):
@@ -108,7 +110,10 @@ class RegisterService:
         :return: the dictionary of properties that will be associated to the registered
                  service provider
         """
-        return {DESCRIPTION_PROPERTY_NAME: self._desc if self._desc else service_class.__doc__}
+        return {
+            DESCRIPTION_PROPERTY_NAME: self._desc if self._desc else service_class.__doc__,
+            OPTION_PROPERTY_NAME: self._options if self._options else {},
+        }
 
     @classmethod
     def explore_folder(cls, folder_path: str):
@@ -195,13 +200,7 @@ class _RegisterOpenMDAOService(RegisterService, base_class=System):
         :param desc: description of the service. If not provided, the docstring will be used.
         :param options: a dictionary of options that will be defaults when instantiating the system
         """
-        super().__init__(service_id, provider_id, desc)
-        self._options = options
-
-    def get_properties(self, service_class: Type[T]) -> dict:
-        properties = super().get_properties(service_class)
-        properties.update({OPTION_PROPERTY_NAME: self._options if self._options else {}})
-        return properties
+        super().__init__(service_id, provider_id, desc=desc, options=options)
 
     def __call__(self, service_class: Type[T]) -> Type[T]:
 
@@ -331,8 +330,7 @@ class RegisterSpecializedService(RegisterService):
         :param domain: a category for the registered service provider
         :param options: a dictionary of options that can be associated to the service provider
         """
-        super().__init__(self.__class__.service_id, provider_id, desc)
-        self._options = options
+        super().__init__(self.__class__.service_id, provider_id, desc=desc, options=options)
         if domain:
             self._domain = domain
 
@@ -341,7 +339,6 @@ class RegisterSpecializedService(RegisterService):
         properties.update(
             {
                 DOMAIN_PROPERTY_NAME: self._domain if self._domain else ModelDomain.UNSPECIFIED,
-                OPTION_PROPERTY_NAME: self._options if self._options else {},
             }
         )
         return properties
@@ -367,7 +364,7 @@ class _RegisterSpecializedOpenMDAOService(RegisterSpecializedService, _RegisterO
 
 
 class RegisterPropulsion(
-    _RegisterSpecializedOpenMDAOService,
+    RegisterSpecializedService,
     base_class=IOMPropulsionWrapper,
     service_id=SERVICE_PROPULSION_WRAPPER,
     domain=ModelDomain.PROPULSION,
