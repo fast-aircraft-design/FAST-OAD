@@ -254,3 +254,11 @@ missions:
       - reserve:
           ref: main_route_optimal
           multiplier: 0.03
+  without_route:
+    parts:
+      - phase: start
+      - phase: taxi_out
+      - phase: takeoff
+      - phase: initial_climb
+      - phase: climb
+      - phase: descent

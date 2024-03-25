@@ -466,3 +466,28 @@ def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
     assert_allclose(CL_end_cruise, 0.45, atol=1e-3)
     assert_allclose(altitude_end_climb, 9821.85, atol=1e-1)
     assert_allclose(altitude_end_cruise, 10343.68, atol=1e-1)
+
+
+def test_mission_group_without_route(cleanup, with_dummy_plugin_2):
+    input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
+    ivc = DataFile(input_file_path).to_ivc()
+
+    problem = run_system(
+        OMMission(
+            propulsion_id="test.wrapper.propulsion.dummy_engine",
+            out_file=pth.join(RESULTS_FOLDER_PATH, "without_route_mission_group.csv"),
+            use_initializer_iteration=False,
+            mission_file_path=pth.join(DATA_FOLDER_PATH, "test_mission.yml"),
+            mission_name="without_route",
+            adjust_fuel=True,
+            reference_area_variable="data:geometry:aircraft:reference_area",
+            add_solver=True,
+        ),
+        ivc,
+    )
+    assert_allclose(
+        problem["data:mission:without_route:consumed_fuel_before_input_weight"], 195.4, atol=0.1
+    )
+    assert_allclose(problem["data:mission:without_route:ZFW"], 55000.0, atol=1.0)
+    assert_allclose(problem["data:mission:without_route:needed_block_fuel"], 1136.8, atol=1.0)
+    assert_allclose(problem["data:mission:without_route:block_fuel"], 1136.8, atol=1.0)
