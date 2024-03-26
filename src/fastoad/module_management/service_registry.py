@@ -21,6 +21,7 @@ from openmdao.core.system import System
 
 from ._plugins import FastoadLoader
 from .constants import (
+    ACTIVATED_SUBMODELS_PROPERTY_NAME,
     DESCRIPTION_PROPERTY_NAME,
     DOMAIN_PROPERTY_NAME,
     ModelDomain,
@@ -193,17 +194,38 @@ class _RegisterOpenMDAOService(RegisterService, base_class=System):
     or when instantiating the system with :class:`get_system`.
     """
 
-    def __init__(self, service_id: str, provider_id: str, desc=None, options: dict = None):
+    def __init__(
+        self,
+        service_id: str,
+        provider_id: str,
+        *args,
+        desc=None,
+        options: dict = None,
+        activated_submodels: dict = None,
+        **kwargs
+    ):
         """
         :param service_id: the identifier of the provided service
         :param provider_id: the identifier of the service provider to register
         :param desc: description of the service. If not provided, the docstring will be used.
         :param options: a dictionary of options that will be defaults when instantiating the system
+        :param activated_submodels: a dictionary to define sub-models to be used by default.
         """
-        super().__init__(service_id, provider_id, desc=desc, options=options)
+        super().__init__(service_id, provider_id, *args, desc=desc, options=options, **kwargs)
+        self._activated_submodels = activated_submodels
+
+    def get_properties(self, service_class: Type[T]) -> dict:
+        properties = super().get_properties(service_class)
+        properties.update(
+            {
+                ACTIVATED_SUBMODELS_PROPERTY_NAME: self._activated_submodels
+                if self._activated_submodels
+                else {}
+            }
+        )
+        return properties
 
     def __call__(self, service_class: Type[T]) -> Type[T]:
-
         # service_class.__module__ provides the name for the .py file, but
         # we want just the parent package name.
         package_name = ".".join(service_class.__module__.split(".")[:-1])
@@ -244,32 +266,42 @@ class _RegisterOpenMDAOService(RegisterService, base_class=System):
             if invalid_options:
                 raise FastBadSystemOptionError(identifier, invalid_options)
 
-        system.setup = cls._option_decorator(system.setup)
+        system.setup = cls._setup_wrapper(system.setup)
         return system
 
     @staticmethod
     @wrapt.decorator(proxy=CopyableFunctionWrapper)
-    def _option_decorator(setup, system, args, kwargs):
+    def _setup_wrapper(setup, system, args, kwargs):
         """
-        Decorates provided OpenMDAO setup method so that self.options are populated
-        using iPOPO property named after OPTION_PROPERTY_NAME constant.
+        Decorates provided OpenMDAO setup method to do FAST-OAD stuff.
 
-        :param setup: the setup method to decorate
-        :return: the decorated setup method
+        system.options is populated using iPOPO property named after
+        OPTION_PROPERTY_NAME constant.
+
+        RegisterSubmodel.active_models is temporarily modified to use associated
+        submodels, if none priorly defined.
+
         """
 
-        # Rationale:
-        #   The idea here is to populate the options at `setup()` time while keeping
-        #   all the operations that are in the original `setup()` of the class.
-        #
-        #   This is done through the wrapping of the setup method.
-        #   Use values from iPOPO option properties
+        current_active_models = RegisterSubmodel.active_models
+
+        # Ensuring proper sub-models are used.
+        getattr(system, "_" + ACTIVATED_SUBMODELS_PROPERTY_NAME, None)
+        specific_submodels = getattr(system, "_" + ACTIVATED_SUBMODELS_PROPERTY_NAME, None)
+        RegisterSubmodel.active_models = specific_submodels
+        RegisterSubmodel.active_models.update(current_active_models)
+
+        # Ensuring defined option values are applied.
         option_dict = getattr(system, "_" + OPTION_PROPERTY_NAME, None)
         if option_dict:
             for name, value in option_dict.items():
                 system.options[name] = value
 
-        return setup(*args, **kwargs)
+        result = setup(*args, **kwargs)
+
+        RegisterSubmodel.active_models = current_active_models
+
+        return result
 
 
 class RegisterSpecializedService(RegisterService):
@@ -322,7 +354,13 @@ class RegisterSpecializedService(RegisterService):
         cls._domain = domain
 
     def __init__(
-        self, provider_id: str, desc=None, domain: ModelDomain = None, options: dict = None
+        self,
+        provider_id: str,
+        *args,
+        desc=None,
+        domain: ModelDomain = None,
+        options: dict = None,
+        **kwargs
     ):
         """
         :param provider_id: the identifier of the service provider to register
@@ -330,7 +368,9 @@ class RegisterSpecializedService(RegisterService):
         :param domain: a category for the registered service provider
         :param options: a dictionary of options that can be associated to the service provider
         """
-        super().__init__(self.__class__.service_id, provider_id, desc=desc, options=options)
+        super().__init__(
+            self.__class__.service_id, provider_id, *args, desc=desc, options=options, **kwargs
+        )
         if domain:
             self._domain = domain
 

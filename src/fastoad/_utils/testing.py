@@ -2,7 +2,7 @@
 Convenience functions for helping tests
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -26,12 +26,13 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 def run_system(
-    component: System, input_vars: om.IndepVarComp, setup_mode="auto", add_solvers=False
+    component: System, input_vars: om.IndepVarComp = None, setup_mode="auto", add_solvers=False
 ):
     """Runs and returns an OpenMDAO problem with provided component and data"""
     problem = om.Problem()
     model = problem.model
-    model.add_subsystem("inputs", input_vars, promotes=["*"])
+    if input_vars:
+        model.add_subsystem("inputs", input_vars, promotes=["*"])
     model.add_subsystem("component", component, promotes=["*"])
     if add_solvers:
         model.nonlinear_solver = om.NewtonSolver(solve_subsystems=False)
