@@ -147,7 +147,7 @@ def test_problem_definition_with_xml_ref(cleanup, caplog):
         # check the global way to set options
         assert problem.model.functions.f.options["dummy_f_option"] == 10
         assert problem.model.functions.f.options["dummy_generic_option"] == "it works"
-        assert problem.model.cycle.disc1.options["dummy_disc1_option"] is False
+        assert problem.model.cycle.disc1.options["dummy_disc1_option"] == {"a": 1, "b": 2}
         assert problem.model.cycle.disc1.options["dummy_generic_option"] == "it works here also"
 
         # runs evaluation without optimization loop to check that inputs are taken into account
@@ -169,7 +169,7 @@ def test_problem_definition_with_xml_ref(cleanup, caplog):
         with pytest.raises(KeyError):
             _ = alt_problem.model.functions.f.options["dummy_f_option"]
         assert alt_problem.model.functions.f.options["dummy_generic_option"] == "it works"
-        assert alt_problem.model.cycle.disc1.options["dummy_disc1_option"] is False
+        assert alt_problem.model.cycle.disc1.options["dummy_disc1_option"] == {"a": 10, "b": 20}
         assert alt_problem.model.cycle.disc1.options["dummy_generic_option"] == "it works here also"
 
         alt_problem.run_model()

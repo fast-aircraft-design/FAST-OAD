@@ -24,7 +24,7 @@ class RegisteredDisc1(BasicDisc1):
 
     def initialize(self):
         # These options have no effect and are used for checks
-        self.options.declare("dummy_disc1_option", types=bool, default=True)
+        self.options.declare("dummy_disc1_option", types=dict, default={})
         self.options.declare("dummy_generic_option", types=str, default="")
 
     def setup(self):

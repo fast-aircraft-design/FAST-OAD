@@ -141,17 +141,7 @@
     "model_options": {
       "type": "object",
       "additionalProperties": {
-        "additionalProperties": {
-          "anyOf": [
-            {
-              "not": {
-                "type": [
-                  "object"
-                ]
-              }
-            }
-          ]
-        }
+        "additionalProperties": true
       }
     },
     "model": {
