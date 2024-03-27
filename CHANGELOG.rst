@@ -2,6 +2,15 @@
 Changelog
 =========
 
+Version 1.7.1
+=============
+- Added:
+    - The base class `CycleGroup` is now proposed to standardize options for groups that contain a loop. (#516)
+
+- Fixed:
+    - Missions can now be defined without route. (#515)
+
+
 Version 1.7.0
 =============
 - Added:
