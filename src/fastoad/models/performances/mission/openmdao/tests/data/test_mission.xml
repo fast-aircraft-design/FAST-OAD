@@ -186,6 +186,20 @@
                     <duration units="s">143.</duration>
                 </taxi_out>
             </fuel_as_objective>
+            <without_route>
+                <payload units="kg">15000.0</payload>
+                <takeoff>
+                    <altitude units="m" is_input="True">
+                        0.0<!--altitude at takeoff in sizing mission--></altitude>
+                    <fuel units="kg">
+                        95.0<!--mass of consumed fuel during takeoff phase in sizing mission--></fuel>
+                </takeoff>
+                <max_CL>0.65</max_CL>
+                <taxi_out>
+                    <thrust_rate>0.3</thrust_rate>
+                    <duration units="s">143.</duration>
+                </taxi_out>
+            </without_route>
         </mission>
         <weight>
             <aircraft>

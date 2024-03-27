@@ -2,7 +2,7 @@
 Base classes for mission-related OpenMDAO components.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -140,9 +140,12 @@ class BaseMissionComp(System, metaclass=ABCMeta):
         return self._mission_wrapper.mission_name
 
     @property
-    def first_route_name(self) -> str:
+    def first_route_name(self) -> Optional[str]:
         """The name of first route (and normally the main one) in the mission."""
-        return self._mission_wrapper.get_route_names()[0]
+        try:
+            return self._mission_wrapper.get_route_names()[0]
+        except IndexError:
+            return None
 
     @staticmethod
     def get_mission_definition(

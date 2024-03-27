@@ -2,7 +2,7 @@
 FAST-OAD model for mission computation.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -137,16 +137,17 @@ class OMMission(om.Group, BaseMissionComp, NeedsOWE):
                 promotes=["*"],
             )
 
-        self.add_subsystem(
-            "specific_burned_fuel",
-            SpecificBurnedFuelComputation(
-                name_provider=self.name_provider,
-                mission_name=self.mission_name,
-                first_route_name=self.first_route_name,
-                payload_variable=self._get_payload_variable(),
-            ),
-            promotes=["*"],
-        )
+        if self.first_route_name is not None:
+            self.add_subsystem(
+                "specific_burned_fuel",
+                SpecificBurnedFuelComputation(
+                    name_provider=self.name_provider,
+                    mission_name=self.mission_name,
+                    first_route_name=self.first_route_name,
+                    payload_variable=self._get_payload_variable(),
+                ),
+                promotes=["*"],
+            )
 
     @property
     def flight_points(self) -> pd.DataFrame:
