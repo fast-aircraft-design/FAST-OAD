@@ -20,7 +20,7 @@ from abc import ABC, abstractmethod
 from importlib.resources import open_text
 from os import PathLike
 from pathlib import Path
-from typing import Dict, Union, Optional
+from typing import Dict, List, Union, Optional
 
 import openmdao.api as om
 import tomlkit
@@ -65,24 +65,20 @@ class FASTOADProblemConfigurator:
     """
 
     def __init__(self, conf_file_path: Union[str, PathLike] = None):
-        self._conf_file: Optional[Path] = None
-
-        self._serializer = _YAMLSerializer()
+        self._serializer: _IDictSerializer = _YAMLSerializer()
 
         # self._configuration_modifier offers a way to modify problems after
         # they have been generated from configuration (private usage for now)
-        self._configuration_modifier: "_IConfigurationModifier" = None
+        self._configuration_modifier: Optional["_IConfigurationModifier"] = None
 
+        self._conf_file_path: Optional[Path] = None
         if conf_file_path:
             self.load(conf_file_path)
 
     @property
     def input_file_path(self):
         """path of file with input variables of the problem"""
-        path = as_path(self._serializer.data[KEY_INPUT_FILE])
-        if not path.is_absolute():
-            path = (self._conf_file.parent / path).resolve()
-        return path
+        return self._make_absolute(self._serializer.data[KEY_INPUT_FILE]).as_posix()
 
     @input_file_path.setter
     def input_file_path(self, file_path: str):
@@ -91,10 +87,7 @@ class FASTOADProblemConfigurator:
     @property
     def output_file_path(self):
         """path of file where output variables will be written"""
-        path = as_path(self._serializer.data[KEY_OUTPUT_FILE])
-        if not path.is_absolute():
-            path = (self._conf_file.parent / path).resolve()
-        return path
+        return self._make_absolute(self._serializer.data[KEY_OUTPUT_FILE]).as_posix()
 
     @output_file_path.setter
     def output_file_path(self, file_path: str):
@@ -142,24 +135,23 @@ class FASTOADProblemConfigurator:
 
         return problem
 
-    def load(self, conf_file):
+    def load(self, conf_file: Union[str, PathLike]):
         """
         Reads the problem definition
 
-        :param conf_file: Path to the file to open or a file descriptor
+        :param conf_file: Path to the file to open
         """
 
-        self._conf_file = as_path(conf_file).resolve()
-        conf_dirname = self._conf_file.parent
+        self._conf_file_path = as_path(conf_file).resolve()  # for resolving relative paths
 
-        if self._conf_file.suffix == ".toml":
+        if self._conf_file_path.suffix == ".toml":
             self._serializer = _TOMLSerializer()
             _LOGGER.warning(
                 "TOML-formatted configuration files are deprecated. Please use YAML format."
             )
         else:
             self._serializer = _YAMLSerializer()
-        self._serializer.read(self._conf_file)
+        self._serializer.read(self._conf_file_path)
 
         # Syntax validation
         with open_text(resources, JSON_SCHEMA_NAME) as json_file:
@@ -171,16 +163,11 @@ class FASTOADProblemConfigurator:
                 _LOGGER.warning('Configuration file: "%s" is not a FAST-OAD key.', key)
 
         # Looking for modules to register
-        module_folder_paths = self._serializer.data.get(KEY_FOLDERS)
-        if isinstance(module_folder_paths, str):
-            module_folder_paths = [module_folder_paths]
-        if module_folder_paths:
-            for folder_path in module_folder_paths:
-                folder_path = conf_dirname / folder_path
-                if not folder_path.is_dir():
-                    _LOGGER.warning("SKIPPED %s: it does not exist.", folder_path)
-                else:
-                    RegisterOpenMDAOSystem.explore_folder(folder_path)
+        for module_folder_path in self._get_module_folder_paths():
+            if not module_folder_path.is_dir():
+                _LOGGER.warning("SKIPPED %s: it does not exist.", module_folder_path)
+            else:
+                RegisterOpenMDAOSystem.explore_folder(module_folder_path.as_posix())
 
         # Settings submodels
         RegisterSubmodel.cancel_submodel_deactivations()
@@ -188,7 +175,7 @@ class FASTOADProblemConfigurator:
         for submodel_requirement, submodel_id in submodel_specs.items():
             RegisterSubmodel.active_models[submodel_requirement] = submodel_id
 
-    def save(self, filename: str = None):
+    def save(self, filename: Union[str, PathLike] = None):
         """
         Saves the current configuration
         If no filename is provided, the initially read file is used.
@@ -196,7 +183,7 @@ class FASTOADProblemConfigurator:
         :param filename: file where to save configuration
         """
         if not filename:
-            filename = self._conf_file
+            filename = self._conf_file_path
 
         make_parent_dir(filename)
         self._serializer.write(filename)
@@ -256,6 +243,26 @@ class FASTOADProblemConfigurator:
         subpart = {"optimization": subpart}
         self._serializer.data.update(subpart)
 
+    def _make_absolute(self, path: Union[str, PathLike]) -> Path:
+        """
+        Make the provided path absolute using configuration file folder as base.
+
+        Does nothing if the path is already absolute.
+        """
+        path = as_path(path)
+        if not path.is_absolute():
+            path = (self._conf_file_path.parent / path).resolve()
+        return path
+
+    def _get_module_folder_paths(self) -> List[Path]:
+        module_folder_paths = self._serializer.data.get(KEY_FOLDERS)
+        # Key may be present, but with None value
+        if not module_folder_paths:
+            return []
+        if isinstance(module_folder_paths, str):
+            module_folder_paths = [module_folder_paths]
+        return [self._make_absolute(folder_path) for folder_path in module_folder_paths]
+
     def _build_model(self, problem: FASTOADProblem):
         """
         Builds the problem model as defined in the configuration file.
@@ -300,21 +307,17 @@ class FASTOADProblemConfigurator:
                     identifier = options.pop(KEY_COMPONENT_ID)
 
                     # Process option values that are relative paths
-                    conf_dirname = self._conf_file.parent
+                    conf_folder_path = self._conf_file_path.parent
                     for name, option_value in options.items():
-                        option_is_path = (
-                            name.endswith("file")
-                            or name.endswith("path")
-                            or name.endswith("dir")
-                            or name.endswith("directory")
-                            or name.endswith("folder")
+                        option_is_path = name.endswith(
+                            ("file", "path", "dir", "directory", "folder")
                         )
                         if (
                             isinstance(option_value, str)
                             and option_is_path
                             and not Path(option_value).is_absolute()
                         ):
-                            options[name] = (conf_dirname / option_value).as_posix()
+                            options[name] = (conf_folder_path / option_value).as_posix()
 
                     sub_component = RegisterOpenMDAOSystem.get_system(identifier, options=options)
                     group.add_subsystem(key, sub_component, promotes=["*"])
@@ -436,14 +439,14 @@ class _IDictSerializer(ABC):
         """
 
     @abstractmethod
-    def read(self, file_path: str):
+    def read(self, file_path: Union[str, PathLike]):
         """
         Reads data from provided file.
         :param file_path:
         """
 
     @abstractmethod
-    def write(self, file_path: str):
+    def write(self, file_path: Union[str, PathLike]):
         """
         Writes data to provided file.
         :param file_path:
@@ -460,11 +463,11 @@ class _TOMLSerializer(_IDictSerializer):
     def data(self):
         return self._data
 
-    def read(self, file_path: str):
+    def read(self, file_path: Union[str, PathLike]):
         with open(file_path, "r") as toml_file:
             self._data = tomlkit.loads(toml_file.read())
 
-    def write(self, file_path: str):
+    def write(self, file_path: Union[str, PathLike]):
         with open(file_path, "w") as file:
             file.write(tomlkit.dumps(self._data))
 
@@ -479,12 +482,12 @@ class _YAMLSerializer(_IDictSerializer):
     def data(self):
         return self._data
 
-    def read(self, file_path: str):
+    def read(self, file_path: Union[str, PathLike]):
         yaml = YAML(typ="safe")
         with open(file_path) as yaml_file:
             self._data = yaml.load(yaml_file)
 
-    def write(self, file_path: str):
+    def write(self, file_path: Union[str, PathLike]):
         yaml = YAML()
         yaml.default_flow_style = False
         with open(file_path, "w") as file:
