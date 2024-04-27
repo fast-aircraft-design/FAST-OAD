@@ -78,20 +78,24 @@ class FASTOADProblemConfigurator:
     @property
     def input_file_path(self):
         """path of file with input variables of the problem"""
-        return self._make_absolute(self._serializer.data[KEY_INPUT_FILE]).as_posix()
+        return self._make_absolute(self._data[KEY_INPUT_FILE]).as_posix()
 
     @input_file_path.setter
     def input_file_path(self, file_path: str):
-        self._serializer.data[KEY_INPUT_FILE] = str(file_path)
+        self._data[KEY_INPUT_FILE] = str(file_path)
 
     @property
     def output_file_path(self):
         """path of file where output variables will be written"""
-        return self._make_absolute(self._serializer.data[KEY_OUTPUT_FILE]).as_posix()
+        return self._make_absolute(self._data[KEY_OUTPUT_FILE]).as_posix()
 
     @output_file_path.setter
     def output_file_path(self, file_path: str):
-        self._serializer.data[KEY_OUTPUT_FILE] = str(file_path)
+        self._data[KEY_OUTPUT_FILE] = str(file_path)
+
+    @property
+    def _data(self):
+        return self._serializer.data
 
     def get_problem(self, read_inputs: bool = False, auto_scaling: bool = False) -> FASTOADProblem:
         """
@@ -103,7 +107,7 @@ class FASTOADProblemConfigurator:
                              variables and constraints
         :return: the problem instance
         """
-        if self._serializer.data is None:
+        if self._data is None:
             raise RuntimeError("read configuration file first")
 
         problem = FASTOADProblem()
@@ -118,11 +122,11 @@ class FASTOADProblemConfigurator:
         if read_inputs:
             problem.read_inputs()
 
-        driver = self._serializer.data.get(KEY_DRIVER, "")
+        driver = self._data.get(KEY_DRIVER, "")
         if driver:
             problem.driver = _om_eval(driver)
 
-        model_options = self._serializer.data.get(KEY_MODEL_OPTIONS)
+        model_options = self._data.get(KEY_MODEL_OPTIONS)
         if model_options:
             problem.model_options = model_options
 
@@ -156,9 +160,9 @@ class FASTOADProblemConfigurator:
         # Syntax validation
         with open_text(resources, JSON_SCHEMA_NAME) as json_file:
             json_schema = json.loads(json_file.read())
-        validate(self._serializer.data, json_schema)
+        validate(self._data, json_schema)
         # Issue a simple warning for unknown keys at root level
-        for key in self._serializer.data:
+        for key in self._data:
             if key not in json_schema["properties"].keys():
                 _LOGGER.warning('Configuration file: "%s" is not a FAST-OAD key.', key)
 
@@ -171,7 +175,7 @@ class FASTOADProblemConfigurator:
 
         # Settings submodels
         RegisterSubmodel.cancel_submodel_deactivations()
-        submodel_specs = self._serializer.data.get(KEY_SUBMODELS, {})
+        submodel_specs = self._data.get(KEY_SUBMODELS, {})
         for submodel_requirement, submodel_id in submodel_specs.items():
             RegisterSubmodel.active_models[submodel_requirement] = submodel_id
 
@@ -220,7 +224,7 @@ class FASTOADProblemConfigurator:
         """
 
         optimization_definition = {}
-        conf_dict = self._serializer.data.get(KEY_OPTIMIZATION)
+        conf_dict = self._data.get(KEY_OPTIMIZATION)
         if conf_dict:
             for sec, elements in conf_dict.items():
                 optimization_definition[sec] = {elem["name"]: elem for elem in elements}
@@ -241,7 +245,7 @@ class FASTOADProblemConfigurator:
         for key, value in optimization_definition.items():
             subpart[key] = [value for _, value in optimization_definition[key].items()]
         subpart = {"optimization": subpart}
-        self._serializer.data.update(subpart)
+        self._data.update(subpart)
 
     def _make_absolute(self, path: Union[str, PathLike]) -> Path:
         """
@@ -255,7 +259,7 @@ class FASTOADProblemConfigurator:
         return path
 
     def _get_module_folder_paths(self) -> List[Path]:
-        module_folder_paths = self._serializer.data.get(KEY_FOLDERS)
+        module_folder_paths = self._data.get(KEY_FOLDERS)
         # Key may be present, but with None value
         if not module_folder_paths:
             return []
@@ -271,9 +275,9 @@ class FASTOADProblemConfigurator:
         """
 
         model = problem.model
-        model.active_submodels = self._serializer.data.get(KEY_SUBMODELS, {})
+        model.active_submodels = self._data.get(KEY_SUBMODELS, {})
 
-        model_definition = self._serializer.data.get(KEY_MODEL)
+        model_definition = self._data.get(KEY_MODEL)
 
         try:
             if KEY_COMPONENT_ID in model_definition:
