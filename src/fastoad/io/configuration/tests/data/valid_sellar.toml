@@ -26,7 +26,7 @@ driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
             id = "configuration_test.sellar.disc1"
         [model.cycle.disc2]
             id = "configuration_test.sellar.disc2"
-    [model.functions]
+    [model.group.functions]
         id = "configuration_test.sellar.functions"
         input_path = "translator.txt"
 
