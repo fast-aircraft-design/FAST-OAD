@@ -16,6 +16,7 @@ Module for building OpenMDAO problem from configuration file
 
 import json
 import logging
+import shutil
 import sys
 from abc import ABC, abstractmethod
 from importlib import import_module
@@ -214,6 +215,8 @@ class FASTOADProblemConfigurator:
         """
         if not filename:
             filename = self._conf_file_path
+        else:
+            self._conf_file_path = filename
 
         make_parent_dir(filename)
         self._serializer.write(filename)
@@ -273,6 +276,62 @@ class FASTOADProblemConfigurator:
         subpart = {"optimization": subpart}
         self._data.update(subpart)
 
+    def make_local(self, new_folder_path: Union[str, PathLike], copy_models: bool = False):
+        """
+        Modify the current configurator so that all input and output files will be in
+        the indicated folder.
+
+        :param new_folder_path:
+        :return:
+        """
+        new_folder_path = Path(new_folder_path)
+
+        self._data[KEY_INPUT_FILE] = self._make_path_local(self.input_file_path, new_folder_path)
+        self._data[KEY_OUTPUT_FILE] = self._make_path_local(self.output_file_path, new_folder_path)
+        if copy_models:
+            new_model_folders = []
+            for i, module_folder_path in enumerate(self._get_module_folder_paths()):
+                if module_folder_path.is_dir():
+                    new_model_folders.append(
+                        self._make_path_local(
+                            module_folder_path, new_folder_path, local_path=f"models_{i}"
+                        )
+                    )
+            self._data[KEY_FOLDERS] = new_model_folders
+        else:
+            # Make model folder paths absolutes, since configuration file will be moved.
+            # _get_module_folder_paths() already does the job when the configuration file
+            # is at its original location.
+            self._data[KEY_FOLDERS] = [
+                module_folder_path.as_posix()
+                for module_folder_path in self._get_module_folder_paths()
+            ]
+
+        self._make_options_local(self._data[KEY_MODEL], new_folder_path)
+        self.save(new_folder_path.joinpath(self._conf_file_path.name))
+
+    def _make_options_local(self, structure: dict, new_root_path, local_path=Path(".")):
+        for key, value in structure.items():
+            if isinstance(value, dict) and key != KEY_CONNECTION_ID:
+                self._make_options_local(value, new_root_path, local_path=local_path / key)
+                continue
+            if key == KEY_COMPONENT_ID or not isinstance(value, str):
+                continue
+
+            option_value_as_path = Path(value)
+            if not option_value_as_path.is_absolute():
+                original_file_path = self._conf_file_path.parent.joinpath(
+                    option_value_as_path
+                ).resolve()
+                if (
+                    original_file_path.exists()
+                    or len(option_value_as_path.parts) > 1
+                    or key.endswith(("file", "path", "dir", "directory", "folder"))
+                ):
+                    structure[key] = self._make_path_local(
+                        original_file_path, new_root_path, local_path / option_value_as_path.parent
+                    )
+
     def _configure_driver(self, prob):
         driver_config = self._data.get(KEY_DRIVER, {})
 
@@ -312,6 +371,37 @@ class FASTOADProblemConfigurator:
         if isinstance(module_folder_paths, str):
             module_folder_paths = [module_folder_paths]
         return [self._make_absolute(folder_path) for folder_path in module_folder_paths]
+
+    @staticmethod
+    def _make_path_local(
+        original_path: Union[str, PathLike],
+        new_folder_path: Union[str, PathLike],
+        local_path: Optional[Union[str, PathLike]] = None,
+    ) -> str:
+        """
+        For 'original_path' "/foo/bar/baz[.ext]", returns "./baz[.ext]" or
+        "./local/path/baz[.ext]" if 'local_path' is "local/path".
+
+        If 'original_path' exists, the file or folder is copied in the
+        returned path, relatively to 'new_folder_path'.
+
+        :param original_path:
+        :param new_folder_path:
+        :param local_path:
+        :return: the relative path
+        """
+        original_path = Path(original_path)
+        new_path = Path(new_folder_path)
+        if local_path:
+            new_path = new_path.joinpath(local_path)
+        new_path.mkdir(parents=True, exist_ok=True)
+        new_path = new_path.joinpath(original_path.name)
+        if original_path.is_file():
+            shutil.copy(original_path, new_path)
+        if original_path.is_dir():
+            shutil.copytree(original_path, new_path, dirs_exist_ok=True)
+        new_relative_path = new_path.relative_to(new_folder_path).as_posix()
+        return new_relative_path
 
     def _build_model(self, problem: FASTOADProblem):
         """

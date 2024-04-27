@@ -23,9 +23,10 @@ model:
       id: configuration_test.sellar.disc1
     disc2:
       id: configuration_test.sellar.disc2
-  functions:
-    id: configuration_test.sellar.functions
-    input_path: "translator.txt"
+  group:
+    functions:
+      id: configuration_test.sellar.functions
+      input_path: "translator.txt"
 
 model_options:
   "*":
