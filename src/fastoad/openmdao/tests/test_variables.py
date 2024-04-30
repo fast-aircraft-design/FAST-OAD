@@ -14,7 +14,7 @@ Module for testing VariableList.py
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
+from pathlib import Path
 from typing import List
 
 import numpy as np
@@ -30,10 +30,24 @@ from .openmdao_sellar_example.functions import FunctionF, FunctionG1, FunctionG2
 from ..variables import Variable, VariableList
 
 
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
+#  FAST is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
 @pytest.fixture(scope="module")
 def cleanup():
     # Need to clean up variable descriptions because it is manipulated in other tests.
-    Variable.read_variable_descriptions(pth.dirname(fastoad.models.__file__), update_existing=False)
+    Variable.read_variable_descriptions(Path(fastoad.models.__file__).parent, update_existing=False)
 
 
 def test_variables(with_dummy_plugin_2):

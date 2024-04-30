@@ -15,7 +15,7 @@ Test module for openmdao_system_registry.py
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import os.path as pth
+from pathlib import Path
 
 import openmdao.api as om
 import pytest
@@ -29,13 +29,15 @@ from ..._utils.sellar.sellar_base import BasicSellarModel, BasicSellarProblem, I
 from ...openmdao.variables import Variable
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
+
+
+DATA_FOLDER_PATH = Path(__file__).parent / "data"
 
 
 @pytest.fixture(scope="module")
 def load():
     """Loads components"""
-    RegisterOpenMDAOSystem.explore_folder(pth.join(DATA_FOLDER_PATH, "module_sellar_example"))
+    RegisterOpenMDAOSystem.explore_folder((DATA_FOLDER_PATH / "module_sellar_example").as_posix())
 
 
 def test_variable_description(load):

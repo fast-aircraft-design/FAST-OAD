@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -11,7 +11,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
+
+from pathlib import Path
 
 import pytest
 
@@ -23,8 +24,7 @@ from ..exceptions import (
 )
 from ..service_registry import RegisterSubmodel
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
-
+DATA_FOLDER_PATH = Path(__file__).parent / "data"
 
 # Tests ####################################
 @pytest.fixture(scope="module")
@@ -32,7 +32,7 @@ def load():
     """Loads components"""
     previous_active_submodels = RegisterSubmodel.active_models
     RegisterSubmodel.active_models = {}
-    BundleLoader().explore_folder(pth.join(DATA_FOLDER_PATH, "dummy_submodels"))
+    BundleLoader().explore_folder((DATA_FOLDER_PATH / "dummy_submodels").as_posix())
     yield
     RegisterSubmodel.active_models = previous_active_submodels
 

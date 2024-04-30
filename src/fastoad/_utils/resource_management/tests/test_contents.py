@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -11,7 +11,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
+from pathlib import Path
 
 from ..contents import PackageReader
 
@@ -23,7 +23,7 @@ def test_get_package_contents():
     assert not reader.is_module
     assert not reader.has_error
 
-    assert pth.basename(__file__) in reader.contents
+    assert Path(__file__).name in reader.contents
     assert "__init__.py" in reader.contents
     assert "resources" in reader.contents
 

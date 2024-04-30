@@ -2,7 +2,7 @@
 Tests custom XML serializer for OpenMDAO variables
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,8 +14,8 @@ Tests custom XML serializer for OpenMDAO variables
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
-from shutil import rmtree
+import shutil
+from pathlib import Path
 
 import pytest
 from pytest import approx
@@ -25,15 +25,26 @@ from .. import VariableXmlBaseFormatter
 from ..translator import VarXpathTranslator
 from ...variable_io import VariableIO
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
-RESULTS_FOLDER_PATH = pth.join(
-    pth.dirname(__file__), "results", pth.splitext(pth.basename(__file__))[0]
-)
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
+#  FAST is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+DATA_FOLDER_PATH = Path(__file__).parent / "data"
+RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
 
 
 @pytest.fixture(scope="module")
 def cleanup():
-    rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
+    shutil.rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
 def _check_basic2_vars(outputs: VariableList):
@@ -64,7 +75,7 @@ def test_custom_xml_read_and_write_from_ivc(cleanup):
     """
     Tests the creation of an XML file from an IndepVarComp instance
     """
-    result_folder = pth.join(RESULTS_FOLDER_PATH, "custom_xml")
+    result_folder = RESULTS_FOLDER_PATH / "custom_xml"
 
     var_names = [
         "geometry:total_surface",
@@ -78,7 +89,7 @@ def test_custom_xml_read_and_write_from_ivc(cleanup):
 
     # test read ---------------------------------------------------------------
 
-    filename = pth.join(DATA_FOLDER_PATH, "custom.xml")
+    filename = (DATA_FOLDER_PATH / "custom.xml").as_posix()
 
     translator = VarXpathTranslator(variable_names=var_names, xpaths=xpaths)
     xml_read = VariableIO(filename, formatter=VariableXmlBaseFormatter(translator))
@@ -87,13 +98,13 @@ def test_custom_xml_read_and_write_from_ivc(cleanup):
 
     # test with a non-exhaustive translation table (missing variable name in the translator)
     # we expect that the variable is not included in the ivc
-    filename = pth.join(DATA_FOLDER_PATH, "custom_additional_var.xml")
+    filename = (DATA_FOLDER_PATH / "custom_additional_var.xml").as_posix()
     xml_read = VariableIO(filename, formatter=VariableXmlBaseFormatter(translator))
     vars = xml_read.read()
     _check_basic2_vars(vars)
 
     # test with setting a translation with an additional var not present in the xml
-    filename = pth.join(DATA_FOLDER_PATH, "custom.xml")
+    filename = (DATA_FOLDER_PATH / "custom.xml").as_posix()
     xml_read = VariableIO(
         filename,
         formatter=VariableXmlBaseFormatter(
@@ -106,15 +117,15 @@ def test_custom_xml_read_and_write_from_ivc(cleanup):
     _check_basic2_vars(vars)
 
     # test write --------------------------------------------------------------
-    new_filename = pth.join(result_folder, "custom.xml")
+    new_filename = result_folder / "custom.xml"
     translator = VarXpathTranslator(variable_names=var_names, xpaths=xpaths)
-    xml_write = VariableIO(new_filename, formatter=VariableXmlBaseFormatter(translator))
+    xml_write = VariableIO(new_filename.as_posix(), formatter=VariableXmlBaseFormatter(translator))
     xml_write.write(vars)
 
     # check written data
-    assert pth.isfile(new_filename)
+    assert new_filename.is_file()
     translator.set(var_names, xpaths)
-    xml_check = VariableIO(new_filename, formatter=VariableXmlBaseFormatter(translator))
+    xml_check = VariableIO(new_filename.as_posix(), formatter=VariableXmlBaseFormatter(translator))
     new_ivc = xml_check.read()
     _check_basic2_vars(new_ivc)
 
@@ -123,19 +134,19 @@ def test_custom_xml_read_and_write_with_translation_table(cleanup):
     """
     Tests the creation of an XML file with a translation table
     """
-    result_folder = pth.join(RESULTS_FOLDER_PATH, "custom_xml_with_translation_table")
+    result_folder = RESULTS_FOLDER_PATH / "custom_xml_with_translation_table"
 
     # test read ---------------------------------------------------------------
-    filename = pth.join(DATA_FOLDER_PATH, "custom.xml")
 
     # test after setting translation table
-    translator = VarXpathTranslator(source=pth.join(DATA_FOLDER_PATH, "custom_translation.txt"))
-    xml_read = VariableIO(filename, formatter=VariableXmlBaseFormatter(translator))
+    filename = DATA_FOLDER_PATH / "custom.xml"
+    translator = VarXpathTranslator(source=DATA_FOLDER_PATH / "custom_translation.txt")
+    xml_read = VariableIO(filename.as_posix(), formatter=VariableXmlBaseFormatter(translator))
     vars = xml_read.read()
     _check_basic2_vars(vars)
 
-    new_filename = pth.join(result_folder, "custom.xml")
-    xml_write = VariableIO(new_filename, formatter=VariableXmlBaseFormatter(translator))
+    new_filename = result_folder / "custom.xml"
+    xml_write = VariableIO(new_filename.as_posix(), formatter=VariableXmlBaseFormatter(translator))
     xml_write.write(vars)
 
 
@@ -154,10 +165,10 @@ def test_custom_xml_read_and_write_with_only_or_ignore(cleanup):
     xpaths = ["total_area", "wing/span", "wing/aspect_ratio", "fuselage_length"]
 
     # test read ---------------------------------------------------------------
-    filename = pth.join(DATA_FOLDER_PATH, "custom.xml")
+    filename = DATA_FOLDER_PATH / "custom.xml"
 
     translator = VarXpathTranslator(variable_names=var_names, xpaths=xpaths)
-    xml_read = VariableIO(filename, formatter=VariableXmlBaseFormatter(translator))
+    xml_read = VariableIO(filename.as_posix(), formatter=VariableXmlBaseFormatter(translator))
 
     # test with "only"
     outputs = xml_read.read(only=["geometry:wing:span"])

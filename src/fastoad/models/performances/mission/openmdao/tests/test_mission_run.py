@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -11,9 +11,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
-from os import makedirs
-from shutil import rmtree
+import shutil
+from pathlib import Path
 
 import pytest
 from numpy.testing import assert_allclose
@@ -23,28 +22,25 @@ from fastoad._utils.testing import run_system
 from fastoad.io import DataFile
 from ..mission_run import MissionComp
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
-RESULTS_FOLDER_PATH = pth.join(
-    pth.dirname(__file__), "results", pth.splitext(pth.basename(__file__))[0]
-)
+DATA_FOLDER_PATH = Path(__file__).parent / "data"
+RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
 
 
 @pytest.fixture(scope="module")
 def cleanup():
-    rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
-    makedirs(RESULTS_FOLDER_PATH)
+    shutil.rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
 def test_mission_run(cleanup, with_dummy_plugin_2):
 
-    input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission_run.xml")
-    ivc = DataFile(input_file_path).to_ivc()
+    input_file_path = DATA_FOLDER_PATH / "test_mission_run.xml"
+    ivc = DataFile(input_file_path.as_posix()).to_ivc()
 
     problem = run_system(
         MissionComp(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=pth.join(RESULTS_FOLDER_PATH, "mission.csv"),
-            mission_file_path=pth.join(DATA_FOLDER_PATH, "test_mission.yml"),
+            out_file=(RESULTS_FOLDER_PATH / "mission.csv").as_posix(),
+            mission_file_path=(DATA_FOLDER_PATH / "test_mission.yml").as_posix(),
             mission_name="operational",
             reference_area_variable="data:geometry:aircraft:reference_area",
             variable_prefix="data:payload_range",

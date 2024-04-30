@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -10,9 +10,8 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-import os.path as pth
-from shutil import rmtree
+import shutil
+from pathlib import Path
 
 import numpy as np
 import openmdao.api as om
@@ -22,14 +21,12 @@ from numpy.testing import assert_allclose
 from fastoad._utils.testing import run_system
 from ..mission import OMMission
 
-RESULTS_FOLDER_PATH = pth.join(
-    pth.dirname(__file__), "results", pth.splitext(pth.basename(__file__))[0]
-)
+RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
 
 
 @pytest.fixture(scope="module")
 def cleanup():
-    rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
+    shutil.rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
 def test_sizing_breguet(cleanup, with_dummy_plugin_2):
@@ -58,7 +55,7 @@ def test_sizing_breguet(cleanup, with_dummy_plugin_2):
     problem = run_system(
         OMMission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=pth.join(RESULTS_FOLDER_PATH, "sizing_breguet.csv"),
+            out_file=(RESULTS_FOLDER_PATH / "sizing_breguet.csv").as_posix(),
             use_initializer_iteration=False,
             mission_file_path="::sizing_breguet",
             adjust_fuel=False,

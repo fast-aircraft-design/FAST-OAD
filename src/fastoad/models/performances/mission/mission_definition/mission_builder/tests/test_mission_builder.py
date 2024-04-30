@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -11,8 +11,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
 from dataclasses import dataclass
+from pathlib import Path
 from unittest.mock import Mock
 
 import numpy as np
@@ -38,7 +38,7 @@ from ....segments.registered.start import Start
 from ....segments.registered.taxi import TaxiSegment
 from ....segments.registered.transition import DummyTransitionSegment
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
+DATA_FOLDER_PATH = Path(__file__).parent / "data"
 
 
 # For this class, we purposely use the deprecated inheritance mechanism
@@ -75,7 +75,7 @@ def test_input_definition_units():
 
 def test_initialization():
     mission_builder = MissionBuilder(
-        pth.join(DATA_FOLDER_PATH, "mission.yml"),
+        (DATA_FOLDER_PATH / "mission.yml").as_posix(),
         propulsion=Mock(IPropulsion),
         reference_area=100.0,
     )
@@ -99,7 +99,7 @@ def test_initialization():
 
 def test_get_input_weight_variable_name():
     mission_builder = MissionBuilder(
-        pth.join(DATA_FOLDER_PATH, "mission.yml"),
+        (DATA_FOLDER_PATH / "mission.yml").as_posix(),
         propulsion=Mock(IPropulsion),
         reference_area=100.0,
     )
@@ -114,7 +114,7 @@ def test_get_input_weight_variable_name():
 
 def test_inputs():
     mission_builder = MissionBuilder(
-        pth.join(DATA_FOLDER_PATH, "mission.yml"),
+        (DATA_FOLDER_PATH / "mission.yml").as_posix(),
         propulsion=Mock(IPropulsion),
         reference_area=100.0,
     )
@@ -181,7 +181,7 @@ def test_inputs():
 
 
 def test_build():
-    mission_definition = MissionDefinition(pth.join(DATA_FOLDER_PATH, "mission.yml"))
+    mission_definition = MissionDefinition(DATA_FOLDER_PATH / "mission.yml")
     mission_builder = MissionBuilder(
         mission_definition, propulsion=Mock(IPropulsion), reference_area=100.0
     )
@@ -313,7 +313,7 @@ def test_build():
 
 
 def test_get_route_ranges():
-    mission_definition = MissionDefinition(pth.join(DATA_FOLDER_PATH, "mission.yml"))
+    mission_definition = MissionDefinition(DATA_FOLDER_PATH / "mission.yml")
     mission_builder = MissionBuilder(
         mission_definition, propulsion=Mock(IPropulsion), reference_area=100.0
     )
@@ -351,7 +351,7 @@ def test_get_route_ranges():
 
 def test_get_reserve():
     mission_builder = MissionBuilder(
-        pth.join(DATA_FOLDER_PATH, "mission.yml"),
+        (DATA_FOLDER_PATH / "mission.yml").as_posix(),
         propulsion=Mock(IPropulsion),
         reference_area=100.0,
     )

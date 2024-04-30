@@ -2,7 +2,7 @@
 Tests basic XML serializer for OpenMDAO variables
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,8 +14,8 @@ Tests basic XML serializer for OpenMDAO variables
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
-from shutil import rmtree
+import shutil
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -27,15 +27,13 @@ from fastoad.io.xml import VariableXmlStandardFormatter
 from fastoad.openmdao.variables import VariableList
 from ..exceptions import FastXPathEvalError
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
-RESULTS_FOLDER_PATH = pth.join(
-    pth.dirname(__file__), "results", pth.splitext(pth.basename(__file__))[0]
-)
+DATA_FOLDER_PATH = Path(__file__).parent / "data"
+RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
 
 
 @pytest.fixture(scope="module")
 def cleanup():
-    rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
+    shutil.rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
 def _check_basic_vars(vars: VariableList):
@@ -94,7 +92,7 @@ def test_basic_xml_read_and_write_from_vars(cleanup):
     """
     Tests the creation of an XML file from a VariableList instance
     """
-    result_folder = pth.join(RESULTS_FOLDER_PATH, "basic_xml")
+    result_folder = RESULTS_FOLDER_PATH / "basic_xml"
 
     # Check write hand-made component
     vars = VariableList()
@@ -121,33 +119,33 @@ def test_basic_xml_read_and_write_from_vars(cleanup):
     vars["constants/k8"] = {"value": [[1e2, 3.4e5], [5.4e3, 2.1]], "desc": "2D list"}
 
     # Try writing with non-existing folder
-    assert not pth.exists(result_folder)
-    filename = pth.join(result_folder, "handmade.xml")
-    xml_write = VariableIO(filename, formatter=VariableXmlStandardFormatter())
+    assert not result_folder.exists()
+    filename = result_folder / "handmade.xml"
+    xml_write = VariableIO(filename.as_posix(), formatter=VariableXmlStandardFormatter())
     xml_write.path_separator = "/"
     xml_write.write(vars)
 
     # check (read another IndepVarComp instance from xml)
-    xml_check = VariableIO(filename, formatter=VariableXmlStandardFormatter())
+    xml_check = VariableIO(filename.as_posix(), formatter=VariableXmlStandardFormatter())
     xml_check.path_separator = ":"
     new_vars = xml_check.read()
     _check_basic_vars(new_vars)
 
     # Check reading hand-made XML (with some format twists)
-    filename = pth.join(DATA_FOLDER_PATH, "basic.xml")
-    xml_read = VariableIO(filename, formatter=VariableXmlStandardFormatter())
+    filename = DATA_FOLDER_PATH / "basic.xml"
+    xml_read = VariableIO(filename.as_posix(), formatter=VariableXmlStandardFormatter())
     xml_read.path_separator = ":"
     vars = xml_read.read()
     _check_basic_vars(vars)
 
     # write it (with existing destination folder)
-    new_filename = pth.join(result_folder, "basic.xml")
-    xml_write = VariableIO(new_filename, formatter=VariableXmlStandardFormatter())
+    new_filename = result_folder / "basic.xml"
+    xml_write = VariableIO(new_filename.as_posix(), formatter=VariableXmlStandardFormatter())
     xml_write.path_separator = ":"
     xml_write.write(vars)
 
     # check (read another IndepVarComp instance from new xml)
-    xml_check = VariableIO(new_filename, formatter=VariableXmlStandardFormatter())
+    xml_check = VariableIO(new_filename.as_posix(), formatter=VariableXmlStandardFormatter())
     xml_check.path_separator = ":"
     new_vars = xml_check.read()
     _check_basic_vars(new_vars)
@@ -162,11 +160,11 @@ def test_basic_xml_partial_read_and_write_from_vars(cleanup):
     """
     Tests the creation of an XML file from an IndepVarComp instance with only and ignore options
     """
-    result_folder = pth.join(RESULTS_FOLDER_PATH, "basic_partial_xml")
+    result_folder = RESULTS_FOLDER_PATH / "basic_partial_xml"
 
     # Read full IndepVarComp
-    filename = pth.join(DATA_FOLDER_PATH, "basic.xml")
-    xml_read = VariableIO(filename, formatter=VariableXmlStandardFormatter())
+    filename = DATA_FOLDER_PATH / "basic.xml"
+    xml_read = VariableIO(filename.as_posix(), formatter=VariableXmlStandardFormatter())
     vars = xml_read.read(ignore=["does_not_exist"])
     _check_basic_vars(vars)
 
@@ -174,16 +172,16 @@ def test_basic_xml_partial_read_and_write_from_vars(cleanup):
     vars["should_be_ignored:pointless"] = {"value": 0.0}
     vars["should_also_be_ignored"] = {"value": -10.0}
 
-    badvar_filename = pth.join(result_folder, "with_bad_var.xml")
-    xml_write = VariableIO(badvar_filename, formatter=VariableXmlStandardFormatter())
+    badvar_filename = result_folder / "with_bad_var.xml"
+    xml_write = VariableIO(badvar_filename.as_posix(), formatter=VariableXmlStandardFormatter())
     xml_write.write(vars, ignore=["does_not_exist"])  # Check with non-existent var in ignore list
 
-    tree = etree.parse(badvar_filename)
+    tree = etree.parse(badvar_filename.as_posix())
     assert float(tree.xpath("should_be_ignored/pointless")[0].text.strip()) == 0.0
     assert float(tree.xpath("should_also_be_ignored")[0].text.strip()) == -10.0
 
     # Check partial reading with 'ignore'
-    xml_read = VariableIO(badvar_filename, formatter=VariableXmlStandardFormatter())
+    xml_read = VariableIO(badvar_filename.as_posix(), formatter=VariableXmlStandardFormatter())
     new_vars = xml_read.read(ignore=["should_be_ignored:pointless", "should_also_be_ignored"])
     _check_basic_vars(new_vars)
 
@@ -205,19 +203,19 @@ def test_basic_xml_partial_read_and_write_from_vars(cleanup):
     _check_basic_vars(new_vars2)
 
     # Check partial writing with 'ignore'
-    varok_filename = pth.join(result_folder, "with_bad_var.xml")
-    xml_write = VariableIO(varok_filename, formatter=VariableXmlStandardFormatter())
+    varok_filename = result_folder / "with_bad_var.xml"
+    xml_write = VariableIO(varok_filename.as_posix(), formatter=VariableXmlStandardFormatter())
     xml_write.write(vars, ignore=["should_be_ignored:pointless", "should_also_be_ignored"])
 
-    xml_read = VariableIO(varok_filename, formatter=VariableXmlStandardFormatter())
+    xml_read = VariableIO(varok_filename.as_posix(), formatter=VariableXmlStandardFormatter())
     new_vars = xml_read.read()
     _check_basic_vars(new_vars)
 
     # Check partial writing with 'only'
-    varok2_filename = pth.join(result_folder, "with_bad_var.xml")
-    xml_write = VariableIO(varok2_filename, formatter=VariableXmlStandardFormatter())
+    varok2_filename = result_folder / "with_bad_var.xml"
+    xml_write = VariableIO(varok2_filename.as_posix(), formatter=VariableXmlStandardFormatter())
     xml_write.write(vars, only=ok_vars)
 
-    xml_read = VariableIO(varok2_filename, formatter=VariableXmlStandardFormatter())
+    xml_read = VariableIO(varok2_filename.as_posix(), formatter=VariableXmlStandardFormatter())
     new_vars = xml_read.read()
     _check_basic_vars(new_vars)
