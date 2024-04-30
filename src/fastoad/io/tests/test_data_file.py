@@ -54,7 +54,7 @@ class DummyFormatter(IVariableIOFormatter):
 
 
 def test_datafile_save_read(cleanup, variables_ref):
-    file_path = (RESULTS_FOLDER_PATH / "dummy_data_file.xml").as_posix()
+    file_path = RESULTS_FOLDER_PATH / "dummy_data_file.xml"
     with pytest.raises(FileNotFoundError) as exc_info:
         _ = DataFile(file_path)
     assert exc_info.value.args[0] == f'File "{file_path}" is unavailable for reading.'

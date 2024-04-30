@@ -52,7 +52,7 @@ def test_legacy1(cleanup):
     # test read ---------------------------------------------------------------
     file_path = DATA_FOLDER_PATH / "CeRAS01_baseline.xml"
 
-    xml_read = VariableIO(file_path.as_posix(), formatter=VariableLegacy1XmlFormatter())
+    xml_read = VariableIO(file_path, formatter=VariableLegacy1XmlFormatter())
     var_list = xml_read.read()
 
     entry_count = len(var_list)
@@ -80,7 +80,7 @@ def test_legacy1(cleanup):
 
     # test write ---------------------------------------------------------------
     new_filename = result_folder / "CeRAS01_baseline.xml"
-    xml_write = VariableIO(new_filename.as_posix(), formatter=VariableLegacy1XmlFormatter())
+    xml_write = VariableIO(new_filename, formatter=VariableLegacy1XmlFormatter())
     xml_write.write(var_list)
 
     # check by reading without conversion table

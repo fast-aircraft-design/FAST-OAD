@@ -89,7 +89,7 @@ def test_custom_xml_read_and_write_from_ivc(cleanup):
 
     # test read ---------------------------------------------------------------
 
-    file_path = (DATA_FOLDER_PATH / "custom.xml").as_posix()
+    file_path = DATA_FOLDER_PATH / "custom.xml"
 
     translator = VarXpathTranslator(variable_names=var_names, xpaths=xpaths)
     xml_read = VariableIO(file_path, formatter=VariableXmlBaseFormatter(translator))
@@ -98,13 +98,13 @@ def test_custom_xml_read_and_write_from_ivc(cleanup):
 
     # test with a non-exhaustive translation table (missing variable name in the translator)
     # we expect that the variable is not included in the ivc
-    file_path = (DATA_FOLDER_PATH / "custom_additional_var.xml").as_posix()
+    file_path = DATA_FOLDER_PATH / "custom_additional_var.xml"
     xml_read = VariableIO(file_path, formatter=VariableXmlBaseFormatter(translator))
     var_list = xml_read.read()
     _check_basic_vars(var_list)
 
     # test with setting a translation with an additional var not present in the xml
-    file_path = (DATA_FOLDER_PATH / "custom.xml").as_posix()
+    file_path = DATA_FOLDER_PATH / "custom.xml"
     xml_read = VariableIO(
         file_path,
         formatter=VariableXmlBaseFormatter(
@@ -131,13 +131,13 @@ def test_custom_xml_read_and_write_from_ivc(cleanup):
     # test write --------------------------------------------------------------
     new_filename = result_folder / "custom.xml"
     translator = VarXpathTranslator(variable_names=var_names, xpaths=xpaths)
-    xml_write = VariableIO(new_filename.as_posix(), formatter=VariableXmlBaseFormatter(translator))
+    xml_write = VariableIO(new_filename, formatter=VariableXmlBaseFormatter(translator))
     xml_write.write(var_list)
 
     # check written data
     assert new_filename.is_file()
     translator.set(var_names, xpaths)
-    xml_check = VariableIO(new_filename.as_posix(), formatter=VariableXmlBaseFormatter(translator))
+    xml_check = VariableIO(new_filename, formatter=VariableXmlBaseFormatter(translator))
     new_ivc = xml_check.read()
     _check_basic_vars(new_ivc)
 
@@ -153,12 +153,12 @@ def test_custom_xml_read_and_write_with_translation_table(cleanup):
     # test after setting translation table
     filename = DATA_FOLDER_PATH / "custom.xml"
     translator = VarXpathTranslator(source=DATA_FOLDER_PATH / "custom_translation.txt")
-    xml_read = VariableIO(filename.as_posix(), formatter=VariableXmlBaseFormatter(translator))
+    xml_read = VariableIO(filename, formatter=VariableXmlBaseFormatter(translator))
     vars = xml_read.read()
     _check_basic_vars(vars)
 
     new_filename = result_folder / "custom.xml"
-    xml_write = VariableIO(new_filename.as_posix(), formatter=VariableXmlBaseFormatter(translator))
+    xml_write = VariableIO(new_filename, formatter=VariableXmlBaseFormatter(translator))
     xml_write.write(vars)
 
 
@@ -180,7 +180,7 @@ def test_custom_xml_read_and_write_with_only_or_ignore(cleanup):
     filename = DATA_FOLDER_PATH / "custom.xml"
 
     translator = VarXpathTranslator(variable_names=var_names, xpaths=xpaths)
-    xml_read = VariableIO(filename.as_posix(), formatter=VariableXmlBaseFormatter(translator))
+    xml_read = VariableIO(filename, formatter=VariableXmlBaseFormatter(translator))
 
     # test with "only"
     outputs = xml_read.read(only=["geometry:wing:span"])
