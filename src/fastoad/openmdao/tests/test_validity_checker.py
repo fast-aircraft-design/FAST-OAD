@@ -12,10 +12,9 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import os.path as pth
+import shutil
 from logging import FileHandler
-from os import mkdir
-from shutil import rmtree
+from pathlib import Path
 
 import openmdao.api as om
 import pytest
@@ -24,17 +23,17 @@ from .openmdao_sellar_example.disc1 import Disc1Bis, Disc1Ter
 from .openmdao_sellar_example.disc2 import Disc2
 from ..problem import FASTOADProblem
 from ..validity_checker import ValidityDomainChecker, ValidityStatus
-from ..variables import VariableList, Variable
+from ..variables import Variable, VariableList
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
-RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results", "validity_checker")
+RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
 
 
 @pytest.fixture(scope="module")
 def cleanup():
-    rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
-    mkdir(RESULTS_FOLDER_PATH)
+    shutil.rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
+    RESULTS_FOLDER_PATH.mkdir(parents=True)
 
 
 def set_logger_file(log_file_path):
@@ -67,7 +66,7 @@ def test_register_checks_instantiation(cleanup):
     ValidityDomainChecker({"other_var": (-10.0, 1.0)}, "main.logger1")
 
     # Check 1 --------------------------------------------------------------------------------------
-    log_file_path = pth.join(RESULTS_FOLDER_PATH, "log1.txt")
+    log_file_path = RESULTS_FOLDER_PATH / "log1.txt"
     set_logger_file(log_file_path)
     variables = VariableList(
         [
@@ -104,7 +103,7 @@ def test_register_checks_instantiation(cleanup):
         assert len(log_file.readlines()) == 4
 
     # Check 2 --------------------------------------------------------------------------------------
-    log_file_path = pth.join(RESULTS_FOLDER_PATH, "log2.txt")
+    log_file_path = RESULTS_FOLDER_PATH / "log2.txt"
     set_logger_file(log_file_path)
     variables = VariableList(
         [
@@ -141,7 +140,7 @@ def test_register_checks_instantiation(cleanup):
         assert len(log_file.readlines()) == 4
 
     # Check 3 --------------------------------------------------------------------------------------
-    log_file_path = pth.join(RESULTS_FOLDER_PATH, "log3.txt")
+    log_file_path = RESULTS_FOLDER_PATH / "log3.txt"
     set_logger_file(log_file_path)
     variables = VariableList(
         [
@@ -177,7 +176,7 @@ def test_register_checks_instantiation(cleanup):
 
 
 def test_register_checks_as_decorator(cleanup):
-    log_file_path = pth.join(RESULTS_FOLDER_PATH, "log4.txt")
+    log_file_path = RESULTS_FOLDER_PATH / "log4.txt"
     set_logger_file(log_file_path)
 
     @ValidityDomainChecker({"input1": (1.0, 5.0), "output2": (300.0, 500.0)}, "main.dec")

@@ -11,9 +11,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
-import os.path as pth
-from shutil import rmtree
+import shutil
+from pathlib import Path
 
 import pytest
 from numpy.testing import assert_allclose
@@ -26,15 +25,13 @@ from ..mission_run import AdvancedMissionComp
 from ..mission_wrapper import MissionWrapper
 from ...mission_definition.exceptions import FastMissionFileMissingMissionNameError
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
-RESULTS_FOLDER_PATH = pth.join(
-    pth.dirname(__file__), "results", pth.splitext(pth.basename(__file__))[0]
-)
+DATA_FOLDER_PATH = Path(__file__).parent / "data"
+RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
 
 
 @pytest.fixture(scope="module")
 def cleanup():
-    rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
+    shutil.rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
 def plot_flight(flight_points, fig_filename):
@@ -86,23 +83,24 @@ def plot_flight(flight_points, fig_filename):
     labels = [l.get_label() for l in lines]
     plt.legend(lines, labels, loc=0)
 
-    plt.savefig(pth.join(RESULTS_FOLDER_PATH, fig_filename))
+    plt.savefig(RESULTS_FOLDER_PATH / fig_filename)
     plt.close()
 
 
 def test_mission_component(cleanup, with_dummy_plugin_2):
     # Also checking behavior when is_sizing is True
 
-    input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
-    ivc = DataFile(input_file_path).to_ivc()
+    input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
+    ivc = DataFile(input_file_path.as_posix()).to_ivc()
 
     problem = run_system(
         AdvancedMissionComp(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=pth.join(RESULTS_FOLDER_PATH, "mission.csv"),
+            out_file=(RESULTS_FOLDER_PATH / "mission.csv").as_posix(),
             use_initializer_iteration=False,
             mission_file_path=MissionWrapper(
-                pth.join(DATA_FOLDER_PATH, "test_mission.yml"), mission_name="operational"
+                (DATA_FOLDER_PATH / "test_mission.yml").as_posix(),
+                mission_name="operational",
             ),
             reference_area_variable="data:geometry:aircraft:reference_area",
             is_sizing=True,
@@ -161,18 +159,18 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
 
 def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
 
-    input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
-    vars = DataFile(input_file_path)
+    input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
+    vars = DataFile(input_file_path.as_posix())
     ivc = vars.to_ivc()
     ivc.add_output("data:mission:operational:ramp_weight", 70100.0, units="kg")
 
     problem = run_system(
         AdvancedMissionComp(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=pth.join(RESULTS_FOLDER_PATH, "breguet.csv"),
+            out_file=(RESULTS_FOLDER_PATH / "breguet.csv").as_posix(),
             use_initializer_iteration=False,
             mission_file_path=MissionWrapper(
-                pth.join(DATA_FOLDER_PATH, "test_breguet_from_block_fuel.yml"),
+                (DATA_FOLDER_PATH / "test_breguet_from_block_fuel.yml").as_posix(),
                 mission_name="operational",
             ),
             reference_area_variable="data:geometry:aircraft:reference_area",
@@ -206,16 +204,16 @@ def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
 
 
 def test_mission_group_without_fuel_adjustment(cleanup, with_dummy_plugin_2):
-    input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
-    ivc = DataFile(input_file_path).to_ivc()
+    input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
+    ivc = DataFile(input_file_path.as_posix()).to_ivc()
 
     with pytest.raises(FastMissionFileMissingMissionNameError):
         run_system(
             OMMission(
                 propulsion_id="test.wrapper.propulsion.dummy_engine",
-                out_file=pth.join(RESULTS_FOLDER_PATH, "unlooped_mission_group.csv"),
+                out_file=(RESULTS_FOLDER_PATH / "unlooped_mission_group.csv").as_posix(),
                 use_initializer_iteration=False,
-                mission_file_path=pth.join(DATA_FOLDER_PATH, "test_mission.yml"),
+                mission_file_path=(DATA_FOLDER_PATH / "test_mission.yml").as_posix(),
                 adjust_fuel=False,
                 reference_area_variable="data:geometry:aircraft:reference_area",
                 add_solver=True,
@@ -226,9 +224,9 @@ def test_mission_group_without_fuel_adjustment(cleanup, with_dummy_plugin_2):
     problem = run_system(
         OMMission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=pth.join(RESULTS_FOLDER_PATH, "unlooped_mission_group.csv"),
+            out_file=(RESULTS_FOLDER_PATH / "unlooped_mission_group.csv").as_posix(),
             use_initializer_iteration=False,
-            mission_file_path=pth.join(DATA_FOLDER_PATH, "test_mission.yml"),
+            mission_file_path=(DATA_FOLDER_PATH / "test_mission.yml").as_posix(),
             mission_name="operational",
             adjust_fuel=False,
             reference_area_variable="data:geometry:aircraft:reference_area",
@@ -245,15 +243,15 @@ def test_mission_group_without_fuel_adjustment(cleanup, with_dummy_plugin_2):
 
 
 def test_mission_group_breguet_without_fuel_adjustment(cleanup, with_dummy_plugin_2):
-    input_file_path = pth.join(DATA_FOLDER_PATH, "test_breguet.xml")
-    ivc = DataFile(input_file_path).to_ivc()
+    input_file_path = DATA_FOLDER_PATH / "test_breguet.xml"
+    ivc = DataFile(input_file_path.as_posix()).to_ivc()
 
     problem = run_system(
         OMMission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=pth.join(RESULTS_FOLDER_PATH, "unlooped_breguet_mission_group.csv"),
+            out_file=(RESULTS_FOLDER_PATH / "unlooped_breguet_mission_group.csv").as_posix(),
             use_initializer_iteration=False,
-            mission_file_path=pth.join(DATA_FOLDER_PATH, "test_breguet.yml"),
+            mission_file_path=(DATA_FOLDER_PATH / "test_breguet.yml").as_posix(),
             adjust_fuel=False,
             reference_area_variable="data:geometry:aircraft:reference_area",
         ),
@@ -267,17 +265,17 @@ def test_mission_group_breguet_without_fuel_adjustment(cleanup, with_dummy_plugi
 
 def test_mission_group_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
 
-    input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
-    vars = DataFile(input_file_path)
+    input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
+    vars = DataFile(input_file_path.as_posix())
     del vars["data:mission:operational:TOW"]
     ivc = vars.to_ivc()
 
     problem = run_system(
         OMMission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=pth.join(RESULTS_FOLDER_PATH, "looped_mission_group.csv"),
+            out_file=(RESULTS_FOLDER_PATH / "looped_mission_group.csv").as_posix(),
             use_initializer_iteration=True,
-            mission_file_path=pth.join(DATA_FOLDER_PATH, "test_mission.yml"),
+            mission_file_path=(DATA_FOLDER_PATH / "test_mission.yml").as_posix(),
             mission_name="operational",
             add_solver=True,
             reference_area_variable="data:geometry:aircraft:reference_area",
@@ -314,17 +312,17 @@ def test_mission_group_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
 def test_mission_group_breguet_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
     # Also checking behavior when is_sizing is True
 
-    input_file_path = pth.join(DATA_FOLDER_PATH, "test_breguet.xml")
-    vars = DataFile(input_file_path)
+    input_file_path = DATA_FOLDER_PATH / "test_breguet.xml"
+    vars = DataFile(input_file_path.as_posix())
     del vars["data:mission:operational:ramp_weight"]
     ivc = vars.to_ivc()
 
     problem = run_system(
         OMMission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=pth.join(RESULTS_FOLDER_PATH, "looped_breguet_mission_group.csv"),
+            out_file=(RESULTS_FOLDER_PATH / "looped_breguet_mission_group.csv").as_posix(),
             use_initializer_iteration=True,
-            mission_file_path=pth.join(DATA_FOLDER_PATH, "test_breguet.yml"),
+            mission_file_path=(DATA_FOLDER_PATH / "test_breguet.yml").as_posix(),
             add_solver=True,
             reference_area_variable="data:geometry:aircraft:reference_area",
             is_sizing=True,
@@ -360,16 +358,16 @@ def test_mission_group_breguet_with_fuel_adjustment(cleanup, with_dummy_plugin_2
 
 def test_mission_group_with_fuel_objective(cleanup, with_dummy_plugin_2):
 
-    input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
-    vars = DataFile(input_file_path)
+    input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
+    vars = DataFile(input_file_path.as_posix())
     ivc = vars.to_ivc()
 
     problem = run_system(
         OMMission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=pth.join(RESULTS_FOLDER_PATH, "fuel_as_objective.csv"),
+            out_file=(RESULTS_FOLDER_PATH / "fuel_as_objective.csv").as_posix(),
             use_initializer_iteration=False,
-            mission_file_path=pth.join(DATA_FOLDER_PATH, "test_mission.yml"),
+            mission_file_path=(DATA_FOLDER_PATH / "test_mission.yml").as_posix(),
             mission_name="fuel_as_objective",
             add_solver=True,
             adjust_fuel=False,
@@ -399,8 +397,8 @@ def test_mission_group_with_fuel_objective(cleanup, with_dummy_plugin_2):
 
 def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
 
-    input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
-    vars = VariableIO(input_file_path).read(ignore=["data:mission:operational:max_CL"])
+    input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
+    vars = VariableIO(input_file_path.as_posix()).read(ignore=["data:mission:operational:max_CL"])
     ivc = vars.to_ivc()
 
     # Activate CL limitation during cruise and climb
@@ -409,10 +407,11 @@ def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
     problem = run_system(
         AdvancedMissionComp(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=pth.join(RESULTS_FOLDER_PATH, "CL_limitation_1.csv"),
+            out_file=(RESULTS_FOLDER_PATH / "CL_limitation_1.csv").as_posix(),
             use_initializer_iteration=False,
             mission_file_path=MissionWrapper(
-                pth.join(DATA_FOLDER_PATH, "test_mission.yml"), mission_name="operational"
+                (DATA_FOLDER_PATH / "test_mission.yml").as_posix(),
+                mission_name="operational",
             ),
             reference_area_variable="data:geometry:aircraft:reference_area",
         ),
@@ -439,10 +438,11 @@ def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
     problem = run_system(
         AdvancedMissionComp(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=pth.join(RESULTS_FOLDER_PATH, "CL_limitation_2.csv"),
+            out_file=(RESULTS_FOLDER_PATH / "CL_limitation_2.csv").as_posix(),
             use_initializer_iteration=False,
             mission_file_path=MissionWrapper(
-                pth.join(DATA_FOLDER_PATH, "test_mission.yml"), mission_name="operational_optimal"
+                (DATA_FOLDER_PATH / "test_mission.yml").as_posix(),
+                mission_name="operational_optimal",
             ),
             reference_area_variable="data:geometry:aircraft:reference_area",
         ),
@@ -469,15 +469,15 @@ def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
 
 
 def test_mission_group_without_route(cleanup, with_dummy_plugin_2):
-    input_file_path = pth.join(DATA_FOLDER_PATH, "test_mission.xml")
-    ivc = DataFile(input_file_path).to_ivc()
+    input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
+    ivc = DataFile(input_file_path.as_posix()).to_ivc()
 
     problem = run_system(
         OMMission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=pth.join(RESULTS_FOLDER_PATH, "without_route_mission_group.csv"),
+            out_file=(RESULTS_FOLDER_PATH / "without_route_mission_group.csv").as_posix(),
             use_initializer_iteration=False,
-            mission_file_path=pth.join(DATA_FOLDER_PATH, "test_mission.yml"),
+            mission_file_path=(DATA_FOLDER_PATH / "test_mission.yml").as_posix(),
             mission_name="without_route",
             adjust_fuel=True,
             reference_area_variable="data:geometry:aircraft:reference_area",

@@ -2,7 +2,7 @@
 Test module for bundle_loader.py
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,7 +15,7 @@ Test module for bundle_loader.py
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import os.path as pth
+from pathlib import Path
 
 import pelix
 import pytest
@@ -27,12 +27,12 @@ from ..exceptions import (
     FastBundleLoaderUnknownFactoryNameError,
 )
 
-_LOGGER = logging.getLogger(__name__)
-"""Logger for this module"""
+_LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 logging.basicConfig(level=logging.DEBUG)
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
+
+DATA_FOLDER_PATH = Path(__file__).parent / "data"
 
 
 @pytest.fixture()
@@ -105,7 +105,7 @@ def test_install_packages(delete_framework):
     """
     loader = BundleLoader()
 
-    loader.explore_folder(pth.join(DATA_FOLDER_PATH, "dummy_pelix_bundles"))
+    loader.explore_folder((DATA_FOLDER_PATH / "dummy_pelix_bundles").as_posix())
     assert (
         loader.framework.get_bundle_by_name("dummy_pelix_bundles.hello_world_with_decorators")
         is not None
@@ -128,7 +128,7 @@ def test_install_packages_on_faulty_install(delete_framework):
     sys.modules["numpy.random.mtrand"].__path__ = None
 
     # Install packages
-    loader.explore_folder(pth.join(DATA_FOLDER_PATH, "dummy_pelix_bundles"))
+    loader.explore_folder((DATA_FOLDER_PATH / "dummy_pelix_bundles").as_posix())
     assert (
         loader.framework.get_bundle_by_name("dummy_pelix_bundles.hello_world_with_decorators")
         is not None
@@ -144,7 +144,7 @@ def test_register_factory(delete_framework):
     """
 
     loader = BundleLoader()
-    loader.explore_folder(pth.join(DATA_FOLDER_PATH, "dummy_pelix_bundles"))
+    loader.explore_folder((DATA_FOLDER_PATH / "dummy_pelix_bundles").as_posix())
 
     class Greetings1:
         def hello(self, name="World"):
@@ -160,7 +160,7 @@ def test_get_services(delete_framework):
     Tests the method for retrieving services according to properties
     """
     loader = BundleLoader()
-    loader.explore_folder(pth.join(DATA_FOLDER_PATH, "dummy_pelix_bundles"))
+    loader.explore_folder((DATA_FOLDER_PATH / "dummy_pelix_bundles").as_posix())
 
     # Missing service
     services = loader.get_services("does.not.exists")
@@ -206,7 +206,7 @@ def test_instantiate_component(delete_framework):
     Tests the method for instantiating a component from factory name
     """
     loader = BundleLoader()
-    loader.explore_folder(pth.join(DATA_FOLDER_PATH, "dummy_pelix_bundles"))
+    loader.explore_folder((DATA_FOLDER_PATH / "dummy_pelix_bundles").as_posix())
 
     with pytest.raises(FastBundleLoaderUnknownFactoryNameError):
         unknown = loader.instantiate_component("the-unknown-hello-world-factory")
@@ -230,7 +230,7 @@ def test_get_factory_names(delete_framework):
     Tests the method for retrieving factories according to properties
     """
     loader = BundleLoader()
-    loader.explore_folder(pth.join(DATA_FOLDER_PATH, "dummy_pelix_bundles"))
+    loader.explore_folder((DATA_FOLDER_PATH / "dummy_pelix_bundles").as_posix())
 
     # Missing service
     factory_names = loader.get_factory_names("does.not.exists")

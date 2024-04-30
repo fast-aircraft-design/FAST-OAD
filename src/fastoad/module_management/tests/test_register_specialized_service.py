@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -11,15 +11,15 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
+
+from pathlib import Path
 
 import pytest
 
 from ..exceptions import FastBundleLoaderUnknownFactoryNameError, FastIncompatibleServiceClassError
 from ..service_registry import RegisterSpecializedService
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
-
+DATA_FOLDER_PATH = Path(__file__).parent / "data"
 
 # Initialization of services ###############
 class DummyBase:
@@ -41,7 +41,7 @@ class RegisterDummyServiceB(
 @pytest.fixture(scope="module")
 def load():
     """Loads components"""
-    RegisterSpecializedService.explore_folder(pth.join(DATA_FOLDER_PATH, "dummy_services"))
+    RegisterSpecializedService.explore_folder((DATA_FOLDER_PATH / "dummy_services").as_posix())
 
 
 def test_get_provider_ids_without_explore_folders():

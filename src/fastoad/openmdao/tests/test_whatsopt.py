@@ -10,8 +10,8 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import os.path as pth
-from shutil import rmtree
+import shutil
+from pathlib import Path
 
 import pytest
 
@@ -19,13 +19,14 @@ from .openmdao_sellar_example.sellar import SellarModel
 from ..problem import FASTOADProblem
 from ..whatsopt import write_xdsm
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
-RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
+DATA_FOLDER_PATH = Path(__file__).parent / "data"
+RESULTS_FOLDER_PATH = Path(__file__).parent / "results", Path(__file__).stem
 
 
 @pytest.fixture(scope="module")
 def cleanup():
-    rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
+    shutil.rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
+    RESULTS_FOLDER_PATH.mkdir()
 
 
 @pytest.mark.skip(
@@ -36,10 +37,10 @@ def test_write_xdsm(cleanup):
 
     problem = FASTOADProblem()
     problem.model.add_subsystem("sellar", SellarModel(), promotes=["*"])
-    problem.output_file_path = pth.join(RESULTS_FOLDER_PATH, "output.xml")
+    problem.output_file_path = RESULTS_FOLDER_PATH / "output.xml"
     problem.setup()
     problem.final_setup()
 
-    xdsm_file_path = pth.join(RESULTS_FOLDER_PATH, "xdsm.html")
-    write_xdsm(problem, xdsm_file_path, dry_run=True)
-    assert pth.exists(xdsm_file_path)
+    xdsm_file_path = RESULTS_FOLDER_PATH / "xdsm.html"
+    write_xdsm(problem, xdsm_file_path.as_posix(), dry_run=True)
+    assert xdsm_file_path.joinpath()

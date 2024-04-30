@@ -2,7 +2,7 @@
 Test module for translator.py
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,17 +14,19 @@ Test module for translator.py
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
+from pathlib import Path
 
 import pytest
 
 from ..exceptions import (
-    FastXpathTranslatorInconsistentLists,
     FastXpathTranslatorDuplicates,
-    FastXpathTranslatorXPathError,
+    FastXpathTranslatorInconsistentLists,
     FastXpathTranslatorVariableError,
+    FastXpathTranslatorXPathError,
 )
 from ..translator import VarXpathTranslator
+
+DATA_FOLDER_PATH = Path(__file__).parent / "data"
 
 
 def test_translator_with_set():
@@ -80,7 +82,7 @@ def test_translator_with_set():
 def test_translator_with_read():
     """Tests VarXpathTranslator using read() for providing translation data"""
 
-    data_file = pth.join(pth.dirname(__file__), "data", "custom_translation.txt")
+    data_file = DATA_FOLDER_PATH / "custom_translation.txt"
     translator = VarXpathTranslator()
     translator.read_translation_table(data_file)
 

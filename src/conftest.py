@@ -2,7 +2,7 @@
     Basic settings for tests
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,8 +17,8 @@
 # Note: this file has to be put in src/, not in project root folder, to ensure that
 # `pytest src` will run OK after a `pip install .`
 
-import os.path as pth
 import sys
+from pathlib import Path
 from platform import system
 from shutil import which
 from typing import List, Optional
@@ -27,16 +27,14 @@ from unittest.mock import Mock
 import pytest
 import wrapt
 
+from fastoad._utils.files import as_path
+
 if sys.version_info >= (3, 10):
     import importlib.metadata as importlib_metadata
 else:
     import importlib_metadata
 
 from fastoad.module_management._plugins import FastoadLoader, MODEL_PLUGIN_ID
-
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
-RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "api", "results")
-CONFIGURATION_FILE_PATH = pth.join(DATA_FOLDER_PATH, "sellar.yml")
 
 
 @pytest.fixture(autouse=True)
@@ -51,7 +49,7 @@ def no_xfoil_skip(request, xfoil_path):
 
 
 @pytest.fixture
-def xfoil_path() -> Optional[str]:
+def xfoil_path() -> Optional[Path]:
     """
     On a system that is not Windows, a XFOIL executable with name "xfoil" can
     be put in "<project_root>/tests/xfoil_exe/".
@@ -63,19 +61,19 @@ def xfoil_path() -> Optional[str]:
         # On Windows, we use the embedded executable
         return None
 
-    path = pth.abspath(pth.join("tests/xfoil_exe", "xfoil"))
-    if pth.exists(path):
+    path = Path("tests/xfoil_exe", "xfoil").resolve()
+    if path.exists():
         # If there is a local xfoil, use it
         return path
 
     # Otherwise, use one that is in PATH, if it exists
-    return which("xfoil")
+    return as_path(which("xfoil"))
 
 
 @pytest.fixture
-def plugin_root_path() -> str:
+def plugin_root_path() -> Path:
     """Returns the path to dummy plugins, for check purpose."""
-    return pth.abspath("tests/dummy_plugins")
+    return (Path(__file__).parent.parent / "tests" / "dummy_plugins").resolve()
 
 
 @pytest.fixture

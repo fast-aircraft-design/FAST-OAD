@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -11,8 +11,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
-from shutil import rmtree
+import shutil
+from pathlib import Path
 from typing import IO, Union
 
 import openmdao.api as om
@@ -22,13 +22,12 @@ from .. import IVariableIOFormatter
 from ..variable_io import DataFile
 from ...openmdao.variables import Variable, VariableList
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
-RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
+RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
 
 
 @pytest.fixture(scope="module")
 def cleanup():
-    rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
+    shutil.rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
 @pytest.fixture(scope="module")
@@ -54,7 +53,7 @@ class DummyFormatter(IVariableIOFormatter):
 
 
 def test_datafile_save_read(cleanup, variables_ref):
-    file_path = pth.join(RESULTS_FOLDER_PATH, "dummy_data_file.xml")
+    file_path = (RESULTS_FOLDER_PATH / "dummy_data_file.xml").as_posix()
     with pytest.raises(FileNotFoundError) as exc_info:
         _ = DataFile(file_path)
     assert exc_info.value.args[0] == f'File "{file_path}" is unavailable for reading.'

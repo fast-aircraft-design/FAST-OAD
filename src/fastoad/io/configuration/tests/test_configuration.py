@@ -15,9 +15,8 @@ Test module for configuration.py
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
-import os.path as pth
 import shutil
-from shutil import rmtree
+from pathlib import Path
 
 import pytest
 import tomlkit
@@ -33,13 +32,13 @@ from ..exceptions import (
     FASTConfigurationBadOpenMDAOInstructionError,
 )
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
-RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
+DATA_FOLDER_PATH = Path(__file__).parent / "data"
+RESULTS_FOLDER_PATH = Path(__file__).parent / "results"
 
 
 @pytest.fixture(scope="module")
 def cleanup():
-    rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
+    shutil.rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
     yield
     FastoadLoader.load()
 
@@ -54,7 +53,7 @@ def test_problem_definition_no_input_file(cleanup):
         clear_openmdao_registry()
         conf = FASTOADProblemConfigurator()
         with pytest.raises(ValidationError) as exc_info:
-            conf.load(pth.join(DATA_FOLDER_PATH, "missing_input_file.%s" % extension))
+            conf.load(DATA_FOLDER_PATH / f"missing_input_file.{extension}")
         assert exc_info.value.message == "'input_file' is a required property"
 
 
@@ -63,7 +62,7 @@ def test_problem_definition_no_output_file(cleanup):
         clear_openmdao_registry()
         conf = FASTOADProblemConfigurator()
         with pytest.raises(ValidationError) as exc_info:
-            conf.load(pth.join(DATA_FOLDER_PATH, "missing_output_file.%s" % extension))
+            conf.load(DATA_FOLDER_PATH / f"missing_output_file.{extension}")
         assert exc_info.value.message == "'output_file' is a required property"
 
 
@@ -72,7 +71,7 @@ def test_problem_definition_no_model(cleanup):
         clear_openmdao_registry()
         conf = FASTOADProblemConfigurator()
         with pytest.raises(ValidationError) as exc_info:
-            conf.load(pth.join(DATA_FOLDER_PATH, "missing_model.%s" % extension))
+            conf.load(DATA_FOLDER_PATH / f"missing_model.{extension}")
         assert exc_info.value.message == "'model' is a required property"
 
 
@@ -80,7 +79,7 @@ def test_problem_definition_incorrect_attribute(cleanup):
     for extension in ["toml", "yml"]:
         clear_openmdao_registry()
         conf = FASTOADProblemConfigurator()
-        conf.load(pth.join(DATA_FOLDER_PATH, "invalid_attribute.%s" % extension))
+        conf.load(DATA_FOLDER_PATH / f"invalid_attribute.{extension}")
         with pytest.raises(FASTConfigurationBadOpenMDAOInstructionError) as exc_info:
             problem = conf.get_problem(read_inputs=False)
         assert exc_info.value.key == "model.cycle.other_group.nonlinear_solver"
@@ -90,7 +89,7 @@ def test_problem_definition_no_module_folder(cleanup):
     for extension in ["toml", "yml"]:
         clear_openmdao_registry()
         conf = FASTOADProblemConfigurator()
-        conf.load(pth.join(DATA_FOLDER_PATH, "no_module_folder.%s" % extension))
+        conf.load(DATA_FOLDER_PATH / f"no_module_folder.{extension}")
         with pytest.raises(FastBundleLoaderUnknownFactoryNameError) as exc_info:
             conf.get_problem()
         assert exc_info.value.factory_name == "configuration_test.sellar.functions"
@@ -100,9 +99,7 @@ def test_problem_definition_module_folder_as_one_string(cleanup):
     for extension in ["toml", "yml"]:
         clear_openmdao_registry()
         conf = FASTOADProblemConfigurator()
-        conf.load(
-            pth.join(pth.dirname(__file__), "data", "module_folder_as_one_string.%s" % extension)
-        )
+        conf.load(Path(__file__).parent / "data" / f"module_folder_as_one_string.{extension}")
         conf.get_problem()
 
 
@@ -110,22 +107,22 @@ def test_problem_definition_correct_configuration(cleanup):
     for extension in ["toml", "yml"]:
         clear_openmdao_registry()
         conf = FASTOADProblemConfigurator()
-        conf.load(pth.join(DATA_FOLDER_PATH, "valid_sellar.%s" % extension))
-        assert conf.input_file_path == pth.join(RESULTS_FOLDER_PATH, "inputs.xml")
-        assert conf.output_file_path == pth.join(RESULTS_FOLDER_PATH, "outputs.xml")
+        conf.load(DATA_FOLDER_PATH / f"valid_sellar.{extension}")
+        assert Path(conf.input_file_path) == RESULTS_FOLDER_PATH / "inputs.xml"
+        assert Path(conf.output_file_path) == RESULTS_FOLDER_PATH / "outputs.xml"
 
 
 def test_problem_definition_with_xml_ref(cleanup, caplog):
     """Tests what happens when writing inputs using data from existing XML file"""
     for extension in ["yml", "toml"]:
         clear_openmdao_registry()
-        conf = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "valid_sellar.%s" % extension))
+        conf = FASTOADProblemConfigurator(DATA_FOLDER_PATH / f"valid_sellar.{extension}")
 
-        result_folder_path = pth.join(RESULTS_FOLDER_PATH, "problem_definition_with_xml_ref")
-        conf.input_file_path = pth.join(result_folder_path, "inputs.xml")
-        conf.output_file_path = pth.join(result_folder_path, "outputs.xml")
-        ref_input_data_path_with_nan = pth.join(DATA_FOLDER_PATH, "ref_inputs_with_nan.xml")
-        ref_input_data_path = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
+        result_folder_path = RESULTS_FOLDER_PATH / "problem_definition_with_xml_ref"
+        conf.input_file_path = (result_folder_path / "inputs.xml").as_posix()
+        conf.output_file_path = (result_folder_path / "outputs.xml").as_posix()
+        ref_input_data_path_with_nan = (DATA_FOLDER_PATH / "ref_inputs_with_nan.xml").as_posix()
+        ref_input_data_path = (DATA_FOLDER_PATH / "ref_inputs.xml").as_posix()
 
         # Test that the presence of NaN values in inputs logs a warning
         caplog.clear()
@@ -158,10 +155,10 @@ def test_problem_definition_with_xml_ref(cleanup, caplog):
 
         # Test with alternate submodel #########################################
         alt_conf = FASTOADProblemConfigurator(
-            pth.join(DATA_FOLDER_PATH, "valid_sellar_alternate.%s" % extension)
+            DATA_FOLDER_PATH / f"valid_sellar_alternate.{extension}"
         )
-        alt_conf.input_file_path = pth.join(result_folder_path, "inputs.xml")
-        alt_conf.output_file_path = pth.join(result_folder_path, "outputs_alt.xml")
+        alt_conf.input_file_path = (result_folder_path / "inputs.xml").as_posix()
+        alt_conf.output_file_path = (result_folder_path / "outputs_alt.xml").as_posix()
         alt_problem = alt_conf.get_problem(read_inputs=True, auto_scaling=True)
         # runs evaluation without optimization loop to check that inputs are taken into account
         alt_problem.setup()
@@ -186,16 +183,14 @@ def test_problem_definition_with_xml_ref_with_indep(cleanup):
     """Tests what happens when writing inputs of a problem with indeps using data from existing XML file"""
     for extension in ["toml", "yml"]:
         clear_openmdao_registry()
-        conf = FASTOADProblemConfigurator(
-            pth.join(DATA_FOLDER_PATH, "valid_sellar_with_indep.%s" % extension)
-        )
+        conf = FASTOADProblemConfigurator(DATA_FOLDER_PATH / f"valid_sellar_with_indep.{extension}")
 
-        result_folder_path = pth.join(
-            RESULTS_FOLDER_PATH, "problem_definition_with_xml_ref_with_indep"
+        result_folder_path = RESULTS_FOLDER_PATH.joinpath(
+            "problem_definition_with_xml_ref_with_indep"
         )
-        conf.input_file_path = pth.join(result_folder_path, "inputs.xml")
-        conf.output_file_path = pth.join(result_folder_path, "outputs.xml")
-        ref_input_data_path = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
+        conf.input_file_path = (result_folder_path / "inputs.xml").as_posix()
+        conf.output_file_path = (result_folder_path / "outputs.xml").as_posix()
+        ref_input_data_path = (DATA_FOLDER_PATH / "ref_inputs.xml").as_posix()
         conf.write_needed_inputs(ref_input_data_path)
         input_data = DataFile(conf.input_file_path)
         assert len(input_data) == 2
@@ -215,13 +210,13 @@ def test_problem_definition_with_xml_ref_with_indep(cleanup):
 # FIXME: this test should be reworked and moved to test_problem
 def test_problem_definition_with_custom_xml(cleanup):
     """Tests what happens when writing inputs using existing XML with some unwanted var"""
-    conf = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "valid_sellar.toml"))
+    conf = FASTOADProblemConfigurator(DATA_FOLDER_PATH / "valid_sellar.toml")
 
-    result_folder_path = pth.join(RESULTS_FOLDER_PATH, "problem_definition_with_custom_xml")
-    conf.input_file_path = pth.join(result_folder_path, "inputs.xml")
-    conf.output_file_path = pth.join(result_folder_path, "outputs.xml")
+    result_folder_path = RESULTS_FOLDER_PATH / "problem_definition_with_custom_xml"
+    conf.input_file_path = (result_folder_path / "inputs.xml").as_posix()
+    conf.output_file_path = (result_folder_path / "outputs.xml").as_posix()
 
-    input_data = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
+    input_data = DATA_FOLDER_PATH / "ref_inputs.xml"
     os.makedirs(result_folder_path, exist_ok=True)
     shutil.copy(input_data, conf.input_file_path)
 
@@ -240,13 +235,13 @@ def test_problem_definition_with_xml_ref_run_optim(cleanup):
     """
     for extension in ["toml", "yml"]:
         clear_openmdao_registry()
-        conf = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "valid_sellar.%s" % extension))
+        conf = FASTOADProblemConfigurator(DATA_FOLDER_PATH / f"valid_sellar.{extension}")
 
-        result_folder_path = pth.join(
-            RESULTS_FOLDER_PATH, "problem_definition_with_xml_ref_run_optim"
+        result_folder_path = RESULTS_FOLDER_PATH.joinpath(
+            "problem_definition_with_xml_ref_run_optim"
         )
-        conf.input_file_path = pth.join(result_folder_path, "inputs.xml")
-        input_data = pth.join(DATA_FOLDER_PATH, "ref_inputs.xml")
+        conf.input_file_path = (result_folder_path / "inputs.xml").as_posix()
+        input_data = (DATA_FOLDER_PATH / "ref_inputs.xml").as_posix()
         conf.write_needed_inputs(input_data)
 
         # Runs optimization problem with semi-analytic FD
@@ -256,7 +251,7 @@ def test_problem_definition_with_xml_ref_run_optim(cleanup):
         assert problem1["f"] == pytest.approx(28.58830817, abs=1e-6)
         problem1.run_driver()
         assert problem1["f"] == pytest.approx(3.18339395, abs=1e-6)
-        problem1.output_file_path = pth.join(result_folder_path, "outputs_1.xml")
+        problem1.output_file_path = (result_folder_path / "outputs_1.xml").as_posix()
         problem1.write_outputs()
 
         # Runs optimization problem with monolithic FD
@@ -267,7 +262,7 @@ def test_problem_definition_with_xml_ref_run_optim(cleanup):
         assert problem2["f"] == pytest.approx(28.58830817, abs=1e-6)
         problem2.run_driver()
         assert problem2["f"] == pytest.approx(3.18339395, abs=1e-6)
-        problem2.output_file_path = pth.join(result_folder_path, "outputs_2.xml")
+        problem2.output_file_path = (result_folder_path / "outputs_2.xml").as_posix()
         problem2.write_outputs()
 
 
@@ -277,8 +272,8 @@ def test_set_optimization_definition(cleanup):
     """
     for extension in ["toml", "yml"]:
         clear_openmdao_registry()
-        reference_file = pth.join(DATA_FOLDER_PATH, "valid_sellar.%s" % extension)
-        editable_file = pth.join(RESULTS_FOLDER_PATH, "editable_valid_sellar.%s" % extension)
+        reference_file = DATA_FOLDER_PATH / f"valid_sellar.{extension}"
+        editable_file = RESULTS_FOLDER_PATH / f"editable_valid_sellar.{extension}"
 
         conf = FASTOADProblemConfigurator(reference_file)
 
