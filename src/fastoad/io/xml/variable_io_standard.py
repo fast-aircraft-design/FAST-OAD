@@ -2,7 +2,7 @@
 Defines how OpenMDAO variables are serialized to XML
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,7 +13,9 @@ Defines how OpenMDAO variables are serialized to XML
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import logging
+from io import IOBase
 from typing import Union, IO
 
 from fastoad.openmdao.variables import VariableList
@@ -74,7 +76,7 @@ class VariableXmlStandardFormatter(VariableXmlBaseFormatter):
     def path_separator(self, separator):
         self._translator.path_separator = separator
 
-    def read_variables(self, data_source: Union[str, IO]) -> VariableList:
+    def read_variables(self, data_source: Union[str, IO, IOBase]) -> VariableList:
         # Check separator, as OpenMDAO won't accept the dot.
         if self.path_separator == ".":
             _LOGGER.warning(
@@ -82,7 +84,7 @@ class VariableXmlStandardFormatter(VariableXmlBaseFormatter):
             )
         return super().read_variables(data_source)
 
-    def write_variables(self, data_source: Union[str, IO], variables: VariableList):
+    def write_variables(self, data_source: Union[str, IO, IOBase], variables: VariableList):
         try:
             super().write_variables(data_source, variables)
         except FastXPathEvalError as err:

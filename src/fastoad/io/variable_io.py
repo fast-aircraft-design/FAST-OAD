@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -12,8 +12,9 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fnmatch import fnmatchcase
+from io import IOBase
 from os.path import exists, isfile
-from typing import IO, List, Sequence, Union
+from typing import List, Sequence, Union, IO, Optional
 
 from fastoad.openmdao.variables import VariableList
 from . import IVariableIOFormatter
@@ -32,7 +33,9 @@ class VariableIO:
                       VariableBasicXmlFormatter instance.
     """
 
-    def __init__(self, data_source: Union[str, IO], formatter: IVariableIOFormatter = None):
+    def __init__(
+        self, data_source: Optional[Union[str, IO, IOBase]], formatter: IVariableIOFormatter = None
+    ):
         self.data_source = data_source
         self.formatter: IVariableIOFormatter = (
             formatter if formatter else VariableXmlStandardFormatter()
@@ -135,7 +138,7 @@ class DataFile(VariableList):
 
     def __init__(
         self,
-        data_source: Union[str, IO, list] = None,
+        data_source: Union[str, IO, IOBase, list] = None,
         formatter: IVariableIOFormatter = None,
         load_data=True,
     ):
@@ -156,7 +159,7 @@ class DataFile(VariableList):
         """
         super().__init__()
         self._variable_io = VariableIO(None, formatter)
-        if isinstance(data_source, (str, IO)):
+        if isinstance(data_source, (str, IO, IOBase)):
             self.file_path = data_source
             if load_data:
                 self.load()

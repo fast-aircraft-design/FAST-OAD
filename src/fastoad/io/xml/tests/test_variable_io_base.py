@@ -47,7 +47,7 @@ def cleanup():
     shutil.rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
-def _check_basic2_vars(outputs: VariableList):
+def _check_basic_vars(outputs: VariableList):
     """Checks that provided IndepVarComp instance matches content of data/custom.xml file"""
 
     assert len(outputs) == 5
@@ -89,45 +89,57 @@ def test_custom_xml_read_and_write_from_ivc(cleanup):
 
     # test read ---------------------------------------------------------------
 
-    filename = (DATA_FOLDER_PATH / "custom.xml").as_posix()
+    file_path = (DATA_FOLDER_PATH / "custom.xml").as_posix()
 
     translator = VarXpathTranslator(variable_names=var_names, xpaths=xpaths)
-    xml_read = VariableIO(filename, formatter=VariableXmlBaseFormatter(translator))
-    vars = xml_read.read()
-    _check_basic2_vars(vars)
+    xml_read = VariableIO(file_path, formatter=VariableXmlBaseFormatter(translator))
+    var_list = xml_read.read()
+    _check_basic_vars(var_list)
 
     # test with a non-exhaustive translation table (missing variable name in the translator)
     # we expect that the variable is not included in the ivc
-    filename = (DATA_FOLDER_PATH / "custom_additional_var.xml").as_posix()
-    xml_read = VariableIO(filename, formatter=VariableXmlBaseFormatter(translator))
-    vars = xml_read.read()
-    _check_basic2_vars(vars)
+    file_path = (DATA_FOLDER_PATH / "custom_additional_var.xml").as_posix()
+    xml_read = VariableIO(file_path, formatter=VariableXmlBaseFormatter(translator))
+    var_list = xml_read.read()
+    _check_basic_vars(var_list)
 
     # test with setting a translation with an additional var not present in the xml
-    filename = (DATA_FOLDER_PATH / "custom.xml").as_posix()
+    file_path = (DATA_FOLDER_PATH / "custom.xml").as_posix()
     xml_read = VariableIO(
-        filename,
+        file_path,
         formatter=VariableXmlBaseFormatter(
             VarXpathTranslator(
                 variable_names=var_names + ["additional_var"], xpaths=xpaths + ["bad:xpath"]
             )
         ),
     )
-    vars = xml_read.read()
-    _check_basic2_vars(vars)
+    var_list = xml_read.read()
+    _check_basic_vars(var_list)
+
+    # Check using text file object --------------------
+    with open(file_path) as text_file_io:
+        var_list_2 = VariableIO(text_file_io, formatter=VariableXmlBaseFormatter(translator)).read()
+    assert var_list_2 == var_list
+
+    # Check using binary file object --------------------
+    with open(file_path, "rb") as binary_file_io:
+        var_list_3 = VariableIO(
+            binary_file_io, formatter=VariableXmlBaseFormatter(translator)
+        ).read()
+    assert var_list_3 == var_list
 
     # test write --------------------------------------------------------------
     new_filename = result_folder / "custom.xml"
     translator = VarXpathTranslator(variable_names=var_names, xpaths=xpaths)
     xml_write = VariableIO(new_filename.as_posix(), formatter=VariableXmlBaseFormatter(translator))
-    xml_write.write(vars)
+    xml_write.write(var_list)
 
     # check written data
     assert new_filename.is_file()
     translator.set(var_names, xpaths)
     xml_check = VariableIO(new_filename.as_posix(), formatter=VariableXmlBaseFormatter(translator))
     new_ivc = xml_check.read()
-    _check_basic2_vars(new_ivc)
+    _check_basic_vars(new_ivc)
 
 
 def test_custom_xml_read_and_write_with_translation_table(cleanup):
@@ -143,7 +155,7 @@ def test_custom_xml_read_and_write_with_translation_table(cleanup):
     translator = VarXpathTranslator(source=DATA_FOLDER_PATH / "custom_translation.txt")
     xml_read = VariableIO(filename.as_posix(), formatter=VariableXmlBaseFormatter(translator))
     vars = xml_read.read()
-    _check_basic2_vars(vars)
+    _check_basic_vars(vars)
 
     new_filename = result_folder / "custom.xml"
     xml_write = VariableIO(new_filename.as_posix(), formatter=VariableXmlBaseFormatter(translator))

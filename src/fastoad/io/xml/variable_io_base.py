@@ -2,7 +2,7 @@
 Defines how OpenMDAO variables are serialized to XML using a conversion table
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,6 +17,7 @@ Defines how OpenMDAO variables are serialized to XML using a conversion table
 import json
 import logging
 import re
+from io import IOBase
 from typing import IO, Union
 
 import numpy as np
@@ -84,10 +85,10 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
             "°": "deg",
             "°C": "degC",
             "kt": "kn",
-            "\bin\b": "inch",
+            r"\bin\b": "inch",
         }
 
-    def read_variables(self, data_source: Union[str, IO]) -> VariableList:
+    def read_variables(self, data_source: Union[str, IO, IOBase]) -> VariableList:
         variables = VariableList()
 
         # If there is a comment, it will be used as description if the previous
@@ -145,7 +146,7 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
 
         return variables
 
-    def write_variables(self, data_source: Union[str, IO], variables: VariableList):
+    def write_variables(self, data_source: Union[str, IO, IOBase], variables: VariableList):
 
         root = etree.Element(ROOT_TAG)
 

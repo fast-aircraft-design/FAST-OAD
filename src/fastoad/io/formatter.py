@@ -1,5 +1,8 @@
+"""
+Base class for VariableIOFormatter objects.
+"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -12,6 +15,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from abc import ABC, abstractmethod
+from io import IOBase
 from typing import Union, IO
 
 from fastoad.openmdao.variables import VariableList
@@ -25,7 +29,7 @@ class IVariableIOFormatter(ABC):
     """
 
     @abstractmethod
-    def read_variables(self, data_source: Union[str, IO]) -> VariableList:
+    def read_variables(self, data_source: Union[str, IO, IOBase]) -> VariableList:
         """
         Reads variables from provided data source file.
 
@@ -34,7 +38,7 @@ class IVariableIOFormatter(ABC):
         """
 
     @abstractmethod
-    def write_variables(self, data_source: Union[str, IO], variables: VariableList):
+    def write_variables(self, data_source: Union[str, IO, IOBase], variables: VariableList):
         """
         Writes variables to defined data source file.
 
