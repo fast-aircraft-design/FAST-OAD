@@ -11,6 +11,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 from fnmatch import fnmatchcase
 from io import IOBase
 from os.path import exists, isfile
@@ -21,6 +22,8 @@ from . import IVariableIOFormatter
 from .xml import VariableXmlStandardFormatter
 from ..exceptions import FastError
 
+_LOGGER = logging.getLogger(__name__)  # Logger for this module
+
 
 class VariableIO:
     """
@@ -28,7 +31,7 @@ class VariableIO:
 
     The file format is defined by the class provided as `formatter` argument.
 
-    :param data_source: the I/O stream, or a file path, used for reading or writing data
+    :param data_source: I/O stream, or file path, used for reading or writing data
     :param formatter: a class that determines the file format to be used. Defaults to a
                       VariableBasicXmlFormatter instance.
     """
@@ -36,12 +39,24 @@ class VariableIO:
     def __init__(
         self, data_source: Optional[Union[str, IO, IOBase]], formatter: IVariableIOFormatter = None
     ):
-        self.data_source = data_source
-        self.formatter: IVariableIOFormatter = (
-            formatter if formatter else VariableXmlStandardFormatter()
-        )
+        if isinstance(data_source, (str, PathLike)):
+            data_source = as_path(data_source)
 
-    def read(self, only: List[str] = None, ignore: List[str] = None) -> VariableList:
+        #: I/O stream, or file path, used for reading or writing data
+        self.data_source = data_source
+
+        self.formatter = formatter
+
+    @property
+    def formatter(self) -> IVariableIOFormatter:
+        """Class that determines the file format to be used."""
+        return self._formatter
+
+    @formatter.setter
+    def formatter(self, formatter: IVariableIOFormatter):
+        self._formatter = formatter if formatter else VariableXmlStandardFormatter()
+
+    def read(self, only: List[str] = None, ignore: List[str] = None) -> Optional[VariableList]:
         """
         Reads variables from provided data source.
 
@@ -51,12 +66,13 @@ class VariableIO:
         :param only: List of variable names that should be read. Other names will be
                      ignored. If None, all variables will be read.
         :param ignore: List of variable names that should be ignored when reading.
-        :return: an VariableList instance where outputs have been defined using provided source
+        :return: a VariableList instance where outputs have been defined using provided source.
         """
         if isinstance(self.data_source, str) and not isfile(self.data_source):
             raise FileNotFoundError(
                 f'File "{self.data_source}" is unavailable for reading.'
             ) from FastError()
+
         variables = self.formatter.read_variables(self.data_source)
         used_variables = self._filter_variables(variables, only=only, ignore=ignore)
         return used_variables
@@ -158,7 +174,10 @@ class DataFile(VariableList):
                           instantiation.
         """
         super().__init__()
-        self._variable_io = VariableIO(None, formatter)
+
+        self._variable_io = None
+        self.formatter = formatter
+
         if isinstance(data_source, (str, IO, IOBase)):
             self.file_path = data_source
             if load_data:
@@ -169,20 +188,24 @@ class DataFile(VariableList):
     @property
     def file_path(self) -> str:
         """Path of data file."""
-        return self._variable_io.data_source
+        return self._variable_io.data_source if self._variable_io else None
 
     @file_path.setter
     def file_path(self, value: str):
-        self._variable_io.data_source = value
+        self._variable_io = VariableIO(value, self.formatter)
 
     @property
     def formatter(self) -> IVariableIOFormatter:
         """Class that defines the file format."""
-        return self._variable_io.formatter
+        if self._variable_io:
+            self._formatter = self._variable_io.formatter
+        return self._formatter
 
     @formatter.setter
     def formatter(self, value: IVariableIOFormatter):
-        self._variable_io.formatter = value
+        self._formatter = value
+        if self._variable_io:
+            self._variable_io.formatter = value
 
     def load(self):
         """Loads file content."""
@@ -209,7 +232,7 @@ class DataFile(VariableList):
         """
         if not overwrite and exists(file_path):
             raise FileExistsError(f'File "{file_path}" already exists.') from FastError()
-        if formatter:
-            self.formatter = formatter
-        self.file_path = file_path
+
+        self._variable_io = VariableIO(file_path, formatter)
+
         self.save()
