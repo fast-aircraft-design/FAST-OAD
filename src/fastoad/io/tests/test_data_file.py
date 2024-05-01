@@ -13,8 +13,9 @@
 
 import shutil
 from io import IOBase
+from os import PathLike
 from pathlib import Path
-from typing import Union
+from typing import Union, IO
 
 import openmdao.api as om
 import pytest
@@ -44,12 +45,14 @@ class DummyFormatter(IVariableIOFormatter):
     def __init__(self, variables):
         self.variables = variables
 
-    def read_variables(self, data_source: Union[str, IOBase]) -> VariableList:
+    def read_variables(self, data_source: Union[str, PathLike, IO, IOBase]) -> VariableList:
         var_list = VariableList()
         var_list.update(self.variables, add_variables=True)
         return var_list
 
-    def write_variables(self, data_source: Union[str, IOBase], variables: VariableList):
+    def write_variables(
+        self, data_source: Union[str, PathLike, IO, IOBase], variables: VariableList
+    ):
         self.variables.update(variables, add_variables=True)
 
 

@@ -14,12 +14,14 @@
 import logging
 from fnmatch import fnmatchcase
 from io import IOBase
-from os.path import exists, isfile
+from os import PathLike
+from pathlib import Path
 from typing import List, Sequence, Union, IO, Optional
 
 from fastoad.openmdao.variables import VariableList
 from . import IVariableIOFormatter
 from .xml import VariableXmlStandardFormatter
+from .._utils.files import as_path
 from ..exceptions import FastError
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
@@ -37,7 +39,9 @@ class VariableIO:
     """
 
     def __init__(
-        self, data_source: Optional[Union[str, IO, IOBase]], formatter: IVariableIOFormatter = None
+        self,
+        data_source: Optional[Union[str, PathLike, IO, IOBase]],
+        formatter: IVariableIOFormatter = None,
     ):
         if isinstance(data_source, (str, PathLike)):
             data_source = as_path(data_source)
@@ -68,7 +72,7 @@ class VariableIO:
         :param ignore: List of variable names that should be ignored when reading.
         :return: a VariableList instance where outputs have been defined using provided source.
         """
-        if isinstance(self.data_source, str) and not isfile(self.data_source):
+        if isinstance(self.data_source, Path) and not self.data_source.is_file():
             raise FileNotFoundError(
                 f'File "{self.data_source}" is unavailable for reading.'
             ) from FastError()
@@ -154,7 +158,7 @@ class DataFile(VariableList):
 
     def __init__(
         self,
-        data_source: Union[str, IO, IOBase, list] = None,
+        data_source: Union[str, PathLike, IO, IOBase, list] = None,
         formatter: IVariableIOFormatter = None,
         load_data=True,
     ):
@@ -178,7 +182,7 @@ class DataFile(VariableList):
         self._variable_io = None
         self.formatter = formatter
 
-        if isinstance(data_source, (str, IO, IOBase)):
+        if isinstance(data_source, (str, PathLike, IO, IOBase)):
             self.file_path = data_source
             if load_data:
                 self.load()
@@ -220,7 +224,12 @@ class DataFile(VariableList):
             ) from FastError()
         self._variable_io.write(self)
 
-    def save_as(self, file_path: str, overwrite=False, formatter: IVariableIOFormatter = None):
+    def save_as(
+        self,
+        file_path: Union[str, PathLike],
+        overwrite=False,
+        formatter: IVariableIOFormatter = None,
+    ):
         """
         Sets the associated file path as specified and saves current state of variables.
 
@@ -230,7 +239,8 @@ class DataFile(VariableList):
         :param formatter: a class that determines the file format to be used. Defaults to FAST-OAD
                           native format. See :class:`VariableIO` for more information.
         """
-        if not overwrite and exists(file_path):
+        file_path = as_path(file_path)
+        if not overwrite and file_path.exists():
             raise FileExistsError(f'File "{file_path}" already exists.') from FastError()
 
         self._variable_io = VariableIO(file_path, formatter)

@@ -16,6 +16,7 @@ Base class for VariableIOFormatter objects.
 
 from abc import ABC, abstractmethod
 from io import IOBase
+from os import PathLike
 from typing import Union, IO
 
 from fastoad.openmdao.variables import VariableList
@@ -29,7 +30,7 @@ class IVariableIOFormatter(ABC):
     """
 
     @abstractmethod
-    def read_variables(self, data_source: Union[str, IO, IOBase]) -> VariableList:
+    def read_variables(self, data_source: Union[str, PathLike, IO, IOBase]) -> VariableList:
         """
         Reads variables from provided data source file.
 
@@ -38,7 +39,9 @@ class IVariableIOFormatter(ABC):
         """
 
     @abstractmethod
-    def write_variables(self, data_source: Union[str, IO, IOBase], variables: VariableList):
+    def write_variables(
+        self, data_source: Union[str, PathLike, IO, IOBase], variables: VariableList
+    ):
         """
         Writes variables to defined data source file.
 
