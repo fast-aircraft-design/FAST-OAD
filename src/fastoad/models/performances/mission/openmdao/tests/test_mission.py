@@ -91,7 +91,7 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
     # Also checking behavior when is_sizing is True
 
     input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
-    ivc = DataFile(input_file_path.as_posix()).to_ivc()
+    ivc = DataFile(input_file_path).to_ivc()
 
     problem = run_system(
         AdvancedMissionComp(
@@ -160,7 +160,7 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
 def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
 
     input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
-    vars = DataFile(input_file_path.as_posix())
+    vars = DataFile(input_file_path)
     ivc = vars.to_ivc()
     ivc.add_output("data:mission:operational:ramp_weight", 70100.0, units="kg")
 
@@ -205,7 +205,7 @@ def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
 
 def test_mission_group_without_fuel_adjustment(cleanup, with_dummy_plugin_2):
     input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
-    ivc = DataFile(input_file_path.as_posix()).to_ivc()
+    ivc = DataFile(input_file_path).to_ivc()
 
     with pytest.raises(FastMissionFileMissingMissionNameError):
         run_system(
@@ -244,7 +244,7 @@ def test_mission_group_without_fuel_adjustment(cleanup, with_dummy_plugin_2):
 
 def test_mission_group_breguet_without_fuel_adjustment(cleanup, with_dummy_plugin_2):
     input_file_path = DATA_FOLDER_PATH / "test_breguet.xml"
-    ivc = DataFile(input_file_path.as_posix()).to_ivc()
+    ivc = DataFile(input_file_path).to_ivc()
 
     problem = run_system(
         OMMission(
@@ -266,7 +266,7 @@ def test_mission_group_breguet_without_fuel_adjustment(cleanup, with_dummy_plugi
 def test_mission_group_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
 
     input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
-    vars = DataFile(input_file_path.as_posix())
+    vars = DataFile(input_file_path)
     del vars["data:mission:operational:TOW"]
     ivc = vars.to_ivc()
 
@@ -313,7 +313,7 @@ def test_mission_group_breguet_with_fuel_adjustment(cleanup, with_dummy_plugin_2
     # Also checking behavior when is_sizing is True
 
     input_file_path = DATA_FOLDER_PATH / "test_breguet.xml"
-    vars = DataFile(input_file_path.as_posix())
+    vars = DataFile(input_file_path)
     del vars["data:mission:operational:ramp_weight"]
     ivc = vars.to_ivc()
 
@@ -359,7 +359,7 @@ def test_mission_group_breguet_with_fuel_adjustment(cleanup, with_dummy_plugin_2
 def test_mission_group_with_fuel_objective(cleanup, with_dummy_plugin_2):
 
     input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
-    vars = DataFile(input_file_path.as_posix())
+    vars = DataFile(input_file_path)
     ivc = vars.to_ivc()
 
     problem = run_system(
@@ -470,7 +470,7 @@ def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
 
 def test_mission_group_without_route(cleanup, with_dummy_plugin_2):
     input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
-    ivc = DataFile(input_file_path.as_posix()).to_ivc()
+    ivc = DataFile(input_file_path).to_ivc()
 
     problem = run_system(
         OMMission(

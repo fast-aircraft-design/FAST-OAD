@@ -51,7 +51,7 @@ class TestSegment(AbstractFlightSegment):
 
 def test_with_custom_segment(cleanup, with_dummy_plugin_2):
     input_file_path = DATA_FOLDER_PATH / "test_with_custom_segment.xml"
-    ivc = DataFile(input_file_path.as_posix()).to_ivc()
+    ivc = DataFile(input_file_path).to_ivc()
 
     problem = run_system(
         AdvancedMissionComp(

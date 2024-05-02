@@ -292,7 +292,7 @@ def test_generate_inputs(cleanup):
     input_file_path = Path(api.generate_inputs(CONFIGURATION_FILE_PATH, overwrite=False))
     assert input_file_path == RESULTS_FOLDER_PATH / "inputs.xml"
     assert input_file_path.exists()
-    data = DataFile(input_file_path.as_posix())
+    data = DataFile(input_file_path)
     assert len(data) == 2
     assert "x" in data.names() and "z" in data.names()
 
@@ -312,7 +312,7 @@ def test_generate_inputs(cleanup):
 
     assert input_file_path == RESULTS_FOLDER_PATH / "inputs.xml"
     assert input_file_path.exists()
-    data = DataFile(input_file_path.as_posix())
+    data = DataFile(input_file_path)
     assert len(data) == 2
     assert "x" in data.names() and "z" in data.names()
 
@@ -321,7 +321,7 @@ def test_generate_inputs(cleanup):
     input_file_path = Path(api.generate_inputs(CONFIGURATION_FILE_PATH, overwrite=True))
     assert input_file_path == RESULTS_FOLDER_PATH / "inputs.xml"
     assert input_file_path.exists()
-    data = DataFile(input_file_path.as_posix())
+    data = DataFile(input_file_path)
     assert len(data) == 2
     assert "x" in data.names() and "z" in data.names()
 
