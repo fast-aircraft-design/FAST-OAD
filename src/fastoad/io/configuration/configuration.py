@@ -19,7 +19,8 @@ import logging
 import os.path as pth
 from abc import ABC, abstractmethod
 from importlib.resources import open_text
-from typing import Dict
+from os import PathLike
+from typing import Dict, Union
 
 import openmdao.api as om
 import tomlkit
@@ -85,7 +86,7 @@ class FASTOADProblemConfigurator:
 
     @input_file_path.setter
     def input_file_path(self, file_path: str):
-        self._serializer.data[KEY_INPUT_FILE] = file_path
+        self._serializer.data[KEY_INPUT_FILE] = str(file_path)
 
     @property
     def output_file_path(self):
@@ -97,7 +98,7 @@ class FASTOADProblemConfigurator:
 
     @output_file_path.setter
     def output_file_path(self, file_path: str):
-        self._serializer.data[KEY_OUTPUT_FILE] = file_path
+        self._serializer.data[KEY_OUTPUT_FILE] = str(file_path)
 
     def get_problem(self, read_inputs: bool = False, auto_scaling: bool = False) -> FASTOADProblem:
         """
@@ -201,7 +202,9 @@ class FASTOADProblemConfigurator:
         self._serializer.write(filename)
 
     def write_needed_inputs(
-        self, source_file_path: str = None, source_formatter: IVariableIOFormatter = None
+        self,
+        source_file_path: Union[str, PathLike] = None,
+        source_formatter: IVariableIOFormatter = None,
     ):
         """
         Writes the input file of the problem with unconnected inputs of the

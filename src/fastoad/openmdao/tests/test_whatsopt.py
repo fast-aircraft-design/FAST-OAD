@@ -43,5 +43,5 @@ def test_write_xdsm(cleanup):
     problem.final_setup()
 
     xdsm_file_path = RESULTS_FOLDER_PATH / "xdsm.html"
-    write_xdsm(problem, xdsm_file_path.as_posix(), dry_run=True)
+    write_xdsm(problem, xdsm_file_path, dry_run=True)
     assert xdsm_file_path.joinpath()

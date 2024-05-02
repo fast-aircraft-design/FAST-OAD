@@ -88,7 +88,7 @@ def get_plugin_information(print_data=False) -> Dict[str, DistributionPluginDefi
 
 
 def generate_notebooks(
-    destination_path: str,
+    destination_path: Union[str, PathLike],
     overwrite: bool = False,
     distribution_name=None,
 ):
@@ -146,7 +146,7 @@ def generate_notebooks(
 
 def _generate_user_file(
     user_file_type: UserFileType,
-    user_file_path: str,
+    user_file_path: Union[str, PathLike],
     overwrite: bool = False,
     distribution_name=None,
     sample_user_file_name=None,
@@ -236,7 +236,7 @@ def _generate_user_file(
 
 
 def generate_configuration_file(
-    configuration_file_path: str,
+    configuration_file_path: Union[str, PathLike],
     overwrite: bool = False,
     distribution_name=None,
     sample_file_name=None,
@@ -264,7 +264,7 @@ def generate_configuration_file(
 
 
 def generate_source_data_file(
-    source_data_file_path: str,
+    source_data_file_path: Union[str, PathLike],
     overwrite: bool = False,
     distribution_name=None,
     sample_file_name=None,
@@ -292,8 +292,8 @@ def generate_source_data_file(
 
 
 def generate_inputs(
-    configuration_file_path: str,
-    source_data_path: str = None,
+    configuration_file_path: Union[str, PathLike],
+    source_data_path: Union[str, PathLike] = None,
     source_data_path_schema="native",
     overwrite: bool = False,
 ) -> str:
@@ -576,7 +576,11 @@ def _get_detailed_system_list():
     return cell_list
 
 
-def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: bool = False):
+def write_n2(
+    configuration_file_path: Union[str, PathLike],
+    n2_file_path: Union[str, PathLike] = None,
+    overwrite: bool = False,
+):
     """
     Write the N2 diagram of the problem in file n2.html
 
@@ -613,8 +617,8 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
 
 
 def write_xdsm(
-    configuration_file_path: str,
-    xdsm_file_path: str = None,
+    configuration_file_path: Union[str, PathLike],
+    xdsm_file_path: Union[str, PathLike] = None,
     overwrite: bool = False,
     depth: int = 2,
     wop_server_url: str = None,
@@ -707,7 +711,9 @@ def _run_problem(
     return problem
 
 
-def evaluate_problem(configuration_file_path: str, overwrite: bool = False) -> FASTOADProblem:
+def evaluate_problem(
+    configuration_file_path: Union[str, PathLike], overwrite: bool = False
+) -> FASTOADProblem:
     """
     Runs model according to provided problem file
 
@@ -720,7 +726,9 @@ def evaluate_problem(configuration_file_path: str, overwrite: bool = False) -> F
 
 
 def optimize_problem(
-    configuration_file_path: str, overwrite: bool = False, auto_scaling: bool = False
+    configuration_file_path: Union[str, PathLike],
+    overwrite: bool = False,
+    auto_scaling: bool = False,
 ) -> FASTOADProblem:
     """
     Runs driver according to provided problem file
@@ -735,7 +743,7 @@ def optimize_problem(
     return _run_problem(configuration_file_path, overwrite, "run_driver", auto_scaling=auto_scaling)
 
 
-def optimization_viewer(configuration_file_path: str):
+def optimization_viewer(configuration_file_path: Union[str, PathLike]):
     """
     Displays optimization information and enables its editing
 
@@ -750,7 +758,9 @@ def optimization_viewer(configuration_file_path: str):
     return viewer.display()
 
 
-def variable_viewer(file_path: str, file_formatter: IVariableIOFormatter = None, editable=True):
+def variable_viewer(
+    file_path: Union[str, PathLike], file_formatter: IVariableIOFormatter = None, editable=True
+):
     """
     Displays a widget that enables to visualize variables information and edit their values.
 

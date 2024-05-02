@@ -40,7 +40,7 @@ def cleanup():
 def test_write_outputs():
     problem = FASTOADProblem()
     problem.model.add_subsystem("sellar", SellarModel(), promotes=["*"])
-    problem.output_file_path = (RESULTS_FOLDER_PATH / "output.xml").as_posix()
+    problem.output_file_path = RESULTS_FOLDER_PATH / "output.xml"
     problem.setup()
 
     problem.write_outputs()
@@ -79,7 +79,7 @@ def test_problem_read_inputs_after_setup(cleanup):
     problem = FASTOADProblem()
     problem.model.add_subsystem("sellar", SellarModel(), promotes=["*"])
 
-    problem.input_file_path = (DATA_FOLDER_PATH / "ref_inputs.xml").as_posix()
+    problem.input_file_path = DATA_FOLDER_PATH / "ref_inputs.xml"
 
     problem.setup()
 
@@ -103,7 +103,7 @@ def test_problem_read_inputs_before_setup(cleanup):
     problem = FASTOADProblem()
     problem.model.add_subsystem("sellar", SellarModel(), promotes=["*"])
 
-    problem.input_file_path = (DATA_FOLDER_PATH / "ref_inputs.xml").as_posix()
+    problem.input_file_path = DATA_FOLDER_PATH / "ref_inputs.xml"
 
     problem.read_inputs()
     problem.setup()
@@ -125,7 +125,7 @@ def test_problem_with_case_recorder(cleanup):
 
     problem.model.add_subsystem("sellar", sellar, promotes=["*"])
 
-    problem.input_file_path = (DATA_FOLDER_PATH / "ref_inputs.xml").as_posix()
+    problem.input_file_path = DATA_FOLDER_PATH / "ref_inputs.xml"
 
     problem.setup()
     problem.read_inputs()
@@ -142,7 +142,7 @@ def test_problem_read_inputs_with_nan_inputs(cleanup):
     problem = FASTOADProblem()
     problem.model.add_subsystem("sellar", SellarModel(), promotes=["*"])
 
-    input_data_path = (DATA_FOLDER_PATH / "nan_inputs.xml").as_posix()
+    input_data_path = DATA_FOLDER_PATH / "nan_inputs.xml"
 
     problem.input_file_path = input_data_path
 
@@ -201,7 +201,7 @@ def test_problem_with_dynamically_shaped_inputs(cleanup):
 
     # In such case, reading inputs after the setup will make run_model fail, because dummy shapes
     # have already been provided, and will probably not match the ones in input file.
-    fastoad_problem.input_file_path = (DATA_FOLDER_PATH / "dynamic_shape_inputs_1.xml").as_posix()
+    fastoad_problem.input_file_path = DATA_FOLDER_PATH / "dynamic_shape_inputs_1.xml"
     fastoad_problem.read_inputs()
     with pytest.raises(ValueError):
         fastoad_problem.run_model()
@@ -211,7 +211,7 @@ def test_problem_with_dynamically_shaped_inputs(cleanup):
     fastoad_problem = FASTOADProblem()
     fastoad_problem.model.add_subsystem("comp1", MyComp1(), promotes=["*"])
     fastoad_problem.model.add_subsystem("comp2", MyComp2(), promotes=["*"])
-    fastoad_problem.input_file_path = (DATA_FOLDER_PATH / "dynamic_shape_inputs_1.xml").as_posix()
+    fastoad_problem.input_file_path = DATA_FOLDER_PATH / "dynamic_shape_inputs_1.xml"
     fastoad_problem.read_inputs()
     fastoad_problem.setup()
 

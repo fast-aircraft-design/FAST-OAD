@@ -2,7 +2,7 @@
 Class for managing an OpenMDAO variable.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,6 +17,7 @@ Class for managing an OpenMDAO variable.
 import logging
 import os.path as pth
 from importlib.resources import open_text
+from os import PathLike
 from typing import Dict, Hashable, Iterable, Mapping, Tuple, Union
 
 import numpy as np
@@ -136,7 +137,9 @@ class Variable(Hashable):
             self.description = self._variable_descriptions[self.name]
 
     @classmethod
-    def read_variable_descriptions(cls, file_parent: str, update_existing: bool = True):
+    def read_variable_descriptions(
+        cls, file_parent: Union[str, PathLike], update_existing: bool = True
+    ):
         """
         Reads variable descriptions in indicated folder or package, if it contains some.
 

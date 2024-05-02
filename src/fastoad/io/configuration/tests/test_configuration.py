@@ -119,10 +119,10 @@ def test_problem_definition_with_xml_ref(cleanup, caplog):
         conf = FASTOADProblemConfigurator(DATA_FOLDER_PATH / f"valid_sellar.{extension}")
 
         result_folder_path = RESULTS_FOLDER_PATH / "problem_definition_with_xml_ref"
-        conf.input_file_path = (result_folder_path / "inputs.xml").as_posix()
-        conf.output_file_path = (result_folder_path / "outputs.xml").as_posix()
-        ref_input_data_path_with_nan = (DATA_FOLDER_PATH / "ref_inputs_with_nan.xml").as_posix()
-        ref_input_data_path = (DATA_FOLDER_PATH / "ref_inputs.xml").as_posix()
+        conf.input_file_path = result_folder_path / "inputs.xml"
+        conf.output_file_path = result_folder_path / "outputs.xml"
+        ref_input_data_path_with_nan = DATA_FOLDER_PATH / "ref_inputs_with_nan.xml"
+        ref_input_data_path = DATA_FOLDER_PATH / "ref_inputs.xml"
 
         # Test that the presence of NaN values in inputs logs a warning
         caplog.clear()
@@ -157,8 +157,8 @@ def test_problem_definition_with_xml_ref(cleanup, caplog):
         alt_conf = FASTOADProblemConfigurator(
             DATA_FOLDER_PATH / f"valid_sellar_alternate.{extension}"
         )
-        alt_conf.input_file_path = (result_folder_path / "inputs.xml").as_posix()
-        alt_conf.output_file_path = (result_folder_path / "outputs_alt.xml").as_posix()
+        alt_conf.input_file_path = result_folder_path / "inputs.xml"
+        alt_conf.output_file_path = result_folder_path / "outputs_alt.xml"
         alt_problem = alt_conf.get_problem(read_inputs=True, auto_scaling=True)
         # runs evaluation without optimization loop to check that inputs are taken into account
         alt_problem.setup()
@@ -188,9 +188,9 @@ def test_problem_definition_with_xml_ref_with_indep(cleanup):
         result_folder_path = RESULTS_FOLDER_PATH.joinpath(
             "problem_definition_with_xml_ref_with_indep"
         )
-        conf.input_file_path = (result_folder_path / "inputs.xml").as_posix()
-        conf.output_file_path = (result_folder_path / "outputs.xml").as_posix()
-        ref_input_data_path = (DATA_FOLDER_PATH / "ref_inputs.xml").as_posix()
+        conf.input_file_path = result_folder_path / "inputs.xml"
+        conf.output_file_path = result_folder_path / "outputs.xml"
+        ref_input_data_path = DATA_FOLDER_PATH / "ref_inputs.xml"
         conf.write_needed_inputs(ref_input_data_path)
         input_data = DataFile(conf.input_file_path)
         assert len(input_data) == 2
@@ -213,8 +213,8 @@ def test_problem_definition_with_custom_xml(cleanup):
     conf = FASTOADProblemConfigurator(DATA_FOLDER_PATH / "valid_sellar.toml")
 
     result_folder_path = RESULTS_FOLDER_PATH / "problem_definition_with_custom_xml"
-    conf.input_file_path = (result_folder_path / "inputs.xml").as_posix()
-    conf.output_file_path = (result_folder_path / "outputs.xml").as_posix()
+    conf.input_file_path = result_folder_path / "inputs.xml"
+    conf.output_file_path = result_folder_path / "outputs.xml"
 
     input_data = DATA_FOLDER_PATH / "ref_inputs.xml"
     os.makedirs(result_folder_path, exist_ok=True)
@@ -240,8 +240,8 @@ def test_problem_definition_with_xml_ref_run_optim(cleanup):
         result_folder_path = RESULTS_FOLDER_PATH.joinpath(
             "problem_definition_with_xml_ref_run_optim"
         )
-        conf.input_file_path = (result_folder_path / "inputs.xml").as_posix()
-        input_data = (DATA_FOLDER_PATH / "ref_inputs.xml").as_posix()
+        conf.input_file_path = result_folder_path / "inputs.xml"
+        input_data = DATA_FOLDER_PATH / "ref_inputs.xml"
         conf.write_needed_inputs(input_data)
 
         # Runs optimization problem with semi-analytic FD
@@ -251,7 +251,7 @@ def test_problem_definition_with_xml_ref_run_optim(cleanup):
         assert problem1["f"] == pytest.approx(28.58830817, abs=1e-6)
         problem1.run_driver()
         assert problem1["f"] == pytest.approx(3.18339395, abs=1e-6)
-        problem1.output_file_path = (result_folder_path / "outputs_1.xml").as_posix()
+        problem1.output_file_path = result_folder_path / "outputs_1.xml"
         problem1.write_outputs()
 
         # Runs optimization problem with monolithic FD
@@ -262,7 +262,7 @@ def test_problem_definition_with_xml_ref_run_optim(cleanup):
         assert problem2["f"] == pytest.approx(28.58830817, abs=1e-6)
         problem2.run_driver()
         assert problem2["f"] == pytest.approx(3.18339395, abs=1e-6)
-        problem2.output_file_path = (result_folder_path / "outputs_2.xml").as_posix()
+        problem2.output_file_path = result_folder_path / "outputs_2.xml"
         problem2.write_outputs()
 
 

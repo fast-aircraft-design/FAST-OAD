@@ -49,7 +49,7 @@ def test_variable_reader_display():
     """
     Basic tests for testing the VariableReader display method.
     """
-    filename = (DATA_FOLDER_PATH / "problem_outputs.xml").as_posix()
+    filename = DATA_FOLDER_PATH / "problem_outputs.xml"
 
     # pylint: disable=invalid-name # that's a common naming
     df = VariableViewer()
@@ -117,7 +117,7 @@ def test_variable_reader_load():
 
     ref_df = ref_df.reset_index(drop=True)
 
-    filename = (DATA_FOLDER_PATH / "light_data.xml").as_posix()
+    filename = DATA_FOLDER_PATH / "light_data.xml"
 
     # Testing file to df
     variable_viewer = VariableViewer()
@@ -186,7 +186,7 @@ def test_variable_reader_save():
 
     ref_df = ref_df.reset_index(drop=True)
 
-    filename = (RESULTS_FOLDER_PATH / "light_data.xml").as_posix()
+    filename = RESULTS_FOLDER_PATH / "light_data.xml"
 
     # Testing file to df
     variable_viewer = VariableViewer()

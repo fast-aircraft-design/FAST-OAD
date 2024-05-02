@@ -62,7 +62,7 @@ def test_generate_notebooks_with_one_dist_plugin(
 ):
     target_path = RESULTS_FOLDER_PATH / "notebooks_1dist"
 
-    api.generate_notebooks(target_path.as_posix())
+    api.generate_notebooks(target_path)
     assert (target_path / "test_plugin_1" / "notebook_1.ipynb").is_file()
     assert (target_path / "test_plugin_4" / "notebook_1.ipynb").is_file()
     assert (target_path / "test_plugin_4" / "data").is_dir()
@@ -431,9 +431,7 @@ def test_write_xdsm(cleanup):
 
 
 def test_evaluate_problem(cleanup):
-    api.generate_inputs(
-        CONFIGURATION_FILE_PATH, (DATA_FOLDER_PATH / "inputs.xml").as_posix(), overwrite=True
-    )
+    api.generate_inputs(CONFIGURATION_FILE_PATH, DATA_FOLDER_PATH / "inputs.xml", overwrite=True)
     api.evaluate_problem(CONFIGURATION_FILE_PATH, False)
     # Running again without forcing overwrite of outputs will make it fail
     with pytest.raises(FastPathExistsError):
@@ -446,9 +444,7 @@ def test_evaluate_problem(cleanup):
 
 
 def test_optimize_problem(cleanup):
-    api.generate_inputs(
-        CONFIGURATION_FILE_PATH, (DATA_FOLDER_PATH / "inputs.xml").as_posix(), overwrite=True
-    )
+    api.generate_inputs(CONFIGURATION_FILE_PATH, DATA_FOLDER_PATH / "inputs.xml", overwrite=True)
     api.optimize_problem(CONFIGURATION_FILE_PATH, False)
     # Running again without forcing overwrite of outputs will make it fail
     with pytest.raises(FastPathExistsError):
@@ -459,9 +455,7 @@ def test_optimize_problem(cleanup):
 
 
 def test_optimization_viewer(cleanup):
-    api.generate_inputs(
-        CONFIGURATION_FILE_PATH, (DATA_FOLDER_PATH / "inputs.xml").as_posix(), overwrite=True
-    )
+    api.generate_inputs(CONFIGURATION_FILE_PATH, DATA_FOLDER_PATH / "inputs.xml", overwrite=True)
 
     # Before a run
     api.optimization_viewer(CONFIGURATION_FILE_PATH)
@@ -474,7 +468,7 @@ def test_optimization_viewer(cleanup):
 
 def test_variable_viewer(cleanup):
 
-    file_path = (DATA_FOLDER_PATH / "short_inputs.xml").as_posix()
+    file_path = DATA_FOLDER_PATH / "short_inputs.xml"
 
     # Using default file formatter
     api.variable_viewer(file_path)

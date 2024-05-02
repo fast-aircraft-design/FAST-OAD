@@ -72,6 +72,6 @@ def test_legacy1(cleanup):
 
     # check by reading without conversion table
     # -> this will give the actual number of entries in the file
-    xml_check = VariableIO(new_filename.as_posix())
+    xml_check = VariableIO(new_filename)
     check_vars = xml_check.read()
     assert len(check_vars) == entry_count

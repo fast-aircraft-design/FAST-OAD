@@ -398,7 +398,7 @@ def test_mission_group_with_fuel_objective(cleanup, with_dummy_plugin_2):
 def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
 
     input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
-    vars = VariableIO(input_file_path.as_posix()).read(ignore=["data:mission:operational:max_CL"])
+    vars = VariableIO(input_file_path).read(ignore=["data:mission:operational:max_CL"])
     ivc = vars.to_ivc()
 
     # Activate CL limitation during cruise and climb

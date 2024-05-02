@@ -1,6 +1,6 @@
 """WhatsOpt-related operations."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,19 +13,21 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+from os import PathLike
+from typing import Union
 
 import openmdao.api as om
 import whatsopt.whatsopt_client as wop
 
-from fastoad._utils.files import make_parent_dir
 from fastoad import __version__ as fastoad_version
+from fastoad._utils.files import make_parent_dir
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 def write_xdsm(
     problem: om.Problem,
-    xdsm_file_path: str = None,
+    xdsm_file_path: Union[str, PathLike] = None,
     depth: int = 2,
     wop_server_url: str = None,
     dry_run: bool = False,
