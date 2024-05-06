@@ -119,32 +119,26 @@ class VariableIO:
         :return: filtered variables
         """
 
-        # Dev note: We use sets, but sets of Variable instances do
-        # not work. Do we work with variable names instead.
-        # FIXME: Variable instances are now hashable, so set of Variable instances should now work
+        if only is None and ignore is None:
+            return variables
 
-        var_names = variables.names()
+        used_variables = VariableList(
+            [
+                variable
+                for variable in variables
+                if not ignore or not any(fnmatchcase(variable.name, pattern) for pattern in ignore)
+            ]
+        )
 
-        if only is None:
-            used_var_names = set(var_names)
-        else:
-            used_var_names = set()
-            for pattern in only:
-                used_var_names.update(
-                    [variable.name for variable in variables if fnmatchcase(variable.name, pattern)]
-                )
+        if only is not None:
+            used_variables = VariableList(
+                [
+                    variable
+                    for variable in used_variables
+                    if any(fnmatchcase(variable.name, pattern) for pattern in only)
+                ]
+            )
 
-        if ignore is not None:
-            for pattern in ignore:
-                used_var_names.difference_update(
-                    [variable.name for variable in variables if fnmatchcase(variable.name, pattern)]
-                )
-
-        # It could be simpler, but I want to keep the order
-        used_variables = VariableList()
-        for var in variables:
-            if var.name in used_var_names:
-                used_variables.append(var)
         return used_variables
 
 
