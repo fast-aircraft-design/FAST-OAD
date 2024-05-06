@@ -20,7 +20,7 @@ import re
 from io import IOBase
 from os import PathLike
 from pathlib import Path
-from typing import IO, Union
+from typing import IO, Union, Optional
 
 import numpy as np
 from lxml import etree
@@ -111,43 +111,33 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
                 previous_variable_name = None
                 continue
 
-            units = elem.attrib.get(self.xml_unit_attribute, None)
-            if units:
-                # Ensures compatibility with OpenMDAO units
-                for legacy_chars, om_chars in self.unit_translation.items():
-                    units = re.sub(legacy_chars, om_chars, units)
-                    units = units.replace(legacy_chars, om_chars)
+            units = self._read_units(elem)
+
             value = None
             if elem.text:
                 value = get_float_list_from_string(elem.text)
 
             previous_variable_name = None
-            if value is not None:
-                try:
-                    path_tags = [ancestor.tag for ancestor in elem.iterancestors()]
-                    path_tags.reverse()
-                    path_tags.append(elem.tag)
-                    xpath = "/".join(path_tags[1:])  # Do not use root tag
-                    name = self._translator.get_variable_name(xpath)
-                except FastXpathTranslatorXPathError as err:
-                    _LOGGER.warning(
-                        "The xpath %s does not have any variable affected in the translator.",
-                        err.xpath,
-                    )
-                    continue
+            if value is None:
+                continue
 
-                if name not in variables.names():
-                    # Add Variable
-                    is_input = elem.attrib.get(self.xml_io_attribute, None)
-                    if is_input is not None:
-                        is_input = is_input == "True"
+            variable_name = self._get_matching_variable_name(elem)
+            if variable_name is None:
+                continue
 
-                    variables[name] = {"val": value, "units": units, "is_input": is_input}
-                    previous_variable_name = name
-                else:
-                    raise FastXmlFormatterDuplicateVariableError(
-                        f"Variable {name} is defined in more than one place in file {data_source}"
-                    )
+            if variable_name in variables.names():
+                raise FastXmlFormatterDuplicateVariableError(
+                    f"Variable {variable_name} is defined in more than one "
+                    f"place in file {data_source}"
+                )
+
+            # Add Variable
+            is_input = elem.attrib.get(self.xml_io_attribute, None)
+            if is_input is not None:
+                is_input = is_input == "True"
+
+            variables[variable_name] = {"val": value, "units": units, "is_input": is_input}
+            previous_variable_name = variable_name
 
         return variables
 
@@ -191,6 +181,30 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
             data_source = data_source.as_posix()
 
         tree.write(data_source, pretty_print=True)
+
+    def _read_units(self, elem) -> Optional[str]:
+        units = elem.attrib.get(self.xml_unit_attribute, None)
+        if units:
+            # Ensures compatibility with OpenMDAO units
+            for legacy_chars, om_chars in self.unit_translation.items():
+                units = re.sub(legacy_chars, om_chars, units)
+                units = units.replace(legacy_chars, om_chars)
+        return units
+
+    def _get_matching_variable_name(self, elem: _Element) -> Optional[str]:
+        path_tags = [ancestor.tag for ancestor in elem.iterancestors()]
+        path_tags.reverse()
+        path_tags.append(elem.tag)
+        xpath = "/".join(path_tags[1:])  # Do not use root tag
+        try:
+            variable_name = self._translator.get_variable_name(xpath)
+        except FastXpathTranslatorXPathError as err:
+            _LOGGER.warning(
+                "The xpath %s does not have any variable affected in the translator.",
+                err.xpath,
+            )
+            variable_name = None
+        return variable_name
 
     @staticmethod
     def _create_xpath(root: _Element, xpath: str) -> _Element:
