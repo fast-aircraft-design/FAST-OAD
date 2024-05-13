@@ -121,7 +121,7 @@ def test_problem_with_case_recorder(cleanup):
     problem = FASTOADProblem()
     sellar = SellarModel()
     sellar.nonlinear_solver = om.NonlinearBlockGS()  # Solver that is compatible with deepcopy
-    sellar.add_recorder(om.SqliteRecorder((RESULTS_FOLDER_PATH / "cases.sql").as_posix()))
+    sellar.add_recorder(om.SqliteRecorder(RESULTS_FOLDER_PATH / "cases.sql"))
 
     problem.model.add_subsystem("sellar", sellar, promotes=["*"])
 

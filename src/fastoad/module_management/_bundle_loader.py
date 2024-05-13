@@ -2,7 +2,7 @@
 Basis for registering and retrieving services
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,6 +17,7 @@ Basis for registering and retrieving services
 import gc
 import logging
 import re
+from os import PathLike
 from typing import Any, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union
 
 import pelix
@@ -30,6 +31,7 @@ from .exceptions import (
     FastBundleLoaderDuplicateFactoryError,
     FastBundleLoaderUnknownFactoryNameError,
 )
+from .._utils.files import as_path
 from .._utils.resource_management.contents import PackageReader
 
 _LOGGER = logging.getLogger(__name__)
@@ -75,7 +77,7 @@ class BundleLoader:
         return self.framework.get_bundle_context()
 
     def explore_folder(
-        self, folder_path: str, is_package: bool = False
+        self, folder_path: Union[str, PathLike], is_package: bool = False
     ) -> Tuple[Set[Bundle], Set[str]]:
         """
         Installs bundles found in *folder_path*.
@@ -93,7 +95,7 @@ class BundleLoader:
         if is_package:
             bundles, failed = self._install_python_package(folder_path)
         else:
-            bundles, failed = self.framework.install_package(folder_path, True)
+            bundles, failed = self.framework.install_package(as_path(folder_path).as_posix(), True)
 
         for bundle in bundles:
             _LOGGER.info(

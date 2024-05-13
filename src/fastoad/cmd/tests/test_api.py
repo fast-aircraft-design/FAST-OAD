@@ -327,7 +327,7 @@ def test_generate_inputs(cleanup):
 
 
 def test_list_modules(cleanup):
-    conf_file_path = CONFIGURATION_FILE_PATH.as_posix()
+    conf_file_path = CONFIGURATION_FILE_PATH
 
     # Run with stdout output (no test)
     api.list_modules()
@@ -337,38 +337,38 @@ def test_list_modules(cleanup):
     # Run with file output (test file existence)
     out_file = RESULTS_FOLDER_PATH / "list_modules.txt"
     assert not out_file.exists()
-    api.list_modules(conf_file_path, out_file.as_posix())
+    api.list_modules(conf_file_path, out_file)
     with pytest.raises(FastPathExistsError):
-        api.list_modules(conf_file_path, out_file.as_posix())
-    api.list_modules(conf_file_path, out_file.as_posix(), overwrite=True)
+        api.list_modules(conf_file_path, out_file)
+    api.list_modules(conf_file_path, out_file, overwrite=True)
 
     assert out_file.exists()
 
     #
     # Run with file output (test file existence)
-    source_folder = (DATA_FOLDER_PATH / "cmd_sellar_example").as_posix()
+    source_folder = DATA_FOLDER_PATH / "cmd_sellar_example"
 
     # Run with file output with folders (test file existence)
     out_file = RESULTS_FOLDER_PATH / "list_modules_with_folder.txt"
     assert not out_file.exists()
-    api.list_modules(source_folder, out_file.as_posix())
+    api.list_modules(source_folder, out_file)
     with pytest.raises(FastPathExistsError):
-        api.list_modules(source_folder, out_file.as_posix())
+        api.list_modules(source_folder, out_file)
 
     # Testing with single folder
-    api.list_modules(source_folder, out_file.as_posix(), overwrite=True)
+    api.list_modules(source_folder, out_file, overwrite=True)
 
     assert out_file.exists()
 
     # Testing with list of folders
     source_folder = [source_folder]
-    api.list_modules(source_folder, out_file.as_posix(), overwrite=True)
+    api.list_modules(source_folder, out_file, overwrite=True)
 
     assert out_file.exists()
 
 
 def test_list_variables(cleanup):
-    conf_file_path = CONFIGURATION_FILE_PATH.as_posix()
+    conf_file_path = CONFIGURATION_FILE_PATH
 
     # Run with stdout output (no test)
     api.list_variables(conf_file_path)
@@ -376,10 +376,10 @@ def test_list_variables(cleanup):
     # Run with file output (test file existence)
     out_file_path = RESULTS_FOLDER_PATH / "list_variables.txt"
     assert not out_file_path.exists()
-    api.list_variables(conf_file_path, out=out_file_path.as_posix())
+    api.list_variables(conf_file_path, out=out_file_path)
     with pytest.raises(FastPathExistsError):
-        api.list_variables(conf_file_path, out=out_file_path.as_posix())
-    api.list_variables(conf_file_path, out=out_file_path.as_posix(), overwrite=True)
+        api.list_variables(conf_file_path, out=out_file_path)
+    api.list_variables(conf_file_path, out=out_file_path, overwrite=True)
     assert out_file_path.exists()
 
     ref_file_path = DATA_FOLDER_PATH / "ref_list_variables.txt"
@@ -388,7 +388,7 @@ def test_list_variables(cleanup):
     # Test with variable_description.txt format
     api.list_variables(
         conf_file_path,
-        out=out_file_path.as_posix(),
+        out=out_file_path,
         overwrite=True,
         tablefmt="var_desc",
     )

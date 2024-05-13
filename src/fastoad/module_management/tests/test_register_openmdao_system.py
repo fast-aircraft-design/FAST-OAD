@@ -37,7 +37,7 @@ DATA_FOLDER_PATH = Path(__file__).parent / "data"
 @pytest.fixture(scope="module")
 def load():
     """Loads components"""
-    RegisterOpenMDAOSystem.explore_folder((DATA_FOLDER_PATH / "module_sellar_example").as_posix())
+    RegisterOpenMDAOSystem.explore_folder(DATA_FOLDER_PATH / "module_sellar_example")
 
 
 def test_variable_description(load):

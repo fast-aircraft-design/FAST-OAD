@@ -2,7 +2,7 @@
 Helper module for copying resources
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,17 +14,17 @@ Helper module for copying resources
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
 import shutil
 from importlib.resources import Package, is_resource, path
+from os import PathLike
 from types import ModuleType
-from typing import List
+from typing import List, Union
 
 from .contents import PackageReader
-from ..files import make_parent_dir
+from ..files import as_path, make_parent_dir
 
 
-def copy_resource(package: Package, resource: str, target_path):
+def copy_resource(package: Package, resource: str, target_path: Union[str, PathLike]):
     """
     Copies the indicated resource file to provided target path.
 
@@ -41,7 +41,9 @@ def copy_resource(package: Package, resource: str, target_path):
         shutil.copy(source_path, target_path)
 
 
-def copy_resource_folder(package: Package, destination_path: str, exclude: List[str] = None):
+def copy_resource_folder(
+    package: Package, destination_path: Union[str, PathLike], exclude: List[str] = None
+):
     """
     Copies the full content of provided package in destination folder.
 
@@ -58,6 +60,8 @@ def copy_resource_folder(package: Package, destination_path: str, exclude: List[
     :param destination_path: file system path of destination
     :param exclude: list of item names that should not be copied
     """
+    destination_path = as_path(destination_path)
+
     exclusion_list = ["__pycache__"]
     if exclude:
         exclusion_list += exclude
@@ -68,7 +72,7 @@ def copy_resource_folder(package: Package, destination_path: str, exclude: List[
             if resource_name in exclusion_list:
                 continue
             if is_resource(package, resource_name):
-                destination_file_path = pth.join(destination_path, resource_name)
+                destination_file_path = destination_path / resource_name
                 copy_resource(package, resource_name, destination_file_path)
             else:
                 # In case of subfolders that are only declared in MANIFEST.in,
@@ -79,5 +83,5 @@ def copy_resource_folder(package: Package, destination_path: str, exclude: List[
                 else:  # str
                     package_name = package
                 new_package_name = ".".join([package_name, resource_name])
-                new_destination_path = pth.join(destination_path, resource_name)
+                new_destination_path = destination_path / resource_name
                 copy_resource_folder(new_package_name, new_destination_path, exclude=exclude)
