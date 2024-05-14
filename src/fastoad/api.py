@@ -34,6 +34,9 @@ from fastoad.cmd.api import (
 )
 
 # noinspection PyUnresolvedReferences
+from fastoad.cmd.calc_runner import RunCase
+
+# noinspection PyUnresolvedReferences
 from fastoad.gui.analysis_and_plots import (
     aircraft_geometry_plot,
     drag_polar_plot,
