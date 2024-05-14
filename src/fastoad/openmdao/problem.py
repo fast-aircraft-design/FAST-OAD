@@ -136,7 +136,7 @@ class FASTOADProblem(om.Problem):
                 _LOGGER.warning("The following variables have NaN values: %s", nan_variable_names)
         variables.save()
 
-    def write_outputs(self):
+    def write_outputs(self) -> VariableList:
         """
         Writes all outputs in the configured output file.
         """
@@ -152,6 +152,8 @@ class FASTOADProblem(om.Problem):
                 VariableList.from_problem(self, promoted_only=True), add_variables=True
             )
             writer.write(variables)
+
+            return variables
 
     def read_inputs(self):
         """
