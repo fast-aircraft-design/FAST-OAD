@@ -48,6 +48,7 @@ def test_oad_process(cleanup):
     """
 
     configurator = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "oad_process.yml"))
+    configurator.make_local(pth.join(RESULTS_FOLDER_PATH, "test_oad_process"))
 
     ref_inputs = pth.join(DATA_FOLDER_PATH, "CeRAS01_legacy.xml")
     problem = configurator.get_problem()
