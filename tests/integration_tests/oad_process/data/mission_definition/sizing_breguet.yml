@@ -1,0 +1,98 @@
+phases:
+  start:
+    parts:
+      - segment: start
+        target:
+          altitude:
+            value: ~
+            unit: ft
+            default: 0.0
+          true_airspeed:
+            value: ~
+            unit: m/s
+            default: 0.0
+  taxi_out:
+    parts:
+      - segment: taxi
+        thrust_rate: ~
+        true_airspeed:
+          value: ~
+          default: 0.
+        target:
+          time: ~duration
+  takeoff:
+    parts:
+      - segment: transition
+        target:
+          delta_altitude:
+            value: ~safety_altitude
+            unit: ft
+            default: 35
+          delta_mass: -~fuel
+          time:
+            value: ~duration
+            unit: s
+            default: 0.0
+          true_airspeed: ~V2
+      - segment: mass_input
+        target:
+          mass: data:mission:sizing:TOW
+  climb:
+    parts:
+      - segment: transition
+        target:
+          altitude: data:mission:sizing:main_route:cruise:altitude
+          mach: data:TLAR:cruise_mach
+          delta_ground_distance:
+            value: 250
+            unit: km
+        mass_ratio:
+          value: settings:mission:sizing:breguet:climb:mass_ratio
+          default: 0.97
+  descent:
+    parts:
+      - segment: transition
+        target:
+          altitude: 0.
+          mach: 0.
+          delta_ground_distance:
+            value: 250
+            unit: km
+        mass_ratio:
+          value: settings:mission:sizing:breguet:descent:mass_ratio
+          default: 0.98
+  global_reserve:
+    parts:
+      - segment: transition
+        target:
+          altitude: 0.
+          mach: 0.
+        reserve_mass_ratio:
+          value: settings:mission:sizing:breguet:reserve:mass_ratio
+          default: 0.06
+
+routes:
+  main_route:
+    range: data:TLAR:range
+    climb_parts:
+      - phase: climb
+    cruise_part:
+      segment: breguet
+      engine_setting: cruise
+      polar: data:aerodynamics:aircraft:cruise
+      use_max_lift_drag_ratio: true
+    descent_parts:
+      - phase: descent
+
+missions:
+  sizing:
+    isa_offset:
+      value: ~ISA_offset
+      unit: degK
+      default: 0.0
+    parts:
+      - phase: start
+      - phase: taxi_out
+      - phase: takeoff
+      - route: main_route
+      - phase: global_reserve
