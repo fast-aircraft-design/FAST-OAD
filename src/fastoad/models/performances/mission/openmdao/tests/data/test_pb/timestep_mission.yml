@@ -1,0 +1,130 @@
+phases:
+  initial_climb:
+    engine_setting: takeoff
+    polar: data:aerodynamics:aircraft:takeoff
+    thrust_rate: 1.0
+    time_step: 5.
+    parts:
+      - segment: altitude_change
+        target:
+          altitude:
+            value: 400.
+            unit: ft
+          equivalent_airspeed: constant
+      - segment: speed_change
+        target:
+          equivalent_airspeed:
+            value: 250
+            unit: kn
+      - segment: altitude_change
+        #        polar: data:aerodynamics:aircraft:low_speed
+        target:
+          altitude:
+            value: 1500.
+            unit: ft
+          equivalent_airspeed: constant
+  climb:
+    engine_setting: climb
+    polar: data:aerodynamics:aircraft:cruise
+    thrust_rate: 0.18
+    time_step: 10.
+    parts:
+      - segment: altitude_change
+        target:
+          altitude:
+            value: 10000.
+            unit: ft
+          equivalent_airspeed: constant
+      - segment: speed_change
+        target:
+          equivalent_airspeed:
+            value: 300.
+            unit: kn
+      - segment: altitude_change
+        target:
+          equivalent_airspeed: constant
+          mach: data:TLAR:cruise_mach
+      - segment: altitude_change
+        target:
+          mach: constant
+          altitude:
+            value: optimal_altitude
+  descent:
+    engine_setting: idle
+    polar: data:aerodynamics:aircraft:cruise
+    thrust_rate: 0.12
+    time_step: 10.0
+    parts:
+      - segment: altitude_change
+        target:
+          equivalent_airspeed:
+            value: 300
+            unit: kn
+          mach: constant
+      - segment: altitude_change
+        target:
+          altitude:
+            value: 10000.
+            unit: ft
+          equivalent_airspeed: constant
+      - segment: speed_change
+        target:
+          equivalent_airspeed:
+            value: 250.
+            unit: kn
+      - segment: altitude_change
+        target:
+          equivalent_airspeed: constant
+          altitude:
+            value: 1500.
+            unit: ft
+  descent_simple:
+    parts:
+      - segment: transition
+        target:
+          altitude: 0.
+          mach: 0.
+          ground_distance:
+            value: 250
+            unit: km
+        mass_ratio: settings:mission:sizing:breguet:descent:mass_ratio
+
+  taxi_in:
+    parts:
+      - segment: taxi
+        thrust_rate: 0.3
+        target:
+          time:
+            value: 6.
+            unit: min
+  reserve:
+    parts:
+      - segment: transition
+        target:
+          altitude: 0.
+          mach: 0.
+        reserve_mass_ratio: 0.06
+
+routes:
+  main_route:
+    range: data:TLAR:range
+    climb_parts:
+      - phase: initial_climb
+      - phase: climb
+    cruise_part:
+      segment: breguet
+      engine_setting: cruise
+      polar: data:aerodynamics:aircraft:cruise
+      use_max_lift_drag_ratio: false
+    descent_parts:
+      - phase: descent_simple
+
+missions:
+  sizing:
+    parts:
+      - route: main_route
+      - phase: taxi_in
+      - phase: reserve
+      - reserve:
+          ref: main_route
+          multiplier: 0.03

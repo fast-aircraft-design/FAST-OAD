@@ -1,0 +1,16 @@
+title: Optim INRIA
+
+module_folders:
+
+input_file: ./problem_inputs.xml
+output_file: ./problem_outputs.xml
+
+model:
+    performance:
+        id: fastoad.performances.mission
+        propulsion_id: fastoad.wrapper.propulsion.rubber_engine
+        mission_file_path: ./timestep_mission.yml
+        out_file: ./flight_points.csv
+        adjust_fuel: true
+        is_sizing: true
+        use_initializer_iteration: false

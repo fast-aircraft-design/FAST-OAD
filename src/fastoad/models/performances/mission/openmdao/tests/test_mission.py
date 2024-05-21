@@ -40,9 +40,7 @@ def plot_flight(flight_points, fig_filename):
 
     plt.figure(figsize=(12, 12))
     ax1 = plt.subplot(2, 1, 1)
-    plt.plot(
-        flight_points["ground_distance [m]"] / 1000.0, flight_points["altitude [m]"] / foot, "o-"
-    )
+    plt.plot(flight_points["ground_distance"] / 1000.0, flight_points["altitude"] / foot, "o-")
     plt.xlabel("distance [km]")
     plt.ylabel("altitude [ft]")
     ax1.xaxis.set_minor_locator(MultipleLocator(50))
@@ -53,18 +51,18 @@ def plot_flight(flight_points, fig_filename):
     ax2 = plt.subplot(2, 1, 2)
     lines = []
     lines += plt.plot(
-        flight_points["ground_distance [m]"] / 1000.0,
-        flight_points["true_airspeed [m/s]"],
+        flight_points["ground_distance"] / 1000.0,
+        flight_points["true_airspeed"],
         "b-",
         label="TAS [m/s]",
     )
     lines += plt.plot(
-        flight_points["ground_distance [m]"] / 1000.0,
-        flight_points["equivalent_airspeed [m/s]"] / knot,
+        flight_points["ground_distance"] / 1000.0,
+        flight_points["equivalent_airspeed"] / knot,
         "g--",
         label="EAS [kt]",
     )
-    plt.xlabel("distance [km]")
+    plt.xlabel("distance")
     plt.ylabel("speed")
     ax2.xaxis.set_minor_locator(MultipleLocator(50))
     ax2.yaxis.set_minor_locator(MultipleLocator(5))
@@ -73,8 +71,8 @@ def plot_flight(flight_points, fig_filename):
 
     plt.twinx(ax2)
     lines += plt.plot(
-        flight_points["ground_distance [m]"] / 1000.0,
-        flight_points["mach [-]"],
+        flight_points["ground_distance"] / 1000.0,
+        flight_points["mach"],
         "r.-",
         label="Mach",
     )
@@ -107,7 +105,7 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
         ),
         ivc,
     )
-    # plot_flight(problem.model.component.flight_points, "test_mission.png")
+    plot_flight(problem.model.component.flight_points, "test_mission.png")
 
     # Note: tested value are obtained by asking 1 meter of accuracy for distance routes
     assert_allclose(problem["data:mission:operational:taxi_out:fuel"], 100.0, atol=1.0)
@@ -491,3 +489,21 @@ def test_mission_group_without_route(cleanup, with_dummy_plugin_2):
     assert_allclose(problem["data:mission:without_route:ZFW"], 55000.0, atol=1.0)
     assert_allclose(problem["data:mission:without_route:needed_block_fuel"], 1136.8, atol=1.0)
     assert_allclose(problem["data:mission:without_route:block_fuel"], 1136.8, atol=1.0)
+
+
+def test_mission_pb(cleanup, with_dummy_plugin_2):
+    (RESULTS_FOLDER_PATH / "test_pb").mkdir(parents=True, exist_ok=True)
+    input_file_path = DATA_FOLDER_PATH / "test_pb" / "problem_inputs.xml"
+    ivc = DataFile(input_file_path.as_posix()).to_ivc()
+
+    problem = run_system(
+        OMMission(
+            propulsion_id="test.wrapper.propulsion.dummy_engine",
+            out_file=(RESULTS_FOLDER_PATH / "test_pb" / "mission.csv").as_posix(),
+            mission_file_path=(DATA_FOLDER_PATH / "test_pb" / "timestep_mission.yml").as_posix(),
+            mission_name="sizing",
+            is_sizing=True,
+            use_initializer_iteration=False,
+        ),
+        ivc,
+    )
