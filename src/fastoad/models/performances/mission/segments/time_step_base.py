@@ -1,6 +1,6 @@
 """Base classes for time-step segments"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -276,11 +276,15 @@ class AbstractTimeStepFlightSegment(
         :param flight_point:
         :return: None if Ok, or an error message otherwise
         """
-
         if not self.mach_bounds[0] <= flight_point.mach <= self.mach_bounds[1]:
-            return f"true_airspeed value {flight_point.true_airspeed:.1f}m/s is out of bound."
+            return (
+                f"true_airspeed value {np.asarray(flight_point.true_airspeed).item():.1f}"
+                f"m/s is out of bound."
+            )
         if not self.altitude_bounds[0] <= flight_point.altitude <= self.altitude_bounds[1]:
-            return f"Altitude value {flight_point.altitude:.0f}m is out of bound."
+            return (
+                f"Altitude value {np.asarray(flight_point.altitude).item():.0f}m is out of bound."
+            )
         if flight_point.mass <= 0.0:
             return "Negative mass value."
         return None
