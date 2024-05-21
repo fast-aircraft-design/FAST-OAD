@@ -2,7 +2,7 @@
 Classes for computation of routes (i.e. assemblies of climb, cruise and descent phases).
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -162,7 +162,10 @@ class RangedRoute(FlightSequence):
         :param start:
         :return: difference between computed distance and self.flight_distance
         """
-        self.cruise_distance = cruise_distance
+        # If climb is too long because of bad settings, it could exceed flight distance
+        # and then the solver would ask for negative cruise distance.
+        self.cruise_distance = max(0, 0, cruise_distance)
+
         self._flight_points = super().compute_from(start)
         obtained_distance = (
             self._flight_points.iloc[-1].ground_distance
