@@ -31,7 +31,8 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 @dataclass
 class RunCase:
-    configuration_file_path: Optional[Union[str, PathLike]]
+    configuration_file_path: Union[str, PathLike]
+    input_file_path: Optional[Union[str, PathLike]] = None
     optimize: bool = False
 
     def run(
@@ -47,6 +48,8 @@ class RunCase:
         :return:
         """
         configuration = FASTOADProblemConfigurator(self.configuration_file_path)
+        if self.input_file_path:
+            configuration.input_file_path = self.input_file_path
         if calculation_folder:
             make_parent_dir(calculation_folder)
             configuration.make_local(calculation_folder)
