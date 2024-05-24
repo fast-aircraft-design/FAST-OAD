@@ -17,7 +17,7 @@ from pathlib import Path
 import pytest
 
 from fastoad.openmdao.variables import Variable, VariableList
-from ..calc_runner import RunCase
+from ..calc_runner import CalcRunner
 
 DATA_FOLDER_PATH = Path(__file__).parent / "data"
 RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
@@ -29,12 +29,12 @@ def cleanup():
 
 
 def test_one_run(cleanup):
-    run_case = RunCase(configuration_file_path=DATA_FOLDER_PATH / "sellar2.yml")
+    run_case = CalcRunner(configuration_file_path=DATA_FOLDER_PATH / "sellar2.yml")
     run_case.run(calculation_folder=RESULTS_FOLDER_PATH)
 
 
 def test_MPI_run_max_cpu(cleanup):
-    run_case = RunCase(configuration_file_path=DATA_FOLDER_PATH / "sellar2.yml")
+    run_case = CalcRunner(configuration_file_path=DATA_FOLDER_PATH / "sellar2.yml")
 
     input_vars = [
         VariableList([Variable("x", val=0.0), Variable("z", val=0.0)]),
@@ -50,7 +50,7 @@ def test_MPI_run_max_cpu(cleanup):
 
 
 def test_MPI_run_2cpu(cleanup):
-    run_case = RunCase(configuration_file_path=DATA_FOLDER_PATH / "sellar2.yml")
+    run_case = CalcRunner(configuration_file_path=DATA_FOLDER_PATH / "sellar2.yml")
 
     input_vars = [
         VariableList([Variable("x", val=0.0), Variable("z", val=0.0)]),
@@ -68,7 +68,7 @@ def test_MPI_run_2cpu(cleanup):
 
 
 def test_multiprocessing_run_2cpu(cleanup):
-    run_case = RunCase(configuration_file_path=DATA_FOLDER_PATH / "sellar2.yml")
+    run_case = CalcRunner(configuration_file_path=DATA_FOLDER_PATH / "sellar2.yml")
 
     input_vars = [
         VariableList([Variable("x", val=0.0), Variable("z", val=0.0)]),

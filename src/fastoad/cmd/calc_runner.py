@@ -16,13 +16,14 @@ import logging
 import multiprocessing as mp
 from contextlib import contextmanager
 from dataclasses import dataclass
-from math import ceil, log10
 from os import PathLike
 from typing import List, Optional, Union
 
+from math import ceil, log10
 from openmdao.utils.mpi import FakeComm
 
 from fastoad._utils.files import as_path, make_parent_dir
+from fastoad.io import DataFile
 from fastoad.io.configuration import FASTOADProblemConfigurator
 from fastoad.openmdao.variables import VariableList
 
@@ -30,22 +31,41 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 @dataclass
-class RunCase:
+class CalcRunner:
+    """
+    Class for running FAST-OAD computations for a specific configuration.
+
+    It is specifically designed to run several computations concurrently with
+    :meth:`run_cases`.
+    For each computation, data can be isolated in a specific folder.
+    """
+
+    #: Configuration file, common to all computations
     configuration_file_path: Union[str, PathLike]
+
+    #: Input file for the computation (will supersede the input file setting in
+    #  configuration file)
     input_file_path: Optional[Union[str, PathLike]] = None
+
+    #: For activating MDO instead MDA
     optimize: bool = False
 
     def run(
         self,
         input_values: Optional[VariableList] = None,
         calculation_folder: Optional[Union[str, PathLike]] = None,
-    ):
+    ) -> DataFile:
         """
         Run the computation.
 
-        :param input_values:
-        :param calculation_folder:
-        :return:
+        This method is useful to set input values on-the-fly, and/or isolate the
+        computation data in a dedicated folder.
+
+        :param input_values: if provided, these values will supersede the content
+                             of input file (specified in configuration file)
+        :param calculation_folder: if specified, all data, including configuration file,
+                                   will be stored in that folder
+        :return: the written data
         """
         configuration = FASTOADProblemConfigurator(self.configuration_file_path)
         if self.input_file_path:
@@ -83,12 +103,18 @@ class RunCase:
         use_MPI_if_available: bool = True,
     ):
         """
+        Run computations concurrently.
 
-        :param input_list:
-        :param destination_folder:
-        :param n_proc:
-        :param use_MPI_if_available:
-        :return:
+        The data of each computation will be isolated in a dedicated subfolder of
+        `destination folder`.
+
+        :param input_list: a computation will be run for each item of this list
+        :param destination_folder:  The data of each computation will be isolated in a dedicated
+                                    subfolder of this folder.
+        :param n_proc: if not specified, all available processors will be used.
+        :param use_MPI_if_available: If False, or if no MPI implementation is available,
+                                     computations will be run concurrently using the multiprocessing
+                                     library.
         """
         destination_folder = as_path(destination_folder)
         if n_proc == 0:
@@ -112,7 +138,6 @@ class RunCase:
                 max_proc = MPI.COMM_WORLD.Get_size()
             except ImportError:
                 _LOGGER.warning("No MPI environment found. Using multiprocessing instead.")
-                pass
 
         if n_proc is not None:
             n_proc = min(n_proc, max_proc)
@@ -123,7 +148,7 @@ class RunCase:
             pool = mp.Pool
 
         with pool(n_proc) as pool:
-            pool.starmap(RunCase.run, calculation_inputs)
+            pool.starmap(CalcRunner.run, calculation_inputs)
 
 
 @contextmanager

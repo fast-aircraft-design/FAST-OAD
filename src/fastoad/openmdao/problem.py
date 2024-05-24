@@ -21,7 +21,7 @@ import openmdao.api as om
 from openmdao.core.constants import _SetupStatus
 from openmdao.core.system import System
 
-from fastoad.io import DataFile, IVariableIOFormatter, VariableIO
+from fastoad.io import DataFile, IVariableIOFormatter
 from fastoad.module_management.service_registry import RegisterSubmodel
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 from fastoad.openmdao.variables import Variable, VariableList
@@ -55,6 +55,7 @@ class FASTOADProblem(om.Problem):
 
         #: File path where :meth:`read_inputs` will read inputs
         self.input_file_path = None
+
         #: File path where :meth:`write_outputs` will write outputs
         self.output_file_path = None
 
@@ -136,24 +137,25 @@ class FASTOADProblem(om.Problem):
                 _LOGGER.warning("The following variables have NaN values: %s", nan_variable_names)
         variables.save()
 
-    def write_outputs(self) -> VariableList:
+    def write_outputs(self) -> Optional[DataFile]:
         """
         Writes all outputs in the configured output file.
         """
         if self.output_file_path:
-            writer = VariableIO(self.output_file_path)
+            datafile = DataFile(self.output_file_path, load_data=False)
 
             if self.additional_variables is None:
                 self.additional_variables = []
-            variables = VariableList(self.additional_variables)
-            for var in variables:
-                var.is_input = None
-            variables.update(
-                VariableList.from_problem(self, promoted_only=True), add_variables=True
-            )
-            writer.write(variables)
 
-            return variables
+            datafile.update(self.additional_variables)
+            for var in datafile:
+                var.is_input = None
+            datafile.update(VariableList.from_problem(self, promoted_only=True), add_variables=True)
+            datafile.save()
+
+            return datafile
+
+        return None
 
     def read_inputs(self):
         """
