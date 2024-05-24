@@ -34,7 +34,7 @@ from fastoad.cmd.api import (
 )
 
 # noinspection PyUnresolvedReferences
-from fastoad.cmd.calc_runner import RunCase
+from fastoad.cmd.calc_runner import CalcRunner
 
 # noinspection PyUnresolvedReferences
 from fastoad.gui.analysis_and_plots import (
