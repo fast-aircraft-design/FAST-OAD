@@ -16,18 +16,18 @@ Module for building OpenMDAO problem from configuration file
 
 import json
 import logging
-import os.path as pth
 from abc import ABC, abstractmethod
 from importlib.resources import open_text
 from os import PathLike
-from typing import Dict, Union
+from pathlib import Path
+from typing import Dict, Union, Optional
 
 import openmdao.api as om
 import tomlkit
 from jsonschema import validate
 from ruamel.yaml import YAML
 
-from fastoad._utils.files import make_parent_dir
+from fastoad._utils.files import make_parent_dir, as_path
 from fastoad.io import IVariableIOFormatter
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from fastoad.openmdao.problem import FASTOADProblem
@@ -64,8 +64,8 @@ class FASTOADProblemConfigurator:
     :param conf_file_path: if provided, configuration will be read directly from it
     """
 
-    def __init__(self, conf_file_path=None):
-        self._conf_file = None
+    def __init__(self, conf_file_path: Union[str, PathLike] = None):
+        self._conf_file: Optional[Path] = None
 
         self._serializer = _YAMLSerializer()
 
@@ -79,9 +79,9 @@ class FASTOADProblemConfigurator:
     @property
     def input_file_path(self):
         """path of file with input variables of the problem"""
-        path = str(self._serializer.data[KEY_INPUT_FILE])
-        if not pth.isabs(path):
-            path = pth.normpath(pth.join(pth.dirname(self._conf_file), path))
+        path = as_path(self._serializer.data[KEY_INPUT_FILE])
+        if not path.is_absolute():
+            path = (self._conf_file.parent / path).resolve()
         return path
 
     @input_file_path.setter
@@ -91,9 +91,9 @@ class FASTOADProblemConfigurator:
     @property
     def output_file_path(self):
         """path of file where output variables will be written"""
-        path = str(self._serializer.data[KEY_OUTPUT_FILE])
-        if not pth.isabs(path):
-            path = pth.normpath(pth.join(pth.dirname(self._conf_file), path))
+        path = as_path(self._serializer.data[KEY_OUTPUT_FILE])
+        if not path.is_absolute():
+            path = (self._conf_file.parent / path).resolve()
         return path
 
     @output_file_path.setter
@@ -149,10 +149,10 @@ class FASTOADProblemConfigurator:
         :param conf_file: Path to the file to open or a file descriptor
         """
 
-        self._conf_file = pth.abspath(conf_file)  # for resolving relative paths
-        conf_dirname = pth.dirname(self._conf_file)
+        self._conf_file = as_path(conf_file).resolve()
+        conf_dirname = self._conf_file.parent
 
-        if pth.splitext(self._conf_file)[-1] == ".toml":
+        if self._conf_file.suffix == ".toml":
             self._serializer = _TOMLSerializer()
             _LOGGER.warning(
                 "TOML-formatted configuration files are deprecated. Please use YAML format."
@@ -176,8 +176,8 @@ class FASTOADProblemConfigurator:
             module_folder_paths = [module_folder_paths]
         if module_folder_paths:
             for folder_path in module_folder_paths:
-                folder_path = pth.join(conf_dirname, str(folder_path))
-                if not pth.exists(folder_path):
+                folder_path = conf_dirname / folder_path
+                if not folder_path.is_dir():
                     _LOGGER.warning("SKIPPED %s: it does not exist.", folder_path)
                 else:
                     RegisterOpenMDAOSystem.explore_folder(folder_path)
@@ -300,7 +300,7 @@ class FASTOADProblemConfigurator:
                     identifier = options.pop(KEY_COMPONENT_ID)
 
                     # Process option values that are relative paths
-                    conf_dirname = pth.dirname(self._conf_file)
+                    conf_dirname = self._conf_file.parent
                     for name, option_value in options.items():
                         option_is_path = (
                             name.endswith("file")
@@ -312,9 +312,9 @@ class FASTOADProblemConfigurator:
                         if (
                             isinstance(option_value, str)
                             and option_is_path
-                            and not pth.isabs(option_value)
+                            and not Path(option_value).is_absolute()
                         ):
-                            options[name] = pth.join(conf_dirname, option_value)
+                            options[name] = (conf_dirname / option_value).as_posix()
 
                     sub_component = RegisterOpenMDAOSystem.get_system(identifier, options=options)
                     group.add_subsystem(key, sub_component, promotes=["*"])
