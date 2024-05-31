@@ -15,7 +15,6 @@ Class for managing an OpenMDAO variable.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import os.path as pth
 from importlib.resources import open_text
 from os import PathLike
 from typing import Dict, Hashable, Iterable, Mapping, Tuple, Union
@@ -23,6 +22,7 @@ from typing import Dict, Hashable, Iterable, Mapping, Tuple, Union
 import numpy as np
 import openmdao.api as om
 
+from fastoad._utils.files import as_path
 from fastoad._utils.resource_management.contents import PackageReader
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
@@ -154,6 +154,8 @@ class Variable(Hashable):
         :param update_existing: if True, previous descriptions will be updated.
                                 if False, previous descriptions will be erased.
         """
+        file_parent = as_path(file_parent)
+
         if not update_existing:
             cls._variable_descriptions = {}
             cls._loaded_descriptions = set()
@@ -162,14 +164,14 @@ class Variable(Hashable):
         description_file = None
 
         if file_parent:
-            if pth.isdir(file_parent):
-                file_path = pth.join(file_parent, DESCRIPTION_FILENAME)
-                if pth.isfile(file_path):
+            if file_parent.is_dir():
+                file_path = file_parent / DESCRIPTION_FILENAME
+                if file_path.is_file():
                     description_file = open(file_path)
             else:
                 # Then it is a module name
-                if DESCRIPTION_FILENAME in PackageReader(file_parent).contents:
-                    description_file = open_text(file_parent, DESCRIPTION_FILENAME)
+                if DESCRIPTION_FILENAME in PackageReader(str(file_parent)).contents:
+                    description_file = open_text(str(file_parent), DESCRIPTION_FILENAME)
 
         if description_file is not None:
             try:

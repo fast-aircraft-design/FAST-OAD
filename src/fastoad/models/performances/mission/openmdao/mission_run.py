@@ -12,12 +12,12 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from os import makedirs, path as pth
 from typing import Optional
 
 import numpy as np
 from openmdao import api as om
 
+from fastoad._utils.files import make_parent_dir
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
 from fastoad.module_management.service_registry import RegisterPropulsion
@@ -114,7 +114,7 @@ class MissionComp(om.ExplicitComponent, BaseMissionComp):
         }
         flight_points.rename(columns=rename_dict, inplace=True)
         if self.options["out_file"]:
-            makedirs(pth.dirname(self.options["out_file"]), exist_ok=True)
+            make_parent_dir(self.options["out_file"])
             flight_points.to_csv(self.options["out_file"])
 
         return flight_points
