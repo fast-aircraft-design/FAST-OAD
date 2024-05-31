@@ -1,6 +1,6 @@
 """Classes for climb/descent segments."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -12,7 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import logging
 from copy import copy
 from dataclasses import dataclass
 from typing import List, Tuple
@@ -27,8 +26,6 @@ from fastoad.models.performances.mission.segments.base import (
 )
 from fastoad.models.performances.mission.segments.time_step_base import AbstractManualThrustSegment
 from fastoad.models.performances.mission.util import get_closest_flight_level
-
-_LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 @RegisterSegment("altitude_change")

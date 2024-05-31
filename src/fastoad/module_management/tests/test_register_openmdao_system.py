@@ -14,7 +14,6 @@ Test module for openmdao_system_registry.py
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import logging
 from pathlib import Path
 
 import openmdao.api as om
@@ -27,9 +26,6 @@ from ..exceptions import FastBadSystemOptionError, FastBundleLoaderUnknownFactor
 from ..service_registry import RegisterOpenMDAOSystem
 from ..._utils.sellar.sellar_base import BasicSellarModel, BasicSellarProblem, ISellarFactory
 from ...openmdao.variables import Variable
-
-_LOGGER = logging.getLogger(__name__)  # Logger for this module
-
 
 DATA_FOLDER_PATH = Path(__file__).parent / "data"
 

@@ -14,7 +14,6 @@ FAST-OAD model for mission computation.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import logging
 from enum import EnumMeta
 
 import numpy as np
@@ -25,8 +24,6 @@ from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from .base import BaseMissionComp, NeedsOWE
 from .mission_run import AdvancedMissionComp
-
-_LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 @RegisterOpenMDAOSystem("fastoad.performances.mission", domain=ModelDomain.PERFORMANCE)

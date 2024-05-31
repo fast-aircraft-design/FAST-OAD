@@ -27,8 +27,6 @@ from ..exceptions import (
     FastBundleLoaderUnknownFactoryNameError,
 )
 
-_LOGGER = logging.getLogger(__name__)  # Logger for this module
-
 logging.basicConfig(level=logging.DEBUG)
 
 

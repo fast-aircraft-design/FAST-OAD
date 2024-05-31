@@ -12,7 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import logging
 from os import PathLike
 from typing import Union
 
@@ -21,8 +20,6 @@ import whatsopt.whatsopt_client as wop
 
 from fastoad import __version__ as fastoad_version
 from fastoad._utils.files import make_parent_dir
-
-_LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 def write_xdsm(

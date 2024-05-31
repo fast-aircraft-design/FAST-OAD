@@ -13,7 +13,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import logging
 from os import PathLike
 from types import MethodType
 from typing import Any, Dict, List, Optional, Type, TypeVar, Union
@@ -40,7 +39,6 @@ from .exceptions import (
 from ..model_base.propulsion import IOMPropulsionWrapper
 from ..openmdao.variables import Variable
 
-_LOGGER = logging.getLogger(__name__)  # Logger for this module
 T = TypeVar("T")
 
 

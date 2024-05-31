@@ -1,7 +1,7 @@
 """Definition of aircraft mission."""
 
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,7 +13,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import logging
 from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Optional
@@ -25,8 +24,6 @@ from fastoad.model_base import FlightPoint
 from .base import FlightSequence
 from .routes import RangedRoute
 from .segments.registered.cruise import CruiseSegment
-
-_LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 @dataclass
