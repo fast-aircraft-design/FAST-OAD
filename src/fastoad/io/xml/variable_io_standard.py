@@ -15,7 +15,6 @@ Defines how OpenMDAO variables are serialized to XML
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from io import IOBase
 from os import PathLike
 from typing import Union, IO
 
@@ -77,7 +76,7 @@ class VariableXmlStandardFormatter(VariableXmlBaseFormatter):
     def path_separator(self, separator):
         self._translator.path_separator = separator
 
-    def read_variables(self, data_source: Union[str, PathLike, IO, IOBase]) -> VariableList:
+    def read_variables(self, data_source: Union[str, PathLike, IO]) -> VariableList:
         # Check separator, as OpenMDAO won't accept the dot.
         if self.path_separator == ".":
             _LOGGER.warning(
@@ -85,9 +84,7 @@ class VariableXmlStandardFormatter(VariableXmlBaseFormatter):
             )
         return super().read_variables(data_source)
 
-    def write_variables(
-        self, data_source: Union[str, PathLike, IO, IOBase], variables: VariableList
-    ):
+    def write_variables(self, data_source: Union[str, PathLike, IO], variables: VariableList):
         try:
             super().write_variables(data_source, variables)
         except FastXPathEvalError as err:

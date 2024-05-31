@@ -14,7 +14,6 @@ Conversion from OpenMDAO variables to XPath
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from io import IOBase
 from typing import IO, Sequence, Set, Union
 
 import numpy as np
@@ -41,7 +40,7 @@ class VarXpathTranslator:
         *,
         variable_names: Sequence[str] = None,
         xpaths: Sequence[str] = None,
-        source: Union[str, IOBase] = None
+        source: Union[str, IO] = None
     ):
         if variable_names is not None and xpaths is not None:
             self.set(variable_names, xpaths)
@@ -81,7 +80,7 @@ class VarXpathTranslator:
         self._variable_names = list(variable_names)
         self._xpaths = list(xpaths)
 
-    def read_translation_table(self, source: Union[str, IO, IOBase]):
+    def read_translation_table(self, source: Union[str, IO]):
         """
         Reads a file that sets how OpenMDAO variable are matched to XML Path.
         Provided file should have 2 comma-separated columns:

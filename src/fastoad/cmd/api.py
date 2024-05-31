@@ -23,9 +23,9 @@ import textwrap as tw
 from collections import defaultdict
 from collections.abc import Iterable
 from enum import Enum
-from io import TextIOBase
+from os import PathLike
 from time import time
-from typing import Dict, List, Union
+from typing import Dict, List, Union, TextIO
 
 import openmdao.api as om
 import pandas as pd
@@ -328,8 +328,8 @@ def generate_inputs(
 
 
 def list_variables(
-    configuration_file_path: str,
-    out: Union[TextIOBase, str] = None,
+    configuration_file_path: Union[str, PathLike],
+    out: Union[str, PathLike, TextIO] = None,
     overwrite: bool = False,
     force_text_output: bool = False,
     tablefmt: str = "grid",
@@ -436,8 +436,8 @@ def _generate_table_format(variables_df, tablefmt="grid"):
 
 
 def list_modules(
-    source_path: Union[List[str], str] = None,
-    out: Union[TextIOBase, str] = None,
+    source_path: Union[List[Union[str, PathLike]], str, PathLike] = None,
+    out: Union[str, PathLike, TextIO] = None,
     overwrite: bool = False,
     verbose: bool = False,
     force_text_output: bool = False,

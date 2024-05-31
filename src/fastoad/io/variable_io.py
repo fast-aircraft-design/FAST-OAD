@@ -12,7 +12,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fnmatch import fnmatchcase
-from io import IOBase
 from os import PathLike
 from pathlib import Path
 from typing import List, Sequence, Union, IO, Optional
@@ -37,7 +36,7 @@ class VariableIO:
 
     def __init__(
         self,
-        data_source: Optional[Union[str, PathLike, IO, IOBase]],
+        data_source: Optional[Union[str, PathLike, IO]],
         formatter: IVariableIOFormatter = None,
     ):
         if isinstance(data_source, (str, PathLike)):
@@ -149,7 +148,7 @@ class DataFile(VariableList):
 
     def __init__(
         self,
-        data_source: Union[str, PathLike, IO, IOBase, list] = None,
+        data_source: Union[str, PathLike, IO, list] = None,
         formatter: IVariableIOFormatter = None,
         load_data=True,
     ):
@@ -173,12 +172,12 @@ class DataFile(VariableList):
         self._variable_io = None
         self.formatter = formatter
 
-        if isinstance(data_source, (str, PathLike, IO, IOBase)):
+        if isinstance(data_source, list):
+            self.update(data_source)
+        elif data_source is not None:
             self.file_path = data_source
             if load_data:
                 self.load()
-        if isinstance(data_source, list):
-            self.update(data_source)
 
     @property
     def file_path(self) -> str:

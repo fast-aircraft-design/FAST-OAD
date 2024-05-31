@@ -12,7 +12,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import shutil
-from io import IOBase
 from os import PathLike
 from pathlib import Path
 from typing import Union, IO
@@ -45,14 +44,12 @@ class DummyFormatter(IVariableIOFormatter):
     def __init__(self, variables):
         self.variables = variables
 
-    def read_variables(self, data_source: Union[str, PathLike, IO, IOBase]) -> VariableList:
+    def read_variables(self, data_source: Union[str, PathLike, IO]) -> VariableList:
         var_list = VariableList()
         var_list.update(self.variables, add_variables=True)
         return var_list
 
-    def write_variables(
-        self, data_source: Union[str, PathLike, IO, IOBase], variables: VariableList
-    ):
+    def write_variables(self, data_source: Union[str, PathLike, IO], variables: VariableList):
         self.variables.update(variables, add_variables=True)
 
 

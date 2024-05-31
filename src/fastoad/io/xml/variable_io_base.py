@@ -17,7 +17,6 @@ Defines how OpenMDAO variables are serialized to XML using a conversion table
 import json
 import logging
 import re
-from io import IOBase
 from os import PathLike
 from pathlib import Path
 from typing import IO, Union, Optional
@@ -90,7 +89,7 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
             r"\bin\b": "inch",
         }
 
-    def read_variables(self, data_source: Union[str, PathLike, IO, IOBase]) -> VariableList:
+    def read_variables(self, data_source: Union[str, PathLike, IO]) -> VariableList:
         variables = VariableList()
 
         # If there is a comment, it will be used as description if the previous
@@ -141,9 +140,7 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
 
         return variables
 
-    def write_variables(
-        self, data_source: Union[str, PathLike, IO, IOBase], variables: VariableList
-    ):
+    def write_variables(self, data_source: Union[str, PathLike, IO], variables: VariableList):
 
         root = etree.Element(ROOT_TAG)
 
@@ -175,7 +172,7 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
                 element.append(etree.Comment(variable.description))
         # Write
         tree = etree.ElementTree(root)
-        if not isinstance(data_source, (IO, IOBase)):
+        if isinstance(data_source, (str, PathLike)):
             make_parent_dir(data_source)
         if isinstance(data_source, Path):
             data_source = data_source.as_posix()

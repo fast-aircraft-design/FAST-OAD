@@ -15,7 +15,6 @@ Base class for VariableIOFormatter objects.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from abc import ABC, abstractmethod
-from io import IOBase
 from os import PathLike
 from typing import Union, IO
 
@@ -30,7 +29,7 @@ class IVariableIOFormatter(ABC):
     """
 
     @abstractmethod
-    def read_variables(self, data_source: Union[str, PathLike, IO, IOBase]) -> VariableList:
+    def read_variables(self, data_source: Union[str, PathLike, IO]) -> VariableList:
         """
         Reads variables from provided data source file.
 
@@ -39,9 +38,7 @@ class IVariableIOFormatter(ABC):
         """
 
     @abstractmethod
-    def write_variables(
-        self, data_source: Union[str, PathLike, IO, IOBase], variables: VariableList
-    ):
+    def write_variables(self, data_source: Union[str, PathLike, IO], variables: VariableList):
         """
         Writes variables to defined data source file.
 
