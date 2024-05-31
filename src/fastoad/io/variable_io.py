@@ -11,7 +11,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import logging
 from fnmatch import fnmatchcase
 from io import IOBase
 from os import PathLike
@@ -23,8 +22,6 @@ from . import IVariableIOFormatter
 from .xml import VariableXmlStandardFormatter
 from .._utils.files import as_path
 from ..exceptions import FastError
-
-_LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 class VariableIO:
