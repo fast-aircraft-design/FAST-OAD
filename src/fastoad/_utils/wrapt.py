@@ -1,4 +1,6 @@
-"""The place for module-level constants."""
+"""
+Utilities for usage of wrapt.
+"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -12,30 +14,20 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from aenum import Enum
+import copy
 
-# Services
-SERVICE_OPENMDAO_SYSTEM = "fast.openmdao.system"
-SERVICE_PROPULSION_WRAPPER = "fastoad.wrapper.propulsion"
-
-# Properties for RegisterOpenMDAOSystem
-OPTION_PROPERTY_NAME = "OPTIONS"
-DESCRIPTION_PROPERTY_NAME = "DESCRIPTION"
-DOMAIN_PROPERTY_NAME = "DOMAIN"
-ACTIVATED_SUBMODELS_PROPERTY_NAME = "ACTIVATED_SUBMODELS"
+import wrapt
 
 
-# Definition of model domains
-class ModelDomain(Enum):
+class CopyableFunctionWrapper(wrapt.FunctionWrapper):
     """
-    Enumeration of model domains.
+    A wrapt.FunctionWrapper that is compatible with (deep)copy.
     """
 
-    GEOMETRY = "Geometry"
-    AERODYNAMICS = "Aerodynamics"
-    HANDLING_QUALITIES = "Handling Qualities"
-    WEIGHT = "Weight"
-    PERFORMANCE = "Performance"
-    PROPULSION = "Propulsion"
-    OTHER = "Other"
-    UNSPECIFIED = "Unspecified"
+    def __copy__(self):
+        return type(self)(copy.copy(self.__wrapped__), self._self_wrapper, self._self_enabled)
+
+    def __deepcopy__(self, memo=None):
+        return type(self)(
+            copy.deepcopy(self.__wrapped__, memo), self._self_wrapper, self._self_enabled
+        )

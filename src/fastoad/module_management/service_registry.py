@@ -1,6 +1,6 @@
 """Module for registering services."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -12,16 +12,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 import logging
-from types import MethodType
 from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 
 import openmdao.api as om
+import wrapt
 from openmdao.core.system import System
 
 from ._plugins import FastoadLoader
 from .constants import (
+    ACTIVATED_SUBMODELS_PROPERTY_NAME,
     DESCRIPTION_PROPERTY_NAME,
     DOMAIN_PROPERTY_NAME,
     ModelDomain,
@@ -36,6 +36,7 @@ from .exceptions import (
     FastTooManySubmodelsError,
     FastUnknownSubmodelError,
 )
+from .._utils.wrapt import CopyableFunctionWrapper
 from ..model_base.propulsion import IOMPropulsionWrapper
 from ..openmdao.variables import Variable
 
@@ -74,16 +75,18 @@ class RegisterService:
 
         cls._base_class = base_class
 
-    def __init__(self, service_id: str, provider_id: str, desc=None):
+    def __init__(self, service_id: str, provider_id: str, desc: str = None, options: dict = None):
         """
         :param service_id: the identifier of the provided service
         :param provider_id: the identifier of the service provider to register
         :param desc: description of the service provider. If not provided, the docstring
                      of decorated class will be used.
+        :param options: a dictionary of options that will be defaults when instantiating the system
         """
         self._service_id = service_id
         self._id = provider_id
         self._desc = desc
+        self._options = options
 
     def __call__(self, service_class: Type[T]) -> Type[T]:
         if not issubclass(service_class, self._base_class):
@@ -108,7 +111,10 @@ class RegisterService:
         :return: the dictionary of properties that will be associated to the registered
                  service provider
         """
-        return {DESCRIPTION_PROPERTY_NAME: self._desc if self._desc else service_class.__doc__}
+        return {
+            DESCRIPTION_PROPERTY_NAME: self._desc if self._desc else service_class.__doc__,
+            OPTION_PROPERTY_NAME: self._options if self._options else {},
+        }
 
     @classmethod
     def explore_folder(cls, folder_path: str):
@@ -188,23 +194,38 @@ class _RegisterOpenMDAOService(RegisterService, base_class=System):
     or when instantiating the system with :class:`get_system`.
     """
 
-    def __init__(self, service_id: str, provider_id: str, desc=None, options: dict = None):
+    def __init__(
+        self,
+        service_id: str,
+        provider_id: str,
+        *args,
+        desc=None,
+        options: dict = None,
+        activated_submodels: dict = None,
+        **kwargs
+    ):
         """
         :param service_id: the identifier of the provided service
         :param provider_id: the identifier of the service provider to register
         :param desc: description of the service. If not provided, the docstring will be used.
         :param options: a dictionary of options that will be defaults when instantiating the system
+        :param activated_submodels: a dictionary to define sub-models to be used by default.
         """
-        super().__init__(service_id, provider_id, desc)
-        self._options = options
+        super().__init__(service_id, provider_id, *args, desc=desc, options=options, **kwargs)
+        self._activated_submodels = activated_submodels
 
     def get_properties(self, service_class: Type[T]) -> dict:
         properties = super().get_properties(service_class)
-        properties.update({OPTION_PROPERTY_NAME: self._options if self._options else {}})
+        properties.update(
+            {
+                ACTIVATED_SUBMODELS_PROPERTY_NAME: self._activated_submodels
+                if self._activated_submodels
+                else {}
+            }
+        )
         return properties
 
     def __call__(self, service_class: Type[T]) -> Type[T]:
-
         # service_class.__module__ provides the name for the .py file, but
         # we want just the parent package name.
         package_name = ".".join(service_class.__module__.split(".")[:-1])
@@ -245,60 +266,42 @@ class _RegisterOpenMDAOService(RegisterService, base_class=System):
             if invalid_options:
                 raise FastBadSystemOptionError(identifier, invalid_options)
 
-        decorated_system = cls._option_decorator(system)
-        return decorated_system
+        system.setup = cls._setup_wrapper(system.setup)
+        return system
 
     @staticmethod
-    def _option_decorator(instance: System) -> System:
+    @wrapt.decorator(proxy=CopyableFunctionWrapper)
+    def _setup_wrapper(setup, system, args, kwargs):
         """
-        Decorates provided OpenMDAO instance so that instance.options are populated
-        using iPOPO property named after OPTION_PROPERTY_NAME constant.
+        Decorates provided OpenMDAO setup method to do FAST-OAD stuff.
 
-        :param instance: the instance to decorate
-        :return: the decorated instance
+        system.options is populated using iPOPO property named after
+        OPTION_PROPERTY_NAME constant.
+
+        RegisterSubmodel.active_models is temporarily modified to use associated
+        submodels, if none priorly defined.
+
         """
 
-        # Rationale:
-        #   The idea here is to populate the options at `setup()` time while keeping
-        #   all the operations that are in the original `setup()` of the class.
-        #
-        #   This could have been done by making all our OpenMDAO classes inherit from
-        #   a base class where the option values are retrieved, but modifying each
-        #   OpenMDAO class looks overkill. Moreover, it would add to them a dependency
-        #   to FAST-OAD after having avoided to introduce dependencies outside OpenMDAO.
-        #   Last but not least, we would need future contributor to stick to this practice
-        #   of inheritance.
-        #
-        #   Therefore, the most obvious alternative is a decorator. In this decorator, we
-        #   could have produced a new instance of the same class that has its own `setup()`
-        #   that calls the original `setup()` (i.e. the original Decorator pattern AIUI)
-        #   but the new instance would be out of iPOPO's scope.
-        #   So we just modify the original instance where we need to "replace"
-        #   the `setup()` method to have our code called automagically, without losing the
-        #   initial code of `setup()` where there is probably important things. So the trick
-        #   is to rename the original `setup()` as `_setup_before_option_decorator()`, and create a
-        #   new `setup()` that does its job and then calls `_setup_before_option_decorator()`.
+        current_active_models = RegisterSubmodel.active_models
 
-        def setup(self):
-            """Will replace the original setup() method"""
+        # Ensuring proper sub-models are used.
+        getattr(system, "_" + ACTIVATED_SUBMODELS_PROPERTY_NAME, None)
+        specific_submodels = getattr(system, "_" + ACTIVATED_SUBMODELS_PROPERTY_NAME, None)
+        RegisterSubmodel.active_models = specific_submodels
+        RegisterSubmodel.active_models.update(current_active_models)
 
-            # Use values from iPOPO option properties
-            option_dict = getattr(self, "_" + OPTION_PROPERTY_NAME, None)
-            if option_dict:
-                for name, value in option_dict.items():
-                    self.options[name] = value
+        # Ensuring defined option values are applied.
+        option_dict = getattr(system, "_" + OPTION_PROPERTY_NAME, None)
+        if option_dict:
+            for name, value in option_dict.items():
+                system.options[name] = value
 
-            # Call the original setup method
-            self._setup_before_option_decorator()
+        result = setup(*args, **kwargs)
 
-        # Move the (already bound) method "setup" to "_setup_before_option_decorator"
-        setattr(instance, "_setup_before_option_decorator", instance.setup)
+        RegisterSubmodel.active_models = current_active_models
 
-        # Create and bind the new "setup" method
-        setup_method = MethodType(setup, instance)
-        setattr(instance, "setup", setup_method)
-
-        return instance
+        return result
 
 
 class RegisterSpecializedService(RegisterService):
@@ -351,7 +354,13 @@ class RegisterSpecializedService(RegisterService):
         cls._domain = domain
 
     def __init__(
-        self, provider_id: str, desc=None, domain: ModelDomain = None, options: dict = None
+        self,
+        provider_id: str,
+        *args,
+        desc=None,
+        domain: ModelDomain = None,
+        options: dict = None,
+        **kwargs
     ):
         """
         :param provider_id: the identifier of the service provider to register
@@ -359,8 +368,9 @@ class RegisterSpecializedService(RegisterService):
         :param domain: a category for the registered service provider
         :param options: a dictionary of options that can be associated to the service provider
         """
-        super().__init__(self.__class__.service_id, provider_id, desc)
-        self._options = options
+        super().__init__(
+            self.__class__.service_id, provider_id, *args, desc=desc, options=options, **kwargs
+        )
         if domain:
             self._domain = domain
 
@@ -369,7 +379,6 @@ class RegisterSpecializedService(RegisterService):
         properties.update(
             {
                 DOMAIN_PROPERTY_NAME: self._domain if self._domain else ModelDomain.UNSPECIFIED,
-                OPTION_PROPERTY_NAME: self._options if self._options else {},
             }
         )
         return properties
@@ -395,7 +404,7 @@ class _RegisterSpecializedOpenMDAOService(RegisterSpecializedService, _RegisterO
 
 
 class RegisterPropulsion(
-    _RegisterSpecializedOpenMDAOService,
+    RegisterSpecializedService,
     base_class=IOMPropulsionWrapper,
     service_id=SERVICE_PROPULSION_WRAPPER,
     domain=ModelDomain.PROPULSION,
