@@ -12,8 +12,9 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import shutil
+from os import PathLike
 from pathlib import Path
-from typing import IO, Union
+from typing import Union, IO
 
 import openmdao.api as om
 import pytest
@@ -43,17 +44,17 @@ class DummyFormatter(IVariableIOFormatter):
     def __init__(self, variables):
         self.variables = variables
 
-    def read_variables(self, data_source: Union[str, IO]) -> VariableList:
+    def read_variables(self, data_source: Union[str, PathLike, IO]) -> VariableList:
         var_list = VariableList()
         var_list.update(self.variables, add_variables=True)
         return var_list
 
-    def write_variables(self, data_source: Union[str, IO], variables: VariableList):
+    def write_variables(self, data_source: Union[str, PathLike, IO], variables: VariableList):
         self.variables.update(variables, add_variables=True)
 
 
 def test_datafile_save_read(cleanup, variables_ref):
-    file_path = (RESULTS_FOLDER_PATH / "dummy_data_file.xml").as_posix()
+    file_path = RESULTS_FOLDER_PATH / "dummy_data_file.xml"
     with pytest.raises(FileNotFoundError) as exc_info:
         _ = DataFile(file_path)
     assert exc_info.value.args[0] == f'File "{file_path}" is unavailable for reading.'
@@ -75,6 +76,16 @@ def test_datafile_save_read(cleanup, variables_ref):
     assert len(data_file_2) == 2
 
     assert set(data_file_2) == set(variables_ref)
+
+    # Check using text file object --------------------
+    with open(file_path) as text_file_io:
+        data_file_3 = DataFile(text_file_io)
+    assert data_file_3 == data_file_2
+
+    # Check using binary file object --------------------
+    with open(file_path, "rb") as binary_file_io:
+        data_file_4 = DataFile(binary_file_io)
+    assert data_file_4 == data_file_2
 
 
 def test_datafile_from_ivc(variables_ref):

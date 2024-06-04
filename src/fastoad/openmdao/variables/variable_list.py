@@ -2,7 +2,7 @@
 Class for managing a list of OpenMDAO variables.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -411,3 +411,6 @@ class VariableList(list):
             return type(self)(super().__add__(other))
         else:
             return super().__add__(other)
+
+    def __eq__(self, other) -> bool:
+        return set(self) == set(other)
