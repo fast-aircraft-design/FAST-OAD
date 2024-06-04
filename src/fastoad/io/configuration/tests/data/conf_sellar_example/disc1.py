@@ -26,6 +26,7 @@ class RegisteredDisc1(BasicDisc1):
         # These options have no effect and are used for checks
         self.options.declare("dummy_disc1_option", types=dict, default={})
         self.options.declare("dummy_generic_option", types=str, default="")
+        self.options.declare("input_file", types=str, default="")
 
     def setup(self):
         self.add_input("x", val=np.nan, desc="")  # NaN as default for testing connexion check

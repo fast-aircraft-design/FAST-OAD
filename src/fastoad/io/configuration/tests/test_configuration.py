@@ -141,11 +141,22 @@ def test_problem_definition_with_xml_ref(cleanup, caplog):
 
         problem = conf.get_problem(read_inputs=True, auto_scaling=True)
         problem.setup()
+
         # check the global way to set options
         assert problem.model.functions.f.options["dummy_f_option"] == 10
         assert problem.model.functions.f.options["dummy_generic_option"] == "it works"
         assert problem.model.cycle.disc1.options["dummy_disc1_option"] == {"a": 1, "b": 2}
         assert problem.model.cycle.disc1.options["dummy_generic_option"] == "it works here also"
+
+        # check that path options are made absolute
+        assert (
+            problem.model.functions.options["input_path"]
+            == (DATA_FOLDER_PATH / "translator.txt").as_posix()
+        )
+        assert (
+            problem.model_options["cycle.*"]["input_file"]
+            == (DATA_FOLDER_PATH / "__init__.py").as_posix()
+        )
 
         # runs evaluation without optimization loop to check that inputs are taken into account
         problem.run_model()

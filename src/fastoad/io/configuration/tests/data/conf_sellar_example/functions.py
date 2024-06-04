@@ -30,6 +30,7 @@ class Functions(om.Group):
         # Defined the default "f" function. This choice can be overridden in
         # configuration file
         RegisterSubmodel.active_models[SERVICE_FUNCTION_F] = "function.f.default"
+        self.options.declare("input_path", types=str, default="")
 
     def setup(self):
         self.add_subsystem("f", RegisterSubmodel.get_submodel(SERVICE_FUNCTION_F), promotes=["*"])
