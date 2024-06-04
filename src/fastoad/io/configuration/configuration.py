@@ -126,9 +126,10 @@ class FASTOADProblemConfigurator:
         if driver:
             problem.driver = _om_eval(driver)
 
-        model_options = self._data.get(KEY_MODEL_OPTIONS)
-        if model_options:
-            problem.model_options = model_options
+        model_options = self._data.get(KEY_MODEL_OPTIONS, {})
+        for options in model_options.values():
+            self._make_option_path_values_absolute(options)
+        problem.model_options = model_options
 
         if self.get_optimization_definition():
             self._add_constraints(problem.model, auto_scaling)
@@ -161,6 +162,7 @@ class FASTOADProblemConfigurator:
         with open_text(resources, JSON_SCHEMA_NAME) as json_file:
             json_schema = json.loads(json_file.read())
         validate(self._data, json_schema)
+
         # Issue a simple warning for unknown keys at root level
         for key in self._data:
             if key not in json_schema["properties"].keys():
@@ -310,18 +312,7 @@ class FASTOADProblemConfigurator:
                     options = value.copy()
                     identifier = options.pop(KEY_COMPONENT_ID)
 
-                    # Process option values that are relative paths
-                    conf_folder_path = self._conf_file_path.parent
-                    for name, option_value in options.items():
-                        option_is_path = name.endswith(
-                            ("file", "path", "dir", "directory", "folder")
-                        )
-                        if (
-                            isinstance(option_value, str)
-                            and option_is_path
-                            and not Path(option_value).is_absolute()
-                        ):
-                            options[name] = (conf_folder_path / option_value).as_posix()
+                    self._make_option_path_values_absolute(options)
 
                     sub_component = RegisterOpenMDAOSystem.get_system(identifier, options=options)
                     group.add_subsystem(key, sub_component, promotes=["*"])
@@ -354,6 +345,17 @@ class FASTOADProblemConfigurator:
                         setattr(group, key, value)
                 except Exception as err:
                     raise FASTConfigurationBadOpenMDAOInstructionError(err, key, value)
+
+    def _make_option_path_values_absolute(self, options):
+        # Process option values that are relative paths
+        conf_folder_path = self._conf_file_path.parent
+        for name, option_value in options.items():
+            if (
+                isinstance(option_value, str)
+                and name.endswith(("file", "path", "dir", "directory", "folder"))
+                and not Path(option_value).is_absolute()
+            ):
+                options[name] = (conf_folder_path / option_value).as_posix()
 
     def _add_constraints(self, model, auto_scaling):
         """
@@ -469,7 +471,7 @@ class _TOMLSerializer(_IDictSerializer):
 
     def read(self, file_path: Union[str, PathLike]):
         with open(file_path, "r") as toml_file:
-            self._data = tomlkit.loads(toml_file.read())
+            self._data = tomlkit.loads(toml_file.read()).value
 
     def write(self, file_path: Union[str, PathLike]):
         with open(file_path, "w") as file:
