@@ -28,6 +28,7 @@ driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
             id = "configuration_test.sellar.disc2"
     [model.functions]
         id = "configuration_test.sellar.functions"
+        input_path = "translator.txt"
 
 [model_options."*"]
   dummy_f_option = 10
@@ -37,6 +38,7 @@ driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
     b = 2
 [model_options."cycle.*"]
   dummy_generic_option = "it works here also"
+  input_file = "__init__.py"
 
 [submodels]
     "service.function.f" = "function.f.default"

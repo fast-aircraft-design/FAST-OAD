@@ -2,7 +2,7 @@
 Convenience functions for helping tests
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,15 +14,11 @@ Convenience functions for helping tests
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import logging
-
 import numpy as np
 import openmdao.api as om
 from openmdao.core.system import System
 
 from fastoad.openmdao.variables import VariableList
-
-_LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 def run_system(

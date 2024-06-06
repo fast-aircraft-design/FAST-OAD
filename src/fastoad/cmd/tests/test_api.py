@@ -62,7 +62,7 @@ def test_generate_notebooks_with_one_dist_plugin(
 ):
     target_path = RESULTS_FOLDER_PATH / "notebooks_1dist"
 
-    api.generate_notebooks(target_path.as_posix())
+    api.generate_notebooks(target_path)
     assert (target_path / "test_plugin_1" / "notebook_1.ipynb").is_file()
     assert (target_path / "test_plugin_4" / "notebook_1.ipynb").is_file()
     assert (target_path / "test_plugin_4" / "data").is_dir()
@@ -292,7 +292,7 @@ def test_generate_inputs(cleanup):
     input_file_path = Path(api.generate_inputs(CONFIGURATION_FILE_PATH, overwrite=False))
     assert input_file_path == RESULTS_FOLDER_PATH / "inputs.xml"
     assert input_file_path.exists()
-    data = DataFile(input_file_path.as_posix())
+    data = DataFile(input_file_path)
     assert len(data) == 2
     assert "x" in data.names() and "z" in data.names()
 
@@ -312,7 +312,7 @@ def test_generate_inputs(cleanup):
 
     assert input_file_path == RESULTS_FOLDER_PATH / "inputs.xml"
     assert input_file_path.exists()
-    data = DataFile(input_file_path.as_posix())
+    data = DataFile(input_file_path)
     assert len(data) == 2
     assert "x" in data.names() and "z" in data.names()
 
@@ -321,13 +321,13 @@ def test_generate_inputs(cleanup):
     input_file_path = Path(api.generate_inputs(CONFIGURATION_FILE_PATH, overwrite=True))
     assert input_file_path == RESULTS_FOLDER_PATH / "inputs.xml"
     assert input_file_path.exists()
-    data = DataFile(input_file_path.as_posix())
+    data = DataFile(input_file_path)
     assert len(data) == 2
     assert "x" in data.names() and "z" in data.names()
 
 
 def test_list_modules(cleanup):
-    conf_file_path = CONFIGURATION_FILE_PATH.as_posix()
+    conf_file_path = CONFIGURATION_FILE_PATH
 
     # Run with stdout output (no test)
     api.list_modules()
@@ -337,38 +337,38 @@ def test_list_modules(cleanup):
     # Run with file output (test file existence)
     out_file = RESULTS_FOLDER_PATH / "list_modules.txt"
     assert not out_file.exists()
-    api.list_modules(conf_file_path, out_file.as_posix())
+    api.list_modules(conf_file_path, out_file)
     with pytest.raises(FastPathExistsError):
-        api.list_modules(conf_file_path, out_file.as_posix())
-    api.list_modules(conf_file_path, out_file.as_posix(), overwrite=True)
+        api.list_modules(conf_file_path, out_file)
+    api.list_modules(conf_file_path, out_file, overwrite=True)
 
     assert out_file.exists()
 
     #
     # Run with file output (test file existence)
-    source_folder = (DATA_FOLDER_PATH / "cmd_sellar_example").as_posix()
+    source_folder = DATA_FOLDER_PATH / "cmd_sellar_example"
 
     # Run with file output with folders (test file existence)
     out_file = RESULTS_FOLDER_PATH / "list_modules_with_folder.txt"
     assert not out_file.exists()
-    api.list_modules(source_folder, out_file.as_posix())
+    api.list_modules(source_folder, out_file)
     with pytest.raises(FastPathExistsError):
-        api.list_modules(source_folder, out_file.as_posix())
+        api.list_modules(source_folder, out_file)
 
     # Testing with single folder
-    api.list_modules(source_folder, out_file.as_posix(), overwrite=True)
+    api.list_modules(source_folder, out_file, overwrite=True)
 
     assert out_file.exists()
 
     # Testing with list of folders
     source_folder = [source_folder]
-    api.list_modules(source_folder, out_file.as_posix(), overwrite=True)
+    api.list_modules(source_folder, out_file, overwrite=True)
 
     assert out_file.exists()
 
 
 def test_list_variables(cleanup):
-    conf_file_path = CONFIGURATION_FILE_PATH.as_posix()
+    conf_file_path = CONFIGURATION_FILE_PATH
 
     # Run with stdout output (no test)
     api.list_variables(conf_file_path)
@@ -376,10 +376,10 @@ def test_list_variables(cleanup):
     # Run with file output (test file existence)
     out_file_path = RESULTS_FOLDER_PATH / "list_variables.txt"
     assert not out_file_path.exists()
-    api.list_variables(conf_file_path, out=out_file_path.as_posix())
+    api.list_variables(conf_file_path, out=out_file_path)
     with pytest.raises(FastPathExistsError):
-        api.list_variables(conf_file_path, out=out_file_path.as_posix())
-    api.list_variables(conf_file_path, out=out_file_path.as_posix(), overwrite=True)
+        api.list_variables(conf_file_path, out=out_file_path)
+    api.list_variables(conf_file_path, out=out_file_path, overwrite=True)
     assert out_file_path.exists()
 
     ref_file_path = DATA_FOLDER_PATH / "ref_list_variables.txt"
@@ -388,7 +388,7 @@ def test_list_variables(cleanup):
     # Test with variable_description.txt format
     api.list_variables(
         conf_file_path,
-        out=out_file_path.as_posix(),
+        out=out_file_path,
         overwrite=True,
         tablefmt="var_desc",
     )
@@ -431,9 +431,7 @@ def test_write_xdsm(cleanup):
 
 
 def test_evaluate_problem(cleanup):
-    api.generate_inputs(
-        CONFIGURATION_FILE_PATH, (DATA_FOLDER_PATH / "inputs.xml").as_posix(), overwrite=True
-    )
+    api.generate_inputs(CONFIGURATION_FILE_PATH, DATA_FOLDER_PATH / "inputs.xml", overwrite=True)
     api.evaluate_problem(CONFIGURATION_FILE_PATH, False)
     # Running again without forcing overwrite of outputs will make it fail
     with pytest.raises(FastPathExistsError):
@@ -446,9 +444,7 @@ def test_evaluate_problem(cleanup):
 
 
 def test_optimize_problem(cleanup):
-    api.generate_inputs(
-        CONFIGURATION_FILE_PATH, (DATA_FOLDER_PATH / "inputs.xml").as_posix(), overwrite=True
-    )
+    api.generate_inputs(CONFIGURATION_FILE_PATH, DATA_FOLDER_PATH / "inputs.xml", overwrite=True)
     api.optimize_problem(CONFIGURATION_FILE_PATH, False)
     # Running again without forcing overwrite of outputs will make it fail
     with pytest.raises(FastPathExistsError):
@@ -459,9 +455,7 @@ def test_optimize_problem(cleanup):
 
 
 def test_optimization_viewer(cleanup):
-    api.generate_inputs(
-        CONFIGURATION_FILE_PATH, (DATA_FOLDER_PATH / "inputs.xml").as_posix(), overwrite=True
-    )
+    api.generate_inputs(CONFIGURATION_FILE_PATH, DATA_FOLDER_PATH / "inputs.xml", overwrite=True)
 
     # Before a run
     api.optimization_viewer(CONFIGURATION_FILE_PATH)
@@ -474,7 +468,7 @@ def test_optimization_viewer(cleanup):
 
 def test_variable_viewer(cleanup):
 
-    file_path = (DATA_FOLDER_PATH / "short_inputs.xml").as_posix()
+    file_path = DATA_FOLDER_PATH / "short_inputs.xml"
 
     # Using default file formatter
     api.variable_viewer(file_path)

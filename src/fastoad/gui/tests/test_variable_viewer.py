@@ -23,19 +23,6 @@ from pandas.util.testing import assert_frame_equal
 
 from .. import VariableViewer
 
-#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
-#  FAST is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or
-#  (at your option) any later version.
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#  You should have received a copy of the GNU General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 DATA_FOLDER_PATH = Path(__file__).parent / "data"
 RESULTS_FOLDER_PATH = Path(__file__).parent / "results"
 
@@ -49,7 +36,7 @@ def test_variable_reader_display():
     """
     Basic tests for testing the VariableReader display method.
     """
-    filename = (DATA_FOLDER_PATH / "problem_outputs.xml").as_posix()
+    filename = DATA_FOLDER_PATH / "problem_outputs.xml"
 
     # pylint: disable=invalid-name # that's a common naming
     df = VariableViewer()
@@ -117,7 +104,7 @@ def test_variable_reader_load():
 
     ref_df = ref_df.reset_index(drop=True)
 
-    filename = (DATA_FOLDER_PATH / "light_data.xml").as_posix()
+    filename = DATA_FOLDER_PATH / "light_data.xml"
 
     # Testing file to df
     variable_viewer = VariableViewer()
@@ -186,7 +173,7 @@ def test_variable_reader_save():
 
     ref_df = ref_df.reset_index(drop=True)
 
-    filename = (RESULTS_FOLDER_PATH / "light_data.xml").as_posix()
+    filename = RESULTS_FOLDER_PATH / "light_data.xml"
 
     # Testing file to df
     variable_viewer = VariableViewer()

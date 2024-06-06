@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -12,12 +12,13 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from os import makedirs, path as pth
+from os import PathLike
 from typing import Optional
 
 import numpy as np
 from openmdao import api as om
 
+from fastoad._utils.files import make_parent_dir
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
 from fastoad.module_management.service_registry import RegisterPropulsion
@@ -44,7 +45,7 @@ class MissionComp(om.ExplicitComponent, BaseMissionComp):
         self.options.declare(
             "out_file",
             default="",
-            types=str,
+            types=(str, PathLike),
             desc="if provided, a csv file will be written at provided path with "
             "all computed flight points.",
         )
@@ -114,7 +115,7 @@ class MissionComp(om.ExplicitComponent, BaseMissionComp):
         }
         flight_points.rename(columns=rename_dict, inplace=True)
         if self.options["out_file"]:
-            makedirs(pth.dirname(self.options["out_file"]), exist_ok=True)
+            make_parent_dir(self.options["out_file"])
             flight_points.to_csv(self.options["out_file"])
 
         return flight_points

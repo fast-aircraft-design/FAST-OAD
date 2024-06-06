@@ -12,7 +12,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from dataclasses import InitVar, dataclass, field
-from os import path as pth
+from pathlib import Path
 from typing import Union
 
 import numpy as np
@@ -106,7 +106,7 @@ def plot_flight(flight_points, fig_filename, results_folder_path):
     labels = [l.get_label() for l in lines]
     plt.legend(lines, labels, loc=0)
 
-    plt.savefig(pth.join(results_folder_path, fig_filename))
+    plt.savefig(Path(results_folder_path, fig_filename))
     plt.close()
 
 

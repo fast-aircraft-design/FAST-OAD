@@ -25,6 +25,7 @@ model:
       id: configuration_test.sellar.disc2
   functions:
     id: configuration_test.sellar.functions
+    input_path: "translator.txt"
 
 model_options:
   "*":
@@ -35,6 +36,7 @@ model_options:
     dummy_generic_option: "it works"
   "cycle.*":
     dummy_generic_option: "it works here also"
+    input_file: "__init__.py"
 
 submodels:
   service.function.f: function.f.default

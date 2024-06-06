@@ -41,7 +41,7 @@ class RegisterDummyServiceB(
 @pytest.fixture(scope="module")
 def load():
     """Loads components"""
-    RegisterSpecializedService.explore_folder((DATA_FOLDER_PATH / "dummy_services").as_posix())
+    RegisterSpecializedService.explore_folder(DATA_FOLDER_PATH / "dummy_services")
 
 
 def test_get_provider_ids_without_explore_folders():

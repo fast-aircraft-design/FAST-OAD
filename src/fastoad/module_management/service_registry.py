@@ -1,6 +1,6 @@
 """Module for registering services."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,7 +13,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import logging
+from os import PathLike
 from types import MethodType
 from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 
@@ -39,7 +39,6 @@ from .exceptions import (
 from ..model_base.propulsion import IOMPropulsionWrapper
 from ..openmdao.variables import Variable
 
-_LOGGER = logging.getLogger(__name__)  # Logger for this module
 T = TypeVar("T")
 
 
@@ -215,7 +214,7 @@ class _RegisterOpenMDAOService(RegisterService, base_class=System):
         return super().__call__(service_class)
 
     @classmethod
-    def explore_folder(cls, folder_path: str):
+    def explore_folder(cls, folder_path: Union[str, PathLike]):
         """
         Explores provided folder and looks for service providers to register.
 

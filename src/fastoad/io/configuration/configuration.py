@@ -16,17 +16,18 @@ Module for building OpenMDAO problem from configuration file
 
 import json
 import logging
-import os.path as pth
 from abc import ABC, abstractmethod
 from importlib.resources import open_text
-from typing import Dict
+from os import PathLike
+from pathlib import Path
+from typing import Dict, List, Optional, Union
 
 import openmdao.api as om
 import tomlkit
 from jsonschema import validate
 from ruamel.yaml import YAML
 
-from fastoad._utils.files import make_parent_dir
+from fastoad._utils.files import as_path, make_parent_dir
 from fastoad.io import IVariableIOFormatter
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from fastoad.openmdao.problem import FASTOADProblem
@@ -63,41 +64,38 @@ class FASTOADProblemConfigurator:
     :param conf_file_path: if provided, configuration will be read directly from it
     """
 
-    def __init__(self, conf_file_path=None):
-        self._conf_file = None
-
-        self._serializer = _YAMLSerializer()
+    def __init__(self, conf_file_path: Union[str, PathLike] = None):
+        self._serializer: _IDictSerializer = _YAMLSerializer()
 
         # self._configuration_modifier offers a way to modify problems after
         # they have been generated from configuration (private usage for now)
-        self._configuration_modifier: "_IConfigurationModifier" = None
+        self._configuration_modifier: Optional["_IConfigurationModifier"] = None
 
+        self._conf_file_path: Optional[Path] = None
         if conf_file_path:
             self.load(conf_file_path)
 
     @property
-    def input_file_path(self):
+    def input_file_path(self) -> str:
         """path of file with input variables of the problem"""
-        path = str(self._serializer.data[KEY_INPUT_FILE])
-        if not pth.isabs(path):
-            path = pth.normpath(pth.join(pth.dirname(self._conf_file), path))
-        return path
+        return self._make_absolute(self._data[KEY_INPUT_FILE]).as_posix()
 
     @input_file_path.setter
-    def input_file_path(self, file_path: str):
-        self._serializer.data[KEY_INPUT_FILE] = file_path
+    def input_file_path(self, file_path: Union[str, PathLike]):
+        self._data[KEY_INPUT_FILE] = str(file_path)
 
     @property
-    def output_file_path(self):
+    def output_file_path(self) -> str:
         """path of file where output variables will be written"""
-        path = str(self._serializer.data[KEY_OUTPUT_FILE])
-        if not pth.isabs(path):
-            path = pth.normpath(pth.join(pth.dirname(self._conf_file), path))
-        return path
+        return self._make_absolute(self._data[KEY_OUTPUT_FILE]).as_posix()
 
     @output_file_path.setter
-    def output_file_path(self, file_path: str):
-        self._serializer.data[KEY_OUTPUT_FILE] = file_path
+    def output_file_path(self, file_path: Union[str, PathLike]):
+        self._data[KEY_OUTPUT_FILE] = str(file_path)
+
+    @property
+    def _data(self) -> dict:
+        return self._serializer.data
 
     def get_problem(self, read_inputs: bool = False, auto_scaling: bool = False) -> FASTOADProblem:
         """
@@ -109,7 +107,7 @@ class FASTOADProblemConfigurator:
                              variables and constraints
         :return: the problem instance
         """
-        if self._serializer.data is None:
+        if self._data is None:
             raise RuntimeError("read configuration file first")
 
         problem = FASTOADProblem()
@@ -124,13 +122,14 @@ class FASTOADProblemConfigurator:
         if read_inputs:
             problem.read_inputs()
 
-        driver = self._serializer.data.get(KEY_DRIVER, "")
+        driver = self._data.get(KEY_DRIVER, "")
         if driver:
             problem.driver = _om_eval(driver)
 
-        model_options = self._serializer.data.get(KEY_MODEL_OPTIONS)
-        if model_options:
-            problem.model_options = model_options
+        model_options = self._data.get(KEY_MODEL_OPTIONS, {})
+        for options in model_options.values():
+            self._make_option_path_values_absolute(options)
+        problem.model_options = model_options
 
         if self.get_optimization_definition():
             self._add_constraints(problem.model, auto_scaling)
@@ -141,53 +140,48 @@ class FASTOADProblemConfigurator:
 
         return problem
 
-    def load(self, conf_file):
+    def load(self, conf_file: Union[str, PathLike]):
         """
         Reads the problem definition
 
-        :param conf_file: Path to the file to open or a file descriptor
+        :param conf_file: Path to the file to open
         """
 
-        self._conf_file = pth.abspath(conf_file)  # for resolving relative paths
-        conf_dirname = pth.dirname(self._conf_file)
+        self._conf_file_path = as_path(conf_file).resolve()  # for resolving relative paths
 
-        if pth.splitext(self._conf_file)[-1] == ".toml":
+        if self._conf_file_path.suffix == ".toml":
             self._serializer = _TOMLSerializer()
             _LOGGER.warning(
                 "TOML-formatted configuration files are deprecated. Please use YAML format."
             )
         else:
             self._serializer = _YAMLSerializer()
-        self._serializer.read(self._conf_file)
+        self._serializer.read(self._conf_file_path)
 
         # Syntax validation
         with open_text(resources, JSON_SCHEMA_NAME) as json_file:
             json_schema = json.loads(json_file.read())
-        validate(self._serializer.data, json_schema)
+        validate(self._data, json_schema)
+
         # Issue a simple warning for unknown keys at root level
-        for key in self._serializer.data:
+        for key in self._data:
             if key not in json_schema["properties"].keys():
                 _LOGGER.warning('Configuration file: "%s" is not a FAST-OAD key.', key)
 
         # Looking for modules to register
-        module_folder_paths = self._serializer.data.get(KEY_FOLDERS)
-        if isinstance(module_folder_paths, str):
-            module_folder_paths = [module_folder_paths]
-        if module_folder_paths:
-            for folder_path in module_folder_paths:
-                folder_path = pth.join(conf_dirname, str(folder_path))
-                if not pth.exists(folder_path):
-                    _LOGGER.warning("SKIPPED %s: it does not exist.", folder_path)
-                else:
-                    RegisterOpenMDAOSystem.explore_folder(folder_path)
+        for module_folder_path in self._get_module_folder_paths():
+            if not module_folder_path.is_dir():
+                _LOGGER.warning("SKIPPED %s: it does not exist.", module_folder_path)
+            else:
+                RegisterOpenMDAOSystem.explore_folder(module_folder_path.as_posix())
 
         # Settings submodels
         RegisterSubmodel.cancel_submodel_deactivations()
-        submodel_specs = self._serializer.data.get(KEY_SUBMODELS, {})
+        submodel_specs = self._data.get(KEY_SUBMODELS, {})
         for submodel_requirement, submodel_id in submodel_specs.items():
             RegisterSubmodel.active_models[submodel_requirement] = submodel_id
 
-    def save(self, filename: str = None):
+    def save(self, filename: Union[str, PathLike] = None):
         """
         Saves the current configuration
         If no filename is provided, the initially read file is used.
@@ -195,13 +189,15 @@ class FASTOADProblemConfigurator:
         :param filename: file where to save configuration
         """
         if not filename:
-            filename = self._conf_file
+            filename = self._conf_file_path
 
         make_parent_dir(filename)
         self._serializer.write(filename)
 
     def write_needed_inputs(
-        self, source_file_path: str = None, source_formatter: IVariableIOFormatter = None
+        self,
+        source_file_path: Union[str, PathLike] = None,
+        source_formatter: IVariableIOFormatter = None,
     ):
         """
         Writes the input file of the problem with unconnected inputs of the
@@ -230,7 +226,7 @@ class FASTOADProblemConfigurator:
         """
 
         optimization_definition = {}
-        conf_dict = self._serializer.data.get(KEY_OPTIMIZATION)
+        conf_dict = self._data.get(KEY_OPTIMIZATION)
         if conf_dict:
             for sec, elements in conf_dict.items():
                 optimization_definition[sec] = {elem["name"]: elem for elem in elements}
@@ -251,7 +247,27 @@ class FASTOADProblemConfigurator:
         for key, value in optimization_definition.items():
             subpart[key] = [value for _, value in optimization_definition[key].items()]
         subpart = {"optimization": subpart}
-        self._serializer.data.update(subpart)
+        self._data.update(subpart)
+
+    def _make_absolute(self, path: Union[str, PathLike]) -> Path:
+        """
+        Make the provided path absolute using configuration file folder as base.
+
+        Does nothing if the path is already absolute.
+        """
+        path = as_path(path)
+        if not path.is_absolute():
+            path = (self._conf_file_path.parent / path).resolve()
+        return path
+
+    def _get_module_folder_paths(self) -> List[Path]:
+        module_folder_paths = self._data.get(KEY_FOLDERS)
+        # Key may be present, but with None value
+        if not module_folder_paths:
+            return []
+        if isinstance(module_folder_paths, str):
+            module_folder_paths = [module_folder_paths]
+        return [self._make_absolute(folder_path) for folder_path in module_folder_paths]
 
     def _build_model(self, problem: FASTOADProblem):
         """
@@ -261,9 +277,9 @@ class FASTOADProblemConfigurator:
         """
 
         model = problem.model
-        model.active_submodels = self._serializer.data.get(KEY_SUBMODELS, {})
+        model.active_submodels = self._data.get(KEY_SUBMODELS, {})
 
-        model_definition = self._serializer.data.get(KEY_MODEL)
+        model_definition = self._data.get(KEY_MODEL)
 
         try:
             if KEY_COMPONENT_ID in model_definition:
@@ -296,22 +312,7 @@ class FASTOADProblemConfigurator:
                     options = value.copy()
                     identifier = options.pop(KEY_COMPONENT_ID)
 
-                    # Process option values that are relative paths
-                    conf_dirname = pth.dirname(self._conf_file)
-                    for name, option_value in options.items():
-                        option_is_path = (
-                            name.endswith("file")
-                            or name.endswith("path")
-                            or name.endswith("dir")
-                            or name.endswith("directory")
-                            or name.endswith("folder")
-                        )
-                        if (
-                            isinstance(option_value, str)
-                            and option_is_path
-                            and not pth.isabs(option_value)
-                        ):
-                            options[name] = pth.join(conf_dirname, option_value)
+                    self._make_option_path_values_absolute(options)
 
                     sub_component = RegisterOpenMDAOSystem.get_system(identifier, options=options)
                     group.add_subsystem(key, sub_component, promotes=["*"])
@@ -344,6 +345,17 @@ class FASTOADProblemConfigurator:
                         setattr(group, key, value)
                 except Exception as err:
                     raise FASTConfigurationBadOpenMDAOInstructionError(err, key, value)
+
+    def _make_option_path_values_absolute(self, options):
+        # Process option values that are relative paths
+        conf_folder_path = self._conf_file_path.parent
+        for name, option_value in options.items():
+            if (
+                isinstance(option_value, str)
+                and name.endswith(("file", "path", "dir", "directory", "folder"))
+                and not Path(option_value).is_absolute()
+            ):
+                options[name] = (conf_folder_path / option_value).as_posix()
 
     def _add_constraints(self, model, auto_scaling):
         """
@@ -433,14 +445,14 @@ class _IDictSerializer(ABC):
         """
 
     @abstractmethod
-    def read(self, file_path: str):
+    def read(self, file_path: Union[str, PathLike]):
         """
         Reads data from provided file.
         :param file_path:
         """
 
     @abstractmethod
-    def write(self, file_path: str):
+    def write(self, file_path: Union[str, PathLike]):
         """
         Writes data to provided file.
         :param file_path:
@@ -457,11 +469,11 @@ class _TOMLSerializer(_IDictSerializer):
     def data(self):
         return self._data
 
-    def read(self, file_path: str):
+    def read(self, file_path: Union[str, PathLike]):
         with open(file_path, "r") as toml_file:
-            self._data = tomlkit.loads(toml_file.read())
+            self._data = tomlkit.loads(toml_file.read()).value
 
-    def write(self, file_path: str):
+    def write(self, file_path: Union[str, PathLike]):
         with open(file_path, "w") as file:
             file.write(tomlkit.dumps(self._data))
 
@@ -476,12 +488,12 @@ class _YAMLSerializer(_IDictSerializer):
     def data(self):
         return self._data
 
-    def read(self, file_path: str):
+    def read(self, file_path: Union[str, PathLike]):
         yaml = YAML(typ="safe")
         with open(file_path) as yaml_file:
             self._data = yaml.load(yaml_file)
 
-    def write(self, file_path: str):
+    def write(self, file_path: Union[str, PathLike]):
         yaml = YAML()
         yaml.default_flow_style = False
         with open(file_path, "w") as file:

@@ -33,7 +33,7 @@ def test_wing_geometry_plot():
     Basic tests for testing the plotting.
     """
 
-    filename = (DATA_FOLDER_PATH / "problem_outputs.xml").as_posix()
+    filename = DATA_FOLDER_PATH / "problem_outputs.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
@@ -57,7 +57,7 @@ def test_aircraft_geometry_plot():
     Basic tests for testing the plotting.
     """
 
-    filename = (DATA_FOLDER_PATH / "problem_outputs.xml").as_posix()
+    filename = DATA_FOLDER_PATH / "problem_outputs.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
@@ -81,7 +81,7 @@ def test_mass_breakdown_bar_plot():
     Basic tests for testing the plotting.
     """
 
-    filename = (DATA_FOLDER_PATH / "problem_outputs.xml").as_posix()
+    filename = DATA_FOLDER_PATH / "problem_outputs.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
@@ -105,7 +105,7 @@ def test_drag_polar_plot():
     Basic tests for testing the plotting.
     """
 
-    filename = (DATA_FOLDER_PATH / "problem_outputs.xml").as_posix()
+    filename = DATA_FOLDER_PATH / "problem_outputs.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
@@ -118,7 +118,7 @@ def test_mass_breakdown_sun_plot():
     Basic tests for testing the plotting.
     """
 
-    filename = (DATA_FOLDER_PATH / "problem_outputs.xml").as_posix()
+    filename = DATA_FOLDER_PATH / "problem_outputs.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
@@ -131,7 +131,7 @@ def test_payload_range_plot():
     Basic tests for testing the plotting.
     """
 
-    filename = (DATA_FOLDER_PATH / "problem_outputs.xml").as_posix()
+    filename = DATA_FOLDER_PATH / "problem_outputs.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify

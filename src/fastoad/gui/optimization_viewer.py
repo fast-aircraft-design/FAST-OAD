@@ -2,7 +2,7 @@
 Defines the variable viewer for postprocessing
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,8 +14,8 @@ Defines the variable viewer for postprocessing
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
 from math import isnan
+from pathlib import Path
 from typing import Dict
 
 import ipysheet as sh
@@ -87,13 +87,13 @@ class OptimizationViewer:
 
         self.problem_configuration = problem_configuration
 
-        if pth.isfile(self.problem_configuration.input_file_path):
+        if Path(self.problem_configuration.input_file_path).is_file():
             input_variables = DataFile(self.problem_configuration.input_file_path)
         else:
             # TODO: generate the input file by default ?
             raise FastMissingFile("Please generate input file before using the optimization viewer")
 
-        if pth.isfile(self.problem_configuration.output_file_path):
+        if Path(self.problem_configuration.output_file_path).is_file():
             self._MISSING_OUTPUT_FILE = False
             output_variables = DataFile(self.problem_configuration.output_file_path)
         else:

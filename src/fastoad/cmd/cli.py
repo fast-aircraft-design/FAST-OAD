@@ -1,6 +1,6 @@
 """Command Line Interface."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -12,7 +12,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
+from pathlib import Path
 
 import click
 import tabulate
@@ -304,7 +304,7 @@ def create_notebooks(path, from_package):
     IMPORTANT: Please note that all content of an existing FAST-OAD_notebooks/ will be overwritten.
     """
 
-    root_target_path = pth.abspath(pth.join(path, NOTEBOOK_FOLDER_NAME))
+    root_target_path = Path(path, NOTEBOOK_FOLDER_NAME).absolute()
     try:
         if manage_overwrite(
             api.generate_notebooks,

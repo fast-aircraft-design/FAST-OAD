@@ -32,7 +32,7 @@ def load():
     """Loads components"""
     previous_active_submodels = RegisterSubmodel.active_models
     RegisterSubmodel.active_models = {}
-    BundleLoader().explore_folder((DATA_FOLDER_PATH / "dummy_submodels").as_posix())
+    BundleLoader().explore_folder(DATA_FOLDER_PATH / "dummy_submodels")
     yield
     RegisterSubmodel.active_models = previous_active_submodels
 

@@ -37,7 +37,7 @@ def test_optimization_viewer_load(cleanup):
     """
     Basic tests for testing the OptimizationViewer load method.
     """
-    filename = (DATA_FOLDER_PATH / "valid_sellar.yml").as_posix()
+    filename = DATA_FOLDER_PATH / "valid_sellar.yml"
 
     # The problem has not yet been run
     problem_configuration = FASTOADProblemConfigurator(filename)

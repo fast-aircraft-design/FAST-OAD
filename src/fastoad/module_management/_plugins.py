@@ -2,7 +2,7 @@
 Plugin system for declaration of FAST-OAD models.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -20,11 +20,11 @@ Plugin system for declaration of FAST-OAD models.
 from __future__ import annotations
 
 import logging
-import os.path as pth
 import sys
 import warnings
 from dataclasses import InitVar, dataclass, field
 from enum import Enum
+from pathlib import Path
 from typing import Callable, Dict, List, Optional
 
 import numpy as np
@@ -135,7 +135,7 @@ class PluginDefinition:
                     package_name=self.subpackages[SubPackageNames.CONFIGURATIONS],
                 )
                 for file in PackageReader(self.subpackages[SubPackageNames.CONFIGURATIONS]).contents
-                if pth.splitext(file)[1] in [".yml", ".yaml"]
+                if Path(file).suffix in [".yml", ".yaml"]
             ]
 
         return []
@@ -155,7 +155,7 @@ class PluginDefinition:
                 for file in PackageReader(
                     self.subpackages[SubPackageNames.SOURCE_DATA_FILES]
                 ).contents
-                if pth.splitext(file)[1] in [".xml"]
+                if Path(file).suffix in [".xml"]
             ]
 
         return []

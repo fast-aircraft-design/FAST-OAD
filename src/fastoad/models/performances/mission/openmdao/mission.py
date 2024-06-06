@@ -14,8 +14,8 @@ FAST-OAD model for mission computation.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import logging
 from enum import EnumMeta
+from os import PathLike
 
 import numpy as np
 import openmdao.api as om
@@ -25,8 +25,6 @@ from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from .base import BaseMissionComp, NeedsOWE
 from .mission_run import AdvancedMissionComp
-
-_LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 @RegisterOpenMDAOSystem("fastoad.performances.mission", domain=ModelDomain.PERFORMANCE)
@@ -40,7 +38,7 @@ class OMMission(om.Group, BaseMissionComp, NeedsOWE):
         self.options.declare(
             "out_file",
             default="",
-            types=str,
+            types=(str, PathLike),
             desc="If provided, a csv file will be written at provided path with all computed "
             "flight points.",
         )

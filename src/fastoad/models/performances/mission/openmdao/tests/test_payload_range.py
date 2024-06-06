@@ -33,12 +33,12 @@ def cleanup():
 def test_payload_range_custom_breguet_mission(cleanup, with_dummy_plugin_2):
 
     input_file_path = DATA_FOLDER_PATH / "test_payload_range.xml"
-    ivc = DataFile(input_file_path.as_posix()).to_ivc()
+    ivc = DataFile(input_file_path).to_ivc()
 
     problem = run_system(
         PayloadRange(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            mission_file_path=(DATA_FOLDER_PATH / "test_payload_range.yml").as_posix(),
+            mission_file_path=DATA_FOLDER_PATH / "test_payload_range.yml",
             mission_name="operational",
             reference_area_variable="data:geometry:aircraft:reference_area",
             nb_contour_points=6,
@@ -104,7 +104,7 @@ def test_payload_range_custom_breguet_mission(cleanup, with_dummy_plugin_2):
 def test_payload_range_sizing_breguet(cleanup, with_dummy_plugin_2):
 
     input_file_path = DATA_FOLDER_PATH / "test_payload_range.xml"
-    ivc = DataFile(input_file_path.as_posix()).to_ivc()
+    ivc = DataFile(input_file_path).to_ivc()
 
     problem = run_system(
         PayloadRange(
@@ -139,7 +139,7 @@ def test_payload_range_sizing_breguet(cleanup, with_dummy_plugin_2):
 def test_payload_range_sizing_mission(cleanup, with_dummy_plugin_2):
 
     input_file_path = DATA_FOLDER_PATH / "test_payload_range.xml"
-    ivc = DataFile(input_file_path.as_posix()).to_ivc()
+    ivc = DataFile(input_file_path).to_ivc()
 
     problem = run_system(
         PayloadRange(

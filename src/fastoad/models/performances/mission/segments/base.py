@@ -12,7 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import logging
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass, field
@@ -27,8 +26,6 @@ from fastoad.model_base import FlightPoint
 from fastoad.model_base.datacls import MANDATORY_FIELD
 from ..base import IFlightPart, RegisterElement
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
-
-_LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 class RegisterSegment(RegisterElement, base_class=IFlightPart):

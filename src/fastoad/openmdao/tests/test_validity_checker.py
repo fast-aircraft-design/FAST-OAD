@@ -25,8 +25,6 @@ from ..problem import FASTOADProblem
 from ..validity_checker import ValidityDomainChecker, ValidityStatus
 from ..variables import Variable, VariableList
 
-_LOGGER = logging.getLogger(__name__)  # Logger for this module
-
 RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
 
 

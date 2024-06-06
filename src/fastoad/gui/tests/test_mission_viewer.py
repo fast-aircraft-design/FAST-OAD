@@ -28,7 +28,7 @@ def test_mission_viewer():
     """
     Basic tests for testing the mission viewer.
     """
-    filename = (DATA_FOLDER_PATH / "flight_points.csv").as_posix()
+    filename = DATA_FOLDER_PATH / "flight_points.csv"
 
     mission_viewer = MissionViewer()
 
@@ -41,5 +41,5 @@ def test_mission_viewer():
 
     # Testing with existing .yml
     with pytest.raises(TypeError):
-        filename = (DATA_FOLDER_PATH / "valid_sellar.yml").as_posix()
+        filename = DATA_FOLDER_PATH / "valid_sellar.yml"
         mission_viewer.add_mission(filename, name="Mission 2")

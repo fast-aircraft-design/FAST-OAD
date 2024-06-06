@@ -16,7 +16,6 @@ API
 
 import logging
 import os
-import os.path as pth
 import shutil
 import sys
 import textwrap as tw
@@ -24,6 +23,7 @@ from collections import defaultdict
 from collections.abc import Iterable
 from enum import Enum
 from os import PathLike
+from pathlib import Path
 from time import time
 from typing import Dict, List, Union, TextIO
 
@@ -34,7 +34,7 @@ from IPython.display import HTML, clear_output, display
 from tabulate import tabulate
 
 import fastoad.openmdao.whatsopt
-from fastoad._utils.files import make_parent_dir
+from fastoad._utils.files import as_path, make_parent_dir
 from fastoad._utils.resource_management.copy import copy_resource, copy_resource_folder
 from fastoad.cmd.exceptions import (
     FastNoAvailableNotebookError,
@@ -88,7 +88,7 @@ def get_plugin_information(print_data=False) -> Dict[str, DistributionPluginDefi
 
 
 def generate_notebooks(
-    destination_path: str,
+    destination_path: Union[str, PathLike],
     overwrite: bool = False,
     distribution_name=None,
 ):
@@ -101,6 +101,8 @@ def generate_notebooks(
     :param overwrite: if True and `destination_path` exists, it will be removed before writing.
     :param distribution_name: the name of an installed package that provides notebooks
     """
+    destination_path = as_path(destination_path)
+
     # Check available notebooks
     folder_info_list = FastoadLoader().get_notebook_folder_list(distribution_name)
 
@@ -108,8 +110,8 @@ def generate_notebooks(
         raise FastNoAvailableNotebookError(distribution_name)
 
     # Create and copy folder
-    destination_path = pth.abspath(destination_path)
-    if pth.exists(destination_path):
+    destination_path = destination_path.absolute()
+    if destination_path.exists():
         if overwrite:
             shutil.rmtree(destination_path)
         else:
@@ -137,7 +139,7 @@ def generate_notebooks(
             if not only_one_plugin:
                 target_path_elements.append(folder_info.plugin_name)
 
-            target_path = pth.join(*target_path_elements)
+            target_path = Path(*target_path_elements)
             os.makedirs(target_path)
             copy_resource_folder(folder_info.package_name, target_path)
 
@@ -146,7 +148,7 @@ def generate_notebooks(
 
 def _generate_user_file(
     user_file_type: UserFileType,
-    user_file_path: str,
+    user_file_path: Union[str, PathLike],
     overwrite: bool = False,
     distribution_name=None,
     sample_user_file_name=None,
@@ -168,6 +170,7 @@ def _generate_user_file(
     :return: path of generated file
     :raise FastPathExistsError: if overwrite==False and user_file_path already exists
     """
+    user_file_path = as_path(user_file_path)
 
     if distribution_name is None:
         # If no distribution is specified, but only one contains the type of user files
@@ -216,8 +219,8 @@ def _generate_user_file(
         file_info = dist_definition.get_source_data_file_info(sample_user_file_name)
 
     # Check on file overwrite
-    user_file_path = pth.abspath(user_file_path)
-    if not overwrite and pth.exists(user_file_path):
+    user_file_path = user_file_path.absolute()
+    if not overwrite and user_file_path.exists():
         raise FastPathExistsError(
             user_file_type.value.capitalize()
             + f" {user_file_path} not written because it already exists. "
@@ -236,7 +239,7 @@ def _generate_user_file(
 
 
 def generate_configuration_file(
-    configuration_file_path: str,
+    configuration_file_path: Union[str, PathLike],
     overwrite: bool = False,
     distribution_name=None,
     sample_file_name=None,
@@ -264,7 +267,7 @@ def generate_configuration_file(
 
 
 def generate_source_data_file(
-    source_data_file_path: str,
+    source_data_file_path: Union[str, PathLike],
     overwrite: bool = False,
     distribution_name=None,
     sample_file_name=None,
@@ -292,8 +295,8 @@ def generate_source_data_file(
 
 
 def generate_inputs(
-    configuration_file_path: str,
-    source_data_path: str = None,
+    configuration_file_path: Union[str, PathLike],
+    source_data_path: Union[str, PathLike] = None,
     source_data_path_schema="native",
     overwrite: bool = False,
 ) -> str:
@@ -310,8 +313,8 @@ def generate_inputs(
     conf = FASTOADProblemConfigurator(configuration_file_path)
     conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
 
-    input_file_path = conf.input_file_path
-    if not overwrite and pth.exists(conf.input_file_path):
+    input_file_path = as_path(conf.input_file_path)
+    if not overwrite and input_file_path.exists():
         raise FastPathExistsError(
             f"Input file {input_file_path} not written because it already exists. "
             "Use overwrite=True to bypass.",
@@ -324,7 +327,7 @@ def generate_inputs(
         conf.write_needed_inputs(source_data_path)
 
     _LOGGER.info("Problem inputs written in %s", input_file_path)
-    return input_file_path
+    return conf.input_file_path
 
 
 def list_variables(
@@ -355,6 +358,8 @@ def list_variables(
     :return: path of generated file, or None if no file was generated.
     :raise FastPathExistsError: if `overwrite==False` and `out` is a file path and the file exists
     """
+    configuration_file_path = as_path(configuration_file_path)
+
     if out is None:
         out = sys.stdout
 
@@ -380,9 +385,9 @@ def list_variables(
         .rename(columns={"name": "NAME", "desc": "DESCRIPTION"})
     )
 
-    if isinstance(out, str):
-        out = pth.abspath(out)
-        if not overwrite and pth.exists(out):
+    if isinstance(out, (str, PathLike)):
+        out = as_path(out).absolute()
+        if not overwrite and out.exists():
             raise FastPathExistsError(
                 f"File {out} not written because it already exists. "
                 "Use overwrite=True to bypass.",
@@ -462,19 +467,21 @@ def list_modules(
     if out is None:
         out = sys.stdout
 
-    if isinstance(source_path, str):
-        if pth.isfile(source_path):
+    if isinstance(source_path, (str, PathLike)):
+        source_path = as_path(source_path)
+        if source_path.is_file():
             conf = FASTOADProblemConfigurator(source_path)
             conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
             # As the problem has been configured,
             # BundleLoader now knows additional registered systems
-        elif pth.isdir(source_path):
+        elif source_path.is_dir():
             RegisterOpenMDAOSystem.explore_folder(source_path)
         else:
             raise FileNotFoundError(f"Could not find {source_path}")
     elif isinstance(source_path, Iterable):
         for folder_path in source_path:
-            if not pth.isdir(folder_path):
+            folder_path = as_path(folder_path)
+            if not folder_path.is_dir():
                 _LOGGER.warning("SKIPPED %s: folder does not exist.", folder_path)
             else:
                 RegisterOpenMDAOSystem.explore_folder(folder_path)
@@ -486,9 +493,9 @@ def list_modules(
     else:
         cell_list = _get_simple_system_list()
 
-    if isinstance(out, str):
-        out = pth.abspath(out)
-        if not overwrite and pth.exists(out):
+    if isinstance(out, (str, PathLike)):
+        out = as_path(out).absolute()
+        if not overwrite and out.exists():
             raise FastPathExistsError(
                 f"File {out} not written because it already exists. "
                 "Use overwrite=True to bypass.",
@@ -576,7 +583,11 @@ def _get_detailed_system_list():
     return cell_list
 
 
-def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: bool = False):
+def write_n2(
+    configuration_file_path: Union[str, PathLike],
+    n2_file_path: Union[str, PathLike] = None,
+    overwrite: bool = False,
+):
     """
     Write the N2 diagram of the problem in file n2.html
 
@@ -586,12 +597,14 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
     :return: path of generated file.
     :raise FastPathExistsError: if overwrite==False and n2_file_path already exists
     """
+    configuration_file_path = as_path(configuration_file_path)
+    n2_file_path = as_path(n2_file_path)
 
     if not n2_file_path:
-        n2_file_path = "n2.html"
-    n2_file_path = pth.abspath(n2_file_path)
+        n2_file_path = Path("n2.html")
+    n2_file_path = n2_file_path.absolute()
 
-    if not overwrite and pth.exists(n2_file_path):
+    if not overwrite and n2_file_path.exists():
         raise FastPathExistsError(
             f"N2-diagram file {n2_file_path} not written because it already exists. "
             "Use overwrite=True to bypass.",
@@ -608,13 +621,13 @@ def write_n2(configuration_file_path: str, n2_file_path: str = None, overwrite: 
     om.n2(problem, outfile=n2_file_path, show_browser=False)
     if InteractiveShell.initialized():
         clear_output()
-    _LOGGER.info("N2 diagram written in %s", pth.abspath(n2_file_path))
+    _LOGGER.info("N2 diagram written in %s", n2_file_path.resolve())
     return n2_file_path
 
 
 def write_xdsm(
-    configuration_file_path: str,
-    xdsm_file_path: str = None,
+    configuration_file_path: Union[str, PathLike],
+    xdsm_file_path: Union[str, PathLike] = None,
     overwrite: bool = False,
     depth: int = 2,
     wop_server_url: str = None,
@@ -632,11 +645,14 @@ def write_xdsm(
     :return: path of generated file.
     :raise FastPathExistsError: if overwrite==False and xdsm_file_path already exists
     """
-    if not xdsm_file_path:
-        xdsm_file_path = pth.join(pth.dirname(configuration_file_path), "xdsm.html")
-    xdsm_file_path = pth.abspath(xdsm_file_path)
+    configuration_file_path = as_path(configuration_file_path)
+    xdsm_file_path = as_path(xdsm_file_path)
 
-    if not overwrite and pth.exists(xdsm_file_path):
+    if not xdsm_file_path:
+        xdsm_file_path = configuration_file_path.parent / "xdsm.html"
+    xdsm_file_path = xdsm_file_path.absolute()
+
+    if not overwrite and xdsm_file_path.exists():
         raise FastPathExistsError(
             "XDSM-diagram file %s not written because it already exists. "
             "Use overwrite=True to bypass." % xdsm_file_path,
@@ -656,7 +672,7 @@ def write_xdsm(
 
 
 def _run_problem(
-    configuration_file_path: str,
+    configuration_file_path: Union[str, PathLike],
     overwrite: bool = False,
     mode="run_model",
     auto_scaling: bool = False,
@@ -677,10 +693,10 @@ def _run_problem(
     conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
     problem = conf.get_problem(read_inputs=True, auto_scaling=auto_scaling)
 
-    outputs_path = pth.normpath(problem.output_file_path)
-    if not overwrite and pth.exists(outputs_path):
+    outputs_path = as_path(problem.output_file_path)
+    if not overwrite and outputs_path.exists():
         raise FastPathExistsError(
-            f"Problem not run because output file {outputs_path} already exists. "
+            f"Problem not run because output file {outputs_path.resolve()} already exists. "
             "Use overwrite=True to bypass.",
             outputs_path,
         )
@@ -707,7 +723,9 @@ def _run_problem(
     return problem
 
 
-def evaluate_problem(configuration_file_path: str, overwrite: bool = False) -> FASTOADProblem:
+def evaluate_problem(
+    configuration_file_path: Union[str, PathLike], overwrite: bool = False
+) -> FASTOADProblem:
     """
     Runs model according to provided problem file
 
@@ -720,7 +738,9 @@ def evaluate_problem(configuration_file_path: str, overwrite: bool = False) -> F
 
 
 def optimize_problem(
-    configuration_file_path: str, overwrite: bool = False, auto_scaling: bool = False
+    configuration_file_path: Union[str, PathLike],
+    overwrite: bool = False,
+    auto_scaling: bool = False,
 ) -> FASTOADProblem:
     """
     Runs driver according to provided problem file
@@ -735,7 +755,7 @@ def optimize_problem(
     return _run_problem(configuration_file_path, overwrite, "run_driver", auto_scaling=auto_scaling)
 
 
-def optimization_viewer(configuration_file_path: str):
+def optimization_viewer(configuration_file_path: Union[str, PathLike]):
     """
     Displays optimization information and enables its editing
 
@@ -750,7 +770,9 @@ def optimization_viewer(configuration_file_path: str):
     return viewer.display()
 
 
-def variable_viewer(file_path: str, file_formatter: IVariableIOFormatter = None, editable=True):
+def variable_viewer(
+    file_path: Union[str, PathLike], file_formatter: IVariableIOFormatter = None, editable=True
+):
     """
     Displays a widget that enables to visualize variables information and edit their values.
 

@@ -17,6 +17,7 @@ Base classes for mission-related OpenMDAO components.
 from abc import ABCMeta
 from enum import Enum
 from importlib.resources import path
+from os import PathLike
 from typing import Optional, Union
 
 from openmdao.core.system import System
@@ -93,7 +94,7 @@ class BaseMissionComp(System, metaclass=ABCMeta):
         self.options.declare(
             "mission_file_path",
             default="::sizing_mission",
-            types=(str, MissionDefinition, MissionWrapper),
+            types=(str, PathLike, MissionDefinition, MissionWrapper),
             allow_none=True,
             check_valid=self._update_mission_wrapper,
             desc="The path to file that defines the mission.\n"
@@ -149,7 +150,7 @@ class BaseMissionComp(System, metaclass=ABCMeta):
 
     @staticmethod
     def get_mission_definition(
-        mission_file_path: Optional[Union[str, MissionDefinition]]
+        mission_file_path: Optional[Union[str, PathLike, MissionDefinition]]
     ) -> MissionDefinition:
         """
 
@@ -159,10 +160,11 @@ class BaseMissionComp(System, metaclass=ABCMeta):
         """
         if isinstance(mission_file_path, MissionDefinition):
             mission_definition = mission_file_path
-        elif "::" in mission_file_path:
+        elif "::" in str(mission_file_path):
             # The configuration file parser will have added the working directory before
             # the file name. But as the user-provided string begins with "::", we just
             # have to ignore all before "::".
+            mission_file_path = str(mission_file_path)
             i = mission_file_path.index("::")
             file_name = mission_file_path[i + 2 :] + ".yml"
             with path(resources, file_name) as mission_input_file:

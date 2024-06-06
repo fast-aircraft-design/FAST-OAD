@@ -88,7 +88,7 @@ def plot_flight(flight_points, fig_filename):
 def test_mission_component(cleanup, with_dummy_plugin_2):
 
     input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
-    ivc = DataFile(input_file_path.as_posix()).to_ivc()
+    ivc = DataFile(input_file_path).to_ivc()
 
     ivc.add_output("data:mission:operational_wo_gnd_effect:TOW", 70000, units="kg")
     ivc.add_output("data:mission:operational_wo_gnd_effect:OWE", 40000, units="kg")
@@ -102,10 +102,10 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
     problem = run_system(
         AdvancedMissionComp(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=(RESULTS_FOLDER_PATH / "test_mission.csv").as_posix(),
+            out_file=RESULTS_FOLDER_PATH / "test_mission.csv",
             use_initializer_iteration=False,
             mission_file_path=MissionWrapper(
-                (DATA_FOLDER_PATH / "test_mission_takeoff.yml").as_posix(),
+                DATA_FOLDER_PATH / "test_mission_takeoff.yml",
                 mission_name="operational_wo_gnd_effect",
             ),
         ),
@@ -134,7 +134,7 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
 def test_ground_effect(cleanup, with_dummy_plugin_2):
 
     input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
-    datafile = DataFile(input_file_path.as_posix())
+    datafile = DataFile(input_file_path)
     del datafile["data:mission:operational:takeoff:fuel"]
 
     ivc = datafile.to_ivc()
@@ -148,10 +148,10 @@ def test_ground_effect(cleanup, with_dummy_plugin_2):
     problem = run_system(
         AdvancedMissionComp(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=(RESULTS_FOLDER_PATH / "test_mission_to.csv").as_posix(),
+            out_file=RESULTS_FOLDER_PATH / "test_mission_to.csv",
             use_initializer_iteration=False,
             mission_file_path=MissionWrapper(
-                (DATA_FOLDER_PATH / "test_mission_takeoff.yml").as_posix(),
+                DATA_FOLDER_PATH / "test_mission_takeoff.yml",
                 mission_name="operational",
             ),
         ),
@@ -166,7 +166,7 @@ def test_ground_effect(cleanup, with_dummy_plugin_2):
 
 def test_start_stop(cleanup, with_dummy_plugin_2):
     input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
-    ivc = DataFile(input_file_path.as_posix()).to_ivc()
+    ivc = DataFile(input_file_path).to_ivc()
 
     ivc.add_output("data:mission:start_stop_mission:TOW", 79000, units="kg")
     ivc.add_output("data:mission:start_stop_mission:OWE", 40000, units="kg")
@@ -180,10 +180,10 @@ def test_start_stop(cleanup, with_dummy_plugin_2):
     problem = run_system(
         AdvancedMissionComp(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=(RESULTS_FOLDER_PATH / "test_mission_start_stop.csv").as_posix(),
+            out_file=RESULTS_FOLDER_PATH / "test_mission_start_stop.csv",
             use_initializer_iteration=False,
             mission_file_path=MissionWrapper(
-                (DATA_FOLDER_PATH / "test_mission_takeoff.yml").as_posix(),
+                DATA_FOLDER_PATH / "test_mission_takeoff.yml",
                 mission_name="start_stop_mission",
             ),
         ),
@@ -197,7 +197,7 @@ def test_start_stop(cleanup, with_dummy_plugin_2):
 
 def test_mission_group_without_loop(cleanup, with_dummy_plugin_2):
     input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
-    datafile = DataFile(input_file_path.as_posix())
+    datafile = DataFile(input_file_path)
     del datafile["data:mission:operational:takeoff:fuel"]
     ivc = datafile.to_ivc()
     ivc.add_output(
@@ -209,9 +209,9 @@ def test_mission_group_without_loop(cleanup, with_dummy_plugin_2):
     problem = run_system(
         OMMission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=(RESULTS_FOLDER_PATH / "test_unlooped_mission_group.csv").as_posix(),
+            out_file=RESULTS_FOLDER_PATH / "test_unlooped_mission_group.csv",
             use_initializer_iteration=False,
-            mission_file_path=(DATA_FOLDER_PATH / "test_mission_takeoff.yml").as_posix(),
+            mission_file_path=DATA_FOLDER_PATH / "test_mission_takeoff.yml",
             mission_name="operational",
             adjust_fuel=False,
         ),

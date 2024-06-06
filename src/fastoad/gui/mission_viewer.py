@@ -2,7 +2,7 @@
 Defines the analysis and plotting functions for postprocessing regarding the mission
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,13 +14,15 @@ Defines the analysis and plotting functions for postprocessing regarding the mis
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
+from os import PathLike
 from typing import Union
 
 import ipywidgets as widgets
 import pandas as pd
 import plotly.graph_objects as go
 from IPython.display import clear_output, display
+
+from fastoad._utils.files import as_path
 
 
 class MissionViewer:
@@ -41,22 +43,24 @@ class MissionViewer:
         # The y selector
         self._y_widget = None
 
-    def add_mission(self, mission_data: Union[str, pd.DataFrame], name=None):
+    def add_mission(self, mission_data: Union[str, PathLike, pd.DataFrame], name=None):
         """
         Adds the mission to the mission database (self.missions)
         :param mission_data: path of the mission file or Dataframe containing the mission data
         :param name: name to give to the mission
         """
-        if (
-            isinstance(mission_data, str)
-            and mission_data.endswith(".csv")
-            and pth.exists(mission_data)
-        ):
-            self.missions[name] = pd.read_csv(mission_data, index_col=0)
-        elif isinstance(mission_data, pd.DataFrame):
+        if isinstance(mission_data, pd.DataFrame):
             self.missions[name] = mission_data
         else:
-            raise TypeError("Unknown type for mission data, please use .csv of DataFrame")
+            mission_data = as_path(mission_data)
+            if (
+                mission_data is not None
+                and mission_data.suffix == ".csv"
+                and mission_data.is_file()
+            ):
+                self.missions[name] = pd.read_csv(mission_data, index_col=0)
+            else:
+                raise TypeError("Unknown type for mission data, please use .csv of DataFrame")
 
     def display(self):
         """
