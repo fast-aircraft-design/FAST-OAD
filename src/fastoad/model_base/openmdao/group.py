@@ -14,6 +14,8 @@ Convenience classes to be used in OpenMDAO components
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from collections import defaultdict
+
 import openmdao.api as om
 
 
@@ -37,6 +39,9 @@ class CycleGroup(om.Group):
 
     def setup(self):
         if self.options["use_inner_solver"]:
+            for solver_options in ["NLGS_options", "DS_options"]:
+                self.options[solver_options] = defaultdict(self.options[solver_options])
+
             self.nonlinear_solver = om.NonlinearBlockGS(**self.options["NLGS_options"])
             self.linear_solver = om.DirectSolver(**self.options["DS_options"])
         super().setup()
