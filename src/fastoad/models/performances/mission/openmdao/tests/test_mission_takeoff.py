@@ -102,10 +102,10 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
     problem = run_system(
         AdvancedMissionComp(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=(RESULTS_FOLDER_PATH / "test_mission.csv").as_posix(),
+            out_file=RESULTS_FOLDER_PATH / "test_mission.csv",
             use_initializer_iteration=False,
             mission_file_path=MissionWrapper(
-                (DATA_FOLDER_PATH / "test_mission_takeoff.yml").as_posix(),
+                DATA_FOLDER_PATH / "test_mission_takeoff.yml",
                 mission_name="operational_wo_gnd_effect",
             ),
         ),
@@ -148,10 +148,10 @@ def test_ground_effect(cleanup, with_dummy_plugin_2):
     problem = run_system(
         AdvancedMissionComp(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=(RESULTS_FOLDER_PATH / "test_mission_to.csv").as_posix(),
+            out_file=RESULTS_FOLDER_PATH / "test_mission_to.csv",
             use_initializer_iteration=False,
             mission_file_path=MissionWrapper(
-                (DATA_FOLDER_PATH / "test_mission_takeoff.yml").as_posix(),
+                DATA_FOLDER_PATH / "test_mission_takeoff.yml",
                 mission_name="operational",
             ),
         ),
@@ -180,10 +180,10 @@ def test_start_stop(cleanup, with_dummy_plugin_2):
     problem = run_system(
         AdvancedMissionComp(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=(RESULTS_FOLDER_PATH / "test_mission_start_stop.csv").as_posix(),
+            out_file=RESULTS_FOLDER_PATH / "test_mission_start_stop.csv",
             use_initializer_iteration=False,
             mission_file_path=MissionWrapper(
-                (DATA_FOLDER_PATH / "test_mission_takeoff.yml").as_posix(),
+                DATA_FOLDER_PATH / "test_mission_takeoff.yml",
                 mission_name="start_stop_mission",
             ),
         ),
@@ -209,9 +209,9 @@ def test_mission_group_without_loop(cleanup, with_dummy_plugin_2):
     problem = run_system(
         OMMission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=(RESULTS_FOLDER_PATH / "test_unlooped_mission_group.csv").as_posix(),
+            out_file=RESULTS_FOLDER_PATH / "test_unlooped_mission_group.csv",
             use_initializer_iteration=False,
-            mission_file_path=(DATA_FOLDER_PATH / "test_mission_takeoff.yml").as_posix(),
+            mission_file_path=DATA_FOLDER_PATH / "test_mission_takeoff.yml",
             mission_name="operational",
             adjust_fuel=False,
         ),

@@ -63,7 +63,7 @@ def test_sizing_mission(cleanup, with_dummy_plugin_2):
     problem = run_system(
         OMMission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=(RESULTS_FOLDER_PATH / "sizing_mission.csv").as_posix(),
+            out_file=RESULTS_FOLDER_PATH / "sizing_mission.csv",
             use_initializer_iteration=False,
             mission_file_path="::sizing_mission",
             adjust_fuel=False,

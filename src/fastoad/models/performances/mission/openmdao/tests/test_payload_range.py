@@ -38,7 +38,7 @@ def test_payload_range_custom_breguet_mission(cleanup, with_dummy_plugin_2):
     problem = run_system(
         PayloadRange(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            mission_file_path=(DATA_FOLDER_PATH / "test_payload_range.yml").as_posix(),
+            mission_file_path=DATA_FOLDER_PATH / "test_payload_range.yml",
             mission_name="operational",
             reference_area_variable="data:geometry:aircraft:reference_area",
             nb_contour_points=6,

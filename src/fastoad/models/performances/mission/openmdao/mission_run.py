@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -12,6 +12,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+from os import PathLike
 from typing import Optional
 
 import numpy as np
@@ -44,7 +45,7 @@ class MissionComp(om.ExplicitComponent, BaseMissionComp):
         self.options.declare(
             "out_file",
             default="",
-            types=str,
+            types=(str, PathLike),
             desc="if provided, a csv file will be written at provided path with "
             "all computed flight points.",
         )

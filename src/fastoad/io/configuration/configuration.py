@@ -20,14 +20,14 @@ from abc import ABC, abstractmethod
 from importlib.resources import open_text
 from os import PathLike
 from pathlib import Path
-from typing import Dict, List, Union, Optional
+from typing import Dict, List, Optional, Union
 
 import openmdao.api as om
 import tomlkit
 from jsonschema import validate
 from ruamel.yaml import YAML
 
-from fastoad._utils.files import make_parent_dir, as_path
+from fastoad._utils.files import as_path, make_parent_dir
 from fastoad.io import IVariableIOFormatter
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from fastoad.openmdao.problem import FASTOADProblem
@@ -76,25 +76,25 @@ class FASTOADProblemConfigurator:
             self.load(conf_file_path)
 
     @property
-    def input_file_path(self):
+    def input_file_path(self) -> str:
         """path of file with input variables of the problem"""
         return self._make_absolute(self._data[KEY_INPUT_FILE]).as_posix()
 
     @input_file_path.setter
-    def input_file_path(self, file_path: str):
+    def input_file_path(self, file_path: Union[str, PathLike]):
         self._data[KEY_INPUT_FILE] = str(file_path)
 
     @property
-    def output_file_path(self):
+    def output_file_path(self) -> str:
         """path of file where output variables will be written"""
         return self._make_absolute(self._data[KEY_OUTPUT_FILE]).as_posix()
 
     @output_file_path.setter
-    def output_file_path(self, file_path: str):
+    def output_file_path(self, file_path: Union[str, PathLike]):
         self._data[KEY_OUTPUT_FILE] = str(file_path)
 
     @property
-    def _data(self):
+    def _data(self) -> dict:
         return self._serializer.data
 
     def get_problem(self, read_inputs: bool = False, auto_scaling: bool = False) -> FASTOADProblem:

@@ -1,6 +1,6 @@
 """Mission generator."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,6 +15,7 @@
 from collections import ChainMap
 from copy import deepcopy
 from dataclasses import fields
+from os import PathLike
 from typing import Dict, List, Mapping, Optional, Union
 
 import pandas as pd
@@ -77,7 +78,7 @@ class MissionBuilder:
 
     def __init__(
         self,
-        mission_definition: Union[str, MissionDefinition],
+        mission_definition: Union[str, PathLike, MissionDefinition],
         *,
         propulsion: IPropulsion = None,
         reference_area: float = None,
@@ -114,11 +115,11 @@ class MissionBuilder:
         return self._definition
 
     @definition.setter
-    def definition(self, mission_definition: Union[str, MissionDefinition]):
-        if isinstance(mission_definition, str):
-            self._definition = MissionDefinition(mission_definition)
-        else:
+    def definition(self, mission_definition: Union[str, PathLike, MissionDefinition]):
+        if isinstance(mission_definition, MissionDefinition):
             self._definition = mission_definition
+        else:
+            self._definition = MissionDefinition(mission_definition)
 
         self._update_structure_builders()
 

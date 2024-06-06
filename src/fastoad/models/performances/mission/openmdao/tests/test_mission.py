@@ -96,10 +96,10 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
     problem = run_system(
         AdvancedMissionComp(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=(RESULTS_FOLDER_PATH / "mission.csv").as_posix(),
+            out_file=RESULTS_FOLDER_PATH / "mission.csv",
             use_initializer_iteration=False,
             mission_file_path=MissionWrapper(
-                (DATA_FOLDER_PATH / "test_mission.yml").as_posix(),
+                DATA_FOLDER_PATH / "test_mission.yml",
                 mission_name="operational",
             ),
             reference_area_variable="data:geometry:aircraft:reference_area",
@@ -167,10 +167,10 @@ def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
     problem = run_system(
         AdvancedMissionComp(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=(RESULTS_FOLDER_PATH / "breguet.csv").as_posix(),
+            out_file=RESULTS_FOLDER_PATH / "breguet.csv",
             use_initializer_iteration=False,
             mission_file_path=MissionWrapper(
-                (DATA_FOLDER_PATH / "test_breguet_from_block_fuel.yml").as_posix(),
+                DATA_FOLDER_PATH / "test_breguet_from_block_fuel.yml",
                 mission_name="operational",
             ),
             reference_area_variable="data:geometry:aircraft:reference_area",
@@ -211,9 +211,9 @@ def test_mission_group_without_fuel_adjustment(cleanup, with_dummy_plugin_2):
         run_system(
             OMMission(
                 propulsion_id="test.wrapper.propulsion.dummy_engine",
-                out_file=(RESULTS_FOLDER_PATH / "unlooped_mission_group.csv").as_posix(),
+                out_file=RESULTS_FOLDER_PATH / "unlooped_mission_group.csv",
                 use_initializer_iteration=False,
-                mission_file_path=(DATA_FOLDER_PATH / "test_mission.yml").as_posix(),
+                mission_file_path=DATA_FOLDER_PATH / "test_mission.yml",
                 adjust_fuel=False,
                 reference_area_variable="data:geometry:aircraft:reference_area",
                 add_solver=True,
@@ -224,9 +224,9 @@ def test_mission_group_without_fuel_adjustment(cleanup, with_dummy_plugin_2):
     problem = run_system(
         OMMission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=(RESULTS_FOLDER_PATH / "unlooped_mission_group.csv").as_posix(),
+            out_file=RESULTS_FOLDER_PATH / "unlooped_mission_group.csv",
             use_initializer_iteration=False,
-            mission_file_path=(DATA_FOLDER_PATH / "test_mission.yml").as_posix(),
+            mission_file_path=DATA_FOLDER_PATH / "test_mission.yml",
             mission_name="operational",
             adjust_fuel=False,
             reference_area_variable="data:geometry:aircraft:reference_area",
@@ -249,9 +249,9 @@ def test_mission_group_breguet_without_fuel_adjustment(cleanup, with_dummy_plugi
     problem = run_system(
         OMMission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=(RESULTS_FOLDER_PATH / "unlooped_breguet_mission_group.csv").as_posix(),
+            out_file=RESULTS_FOLDER_PATH / "unlooped_breguet_mission_group.csv",
             use_initializer_iteration=False,
-            mission_file_path=(DATA_FOLDER_PATH / "test_breguet.yml").as_posix(),
+            mission_file_path=DATA_FOLDER_PATH / "test_breguet.yml",
             adjust_fuel=False,
             reference_area_variable="data:geometry:aircraft:reference_area",
         ),
@@ -273,9 +273,9 @@ def test_mission_group_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
     problem = run_system(
         OMMission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=(RESULTS_FOLDER_PATH / "looped_mission_group.csv").as_posix(),
+            out_file=RESULTS_FOLDER_PATH / "looped_mission_group.csv",
             use_initializer_iteration=True,
-            mission_file_path=(DATA_FOLDER_PATH / "test_mission.yml").as_posix(),
+            mission_file_path=DATA_FOLDER_PATH / "test_mission.yml",
             mission_name="operational",
             add_solver=True,
             reference_area_variable="data:geometry:aircraft:reference_area",
@@ -320,9 +320,9 @@ def test_mission_group_breguet_with_fuel_adjustment(cleanup, with_dummy_plugin_2
     problem = run_system(
         OMMission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=(RESULTS_FOLDER_PATH / "looped_breguet_mission_group.csv").as_posix(),
+            out_file=RESULTS_FOLDER_PATH / "looped_breguet_mission_group.csv",
             use_initializer_iteration=True,
-            mission_file_path=(DATA_FOLDER_PATH / "test_breguet.yml").as_posix(),
+            mission_file_path=DATA_FOLDER_PATH / "test_breguet.yml",
             add_solver=True,
             reference_area_variable="data:geometry:aircraft:reference_area",
             is_sizing=True,
@@ -365,9 +365,9 @@ def test_mission_group_with_fuel_objective(cleanup, with_dummy_plugin_2):
     problem = run_system(
         OMMission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=(RESULTS_FOLDER_PATH / "fuel_as_objective.csv").as_posix(),
+            out_file=RESULTS_FOLDER_PATH / "fuel_as_objective.csv",
             use_initializer_iteration=False,
-            mission_file_path=(DATA_FOLDER_PATH / "test_mission.yml").as_posix(),
+            mission_file_path=DATA_FOLDER_PATH / "test_mission.yml",
             mission_name="fuel_as_objective",
             add_solver=True,
             adjust_fuel=False,
@@ -407,10 +407,10 @@ def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
     problem = run_system(
         AdvancedMissionComp(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=(RESULTS_FOLDER_PATH / "CL_limitation_1.csv").as_posix(),
+            out_file=RESULTS_FOLDER_PATH / "CL_limitation_1.csv",
             use_initializer_iteration=False,
             mission_file_path=MissionWrapper(
-                (DATA_FOLDER_PATH / "test_mission.yml").as_posix(),
+                DATA_FOLDER_PATH / "test_mission.yml",
                 mission_name="operational",
             ),
             reference_area_variable="data:geometry:aircraft:reference_area",
@@ -438,10 +438,10 @@ def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
     problem = run_system(
         AdvancedMissionComp(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=(RESULTS_FOLDER_PATH / "CL_limitation_2.csv").as_posix(),
+            out_file=RESULTS_FOLDER_PATH / "CL_limitation_2.csv",
             use_initializer_iteration=False,
             mission_file_path=MissionWrapper(
-                (DATA_FOLDER_PATH / "test_mission.yml").as_posix(),
+                DATA_FOLDER_PATH / "test_mission.yml",
                 mission_name="operational_optimal",
             ),
             reference_area_variable="data:geometry:aircraft:reference_area",
@@ -475,9 +475,9 @@ def test_mission_group_without_route(cleanup, with_dummy_plugin_2):
     problem = run_system(
         OMMission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=(RESULTS_FOLDER_PATH / "without_route_mission_group.csv").as_posix(),
+            out_file=RESULTS_FOLDER_PATH / "without_route_mission_group.csv",
             use_initializer_iteration=False,
-            mission_file_path=(DATA_FOLDER_PATH / "test_mission.yml").as_posix(),
+            mission_file_path=DATA_FOLDER_PATH / "test_mission.yml",
             mission_name="without_route",
             adjust_fuel=True,
             reference_area_variable="data:geometry:aircraft:reference_area",

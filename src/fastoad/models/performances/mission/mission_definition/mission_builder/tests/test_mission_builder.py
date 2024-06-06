@@ -75,7 +75,7 @@ def test_input_definition_units():
 
 def test_initialization():
     mission_builder = MissionBuilder(
-        (DATA_FOLDER_PATH / "mission.yml").as_posix(),
+        DATA_FOLDER_PATH / "mission.yml",
         propulsion=Mock(IPropulsion),
         reference_area=100.0,
     )
@@ -99,7 +99,7 @@ def test_initialization():
 
 def test_get_input_weight_variable_name():
     mission_builder = MissionBuilder(
-        (DATA_FOLDER_PATH / "mission.yml").as_posix(),
+        DATA_FOLDER_PATH / "mission.yml",
         propulsion=Mock(IPropulsion),
         reference_area=100.0,
     )
@@ -114,7 +114,7 @@ def test_get_input_weight_variable_name():
 
 def test_inputs():
     mission_builder = MissionBuilder(
-        (DATA_FOLDER_PATH / "mission.yml").as_posix(),
+        DATA_FOLDER_PATH / "mission.yml",
         propulsion=Mock(IPropulsion),
         reference_area=100.0,
     )
@@ -351,7 +351,7 @@ def test_get_route_ranges():
 
 def test_get_reserve():
     mission_builder = MissionBuilder(
-        (DATA_FOLDER_PATH / "mission.yml").as_posix(),
+        DATA_FOLDER_PATH / "mission.yml",
         propulsion=Mock(IPropulsion),
         reference_area=100.0,
     )

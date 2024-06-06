@@ -15,6 +15,7 @@ FAST-OAD model for mission computation.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from enum import EnumMeta
+from os import PathLike
 
 import numpy as np
 import openmdao.api as om
@@ -37,7 +38,7 @@ class OMMission(om.Group, BaseMissionComp, NeedsOWE):
         self.options.declare(
             "out_file",
             default="",
-            types=str,
+            types=(str, PathLike),
             desc="If provided, a csv file will be written at provided path with all computed "
             "flight points.",
         )

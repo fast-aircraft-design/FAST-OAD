@@ -55,7 +55,7 @@ def test_sizing_breguet(cleanup, with_dummy_plugin_2):
     problem = run_system(
         OMMission(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=(RESULTS_FOLDER_PATH / "sizing_breguet.csv").as_posix(),
+            out_file=RESULTS_FOLDER_PATH / "sizing_breguet.csv",
             use_initializer_iteration=False,
             mission_file_path="::sizing_breguet",
             adjust_fuel=False,
