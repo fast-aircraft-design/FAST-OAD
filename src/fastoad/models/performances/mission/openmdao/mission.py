@@ -21,6 +21,7 @@ import numpy as np
 import openmdao.api as om
 import pandas as pd
 
+from fastoad.model_base.openmdao.group import CycleGroup
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from .base import BaseMissionComp, NeedsOWE
@@ -28,7 +29,13 @@ from .mission_run import AdvancedMissionComp
 
 
 @RegisterOpenMDAOSystem("fastoad.performances.mission", domain=ModelDomain.PERFORMANCE)
-class OMMission(om.Group, BaseMissionComp, NeedsOWE):
+class OMMission(
+    CycleGroup,
+    BaseMissionComp,
+    NeedsOWE,
+    use_solver_by_default=False,
+    default_nonlinear_options={"maxiter": 30, "rtol": 1.0e-4, "iprint": 0},
+):
     """
     Computes a mission as specified in mission input file.
     """
@@ -57,7 +64,7 @@ class OMMission(om.Group, BaseMissionComp, NeedsOWE):
             default=True,
             types=bool,
             desc="If True, block fuel will fit fuel consumption during mission. In that case, a "
-            "solver (local or global) will be needed. (see `add_solver` option for more"
+            "solver (local or global) will be needed. (see `use_inner_solver` option for more"
             "information)\n"
             "If False, block fuel will be taken from input data.",
         )
@@ -84,8 +91,13 @@ class OMMission(om.Group, BaseMissionComp, NeedsOWE):
         )
         self.options.declare(
             "add_solver",
-            default=False,
+            default=self.use_solver_by_default,
             types=bool,
+            deprecation=(
+                'Option "add_solver" is deprecated for mission module. '
+                'Please use "use_inner_solver" instead.',
+                "use_inner_solver",
+            ),
             desc="If True, a local solver is set for the mission computation.\n"
             "It is useful if `adjust_fuel` is set to True, or to ensure consistency between "
             "ramp weight and takeoff weight + taxi-out fuel.\n"
@@ -116,9 +128,6 @@ class OMMission(om.Group, BaseMissionComp, NeedsOWE):
                 self.name_provider.NEEDED_BLOCK_FUEL.value,
                 self.name_provider.BLOCK_FUEL.value,
             )
-        if self.options["add_solver"]:
-            self.nonlinear_solver = om.NonlinearBlockGS(maxiter=30, rtol=1.0e-4, iprint=0)
-            self.linear_solver = om.DirectSolver()
 
         if self.options["compute_input_weight"]:
             self.add_subsystem(
