@@ -92,7 +92,12 @@ class AltitudeChangeSegment(AbstractManualThrustSegment):
                 # let's put a numerical, negative value in target.altitude to
                 # ensure there will be no problem in self.get_distance_to_target()
                 target.altitude = -1000.0
-                self.interrupt_if_getting_further_from_target = False
+                if self.get_distance_to_target([start], target) > 0:
+                    # If target is a CL and distance to target is positive, then
+                    # the target CL might be achieved even if it gets further
+                    # at some time, because of the mass loss.
+                    # Then it is better to deactivate this safeguard.
+                    self.interrupt_if_getting_further_from_target = False
             else:
                 # Target altitude is fixed, back to original settings (in case
                 # this instance is used more than once)
