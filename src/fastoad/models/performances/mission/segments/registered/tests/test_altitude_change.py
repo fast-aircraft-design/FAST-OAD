@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -10,8 +10,6 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-
 from numpy.testing import assert_allclose
 from scipy.constants import foot
 
@@ -132,6 +130,36 @@ def test_climb_optimal_altitude_at_fixed_TAS(polar):
         assert_allclose(last_point.mach, 0.8359, rtol=1e-4)
         assert_allclose(last_point.mass, 69832.0, rtol=1e-4)
         assert_allclose(last_point.ground_distance, 20401.0, rtol=1e-3)
+
+    run()
+
+    # A second call is done to ensure first run did not modify anything (like target definition)
+    run()
+
+
+def test_climb_optimal_altitude_with_optimum_CL_overrun(polar, caplog):
+    propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
+
+    segment = AltitudeChangeSegment(
+        target=FlightPoint(altitude=AltitudeChangeSegment.OPTIMAL_ALTITUDE, mach="constant"),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        thrust_rate=1.0,
+        time_step=2.0,
+        name="doomed_climb",
+    )
+
+    def run():
+        start = FlightPoint(altitude=10000.0, mach=0.82, mass=70000.0)
+        flight_points = segment.compute_from(start)
+
+        # Here segment is expected to stop immediately, since optimal CL is already overrun.
+        assert len(flight_points) == 1
+        assert flight_points.iloc[0].altitude == start.altitude
+        assert flight_points.iloc[0].mach == start.mach
+        assert flight_points.iloc[0].mass == start.mass
+        assert 'Target cannot be reached in "doomed_climb"' in caplog.text
 
     run()
 
