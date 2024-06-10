@@ -7,10 +7,10 @@ Problem variables
 FAST-OAD process relies on `OpenMDAO <https://openmdao.org/>`_, and process variables are OpenMDAO variables.
 
 For any component, variables are declared as inputs or outputs as described
-`here <http://openmdao.org/twodocs/versions/latest/features/core_features/defining_components/declaring_variables.html>`_.
+:doc:`here <openmdao:features/core_features/working_with_components/continuous_variables>`.
 
 FAST-OAD uses the
-`promotion system of OpenMDAO <http://openmdao.org/twodocs/versions/latest/basic_guide/promote_vs_connect.html>`_,
+:doc:`promotion system of OpenMDAO <openmdao:basic_user_guide/multidisciplinary_optimization/linking_vars>`,
 which means that all variables that are exchanged between FAST-OAD registered systems [#]_ have a unique name and are
 available for the whole process.
 
@@ -92,7 +92,7 @@ A complete file that would contain the three above-mentioned variables will be a
 .. note::
 
     Units are given as a string according to
-    `OpenMDAO units definitions <http://openmdao.org/twodocs/versions/latest/features/units.html>`_
+    :doc:`OpenMDAO units definitions <openmdao:features/units>`.
 
 .. note::
 

@@ -8,7 +8,7 @@ With FAST-OAD, you can register any OpenMDAO system of your own so it can be
 used through the configuration file.
 
 It is therefore strongly advised to have at least a basic knowledge of
-`OpenMDAO <http://openmdao.org/twodocs/versions/latest>`_ to develop a module for FAST-OAD.
+:doc:`OpenMDAO <openmdao:main>` to develop a module for FAST-OAD.
 
 To have your OpenMDAO system available as a FAST-OAD module, you should follow these steps:
 
@@ -20,9 +20,9 @@ To have your OpenMDAO system available as a FAST-OAD module, you should follow t
 Create your OpenMDAO system
 ***************************
 
-It can be a `Group <http://openmdao.org/twodocs/versions/latest/features/core_features/grouping_components/index.html>`_
-or a `Component <http://openmdao.org/twodocs/versions/latest/features/core_features/defining_components/index.html>`_-like class
-(generally an `ExplicitComponent <http://openmdao.org/twodocs/versions/latest/features/core_features/defining_components/explicitcomp.html>`_).
+It can be a :doc:`Group  <openmdao:features/core_features/working_with_groups/main>`
+or a :doc:`Component  <openmdao:features/building_blocks/components/components>`-like class
+(generally an :doc:`ExplicitComponent <openmdao:features/core_features/working_with_components/explicit_component>`).
 
 You can create the Python file at the location of your choice. You will just have to provide later the folder path in
 FAST-OAD configuration file (see :ref:`add-modules-set-configuration-files`).
@@ -30,7 +30,7 @@ FAST-OAD configuration file (see :ref:`add-modules-set-configuration-files`).
 Variable naming
 ===============
 You have to pay attention to the naming of your input and output variables.
-As FAST-OAD uses the `promotion system of OpenMDAO <http://openmdao.org/twodocs/versions/latest/basic_guide/promote_vs_connect.html>`_,
+As FAST-OAD uses the :doc:`promotion system of OpenMDAO <openmdao:basic_user_guide/multidisciplinary_optimization/linking_vars>`,
 which means that variables you want to link to the rest of the process must have
 the name that is given in the global process.
 
@@ -48,7 +48,7 @@ Therefore, the way you name your new variables should be consistent with FAST-OA
 
 Defining options
 ================
-You may use the OpenMDAO way for adding :ref:`options to your system<openmdao:component_options>`.
+You may use the OpenMDAO way for adding :doc:`options to your system <openmdao:features/core_features/options/options>`.
 The options you add will be accessible from the FAST-OAD configuration file (see
 :ref:`configuration-file-problem-definition`).
 
@@ -74,15 +74,15 @@ or for a Group class:
     self.approx_totals()
 
 The two lines above are the most generic and the least CPU-efficient ways of declaring partial derivatives. For better
-efficiency, see how to `work with derivatives in OpenMDAO <http://openmdao.org/twodocs/versions/latest/features/core_features/working_with_derivatives/index.html>`_.
+efficiency, see how to :doc:`work with derivatives in OpenMDAO  <openmdao:features/core_features/working_with_derivatives/main>`.
 
 About ImplicitComponent classes
 ===============================
-In some cases, you may have to use `ImplicitComponent <http://openmdao.org/twodocs/versions/latest/features/core_features/defining_components/implicitcomp.html>`_
+In some cases, you may have to use :doc:`ImplicitComponent  <openmdao:features/core_features/working_with_components/implicit_component>`
 classes.
 
-Just remember, as told in `this tutorial <http://openmdao.org/twodocs/versions/latest/advanced_guide/implicit_comps/defining_icomps.html>`_,
-that the loop that will allow to solve it needs usage of the `NewtonSolver <http://openmdao.org/twodocs/versions/latest/features/building_blocks/solvers/nonlinear/newton.html#nlnewton>`_.
+Just remember, as told in :doc:`this tutorial <openmdao:advanced_user_guide/models_implicit_components/models_with_solvers_implicit>`,
+that the loop that will allow to solve it needs usage of the :doc:`Newton solver <features/building_blocks/solvers/newton>`.
 
 A good way to ensure it is to build a Group class that will solve the ImplicitComponent with NewtonSolver. This Group
 should be the system you will register in FAST-OAD.
@@ -93,7 +93,7 @@ Checking validity domains
 Generally, models are valid only when variable values are in given ranges.
 
 OpenMDAO provides a way to specify lower and upper bounds of an output variable and to enforce them
-when using a Newton solver by using `backtracking line searches <http://openmdao.org/twodocs/versions/latest/features/building_blocks/solvers/backtracking/index.html>`_.
+when using a Newton solver by using :doc:`backtracking line searches <openmdao:features/building_blocks/solvers/bounds_enforce>`.
 
 FAST-OAD proposes a way to set lower and upper bounds for input and output variables, but only
 for checking and giving feedback of variables that would be out of bounds.

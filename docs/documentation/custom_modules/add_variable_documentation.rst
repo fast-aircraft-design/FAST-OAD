@@ -18,7 +18,7 @@ The description of a variable can be defined in two ways:
 Defining variable description in your OpenMDAO component
 ********************************************************
 OpenMDAO natively allows to define the description of a variable
-`when declaring it <https://openmdao.org/twodocs/versions/latest/features/core_features/defining_components/declaring_variables.html?highlight=desc>`_.
+when :doc:`declaring it <openmdao:features/core_features/working_with_components/continuous_variables>`.
 
 FAST-OAD will retrieve this information (the description has to be defined once,
 even if the variable is declared at several locations).
