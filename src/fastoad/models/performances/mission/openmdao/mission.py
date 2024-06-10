@@ -33,7 +33,7 @@ class OMMission(
     CycleGroup,
     BaseMissionComp,
     NeedsOWE,
-    use_solver_by_default=False,
+    use_solvers_by_default=False,
     default_nonlinear_options={"maxiter": 30, "rtol": 1.0e-4, "iprint": 0},
 ):
     """
@@ -91,7 +91,7 @@ class OMMission(
         )
         self.options.declare(
             "add_solver",
-            default=self.use_solver_by_default,
+            default=self.use_solvers_by_default,
             types=bool,
             deprecation=(
                 'Option "add_solver" is deprecated for mission module. '
