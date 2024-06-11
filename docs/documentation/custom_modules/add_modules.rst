@@ -87,6 +87,92 @@ that the loop that will allow to solve it needs usage of the :doc:`Newton solver
 A good way to ensure it is to build a Group class that will solve the ImplicitComponent with NewtonSolver. This Group
 should be the system you will register in FAST-OAD.
 
+The CycleGroup class
+====================
+FAST-OAD comes with :class:`~fastoad.model_base.openmdao.group.CycleGroup`, a convenience class that allows to define
+groups with inner solvers.
+
+The point is to standardize options that control the usage of solvers, so they can be set easily using the
+:ref:`model_options <configuration-model-options>` feature.
+
+A group that contains solvers can be defined this way:
+
+.. code-block:: python
+
+    import fastoad.api as oad
+
+    class SimpleCycleGroup(
+        oad.CycleGroup,
+    #  A simple subclassing will assume following attributes
+    #    use_solvers_by_default = True,
+    #    default_linear_solver = "om.DirectSolver",
+    #    default_nonlinear_solver = "om.NonlinearBlockGS",
+    #    default_linear_options={},
+    #    default_nonlinear_options={},
+    ):
+
+        def initialize():
+            super().initialize() # Mandatory if initialize() is defined
+            ...
+
+        def setup():
+            super().setup() # Also mandatory
+
+            self.add_subsystem(...)
+            ...
+
+A more customized class would be:
+
+.. code-block:: python
+
+    import fastoad.api as oad
+
+    class CustomizedCycleGroup(
+        oad.CycleGroup,
+        use_solvers_by_default=False,
+        # Solvers are defined using the `import openmdao.api as om` convention
+        default_linear_solver="om.ScipyKrylov",
+        default_nonlinear_solver="om.NewtonSolver",
+        default_linear_options={"iprint": 0},
+        default_nonlinear_options={"rtol": 1.0e-4},
+    ):
+        def setup(self):
+            super().setup()
+
+            self.add_subsystem(...)
+            ...
+
+
+In configuration file, the solvers settings can be driven with:
+
+.. code-block:: yaml
+
+    model_options:
+        "first_loop.*": # a more or less restrictive pattern could be used
+            # This line deactivates the solvers for all concerned groups.
+            # This can be useful to rely only on the solver(s) defined in configuration file for 'first_loop'
+            use_solvers : False
+        "second_loop.*":
+            # This line activates the solvers for all concerned groups even for class created
+            # even for group derived from CycleGroup with 'use_solvers_by_default=False'
+            # The default solver classes defined for each group are used.
+            use_solvers : True
+            # These lines show how to define solver options.
+            linear_options:
+                iprint:0
+                rtol: 1.e-5
+            nonlinear_options:
+                iprint:0
+                rtol: 1.e-5
+        "third_loop.some_component.*":
+            # These lines show how to activate and choose the solvers for concerned groups.
+            use_solvers : True
+            linear_solver : "om.LinearBlockGS"
+            nonlinear_solver : "om.NonlinearBlockJac"
+
+
+
+
 
 Checking validity domains
 =========================
