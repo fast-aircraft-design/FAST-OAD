@@ -16,7 +16,7 @@ FAST-OAD configuration file
 ***************************
 FAST-OAD configuration files are in `YAML <https://yaml.org>`_  format.
 A quick tutorial for YAML (among many ones) is available
-`here <https://www.cloudbees.com/blog/yaml-tutorial-everything-you-need-get-started/>`_
+`here <https://www.cloudbees.com/blog/yaml-tutorial-everything-you-need-get-started/>`_.
 
 
 .. code:: yaml
@@ -131,7 +131,7 @@ This belongs the domain of the OpenMDAO framework and its utilization. This sett
 optimization problems. It is defined as in Python when assuming the OpenMDAO convention
 :code:`import openmdao.api as om`.
 
-For more details, please see the OpenMDAO documentation on `drivers <http://openmdao.org/twodocs/versions/latest/features/building_blocks/drivers/index.html>`_.
+For more details, please see the OpenMDAO documentation on :doc:`drivers <openmdao:features/building_blocks/drivers/index>`.
 
 Solvers
 =======
@@ -147,8 +147,7 @@ components. If the model involves cycles, which happens for instance when some o
 inputs of B, and vice-versa, it is necessary to specify solvers as done above.
 
 For more details, please see the OpenMDAO documentation on
-`nonlinear solvers <http://openmdao.org/twodocs/versions/latest/features/building_blocks/solvers/nonlinear/index.html>`_
-and `linear solvers <http://openmdao.org/twodocs/versions/latest/features/building_blocks/solvers/linear/index.html>`_.
+:doc:`linear and nonlinear solvers <openmdao:features/building_blocks/solvers/solvers>`.
 
 
 .. _configuration-file-problem-definition:
@@ -276,7 +275,7 @@ Design variables
 
 Here are defined design variables (relevant only for optimization).
 Keys of this section are named after parameters of the OpenMDAO
-`System.add_design_var() method <http://openmdao.org/twodocs/versions/latest/features/core_features/adding_desvars_objs_consts/adding_desvars.html?highlight=add_design_var>`_
+:doc:`System.add_design_var() method <openmdao:features/core_features/adding_desvars_cons_objs/adding_design_variables>`
 
 Several design variables can be defined.
 
@@ -292,7 +291,7 @@ Objective function
 
 Here is defined the objective function (relevant only for optimization).
 Keys of this section are named after parameters of the OpenMDAO
-`System.add_objective() method <http://openmdao.org/twodocs/versions/latest/features/core_features/adding_desvars_objs_consts/adding_objectives.html?highlight=add_objective>`_
+:doc:`System.add_objective() method <openmdao:features/core_features/adding_desvars_cons_objs/adding_objective>`
 
 Only one objective variable can be defined.
 
@@ -309,7 +308,7 @@ Constraints
           upper: 0.1
 
 Here are defined constraint variables (relevant only for optimization).
-Keys of this section are named after parameters of the OpenMDAO `System.add_constraint() method <http://openmdao.org/twodocs/versions/latest/features/core_features/adding_desvars_objs_consts/adding_constraints.html?highlight=add_constraint>`_
+Keys of this section are named after parameters of the OpenMDAO :doc:`System.add_constraint() method <openmdao:features/core_features/adding_desvars_cons_objs/adding_constraint>`
 
 Several constraint variables can be defined.
 
@@ -471,7 +470,7 @@ This is especially useful to see how models and variables are connected.
 N2 diagram
 ----------
 
-FAST-OAD can use OpenMDAO to create a `N2 diagram <http://openmdao.org/twodocs/versions/latest/features/model_visualization/n2_basics.html>`_.
+FAST-OAD can use OpenMDAO to create a :doc:`N2 diagram  <openmdao:features/model_visualization/n2_basics/n2_basics>`.
 It provides in-depth information about the whole process.
 
 You can create a :code:`n2.html` file with:
