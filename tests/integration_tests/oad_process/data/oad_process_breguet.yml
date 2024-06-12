@@ -25,7 +25,7 @@ model:
         out_file: ./flight_points.csv
         mission_file_path: ::sizing_breguet
         adjust_fuel: true
-        add_solver: false
+        use_solvers: false
         is_sizing: true
   hq:
     tail_sizing:

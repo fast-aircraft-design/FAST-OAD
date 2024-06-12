@@ -36,7 +36,7 @@ model:
         propulsion_id: fastoad.wrapper.propulsion.rubber_engine
         out_file: ./flight_points.csv
         adjust_fuel: true
-        add_solver: false
+        use_solvers: false
         is_sizing: true
   wing_area:
     id: fastoad.loop.wing_area
