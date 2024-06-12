@@ -444,6 +444,46 @@ def test_gen_source_data_several_plugin(cleanup, with_dummy_plugins, plugin_root
         assert cmp(Path(temp_dir, "my_source.xml"), original_file)
 
 
+def test_eval(cleanup):
+    runner = CliRunner()
+    with runner.isolated_filesystem(temp_dir=RESULTS_FOLDER_PATH) as temp_dir:
+        result_1 = runner.invoke(
+            fast_oad,
+            [
+                "gen_inputs",
+                (DATA_FOLDER_PATH / "sellar.yml").as_posix(),
+                (DATA_FOLDER_PATH / "inputs.xml").as_posix(),
+            ],
+        )
+        assert not result_1.exception
+
+        result_2 = runner.invoke(
+            fast_oad,
+            ["eval", (DATA_FOLDER_PATH / "sellar.yml").as_posix(), "-f"],
+        )
+        assert not result_2.exception
+
+
+def test_optim(cleanup):
+    runner = CliRunner()
+    with runner.isolated_filesystem(temp_dir=RESULTS_FOLDER_PATH) as temp_dir:
+        result_1 = runner.invoke(
+            fast_oad,
+            [
+                "gen_inputs",
+                (DATA_FOLDER_PATH / "sellar.yml").as_posix(),
+                (DATA_FOLDER_PATH / "inputs.xml").as_posix(),
+            ],
+        )
+        assert not result_1.exception
+
+        result_2 = runner.invoke(
+            fast_oad,
+            ["optim", (DATA_FOLDER_PATH / "sellar.yml").as_posix(), "-f"],
+        )
+        assert not result_2.exception
+
+
 def test_create_notebooks_with_no_notebook(cleanup, with_dummy_plugin_2, plugin_root_path):
     runner = CliRunner()
     with runner.isolated_filesystem(temp_dir=RESULTS_FOLDER_PATH):
