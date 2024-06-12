@@ -32,6 +32,7 @@ model_options:
       a: 10
       b: 20
     dummy_generic_option: "it works"
+    add_input_var: true
   "cycle.*":
     dummy_generic_option: "it works here also"
 

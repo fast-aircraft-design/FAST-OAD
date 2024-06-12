@@ -163,14 +163,23 @@ def test_problem_definition_with_xml_ref(cleanup, caplog):
         problem.run_model()
         assert problem.model.options["assembled_jac_type"] == "csc"
         assert problem["f"] == pytest.approx(28.58830817, abs=1e-6)
+
         problem.write_outputs()
 
         # Test with alternate submodel #########################################
         alt_conf = FASTOADProblemConfigurator(
             DATA_FOLDER_PATH / f"valid_sellar_alternate.{extension}"
         )
-        alt_conf.input_file_path = result_folder_path / "inputs.xml"
+        alt_conf.input_file_path = result_folder_path / "inputs_alt.xml"
         alt_conf.output_file_path = result_folder_path / "outputs_alt.xml"
+
+        alt_conf.write_needed_inputs(ref_input_data_path)
+        input_data = DataFile(alt_conf.input_file_path)
+        assert len(input_data) == 3
+        assert "x" in input_data.names()
+        assert "z" in input_data.names()
+        assert "bar" in input_data.names()
+
         alt_problem = alt_conf.get_problem(read_inputs=True, auto_scaling=True)
         # runs evaluation without optimization loop to check that inputs are taken into account
         alt_problem.setup()
@@ -187,6 +196,7 @@ def test_problem_definition_with_xml_ref(cleanup, caplog):
         assert alt_problem.model.options["assembled_jac_type"] == "dense"
         assert alt_problem["f"] == pytest.approx(0.58830817, abs=1e-6)
         assert alt_problem["g2"] == pytest.approx(-11.94151185, abs=1e-6)
+        assert alt_problem["baz"] == 42.0
         with pytest.raises(KeyError):
             alt_problem["g1"]  # submodel for g1 computation has been deactivated.
 
