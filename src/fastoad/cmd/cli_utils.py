@@ -47,7 +47,7 @@ def out_file_option(func):
     )(overwrite_option(func))
 
 
-def manage_overwrite(func: Callable, **kwargs):
+def manage_overwrite(func: Callable, filename_func: Callable = None, **kwargs):
     """
     Runs `func`, that is expected to write a file, with provided keyword arguments `args`.
 
@@ -57,12 +57,14 @@ def manage_overwrite(func: Callable, **kwargs):
 
     :param func: callable that will do the operation and is expected to return
                  the path of written element.
+    :param filename_func: a function that provides the name of written file, given the
+                          value returned by func
     :param kwargs: keyword arguments for func
     :return: True if the file has been written,
     """
     written = False
     try:
-        written = _run_write_func(func, **kwargs)
+        written = _run_write_func(func, filename_func, **kwargs)
 
     except FastPathExistsError as exc:
         if click.confirm(f'"{exc.args[1]}" already exists. Do you want to overwrite it?'):
@@ -74,9 +76,11 @@ def manage_overwrite(func: Callable, **kwargs):
     return written
 
 
-def _run_write_func(func: Callable, **kwargs):
+def _run_write_func(func: Callable, filename_func: Callable = None, **kwargs):
     result = func(**kwargs)
     if result:
+        if filename_func:
+            result = filename_func(result)
         click.echo(f'"{result}" has been written.')
         return True
 
