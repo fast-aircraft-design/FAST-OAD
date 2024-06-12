@@ -119,17 +119,17 @@ class FASTOADProblemConfigurator:
         problem.input_file_path = self.input_file_path
         problem.output_file_path = self.output_file_path
 
+        model_options = self._data.get(KEY_MODEL_OPTIONS, {})
+        for options in model_options.values():
+            self._make_option_path_values_absolute(options)
+        problem.model_options = model_options
+
         if read_inputs:
             problem.read_inputs()
 
         driver = self._data.get(KEY_DRIVER, "")
         if driver:
             problem.driver = _om_eval(driver)
-
-        model_options = self._data.get(KEY_MODEL_OPTIONS, {})
-        for options in model_options.values():
-            self._make_option_path_values_absolute(options)
-        problem.model_options = model_options
 
         if self.get_optimization_definition():
             self._add_constraints(problem.model, auto_scaling)
