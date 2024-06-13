@@ -60,8 +60,8 @@ class CycleGroup(om.Group):
         cls.default_linear_solver = default_linear_solver
         cls.default_nonlinear_solver = default_nonlinear_solver
         cls.default_solver_options = {
-            "nonlinear_options": default_nonlinear_options if default_nonlinear_options else {},
             "linear_options": default_linear_options if default_linear_options else {},
+            "nonlinear_options": default_nonlinear_options if default_nonlinear_options else {},
         }
 
     def initialize(self):
@@ -106,21 +106,24 @@ class CycleGroup(om.Group):
         self.options.declare(
             "linear_options",
             types=dict,
-            default={},
-            desc='options for linear solver. Ignored if "use_inner_solver" is False.',
+            default=self.default_solver_options["linear_options"],
+            desc="Options for linear solver. This dict will be updated with provided dict, "
+            "meaning that options that are not in provided dict will keep the default value. "
+            'Ignored if "use_inner_solver" is False.',
         )
         self.options.declare(
             "nonlinear_options",
             types=dict,
-            default={},
-            desc='options for non-linear solver. Ignored if "use_inner_solver" is False.',
+            default=self.default_solver_options["nonlinear_options"],
+            desc="Options for non-linear solver. This dict will be updated with provided dict, "
+            "meaning that options that are not in provided dict will keep the default value. "
+            'Ignored if "use_inner_solver" is False.',
         )
 
     def setup(self):
         super().setup()
 
         if self.options["use_solvers"]:
-            # Normal case: use_inner_solver has not been modified
             linear_solver_class = self._get_solver_class("linear_solver")
             nonlinear_solver_class = self._get_solver_class("nonlinear_solver")
 
@@ -133,6 +136,11 @@ class CycleGroup(om.Group):
                 self.nonlinear_solver = nonlinear_solver_class(**nonlinear_options)
 
     def _get_solver_class(self, option_name: str):
+        """
+        For option_name in ["linear_solver", "nonlinear_solver"], provide the solver class
+        from the string self.options[option_name].
+        Class will be om.<class_name>, whether the stringbegins with "om." or not.
+        """
         solver_name = self.options[option_name]
         if isinstance(solver_name, str):
             if solver_name.startswith("om."):
@@ -144,6 +152,7 @@ class CycleGroup(om.Group):
         return solver_class
 
     def _get_solver_options(self, openmdao_option_name: str):
+        # default dict of solver options is updated with user-provided solver options.
         solver_options = self.default_solver_options[openmdao_option_name].copy()
         solver_options.update(self.options[openmdao_option_name])
         return solver_options
