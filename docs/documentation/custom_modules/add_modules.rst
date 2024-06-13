@@ -89,13 +89,14 @@ should be the system you will register in FAST-OAD.
 
 The CycleGroup class
 ====================
-FAST-OAD comes with :class:`~fastoad.model_base.openmdao.group.CycleGroup`, a convenience class that allows to define
-groups with inner solvers.
+FAST-OAD comes with the :class:`~fastoad.model_base.openmdao.group.CycleGroup` class, a convenience
+class that allows to define groups with inner solvers.
 
-The point is to standardize options that control the usage of solvers, so they can be set easily using the
-:ref:`model_options <configuration-model-options>` feature.
 
-A group that contains solvers can be defined this way:
+This class allows to standardize options that control the usage of solvers, so they can be set easily
+in the configuration file using the :ref:`model_options <configuration-model-options>` feature.
+
+Using this class, a group that contains inner solvers can be defined this way:
 
 .. code-block:: python
 
@@ -121,7 +122,7 @@ A group that contains solvers can be defined this way:
             self.add_subsystem(...)
             ...
 
-A more customized class would be:
+It is also possible to further customize class arguments like so:
 
 .. code-block:: python
 
