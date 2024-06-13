@@ -78,6 +78,16 @@ class FunctionFAlt(FunctionF):
         # This option has no effect and is used for checks
         self.options.declare("dummy_generic_option", types=str, default="")
 
+        # This one adds a variable to check if it affects correctly input variables
+        self.options.declare("add_input_var", types=bool, default=False)
+
+    def setup(self):
+        super().setup()
+        if self.options["add_input_var"]:
+            self.add_input("bar", val=1.0, desc="")
+
+        self.add_output("baz", val=1.0)
+
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         """Functions computation"""
 
@@ -87,6 +97,9 @@ class FunctionFAlt(FunctionF):
         y2 = inputs["yy2"]
 
         outputs["f"] = x1 ** 2 + z2 + y1 + exp(-y2) - 28.0
+
+        if "bar" in inputs:
+            outputs["baz"] = inputs["bar"]
 
 
 @RegisterSubmodel(SERVICE_FUNCTION_G1, "function.g1.default")

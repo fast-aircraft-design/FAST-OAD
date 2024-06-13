@@ -32,6 +32,7 @@ driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
 [model_options."*"]
   dummy_f_option = 10  # has no effect in this alternate version
   dummy_generic_option = "it works"
+  add_input_var = true
 [model_options."*".dummy_disc1_option]
     a = 10
     b = 20
