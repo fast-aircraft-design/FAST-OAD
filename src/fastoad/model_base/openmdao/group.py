@@ -15,10 +15,12 @@ Convenience classes to be used in OpenMDAO components.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
+import abc
+
 import openmdao.api as om
 
 
-class CycleGroup(om.Group):
+class CycleGroup(om.Group, abc.ABC):
     """
     Use this class as a base class if your model should contain solvers.
 
@@ -175,3 +177,9 @@ def _forbid_true_value(name, value):
             f'If you want to activate only "{name}", please use "use_inner_solvers=True" '
             f'and "{other_solver_kind}=False".'
         )
+
+
+class BaseCycleGroup(CycleGroup):
+    """
+    Inherited from :class:`CycleGroup` with no modification of default behavior.
+    """

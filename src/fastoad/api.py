@@ -65,7 +65,7 @@ from fastoad.model_base import Atmosphere, AtmosphereSI, FlightPoint
 from fastoad.model_base.datacls import MANDATORY_FIELD
 
 # noinspection PyUnresolvedReferences
-from fastoad.model_base.openmdao.group import CycleGroup
+from fastoad.model_base.openmdao.group import CycleGroup, BaseCycleGroup
 
 # noinspection PyUnresolvedReferences
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
