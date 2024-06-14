@@ -1,3 +1,4 @@
+"""Convenience utilities for testing."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -15,22 +16,38 @@ import numpy as np
 from openmdao import api as om
 from openmdao.core.system import System
 
+from fastoad.model_base.openmdao.group import BaseCycleGroup
+from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.openmdao.variables import VariableList
 
 
-def run_system(
-    component: System, input_vars: om.IndepVarComp, setup_mode="auto", add_solvers=False
-):
-    """Runs and returns an OpenMDAO problem with provided component and data"""
+def run_system(component: System, input_vars: om.IndepVarComp, **kwargs) -> FASTOADProblem:
+    """
+    Runs and returns an OpenMDAO problem with provided component and data.
+
+    An error is raised if at least one variable has NaN value despite provided values in
+    input_vars. The raised error lists the identified variables.
+
+    :param component: OpenMDAO component to be run
+    :param input_vars: input data for the component
+    :param kwargs: options of :class:`fastoad.api.BaseCycleGroup`, to add control solvers
+                   in the problem
+    :return: a FASTOADProblem instance
+    """
+
+    if isinstance(component, om.ImplicitComponent) and "nonlinear_solver" not in kwargs:
+        kwargs["nonlinear_solver"] = "om.NewtonSolver"
+        kwargs["linear_solver"] = "om.DirectSolver"
+
+        if kwargs.get("nonlinear_solver_options", {}).get("solve_subsystems") is None:
+            kwargs["nonlinear_solver_options"]["solve_subsystems"] = False
+
     problem = om.Problem()
-    model = problem.model
+    model = problem.model = BaseCycleGroup(**kwargs)
     model.add_subsystem("inputs", input_vars, promotes=["*"])
     model.add_subsystem("component", component, promotes=["*"])
-    if add_solvers:
-        model.nonlinear_solver = om.NewtonSolver(solve_subsystems=False)
-        model.linear_solver = om.DirectSolver()
 
-    problem.setup(mode=setup_mode)
+    problem.setup()
     variable_names = [
         var.name
         for var in VariableList.from_problem(problem, io_status="inputs")
