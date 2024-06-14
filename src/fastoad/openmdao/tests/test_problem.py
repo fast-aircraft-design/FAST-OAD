@@ -19,12 +19,14 @@ import openmdao.api as om
 import pytest
 from numpy.testing import assert_allclose
 
-from fastoad.openmdao.exceptions import (
-    FASTOpenMDAONanInInputFile,
-)
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.openmdao.variables import Variable, VariableList
+from .openmdao_sellar_example.disc1 import Disc1Quater
+from .openmdao_sellar_example.disc2 import Disc2Bis
+from .openmdao_sellar_example.functions import FunctionF
 from .openmdao_sellar_example.sellar import SellarModel
+from ..exceptions import FASTOpenMDAONanInInputFile
+from ..._utils.sellar.sellar_base import GenericSellarFactory
 from ...io import DataFile, VariableIO
 
 DATA_FOLDER_PATH = Path(__file__).parent / "data"
@@ -187,6 +189,40 @@ def test_problem_read_inputs_with_nan_inputs(cleanup):
         problem.read_inputs()
     assert exc_info_2.value.input_file_path == input_data_path
     assert exc_info_2.value.nan_variable_names == ["x", "z"]
+
+
+def test_problem_read_inputs_with_missing_inputs(cleanup):
+    """
+    Tests that, when reading inputs using existing XML with missing value (for a
+    variable with default nan), an exception is raised.
+    """
+
+    problem = FASTOADProblem()
+    problem.model.add_subsystem(
+        "sellar",
+        SellarModel(
+            sellar_factory=GenericSellarFactory(
+                disc1_class=Disc1Quater, disc2_class=Disc2Bis, f_class=FunctionF
+            )
+        ),
+        promotes=["*"],
+    )
+
+    input_data_path = DATA_FOLDER_PATH / "missing_inputs.xml"
+
+    problem.input_file_path = input_data_path
+
+    with pytest.raises(FASTOpenMDAONanInInputFile) as exc_info_1:
+        problem.read_inputs()
+    assert exc_info_1.value.input_file_path == input_data_path
+    assert exc_info_1.value.nan_variable_names == ["z"]
+
+    problem.setup()
+
+    with pytest.raises(FASTOpenMDAONanInInputFile) as exc_info_2:
+        problem.read_inputs()
+    assert exc_info_2.value.input_file_path == input_data_path
+    assert exc_info_2.value.nan_variable_names == ["z"]
 
 
 def test_problem_with_dynamically_shaped_inputs(cleanup):
