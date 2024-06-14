@@ -1,6 +1,3 @@
-"""
-Convenience functions for helping tests
-"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -15,7 +12,7 @@ Convenience functions for helping tests
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-import openmdao.api as om
+from openmdao import api as om
 from openmdao.core.system import System
 
 from fastoad.openmdao.variables import VariableList

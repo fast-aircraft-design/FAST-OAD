@@ -18,8 +18,8 @@ import pytest
 from numpy.testing import assert_allclose
 from scipy.constants import foot, knot, nautical_mile
 
-from fastoad._utils.testing import run_system
 from fastoad.io import DataFile, VariableIO
+from fastoad.testing import run_system
 from ..mission import OMMission
 from ..mission_run import AdvancedMissionComp
 from ..mission_wrapper import MissionWrapper
