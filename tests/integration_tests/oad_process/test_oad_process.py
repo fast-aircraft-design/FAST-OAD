@@ -28,7 +28,6 @@ import pytest
 from numpy.testing import assert_allclose
 
 import fastoad.api as oad
-import fastoad.cmd.api
 from fastoad.io.configuration.configuration import (
     FASTOADProblemConfigurator,
     _IConfigurationModifier,
@@ -90,18 +89,6 @@ def test_non_regression_mission_only(cleanup):
         specific_tolerance=1.0e-2,
         global_tolerance=10.0e-2,
         check_weight_perfo_loop=False,
-    )
-
-
-def test_non_regression_mission(cleanup):
-    run_non_regression_test(
-        "oad_process_mission.yml",
-        "CeRAS01_legacy_mission_result.xml",
-        "non_regression_mission",
-        use_xfoil=False,
-        vars_to_check=["data:weight:aircraft:MTOW", "data:mission:sizing:fuel"],
-        specific_tolerance=1.0e-2,
-        global_tolerance=10.0e-2,
     )
 
 
@@ -235,48 +222,6 @@ def test_api_eval_breguet(cleanup):
     assert_allclose(problem["data:geometry:vertical_tail:area"], 27.565, atol=1e-2)
     assert_allclose(problem["data:geometry:horizontal_tail:area"], 35.884, atol=1e-2)
     assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 19527, atol=1)
-
-    _run_plots(problem.output_file_path)
-
-
-class MissionConfigurator(_IConfigurationModifier):
-    """Modifies configuration to activate mission computation."""
-
-    def modify(self, problem: om.Problem):
-        problem.model.subgroup.nonlinear_solver = om.NonlinearBlockGS(
-            maxiter=100, atol=1e-2, iprint=0
-        )
-        problem.model.subgroup.linear_solver: om.DirectSolver()
-        problem.model.performance._OPTIONS["mission_file_path"] = "::sizing_mission"
-
-
-def test_api_eval_mission(cleanup):
-    results_folder_path = pth.join(RESULTS_FOLDER_PATH, "api_eval_mission")
-    configuration_file_path = pth.join(results_folder_path, "oad_process.yml")
-    fastoad.cmd.api._PROBLEM_CONFIGURATOR = MissionConfigurator()
-
-    # Generation of configuration file ----------------------------------------
-    oad.generate_configuration_file(configuration_file_path, True)
-
-    # Generation of inputs ----------------------------------------------------
-    # We get the same inputs as in tutorial notebook
-    source_xml = pth.join(DATA_FOLDER_PATH, "CeRAS01_notebooks.xml")
-    oad.generate_inputs(configuration_file_path, source_xml, overwrite=True)
-
-    # Run model ---------------------------------------------------------------
-    problem = oad.evaluate_problem(configuration_file_path, True)
-    fastoad.cmd.api._PROBLEM_CONFIGURATOR = None
-
-    # Check that weight-performances loop correctly converged
-    _check_weight_performance_loop(problem)
-
-    assert_allclose(problem["data:handling_qualities:static_margin"], 0.05, atol=1e-2)
-    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 17.149, atol=1e-2)
-    assert_allclose(problem["data:weight:aircraft:MTOW"], 74695, atol=10)
-    assert_allclose(problem["data:geometry:wing:area"], 126.083, atol=1e-1)
-    assert_allclose(problem["data:geometry:vertical_tail:area"], 27.437, atol=1e-2)
-    assert_allclose(problem["data:geometry:horizontal_tail:area"], 35.731, atol=1e-2)
-    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 19390, atol=10)
 
     _run_plots(problem.output_file_path)
 

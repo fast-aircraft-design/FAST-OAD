@@ -5,6 +5,14 @@ module_folders:
 input_file: ../results/oad_process_inputs.xml
 output_file: ../results/oad_process_outputs.xml
 
+model_options:
+  "*":
+    linear_options:
+      iprint: 0
+    nonlinear_options:
+      iprint: 0
+      maxiter: 2
+
 model:
   nonlinear_solver: om.NonlinearBlockGS(maxiter=100, atol=1e-2)
   linear_solver: om.DirectSolver()
