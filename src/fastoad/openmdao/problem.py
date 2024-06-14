@@ -61,7 +61,7 @@ class FASTOADProblem(om.Problem):
         #: Variables that are not part of the problem but that should be written in output file.
         self.additional_variables = None
 
-        #: If True inputs will be read after setup.
+        #: If True, inputs have been read and will be set after setup.
         self._set_input_values_after_setup = False
 
         self.model = FASTOADModel()
@@ -93,7 +93,7 @@ class FASTOADProblem(om.Problem):
         super().setup(*args, **kwargs)
 
         if self._set_input_values_after_setup:
-            self._set_input_values_with_setup_done()
+            self._set_input_values_post_setup()
         BundleLoader().clean_memory()
 
     def write_needed_inputs(
@@ -158,10 +158,11 @@ class FASTOADProblem(om.Problem):
         Reads inputs of the problem.
         """
         self._input_file_variables, self.additional_variables = self._get_problem_inputs()
+
         if self._metadata and self._metadata["setup_status"] == _SetupStatus.POST_SETUP:
-            self._set_input_values_with_setup_done()
+            self._set_input_values_post_setup()
         else:
-            self._set_input_values_without_setup_done()
+            self._set_input_values_pre_setup()
             # Input setting still needs to be done after setup, since we only addressed
             # dynamically-shape inputs.
             self._set_input_values_after_setup = True
@@ -213,7 +214,7 @@ class FASTOADProblem(om.Problem):
 
         return input_variables, unused_variables
 
-    def _set_input_values_with_setup_done(self):
+    def _set_input_values_post_setup(self):
         """
         Set initial values of inputs. self.setup() must have been run.
         """
@@ -224,7 +225,7 @@ class FASTOADProblem(om.Problem):
 
             self.set_val(input_var.name, val=input_var.val, units=input_var.units)
 
-    def _set_input_values_without_setup_done(self):
+    def _set_input_values_pre_setup(self):
         """
         Set the minimum count of input variables to allow self.setup() to work.
 
@@ -232,7 +233,7 @@ class FASTOADProblem(om.Problem):
 
         The actual setting of input variables is done in _read_inputs_with_setup_done()
         """
-        input_variables = VariableList(
+        shape_by_conn_input_variables = VariableList(
             [
                 variable
                 for variable in self._input_file_variables
@@ -240,8 +241,8 @@ class FASTOADProblem(om.Problem):
             ]
         )
 
-        if input_variables:
-            self._insert_input_ivc(input_variables.to_ivc())
+        if shape_by_conn_input_variables:
+            self._insert_input_ivc(shape_by_conn_input_variables.to_ivc())
 
             # Here we actualize the list of non-filled dynamically-shaped input variables
             # It saves a complete re-analysis of the problem.
@@ -249,7 +250,7 @@ class FASTOADProblem(om.Problem):
                 [
                     variable
                     for variable in self.analysis.undetermined_dynamic_input_vars
-                    if variable.name not in input_variables.names()
+                    if variable.name not in shape_by_conn_input_variables.names()
                 ]
             )
 
