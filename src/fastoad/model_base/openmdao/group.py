@@ -1,5 +1,5 @@
 """
-Convenience classes to be used in OpenMDAO components
+Convenience classes to be used in OpenMDAO components.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
@@ -20,9 +20,9 @@ import openmdao.api as om
 
 class CycleGroup(om.Group):
     """
-    Use this class as a base class if your model should contain a NonlinearBlockGS solver.
+    Use this class as a base class if your model should contain solvers.
 
-    This class defines standard options to control the solvers.
+    This class defines standard options to control inner solvers.
 
     Please be sure to call the `super()` method when using initialize() and setup()
     in the derived class.
@@ -34,8 +34,8 @@ class CycleGroup(om.Group):
             ...
 
 
-    You may also specify, for your subclass, default solver settings that will be used when adding
-    the solvers, unless overwritten through by OpenMDAO options when instantiating::
+    You may also specify default solver settings for your subclass. They will be used
+    when adding the solver, unless overwritten through OpenMDAO options when instantiating::
 
         class MyGroup(
             CycleGroup,

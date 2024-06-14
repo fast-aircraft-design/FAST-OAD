@@ -144,17 +144,17 @@ It is also possible to further customize class arguments like so:
             ...
 
 
-In configuration file, the solvers settings can be driven with:
+In the configuration file, the solvers in CycleGroup classes can be controlled with:
 
 .. code-block:: yaml
 
     model_options:
         "first_loop.*": # a more or less restrictive pattern could be used
-            # This line deactivates the solvers for all concerned groups.
-            # This can be useful to rely only on the solver(s) defined in configuration file for 'first_loop'
+            # This line deactivates the solvers for CycleGroup-derived classes.
+            # This can be useful to rely only on higher level solver(s).
             use_solvers : False
         "second_loop.*":
-            # This line activates the solvers for all concerned groups even for class created
+            # This line activates the solvers for CycleGroup-derived classes,
             # even for group derived from CycleGroup with 'use_solvers_by_default=False'
             # The default solver classes defined for each group are used.
             use_solvers : True
@@ -166,7 +166,7 @@ In configuration file, the solvers settings can be driven with:
                 iprint:0
                 rtol: 1.e-5
         "third_loop.some_component.*":
-            # These lines show how to activate and choose the solvers for concerned groups.
+            # These lines show how to activate and choose the solvers for CycleGroup-derived classes.
             use_solvers : True
             linear_solver : "om.LinearBlockGS"
             nonlinear_solver : "om.NonlinearBlockJac"
