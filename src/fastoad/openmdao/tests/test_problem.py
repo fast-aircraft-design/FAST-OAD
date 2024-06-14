@@ -165,7 +165,9 @@ def test_problem_with_case_recorder(cleanup):
 
 
 def test_problem_read_inputs_with_nan_inputs(cleanup):
-    """Tests that when reading inputs using existing XML with some nan values an exception is raised"""
+    """
+    Tests that when, reading inputs using existing XML with some nan values, an exception is raised.
+    """
 
     problem = FASTOADProblem()
     problem.model.add_subsystem("sellar", SellarModel(), promotes=["*"])
@@ -174,17 +176,17 @@ def test_problem_read_inputs_with_nan_inputs(cleanup):
 
     problem.input_file_path = input_data_path
 
-    with pytest.raises(FASTOpenMDAONanInInputFile) as exc_info:
+    with pytest.raises(FASTOpenMDAONanInInputFile) as exc_info_1:
         problem.read_inputs()
-        assert exc_info.value.input_file_path == input_data_path
-        assert exc_info.value.nan_variable_names == ["x"]
+    assert exc_info_1.value.input_file_path == input_data_path
+    assert exc_info_1.value.nan_variable_names == ["x", "z"]
 
     problem.setup()
 
-    with pytest.raises(FASTOpenMDAONanInInputFile) as exc_info:
+    with pytest.raises(FASTOpenMDAONanInInputFile) as exc_info_2:
         problem.read_inputs()
-        assert exc_info.value.input_file_path == input_data_path
-        assert exc_info.value.nan_variable_names == ["x"]
+    assert exc_info_2.value.input_file_path == input_data_path
+    assert exc_info_2.value.nan_variable_names == ["x", "z"]
 
 
 def test_problem_with_dynamically_shaped_inputs(cleanup):
