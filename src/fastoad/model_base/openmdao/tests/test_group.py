@@ -31,7 +31,7 @@ def test_base_cycle_group():
 
     # -------------------------------------------------------------------------
     problem = om.Problem()
-    problem.model.add_subsystem("group", Group1(use_solvers=False))
+    problem.model.add_subsystem("group", Group1(use_inner_solvers=False))
     problem.setup()
 
     assert isinstance(problem.model.group.linear_solver, om.LinearRunOnce)
@@ -43,7 +43,7 @@ def test_base_cycle_group():
         "group",
         Group1(
             nonlinear_solver=False,
-            linear_options={"iprint": 2},
+            linear_solver_options={"iprint": 2},
         ),
     )
     problem.setup()
@@ -58,7 +58,7 @@ def test_base_cycle_group():
         "group",
         Group1(
             linear_solver=False,
-            nonlinear_options={"maxiter": 500, "iprint": 0},
+            nonlinear_solver_options={"maxiter": 500, "iprint": 0},
         ),
     )
     problem.setup()
@@ -75,8 +75,8 @@ def test_base_cycle_group():
         Group1(
             linear_solver="om.LinearBlockGS",
             nonlinear_solver="om.BroydenSolver",
-            linear_options={"iprint": 0},
-            nonlinear_options={"maxiter": 200, "iprint": -1},
+            linear_solver_options={"iprint": 0},
+            nonlinear_solver_options={"maxiter": 200, "iprint": -1},
         ),
     )
     problem.setup()
@@ -103,7 +103,8 @@ def test_cycle_group_with_no_solver_by_default():
     # -------------------------------------------------------------------------
     problem = om.Problem()
     problem.model.add_subsystem(
-        "group", Group2(use_solvers=True, nonlinear_options={"maxiter": 100, "iprint": 3})
+        "group",
+        Group2(use_inner_solvers=True, nonlinear_solver_options={"maxiter": 100, "iprint": 3}),
     )
     problem.setup()
 
@@ -116,11 +117,11 @@ def test_cycle_group_with_no_solver_by_default():
     problem = om.Problem()
     with pytest.raises(ValueError) as err:
         problem.model.add_subsystem("group", Group2(linear_solver=True))
-    assert 'please use "use_solvers=True" and "nonlinear_solver=False"' in err.value.args[0]
+    assert 'please use "use_inner_solvers=True" and "nonlinear_solver=False"' in err.value.args[0]
 
     with pytest.raises(ValueError) as err:
         problem.model.add_subsystem("group", Group2(nonlinear_solver=True))
-    assert 'please use "use_solvers=True" and "linear_solver=False"' in err.value.args[0]
+    assert 'please use "use_inner_solvers=True" and "linear_solver=False"' in err.value.args[0]
 
 
 def test_cycle_group_with_default_solver_options():
@@ -150,8 +151,8 @@ def test_cycle_group_with_default_solver_options():
         "group",
         Group3(
             nonlinear_solver="om.NewtonSolver",
-            linear_options={"iprint": 0},
-            nonlinear_options={"iprint": 1},
+            linear_solver_options={"iprint": 0},
+            nonlinear_solver_options={"iprint": 1},
         ),
     )
     problem.setup()
@@ -169,7 +170,7 @@ def test_cycle_group_with_default_solver_options():
         Group3(
             linear_solver="om.DirectSolver",
             nonlinear_solver=False,
-            linear_options={"iprint": 3},
+            linear_solver_options={"iprint": 3},
         ),
     )
     problem.setup()

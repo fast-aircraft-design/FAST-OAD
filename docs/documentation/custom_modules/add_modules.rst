@@ -104,7 +104,7 @@ Using this class, a group that contains inner solvers can be defined this way:
 
     class SimpleCycleGroup(
         oad.CycleGroup,
-    #  A simple subclassing will assume following attributes
+    # A simple subclassing is equivalent to setting these attributes:
     #    use_solvers_by_default = True,
     #    default_linear_solver = "om.DirectSolver",
     #    default_nonlinear_solver = "om.NonlinearBlockGS",
@@ -152,22 +152,22 @@ In the configuration file, the solvers in CycleGroup classes can be controlled w
         "first_loop.*": # a more or less restrictive pattern could be used
             # This line deactivates the solvers for CycleGroup-derived classes.
             # This can be useful to rely only on higher level solver(s).
-            use_solvers : False
+            use_inner_solvers : False
         "second_loop.*":
             # This line activates the solvers for CycleGroup-derived classes,
             # even for group derived from CycleGroup with 'use_solvers_by_default=False'
             # The default solver classes defined for each group are used.
-            use_solvers : True
+            use_inner_solvers : True
             # These lines show how to define solver options.
-            linear_options:
+            linear_solver_options:
                 iprint:0
                 rtol: 1.e-5
-            nonlinear_options:
+            nonlinear_solver_options:
                 iprint:0
                 rtol: 1.e-5
         "third_loop.some_component.*":
             # These lines show how to activate and choose the solvers for CycleGroup-derived classes.
-            use_solvers : True
+            use_inner_solvers : True
             linear_solver : "om.LinearBlockGS"
             nonlinear_solver : "om.NonlinearBlockJac"
 

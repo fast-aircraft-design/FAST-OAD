@@ -95,8 +95,8 @@ class OMMission(
             types=bool,
             deprecation=(
                 'Option "add_solver" is deprecated for mission module. '
-                'Please use "use_solvers" instead.',
-                "use_solvers",
+                'Please use "use_inner_solvers" instead.',
+                "use_inner_solvers",
             ),
             desc="If True, a local solver is set for the mission computation.\n"
             "It is useful if `adjust_fuel` is set to True, or to ensure consistency between "

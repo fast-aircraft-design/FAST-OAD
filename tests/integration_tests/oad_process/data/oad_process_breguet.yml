@@ -7,7 +7,7 @@ output_file: ./oad_process_breguet_outputs.xml
 
 model_options:
   "*":
-    use_solvers: false
+    use_inner_solvers: false
 
 model:
   nonlinear_solver: om.NonlinearBlockGS(maxiter=100, atol=1e-2)

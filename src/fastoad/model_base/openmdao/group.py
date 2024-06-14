@@ -60,14 +60,16 @@ class CycleGroup(om.Group):
         cls.default_linear_solver = default_linear_solver
         cls.default_nonlinear_solver = default_nonlinear_solver
         cls.default_solver_options = {
-            "linear_options": default_linear_options if default_linear_options else {},
-            "nonlinear_options": default_nonlinear_options if default_nonlinear_options else {},
+            "linear_solver_options": default_linear_options if default_linear_options else {},
+            "nonlinear_solver_options": default_nonlinear_options
+            if default_nonlinear_options
+            else {},
         }
 
     def initialize(self):
         super().initialize()
         self.options.declare(
-            "use_solvers",
+            "use_inner_solvers",
             types=bool,
             default=self.use_solvers_by_default,
             desc="If True, solvers are added to the group. The solver classes are decided "
@@ -79,8 +81,8 @@ class CycleGroup(om.Group):
             types=bool,
             default=self.use_solvers_by_default,
             deprecation=(
-                '"use_inner_solver" option is deprecated. Please use "use_solvers" option',
-                "use_solvers",
+                '"use_inner_solver" option is deprecated. Please use "use_inner_solvers" option',
+                "use_inner_solvers",
             ),
         )
         self.options.declare(
@@ -104,17 +106,17 @@ class CycleGroup(om.Group):
             check_valid=_forbid_true_value,
         )
         self.options.declare(
-            "linear_options",
+            "linear_solver_options",
             types=dict,
-            default=self.default_solver_options["linear_options"],
+            default=self.default_solver_options["linear_solver_options"],
             desc="Options for linear solver. This dict will be updated with provided dict, "
             "meaning that options that are not in provided dict will keep the default value. "
             'Ignored if "use_inner_solver" is False.',
         )
         self.options.declare(
-            "nonlinear_options",
+            "nonlinear_solver_options",
             types=dict,
-            default=self.default_solver_options["nonlinear_options"],
+            default=self.default_solver_options["nonlinear_solver_options"],
             desc="Options for non-linear solver. This dict will be updated with provided dict, "
             "meaning that options that are not in provided dict will keep the default value. "
             'Ignored if "use_inner_solver" is False.',
@@ -123,17 +125,17 @@ class CycleGroup(om.Group):
     def setup(self):
         super().setup()
 
-        if self.options["use_solvers"]:
+        if self.options["use_inner_solvers"]:
             linear_solver_class = self._get_solver_class("linear_solver")
             nonlinear_solver_class = self._get_solver_class("nonlinear_solver")
 
-            linear_options = self._get_solver_options("linear_options")
-            nonlinear_options = self._get_solver_options("nonlinear_options")
+            linear_solver_options = self._get_solver_options("linear_solver_options")
+            nonlinear_solver_options = self._get_solver_options("nonlinear_solver_options")
 
             if linear_solver_class:
-                self.linear_solver = linear_solver_class(**linear_options)
+                self.linear_solver = linear_solver_class(**linear_solver_options)
             if nonlinear_solver_class:
-                self.nonlinear_solver = nonlinear_solver_class(**nonlinear_options)
+                self.nonlinear_solver = nonlinear_solver_class(**nonlinear_solver_options)
 
     def _get_solver_class(self, option_name: str):
         """
@@ -163,13 +165,13 @@ def _forbid_true_value(name, value):
     For using in check_valid with options "linear_solver" and "nonlinear_solver".
 
     False is authorized to deactivate the solver, but True is not needed and could
-    lead to misunderstanding (what if "use_solvers==False" but "linear_solver==True" ?)
+    lead to misunderstanding (what if "use_inner_solvers==False" but "linear_solver==True" ?)
     """
     if value is True:
         other_solver_kind = "nonlinear_solver" if name == "linear_solver" else "linear_solver"
         raise ValueError(
             f'`True` value is not accepted for option "{name}". '
-            f'Please use "use_solvers=True" to activate both linear and non-linear solvers. '
-            f'If you want to activate only "{name}", please use "use_solvers=True" '
+            f'Please use "use_inner_solvers=True" to activate both linear and non-linear solvers. '
+            f'If you want to activate only "{name}", please use "use_inner_solvers=True" '
             f'and "{other_solver_kind}=False".'
         )
