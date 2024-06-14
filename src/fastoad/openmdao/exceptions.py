@@ -1,8 +1,6 @@
 """
 Module for custom Exception classes linked to OpenMDAO
 """
-
-
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -17,21 +15,21 @@ Module for custom Exception classes linked to OpenMDAO
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-from typing import List
+from typing import Iterable
 
 from fastoad.exceptions import FastError
 
 
-class FASTOpenMDAONanInInputFile(FastError):
+class FASTOpenMDAONanInInputsError(FastError):
     """Raised if NaN values are read in input data file."""
 
-    def __init__(self, input_file_path: str, nan_variable_names: List[str]):
+    def __init__(self, input_file_path: str, nan_variable_names: Iterable[str]):
         self.input_file_path = input_file_path
-        self.nan_variable_names = nan_variable_names
+        self.nan_variable_names = sorted(list(nan_variable_names))
 
-        msg = "NaN values found in input file (%s). Please check following variables: %s" % (
-            input_file_path,
-            nan_variable_names,
+        msg = (
+            f"NaN values found in inputs ({input_file_path}). Please check that "
+            f"following variables are present and not NaN: {nan_variable_names}"
         )
 
         super().__init__(self, msg)
