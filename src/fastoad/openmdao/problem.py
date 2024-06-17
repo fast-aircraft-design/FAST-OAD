@@ -61,9 +61,11 @@ class FASTOADProblem(om.Problem):
         self.additional_variables = None
 
         #: If True inputs will be read after setup.
-        self._read_inputs_after_setup = False
+        self._set_input_values_after_setup = False
 
         self.model = FASTOADModel()
+
+        self._input_variables = None
 
         self._copy = None
 
@@ -89,8 +91,8 @@ class FASTOADProblem(om.Problem):
 
         super().setup(*args, **kwargs)
 
-        if self._read_inputs_after_setup:
-            self._read_inputs_with_setup_done()
+        if self._set_input_values_after_setup:
+            self._set_input_values_with_setup_done()
         BundleLoader().clean_memory()
 
     def write_needed_inputs(
@@ -152,13 +154,14 @@ class FASTOADProblem(om.Problem):
         """
         Reads inputs of the problem.
         """
+        self._input_variables, self.additional_variables = self._get_problem_inputs()
         if self._metadata and self._metadata["setup_status"] == _SetupStatus.POST_SETUP:
-            self._read_inputs_with_setup_done()
+            self._set_input_values_with_setup_done()
         else:
-            self._read_inputs_without_setup_done()
-            # Input reading still needs to be done after setup, to ensure that IVC values
-            # will be properly set by new inputs.
-            self._read_inputs_after_setup = True
+            self._set_input_values_without_setup_done()
+            # Input setting still needs to be done after setup, since we only addressed
+            # dynamically-shape inputs.
+            self._set_input_values_after_setup = True
 
     @property
     def analysis(self) -> "ProblemAnalysis":
@@ -207,45 +210,45 @@ class FASTOADProblem(om.Problem):
 
         return input_variables, unused_variables
 
-    def _read_inputs_with_setup_done(self):
+    def _set_input_values_with_setup_done(self):
         """
         Set initial values of inputs. self.setup() must have been run.
         """
-        input_variables, unused_variables = self._get_problem_inputs()
-        self.additional_variables = unused_variables
-        for input_var in input_variables:
+        for input_var in self._input_variables:
             # set_val() will crash if input_var.metadata["val"] is a list, so
             # we ensure it is a numpy array
             input_var.metadata["val"] = np.asarray(input_var.metadata["val"])
 
             self.set_val(input_var.name, val=input_var.val, units=input_var.units)
 
-    def _read_inputs_without_setup_done(self):
+    def _set_input_values_without_setup_done(self):
         """
-        Set initial values of inputs. self.setup() must have NOT been run.
+        Set the minimum count of input variables to allow self.setup() to work.
 
-        Input values that match an existing IVC are not taken into account
+        Actually, only variables with shape_by_conn==True are concerned.
+
+        The actual setting of input variables is done in _read_inputs_with_setup_done()
         """
-        input_variables, unused_variables = self._get_problem_inputs()
-        self.additional_variables = unused_variables
-
         input_variables = VariableList(
             [
                 variable
-                for variable in input_variables
-                if variable.name not in self.analysis.ivc_var_names
+                for variable in self._input_variables
+                for variable.name in self.analysis.undetermined_dynamic_input_vars.names()
             ]
         )
 
         if input_variables:
-            self.analysis.dynamic_input_vars = VariableList(
+            self._insert_input_ivc(input_variables.to_ivc())
+
+            # Here we actualize the list of non-filled dynamically-shaped input variables
+            # It saves a complete re-analysis of the problem.
+            self.analysis.undetermined_dynamic_input_vars = VariableList(
                 [
                     variable
-                    for variable in self.analysis.dynamic_input_vars
+                    for variable in self.analysis.undetermined_dynamic_input_vars
                     if variable.name not in input_variables.names()
                 ]
             )
-            self._insert_input_ivc(input_variables.to_ivc())
 
     def _insert_input_ivc(self, ivc: om.IndepVarComp, subsystem_name=INPUT_SYSTEM_NAME):
         self.model.add_subsystem(subsystem_name, ivc, promotes=["*"])
@@ -337,7 +340,7 @@ class ProblemAnalysis:
     problem_variables: VariableList = field(default_factory=VariableList, init=False)
 
     #: List variables that are inputs OF THE PROBLEM and dynamically shaped.
-    dynamic_input_vars: VariableList = field(default_factory=VariableList, init=False)
+    undetermined_dynamic_input_vars: VariableList = field(default_factory=VariableList, init=False)
 
     #: Order of subsystems
     subsystem_order: list = field(default_factory=list, init=False)
@@ -356,7 +359,7 @@ class ProblemAnalysis:
         try:
             om.Problem.setup(problem_copy)
         except RuntimeError:
-            self.dynamic_input_vars = self._get_undetermined_dynamic_vars(problem_copy)
+            self.undetermined_dynamic_input_vars = self._get_undetermined_dynamic_vars(problem_copy)
 
             problem_copy = get_mpi_safe_problem_copy(self.problem)
             self.fills_dynamically_shaped_inputs(problem_copy)
@@ -384,11 +387,11 @@ class ProblemAnalysis:
 
         The input problem should be the analyzed problem or a copy of it.
         """
-        if self.dynamic_input_vars:
+        if self.undetermined_dynamic_input_vars:
             # If vars_metadata is empty, it means the RuntimeError was not because
             # of dynamic shapes, and the incoming self.setup() will raise it.
             ivc = om.IndepVarComp()
-            for variable in self.dynamic_input_vars:
+            for variable in self.undetermined_dynamic_input_vars:
                 # We use a (2,)-shaped array as value here. This way, it will be easier
                 # to identify dynamic-shaped data in an input file generated from current
                 # problem.
