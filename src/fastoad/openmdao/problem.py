@@ -113,7 +113,7 @@ class FASTOADProblem(om.Problem):
         :param source_file_path: if provided, variable values will be read from it
         :param source_formatter: the class that defines format of input file. if
                                  not provided, expected format will be the default one.
-        :param write_outputs: if True, output variables are also in generated file.
+        :param write_outputs: if True, the generated file will also contain output variables.
         """
         variables = DataFile(self.input_file_path, load_data=False)
 
