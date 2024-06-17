@@ -30,20 +30,6 @@ from .openmdao_sellar_example.functions import FunctionF, FunctionG1, FunctionG2
 from ..variables import Variable, VariableList
 
 
-#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
-#  FAST is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or
-#  (at your option) any later version.
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#  You should have received a copy of the GNU General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-
 @pytest.fixture(scope="module")
 def cleanup():
     # Need to clean up variable descriptions because it is manipulated in other tests.
@@ -103,7 +89,14 @@ def test_variables(with_dummy_plugin_2):
     variables["a"] = {"value": 42.0}
     assert variables["a"].value == 42.0
 
-    # .update()
+
+def test_variable_list_update():
+    a_var = Variable("a", val=42.0)
+    b_var = Variable("b", val=1.0)
+    n_var = Variable("n", val=np.array(np.nan))
+
+    variables = VariableList([a_var, b_var])
+
     assert len(variables) == 2
     assert list(variables.names()) == ["a", "b"]
     variables.update([n_var], add_variables=False)  # does nothing
@@ -136,6 +129,27 @@ def test_variables(with_dummy_plugin_2):
     assert len(variables) == 3
     assert list(variables.names()) == ["a", "b", "n"]
     assert variables["n"].description == "new description"
+
+    # We test the update of I/O status
+    for var in variables:
+        var.is_input = True
+    variables.update(
+        [Variable("n", is_input=False, desc="unused description")],
+        update_only_value_and_units=True,
+    )
+    assert len(variables) == 3
+    assert list(variables.names()) == ["a", "b", "n"]
+    assert variables["n"].is_input is True
+    assert variables["n"].description == "new description"
+
+    variables.update(
+        [Variable("n", is_input=False, desc="used description")],
+        update_only_value_and_units=False,
+    )
+    assert len(variables) == 3
+    assert list(variables.names()) == ["a", "b", "n"]
+    assert variables["n"].is_input is False
+    assert variables["n"].description == "used description"
 
 
 def test_ivc_from_to_variables():
