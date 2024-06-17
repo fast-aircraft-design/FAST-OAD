@@ -121,18 +121,20 @@ class VariableList(list):
         :param update_only_value_and_units: if False, an existing variable is entirely replaced.
                                             if True, only its value and units are updated.
         """
-
         for var in other_var_list:
-            if add_variables or var.name in self.names():
-                # To avoid to lose variables description when the variable list is updated with a
-                # list without descriptions (issue # 319)
-                if var.name in self.names() and self[var.name].description and not var.description:
-                    var.description = self[var.name].description
-                if update_only_value_and_units and var.name in self.names():
+            if var.name in self.names():
+                if update_only_value_and_units:
                     self[var.name].value = var.value
                     self[var.name].units = var.units
                 else:
-                    self.append(deepcopy(var))
+                    new_var = deepcopy(var)
+                    if not var.description:
+                        # To avoid to lose variables description when the variable list is
+                        # updated with a list without descriptions (issue # 319)
+                        new_var.description = self[new_var.name].description
+                    self.append(new_var)
+            elif add_variables:
+                self.append(deepcopy(var))
 
     def to_ivc(self) -> om.IndepVarComp:
         """
