@@ -16,8 +16,8 @@
 <aircraft>
     <x>1.0</x>
     <z units="m**2">5.0 2.0</z>
-    <y1>nan</y1><!-- If this variable is kept in the input IVC, OpenMDAO will raise an exception because it is an output of a component
-                     As it should be ignored, its NaN value should bring no harm.-->
+    <y1>17.75</y1><!-- If this variable is kept in the input IVC, OpenMDAO will raise an exception because
+                       it is an output of a component. -->
     <foo>nan</foo><!-- This totally unused variable is expected to be transferred in output file -->
     <bar>42</bar><!-- This variable is optionally used, and expected to be in output file in any case -->
 </aircraft>

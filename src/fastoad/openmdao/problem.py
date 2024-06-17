@@ -197,21 +197,25 @@ class FASTOADProblem(om.Problem):
 
         :return: VariableList of needed input variables, VariableList with unused variables.
         """
-        problem_inputs_names = [var.name for var in self.analysis.problem_variables if var.is_input]
-
-        input_variables = DataFile(self.input_file_path)
+        input_file_variables = DataFile(self.input_file_path)
 
         unused_variables = VariableList(
-            [var for var in input_variables if var.name not in problem_inputs_names]
+            [
+                var
+                for var in input_file_variables
+                if var.name not in self.analysis.problem_variables.names()
+            ]
         )
         for name in unused_variables.names():
-            del input_variables[name]
+            del input_file_variables[name]
 
-        nan_variable_names = [var.name for var in input_variables if np.any(np.isnan(var.value))]
+        nan_variable_names = [
+            var.name for var in input_file_variables if np.any(np.isnan(var.value))
+        ]
         if nan_variable_names:
             raise FASTOpenMDAONanInInputFile(self.input_file_path, nan_variable_names)
 
-        return input_variables, unused_variables
+        return input_file_variables, unused_variables
 
     def _set_input_values_with_setup_done(self):
         """
