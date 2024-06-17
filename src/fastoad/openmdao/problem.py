@@ -13,7 +13,8 @@
 
 import logging
 from dataclasses import dataclass, field
-from typing import Optional, Tuple
+from os import PathLike
+from typing import Optional, Tuple, Union
 
 import numpy as np
 import openmdao.api as om
@@ -96,7 +97,9 @@ class FASTOADProblem(om.Problem):
         BundleLoader().clean_memory()
 
     def write_needed_inputs(
-        self, source_file_path: str = None, source_formatter: IVariableIOFormatter = None
+        self,
+        source_file_path: Union[str, PathLike] = None,
+        source_formatter: IVariableIOFormatter = None,
     ):
         """
         Writes the input file of the problem using its unconnected inputs.
