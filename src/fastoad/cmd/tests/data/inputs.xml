@@ -14,10 +14,11 @@
   -->
 
 <aircraft>
-  <f is_input="False">20.0</f>
-  <g1 is_input="False">-15.0</g1>
-  <g2 is_input="False">-13.0</g2>
+  <f is_input="False">32.569100892077444<!--Objective--></f>
+  <g1 is_input="False">-23.409095627564167</g1>
+  <g2 is_input="False">-11.845478137832359</g2>
   <x is_input="True">2.0<!--input x--></x>
-  <y2 is_input="False">11.0<!--variable y2--></y2>
+  <y1 is_input="False">26.569095627564167<!--variable y1--></y1>
+  <y2 is_input="False">12.154521862167641<!--variable y2--></y2>
   <z units="m**2" is_input="True">[5.0, 2.0]<!--variable z--></z>
 </aircraft>
