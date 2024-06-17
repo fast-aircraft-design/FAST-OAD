@@ -25,7 +25,7 @@ from fastoad.openmdao.exceptions import (
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.openmdao.variables import Variable, VariableList
 from .openmdao_sellar_example.sellar import SellarModel
-from ...io import VariableIO
+from ...io import DataFile, VariableIO
 
 DATA_FOLDER_PATH = Path(__file__).parent / "data"
 RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
@@ -120,7 +120,11 @@ def test_problem_read_inputs_before_setup(cleanup):
     problem = FASTOADProblem()
     problem.model.add_subsystem("sellar", SellarModel(), promotes=["*"])
 
-    problem.input_file_path = DATA_FOLDER_PATH / "ref_inputs_outputs.xml"
+    problem.input_file_path = RESULTS_FOLDER_PATH / "inputs_outputs.xml"
+    problem.write_needed_inputs(DATA_FOLDER_PATH / "ref_inputs_outputs.xml", write_outputs=True)
+
+    written_data = DataFile(problem.input_file_path)
+    assert written_data["y2"].is_input is False
 
     problem.read_inputs()
     problem.setup()

@@ -100,6 +100,7 @@ class FASTOADProblem(om.Problem):
         self,
         source_file_path: Union[str, PathLike] = None,
         source_formatter: IVariableIOFormatter = None,
+        write_outputs: bool = False,
     ):
         """
         Writes the input file of the problem using its unconnected inputs.
@@ -112,23 +113,24 @@ class FASTOADProblem(om.Problem):
         :param source_file_path: if provided, variable values will be read from it
         :param source_formatter: the class that defines format of input file. if
                                  not provided, expected format will be the default one.
+        :param write_outputs: if True, output variables are also in generated file.
         """
         variables = DataFile(self.input_file_path, load_data=False)
 
-        unconnected_inputs = VariableList(
-            [variable for variable in self.analysis.problem_variables if variable.is_input]
-        )
+        if write_outputs:
+            variable_list = self.analysis.problem_variables
+        else:
+            variable_list = VariableList(
+                [variable for variable in self.analysis.problem_variables if variable.is_input]
+            )
 
-        variables.update(
-            unconnected_inputs,
-            add_variables=True,
-        )
+        variables.update(variable_list, add_variables=True)
+
         if source_file_path:
             ref_vars = DataFile(source_file_path, formatter=source_formatter)
-            variables.update(ref_vars, add_variables=False)
+            variables.update(ref_vars, add_variables=False, update_only_value_and_units=True)
             nan_variable_names = []
             for var in variables:
-                var.is_input = True
                 # Checking if variables have NaN values
                 if np.any(np.isnan(var.value)):
                     nan_variable_names.append(var.name)
