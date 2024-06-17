@@ -25,7 +25,7 @@ from enum import Enum
 from os import PathLike
 from pathlib import Path
 from time import time
-from typing import Dict, List, Union, TextIO
+from typing import Dict, List, TextIO, Union
 
 import openmdao.api as om
 import pandas as pd
@@ -299,6 +299,7 @@ def generate_inputs(
     source_data_path: Union[str, PathLike] = None,
     source_data_path_schema="native",
     overwrite: bool = False,
+    write_output_variables: bool = False,
 ) -> str:
     """
     Generates input file for the problem specified in configuration_file_path.
@@ -307,6 +308,7 @@ def generate_inputs(
     :param source_data_path: path of source data file data will be taken from
     :param source_data_path_schema: set to 'legacy' if the source file come from legacy FAST
     :param overwrite: if True, file will be written even if one already exists
+    :param write_output_variables: if True, the generated file will also contain output variables
     :return: path of generated file
     :raise FastPathExistsError: if overwrite==False and configuration_file_path already exists
     """
@@ -322,9 +324,11 @@ def generate_inputs(
         )
 
     if source_data_path_schema == "legacy":
-        conf.write_needed_inputs(source_data_path, VariableLegacy1XmlFormatter())
+        conf.write_needed_inputs(
+            source_data_path, VariableLegacy1XmlFormatter(), write_outputs=write_output_variables
+        )
     else:
-        conf.write_needed_inputs(source_data_path)
+        conf.write_needed_inputs(source_data_path, write_outputs=write_output_variables)
 
     _LOGGER.info("Problem inputs written in %s", input_file_path)
     return conf.input_file_path

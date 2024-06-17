@@ -1,6 +1,6 @@
 <!--
   ~ This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-  ~ Copyright (C) 2020  ONERA & ISAE-SUPAERO
+  ~ Copyright (C) 2024 ONERA & ISAE-SUPAERO
   ~ FAST is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as published by
   ~ the Free Software Foundation, either version 3 of the License, or
@@ -14,6 +14,10 @@
   -->
 
 <aircraft>
-  <x>2.0</x>
-  <z units="m**2">[5.0, 2.0]</z>
+  <f is_input="False">20.0</f>
+  <g1 is_input="False">-15.0</g1>
+  <g2 is_input="False">-13.0</g2>
+  <x is_input="True">2.0<!--input x--></x>
+  <y2 is_input="False">11.0<!--variable y2--></y2>
+  <z units="m**2" is_input="True">[5.0, 2.0]<!--variable z--></z>
 </aircraft>
