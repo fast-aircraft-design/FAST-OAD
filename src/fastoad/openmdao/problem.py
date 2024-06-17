@@ -65,7 +65,7 @@ class FASTOADProblem(om.Problem):
 
         self.model = FASTOADModel()
 
-        self._input_variables = None
+        self._input_file_variables = None
 
         self._copy = None
 
@@ -154,7 +154,7 @@ class FASTOADProblem(om.Problem):
         """
         Reads inputs of the problem.
         """
-        self._input_variables, self.additional_variables = self._get_problem_inputs()
+        self._input_file_variables, self.additional_variables = self._get_problem_inputs()
         if self._metadata and self._metadata["setup_status"] == _SetupStatus.POST_SETUP:
             self._set_input_values_with_setup_done()
         else:
@@ -194,27 +194,31 @@ class FASTOADProblem(om.Problem):
 
         :return: VariableList of needed input variables, VariableList with unused variables.
         """
-        problem_inputs_names = [var.name for var in self.analysis.problem_variables if var.is_input]
-
-        input_variables = DataFile(self.input_file_path)
+        input_file_variables = DataFile(self.input_file_path)
 
         unused_variables = VariableList(
-            [var for var in input_variables if var.name not in problem_inputs_names]
+            [
+                var
+                for var in input_file_variables
+                if var.name not in self.analysis.problem_variables.names()
+            ]
         )
         for name in unused_variables.names():
-            del input_variables[name]
+            del input_file_variables[name]
 
-        nan_variable_names = [var.name for var in input_variables if np.any(np.isnan(var.value))]
+        nan_variable_names = [
+            var.name for var in input_file_variables if np.any(np.isnan(var.value))
+        ]
         if nan_variable_names:
             raise FASTOpenMDAONanInInputFile(self.input_file_path, nan_variable_names)
 
-        return input_variables, unused_variables
+        return input_file_variables, unused_variables
 
     def _set_input_values_with_setup_done(self):
         """
         Set initial values of inputs. self.setup() must have been run.
         """
-        for input_var in self._input_variables:
+        for input_var in self._input_file_variables:
             # set_val() will crash if input_var.metadata["val"] is a list, so
             # we ensure it is a numpy array
             input_var.metadata["val"] = np.asarray(input_var.metadata["val"])
@@ -232,8 +236,8 @@ class FASTOADProblem(om.Problem):
         input_variables = VariableList(
             [
                 variable
-                for variable in self._input_variables
-                for variable.name in self.analysis.undetermined_dynamic_input_vars.names()
+                for variable in self._input_file_variables
+                if variable.name in self.analysis.undetermined_dynamic_input_vars.names()
             ]
         )
 
