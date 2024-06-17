@@ -37,7 +37,7 @@ def cleanup():
     RESULTS_FOLDER_PATH.mkdir(parents=True)
 
 
-def test_write_outputs():
+def test_write_outputs(cleanup):
     problem = FASTOADProblem()
     problem.model.add_subsystem("sellar", SellarModel(), promotes=["*"])
     problem.output_file_path = RESULTS_FOLDER_PATH / "output.xml"
@@ -83,7 +83,7 @@ def test_problem_read_inputs_after_setup(cleanup):
 
     problem.setup()
 
-    assert problem.get_val(name="x") == [2.0]
+    assert problem.get_val(name="x") == [2.0]  # Here x is set by integrated IVC
     with pytest.raises(RuntimeError):
         # Several default values are defined for "z", thus OpenMDAO raises an error that
         # will be solved only after run_model() has been used.
@@ -100,6 +100,7 @@ def test_problem_read_inputs_after_setup(cleanup):
 def test_problem_read_inputs_before_setup(cleanup):
     """Tests what happens when reading inputs using existing XML with correct var"""
 
+    # Set only values of inputs
     problem = FASTOADProblem()
     problem.model.add_subsystem("sellar", SellarModel(), promotes=["*"])
 
@@ -112,6 +113,29 @@ def test_problem_read_inputs_before_setup(cleanup):
     assert_allclose(problem.get_val(name="x"), 1.0)
     assert_allclose(problem.get_val(name="z", units="m**2"), [4.0, 3.0])
     assert_allclose(problem["f"], 21.7572, atol=1.0e-4)
+
+    # Set values of inputs and outputs
+    # (FASTOADProblem has to defer output setting after setup to have it effective,
+    #  so this test works also for read after setup)
+    problem = FASTOADProblem()
+    problem.model.add_subsystem("sellar", SellarModel(), promotes=["*"])
+
+    problem.input_file_path = DATA_FOLDER_PATH / "ref_inputs_outputs.xml"
+
+    problem.read_inputs()
+    problem.setup()
+    problem.run_model()
+
+    assert_allclose(problem.get_val(name="x"), 1.0)
+    assert_allclose(problem.get_val(name="z", units="m**2"), [4.0, 3.0])
+    assert_allclose(problem["f"], 21.7572, atol=1.0e-4)
+
+    # We start from solution, so we should converge with only 2 iterations.
+    iter_count = [
+        iter_desc[2]
+        for iter_desc in problem.iter_count_iter(include_driver=False, include_solvers=True)
+    ][0]
+    assert iter_count == 2
 
 
 def test_problem_with_case_recorder(cleanup):
