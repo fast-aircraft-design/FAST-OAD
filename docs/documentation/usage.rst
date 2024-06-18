@@ -221,6 +221,8 @@ as option settings:
 - For FAST-OAD modules, the list of available options is available through the :code:`list_modules`
   sub-command (see :ref:`get-module-list`).
 
+.. _configuration-model-options:
+
 Model options
 ==============
 

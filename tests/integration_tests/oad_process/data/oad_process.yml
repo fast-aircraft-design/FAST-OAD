@@ -5,6 +5,14 @@ module_folders:
 input_file: ../results/oad_process_inputs.xml
 output_file: ../results/oad_process_outputs.xml
 
+model_options:
+  "*":
+    linear_solver_options:
+      iprint: 0
+    nonlinear_solver_options:
+      iprint: 0
+      maxiter: 2
+
 model:
   nonlinear_solver: om.NonlinearBlockGS(maxiter=100, atol=1e-2)
   linear_solver: om.DirectSolver()
@@ -25,7 +33,7 @@ model:
         out_file: ../results/flight_points.csv
         mission_file_path: ::sizing_breguet
         adjust_fuel: true
-        add_solver: false
+        use_inner_solvers: false
         is_sizing: true
   hq:
     tail_sizing:
