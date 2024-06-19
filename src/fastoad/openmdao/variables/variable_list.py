@@ -89,7 +89,7 @@ class VariableList(list):
 
     def append(self, var: Variable) -> None:
         """
-        Append var to the end of the list, unless its name is already used. In that case, var
+        Appends var to the end of the list, unless its name is already used. In that case, var
         will replace the previous Variable instance with the same name.
         """
         if not isinstance(var, Variable):
@@ -99,6 +99,15 @@ class VariableList(list):
             self[self.names().index(var.name)] = var
         else:
             super().append(var)
+
+    def add_var(self, name, **kwargs):
+        """
+        Adds, or replace, the named variable with given attributes
+
+        :param name:
+        :param kwargs:
+        """
+        self.append(Variable(name, **kwargs))
 
     def update(self, other_var_list: list, add_variables: bool = True):
         """

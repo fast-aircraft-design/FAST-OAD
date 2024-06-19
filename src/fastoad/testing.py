@@ -12,6 +12,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from typing import Union
+
 import numpy as np
 from openmdao import api as om
 from openmdao.core.system import System
@@ -21,7 +23,9 @@ from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.openmdao.variables import VariableList
 
 
-def run_system(component: System, input_vars: om.IndepVarComp, **kwargs) -> FASTOADProblem:
+def run_system(
+    component: System, input_vars: Union[om.IndepVarComp, VariableList], **kwargs
+) -> FASTOADProblem:
     """
     Runs and returns an OpenMDAO problem with provided component and data.
 
@@ -44,6 +48,10 @@ def run_system(component: System, input_vars: om.IndepVarComp, **kwargs) -> FAST
 
     problem = om.Problem()
     model = problem.model = BaseCycleGroup(**kwargs)
+
+    if isinstance(input_vars, VariableList):
+        input_vars = input_vars.to_ivc()
+
     model.add_subsystem("inputs", input_vars, promotes=["*"])
     model.add_subsystem("component", component, promotes=["*"])
 
