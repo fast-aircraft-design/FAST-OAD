@@ -74,10 +74,14 @@ class MissionViewer:
         self._output_widget = widgets.Output()
 
         # By default ground distance
-        self._x_widget = widgets.Dropdown(value=keys[2], options=keys)
+        idx_ground_distance = (
+            keys.to_list().index("ground_distance") if "ground_distance" in keys else 2
+        )
+        self._x_widget = widgets.Dropdown(value=keys[idx_ground_distance], options=keys)
         self._x_widget.observe(self._show_plot, "value")
         # By default altitude
-        self._y_widget = widgets.Dropdown(value=keys[1], options=keys)
+        idx_altitude = keys.to_list().index("altitude") if "altitude" in keys else 1
+        self._y_widget = widgets.Dropdown(value=keys[idx_altitude], options=keys)
         self._y_widget.observe(self._show_plot, "value")
 
         self._show_plot()
