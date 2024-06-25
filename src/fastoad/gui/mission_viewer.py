@@ -75,22 +75,14 @@ class MissionViewer:
 
         self._output_widget = widgets.Output()
 
-        flight_point_units = FlightPoint.get_units()
-
         # By default ground distance
-        unit_ground_distance = flight_point_units["ground_distance"]
-        column_ground_distance = f"ground_distance [{unit_ground_distance}]"
-        idx_ground_distance = (
-            keys.to_list().index(column_ground_distance) if column_ground_distance in keys else 3
-        )
-        self._x_widget = widgets.Dropdown(value=keys[idx_ground_distance], options=keys)
+        column_ground_distance = self._get_label(keys, "ground_distance", 3)
+        self._x_widget = widgets.Dropdown(value=column_ground_distance, options=keys)
         self._x_widget.observe(self._show_plot, "value")
 
         # By default altitude
-        unit_altitude = flight_point_units["altitude"]
-        column_altitude = f"altitude [{unit_altitude}]"
-        idx_altitude = keys.to_list().index(column_altitude) if column_altitude in keys else 1
-        self._y_widget = widgets.Dropdown(value=keys[idx_altitude], options=keys)
+        column_altitude = self._get_label(keys, "altitude", 1)
+        self._y_widget = widgets.Dropdown(value=column_altitude, options=keys)
         self._y_widget.observe(self._show_plot, "value")
 
         self._show_plot()
@@ -137,3 +129,17 @@ class MissionViewer:
 
             fig = go.FigureWidget(fig)
             display(fig)
+
+    @staticmethod
+    def _get_label(keys: pd.Index, quantity_name: str, default_idx: int):
+        """
+        Gets the label corresponding to the desired quantity in the mission data if it exists.
+        Otherwise return the column corresponding to the default index.
+        """
+
+        flight_point_units = FlightPoint.get_units()
+        unit_quantity = flight_point_units[quantity_name]
+        column_quantity = f"{quantity_name} [{unit_quantity}]"
+        label_quantity = column_quantity if column_quantity in keys else keys[default_idx]
+
+        return label_quantity
