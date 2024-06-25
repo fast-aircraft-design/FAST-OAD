@@ -22,6 +22,8 @@ import pandas as pd
 import plotly.graph_objects as go
 from IPython.display import clear_output, display
 
+from fastoad.model_base import FlightPoint
+
 from fastoad._utils.files import as_path
 
 
@@ -73,14 +75,21 @@ class MissionViewer:
 
         self._output_widget = widgets.Output()
 
+        flight_point_units = FlightPoint.get_units()
+
         # By default ground distance
+        unit_ground_distance = flight_point_units["ground_distance"]
+        column_ground_distance = f"ground_distance [{unit_ground_distance}]"
         idx_ground_distance = (
-            keys.to_list().index("ground_distance") if "ground_distance" in keys else 2
+            keys.to_list().index(column_ground_distance) if column_ground_distance in keys else 3
         )
         self._x_widget = widgets.Dropdown(value=keys[idx_ground_distance], options=keys)
         self._x_widget.observe(self._show_plot, "value")
+
         # By default altitude
-        idx_altitude = keys.to_list().index("altitude") if "altitude" in keys else 1
+        unit_altitude = flight_point_units["altitude"]
+        column_altitude = f"altitude [{unit_altitude}]"
+        idx_altitude = keys.to_list().index(column_altitude) if column_altitude in keys else 1
         self._y_widget = widgets.Dropdown(value=keys[idx_altitude], options=keys)
         self._y_widget.observe(self._show_plot, "value")
 

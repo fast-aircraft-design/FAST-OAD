@@ -56,32 +56,32 @@ def test_mission_display():
 
     mission_viewer = MissionViewer()
 
-    mission_viewer.add_mission(filename, name="Mission 1")
+    mission_viewer.add_mission(filename)
 
     mission_viewer.display()
 
-    assert mission_viewer._x_widget.value == "ground_distance"
-    assert mission_viewer._y_widget.value == "altitude"
+    assert mission_viewer._x_widget.value == "ground_distance [m]"
+    assert mission_viewer._y_widget.value == "altitude [m]"
 
     # Testing with a disorganised .csv file since it seeks the right indices
     filename = DATA_FOLDER_PATH / "flight_points_disorganised.csv"
 
     mission_viewer = MissionViewer()
-    mission_viewer.add_mission(filename, name="Mission 1")
+    mission_viewer.add_mission(filename)
 
     mission_viewer.display()
 
-    assert mission_viewer._x_widget.value == "ground_distance"
-    assert mission_viewer._y_widget.value == "altitude"
+    assert mission_viewer._x_widget.value == "ground_distance [m]"
+    assert mission_viewer._y_widget.value == "altitude [m]"
 
-    # Testing with a disorganised .csv file with a missing column
+    # Testing with a disorganised .csv file and a missing column
     filename = DATA_FOLDER_PATH / "flight_points_disorganised_missing_column.csv"
 
     mission_viewer = MissionViewer()
-    mission_viewer.add_mission(filename, name="Mission 1")
+    mission_viewer.add_mission(filename)
 
     mission_viewer.display()
 
-    assert mission_viewer._x_widget.value == "ground_distance"
+    assert mission_viewer._x_widget.value == "consumed_fuel [kg]"
     # It's missing the ground distance column so it will use the column at index 1
-    assert mission_viewer._y_widget.value == "mass"
+    assert mission_viewer._y_widget.value == "altitude [m]"
