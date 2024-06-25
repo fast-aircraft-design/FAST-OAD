@@ -18,9 +18,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from fastoad._utils.testing import run_system
 from fastoad.io import DataFile
 from fastoad.model_base.datacls import MANDATORY_FIELD
+from fastoad.testing import run_system
 from ..mission_run import AdvancedMissionComp
 from ..mission_wrapper import MissionWrapper
 from ...segments.base import AbstractFlightSegment, RegisterSegment
