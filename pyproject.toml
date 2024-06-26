@@ -42,10 +42,10 @@ classifiers = [
 # of poetry.lock file will modify docs/requirements.txt and make
 # the commit fail because "files were modified by this hook". In that case,
 # doing again the commit including changes in docs/requirements.txt will succeed.
-python = "^3.8"
+python = ">=3.8, <3.11"
 numpy = "^1.22.0"
 scipy = "^1.9.3"
-pandas = "^1.3.4"
+pandas = ">=1.3.4, <3"
 openmdao = "^3.27"
 ipopo = "^1.0.0"
 ipywidgets = "^7.7.0"
