@@ -61,7 +61,7 @@ tabulate = ">=0.8.9, <1"
 aenum = "^3.1.0"
 jupyterlab = "^3.3.0"
 notebook = "^6.0"
-stdatm = "0.*"
+stdatm = ">=0.4.2"
 Deprecated = "^1.2.13"
 click = "^8.0.3"
 importlib-metadata = { version = "^4.2", python = "<3.10" }

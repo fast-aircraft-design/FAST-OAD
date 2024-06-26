@@ -99,7 +99,7 @@ sphinxcontrib-htmlhelp==2.0.0 ; python_version >= "3.8" and python_version < "4.
 sphinxcontrib-jsmath==1.0.1 ; python_version >= "3.8" and python_version < "4.0"
 sphinxcontrib-qthelp==1.0.3 ; python_version >= "3.8" and python_version < "4.0"
 sphinxcontrib-serializinghtml==1.1.5 ; python_version >= "3.8" and python_version < "4.0"
-stdatm==0.1.0 ; python_version >= "3.8" and python_version < "4.0"
+stdatm==0.4.3 ; python_version >= "3.8" and python_version < "4.0"
 tabulate==0.8.9 ; python_version >= "3.8" and python_version < "4.0"
 tenacity==8.0.1 ; python_version >= "3.8" and python_version < "4.0"
 terminado==0.12.1 ; python_version >= "3.8" and python_version < "4.0"
