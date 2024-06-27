@@ -31,6 +31,7 @@ import openmdao.api as om
 import pandas as pd
 from IPython import InteractiveShell
 from IPython.display import HTML, clear_output, display
+from packaging.version import Version
 from tabulate import tabulate
 
 import fastoad.openmdao.whatsopt
@@ -419,13 +420,13 @@ def list_variables(
 
 
 def _generate_var_desc_format(variables_df):
-    content = variables_df.to_csv(
-        columns=["NAME", "DESCRIPTION"],
-        sep="|",
-        index=False,
-        header=False,
-        line_terminator="\n",
-    ).replace("|", " || ")
+    kwargs = dict(columns=["NAME", "DESCRIPTION"], sep="|", index=False, header=False)
+    if Version(pd.__version__) < Version("1.5"):
+        kwargs["line_terminator"] = "\n"
+    else:
+        kwargs["lineterminator"] = "\n"
+
+    content = variables_df.to_csv(**kwargs).replace("|", " || ")
     return content
 
 
