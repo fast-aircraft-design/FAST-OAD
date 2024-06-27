@@ -35,7 +35,7 @@ class RectangularSection(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs):
-        l = inputs["data:geometry:l"]
+        length = inputs["data:geometry:l"]
         I_xx = inputs["data:geometry:Ixx"]
 
-        outputs["data:geometry:h"] = (12 * I_xx / l) ** (1 / 3)
+        outputs["data:geometry:h"] = (12 * I_xx / length) ** (1 / 3)

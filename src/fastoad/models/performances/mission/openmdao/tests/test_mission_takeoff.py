@@ -78,7 +78,7 @@ def plot_flight(flight_points, fig_filename):
     )
     plt.ylabel("Mach")
 
-    labels = [l.get_label() for l in lines]
+    labels = [line.get_label() for line in lines]
     plt.legend(lines, labels, loc=0)
 
     plt.savefig(RESULTS_FOLDER_PATH / fig_filename)

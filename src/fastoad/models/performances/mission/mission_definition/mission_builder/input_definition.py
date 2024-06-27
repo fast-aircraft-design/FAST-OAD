@@ -181,9 +181,8 @@ class InputDefinition:
             )
         return None
 
-    # pylint: disable=function-redefined  # the variable_name field is an InitVar.
     @property
-    def variable_name(self):
+    def variable_name(self):  # noqa: F811 #  the variable_name field is an InitVar.
         """Associated variable name."""
         return self._variable_name
 

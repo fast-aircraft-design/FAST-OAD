@@ -207,7 +207,7 @@ def test_instantiate_component(delete_framework):
     loader.explore_folder(DATA_FOLDER_PATH / "dummy_pelix_bundles")
 
     with pytest.raises(FastBundleLoaderUnknownFactoryNameError):
-        unknown = loader.instantiate_component("the-unknown-hello-world-factory")
+        loader.instantiate_component("the-unknown-hello-world-factory")
 
     # 2 services should already be instantiated
     services = loader.get_services("hello.world")
