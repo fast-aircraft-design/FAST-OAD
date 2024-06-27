@@ -49,7 +49,6 @@ class RotationSegment(AbstractGroundSegment):
     def get_distance_to_target(
         self, flight_points: List[FlightPoint], target: FlightPoint
     ) -> float:
-
         # compute lift, including thrust projection, compare with weight
         current = flight_points[-1]
 
@@ -60,7 +59,7 @@ class RotationSegment(AbstractGroundSegment):
         CL = current.CL
         thrust = current.thrust
 
-        lift = 0.5 * atm.density * self.reference_area * airspeed ** 2 * CL * cos(
+        lift = 0.5 * atm.density * self.reference_area * airspeed**2 * CL * cos(
             alpha
         ) + thrust * sin(alpha)
 

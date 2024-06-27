@@ -1,5 +1,5 @@
 """
-    Basic settings for tests
+Basic settings for tests
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO

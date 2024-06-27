@@ -26,6 +26,7 @@ from ..service_registry import RegisterSubmodel
 
 DATA_FOLDER_PATH = Path(__file__).parent / "data"
 
+
 # Tests ####################################
 @pytest.fixture(scope="module")
 def load():

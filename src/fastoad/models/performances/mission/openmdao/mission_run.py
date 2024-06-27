@@ -129,9 +129,9 @@ class MissionComp(om.ExplicitComponent, BaseMissionComp):
             outputs[self.name_provider.NEEDED_BLOCK_FUEL.value] += outputs[
                 self._mission_wrapper.get_reserve_variable_name()
             ]
-        outputs[
-            self.name_provider.CONSUMED_FUEL_BEFORE_INPUT_WEIGHT.value
-        ] = self._mission_wrapper.consumed_fuel_before_input_weight
+        outputs[self.name_provider.CONSUMED_FUEL_BEFORE_INPUT_WEIGHT.value] = (
+            self._mission_wrapper.consumed_fuel_before_input_weight
+        )
 
     def get_engine_wrapper(self) -> Optional[IOMPropulsionWrapper]:
         """

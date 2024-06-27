@@ -86,7 +86,6 @@ def plot_flight(flight_points, fig_filename):
 
 
 def test_mission_component(cleanup, with_dummy_plugin_2):
-
     input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
     ivc = DataFile(input_file_path).to_ivc()
 
@@ -132,7 +131,6 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
 
 
 def test_ground_effect(cleanup, with_dummy_plugin_2):
-
     input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
     datafile = DataFile(input_file_path)
     del datafile["data:mission:operational:takeoff:fuel"]

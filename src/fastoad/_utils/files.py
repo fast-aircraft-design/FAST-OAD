@@ -20,13 +20,11 @@ from typing import Union, overload
 
 
 @overload
-def as_path(path: None) -> None:
-    ...
+def as_path(path: None) -> None: ...
 
 
 @overload
-def as_path(path: Union[str, PathLike]) -> Path:
-    ...
+def as_path(path: Union[str, PathLike]) -> Path: ...
 
 
 def as_path(path):

@@ -1,5 +1,4 @@
 import numpy as np
-
 import openmdao.api as om
 
 import fastoad.api as oad
@@ -12,7 +11,6 @@ class UpdateMTOW(om.ExplicitComponent):
     """
 
     def setup(self):
-
         # Defining the input(s)
 
         self.add_input(name="owe", units="kg", val=np.nan)
@@ -24,7 +22,6 @@ class UpdateMTOW(om.ExplicitComponent):
         self.add_output(name="mtow", val=500.0, units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         # Assigning the input to local variable for clarity
         owe = inputs["owe"]
         payload = inputs["payload"]

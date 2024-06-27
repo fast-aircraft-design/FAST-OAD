@@ -32,7 +32,6 @@ from ..service_registry import RegisterService
 
 # Tests ####################################
 def test_plugins(with_dummy_plugins):
-
     FastoadLoader._loaded = True  # Ensures next instantiation will NOT trigger reloading
 
     # Before FastoadLoader.load(), services are not registered

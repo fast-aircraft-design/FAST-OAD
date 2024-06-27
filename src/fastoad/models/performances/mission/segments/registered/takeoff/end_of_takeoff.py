@@ -133,8 +133,8 @@ class EndOfTakeoffSegment(AbstractTakeOffSegment):
         CL = modified_polar.cl(alpha)
         CD = modified_polar.cd(CL)
 
-        drag_aero = 0.5 * atm.density * self.reference_area * airspeed ** 2 * CD
-        lift = 0.5 * atm.density * self.reference_area * airspeed ** 2 * CL
+        drag_aero = 0.5 * atm.density * self.reference_area * airspeed**2 * CD
+        lift = 0.5 * atm.density * self.reference_area * airspeed**2 * CL
 
         gamma_dot = (thrust * sin(alpha) + lift - mass * g * cos(gamma)) / mass / airspeed
         acceleration = (thrust * cos(alpha) - drag_aero - mass * g * sin(gamma)) / mass

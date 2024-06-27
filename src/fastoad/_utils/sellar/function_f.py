@@ -12,9 +12,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from math import exp
-
 import openmdao.api as om
+from math import exp
 
 
 class BasicFunctionF(om.ExplicitComponent):
@@ -39,4 +38,4 @@ class BasicFunctionF(om.ExplicitComponent):
         y1 = inputs["y1"]
         y2 = inputs["y2"]
 
-        outputs["f"] = x1 ** 2 + z2 + y1 + exp(-y2)
+        outputs["f"] = x1**2 + z2 + y1 + exp(-y2)

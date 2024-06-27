@@ -28,7 +28,6 @@ class Stress(om.ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:geometry:L", val=np.nan, units="m")
         self.add_input("data:geometry:h", val=np.nan, units="m")
         self.add_input("data:forces:F", val=np.nan, units="N")
@@ -38,11 +37,9 @@ class Stress(om.ExplicitComponent):
         self.add_output("data:geometry:Ixx", val=1e-5, units="m**4")
 
     def setup_partials(self):
-
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs):
-
         L = inputs["data:geometry:L"]
         h = inputs["data:geometry:h"]
         F = inputs["data:forces:F"]

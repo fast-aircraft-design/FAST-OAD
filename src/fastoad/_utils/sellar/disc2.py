@@ -44,4 +44,4 @@ class BasicDisc2(om.ExplicitComponent):
         if y1.real < 0.0:
             y1 *= -1
 
-        outputs["y2"] = y1 ** 0.5 + z1 + z2
+        outputs["y2"] = y1**0.5 + z1 + z2

@@ -103,7 +103,6 @@ class SemiBasicVarXpathTranslator(VarXpathTranslator):
         self.basic_translator = BasicVarXpathTranslator(":")
 
     def get_variable_name(self, xpath: str) -> str:
-
         try:
             return super().get_variable_name(xpath)
         except FastXpathTranslatorXPathError:
@@ -117,7 +116,6 @@ class SemiBasicVarXpathTranslator(VarXpathTranslator):
 
 
 if __name__ == "__main__":
-
     old_new_names = np.genfromtxt(VAR_NAME_FILE, dtype=str, autostrip=True, deletechars="\n")
 
     # process XML files

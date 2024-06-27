@@ -188,7 +188,7 @@ def test_build():
 
     # Check of "sizing" mission ################################################
     cl = np.linspace(0.0, 1.0, 11)
-    cd = 0.5 * cl ** 2
+    cd = 0.5 * cl**2
 
     inputs = {
         "data:TLAR:cruise_mach": 0.78,
@@ -319,7 +319,7 @@ def test_get_route_ranges():
     )
 
     cl = np.linspace(0.0, 1.0, 11)
-    cd = 0.5 * cl ** 2
+    cd = 0.5 * cl**2
 
     inputs = {
         "data:TLAR:cruise_mach": 0.78,
@@ -379,7 +379,6 @@ def test_get_reserve():
 
 
 def _get_expected_structure():
-
     return {
         "operational": {
             "name": "operational",

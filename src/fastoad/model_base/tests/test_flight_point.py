@@ -20,7 +20,6 @@ from ..flight_point import FlightPoint
 
 
 def test_add_remove_field():
-
     # Without add_field(), an unknown field will raise errors
     fp1 = FlightPoint(time=100.0, mass=70000.0)
     with pytest.raises(AttributeError):
