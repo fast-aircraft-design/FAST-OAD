@@ -2,6 +2,22 @@
 Changelog
 =========
 
+Version 1.7.2
+=============
+- Added:
+    - A `fastoad.testing.run_system()` function is now available in public API for component unit test. (#533)
+
+- Modified:
+    - `pathlib.Path` objects are now accepted whenever a file or folder path is expected. (#521, #522, #525)
+    - Enhanced and documented the `CycleGroup` class. (#528)
+
+- Fixed:
+    - Climb was not stopping when start was already over the asked optimal altitude/flight level. (#526)
+    - Fixed links to OpenMDAO doc. (#527)
+    - Fixed behavior when input variables could be added using `model_options`. (#530)
+    - Fixed the variables displayed by default in MissionViewer. (#535)
+
+
 Version 1.7.1
 =============
 - Added:

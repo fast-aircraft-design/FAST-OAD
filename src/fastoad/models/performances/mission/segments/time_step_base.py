@@ -14,7 +14,7 @@
 
 import logging
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 
 import numpy as np
@@ -60,7 +60,7 @@ class AbstractTimeStepFlightSegment(
 
     #: A polar modifier that can apply dynamic changes to the original polar
     # (the default value returns a polar without change)
-    polar_modifier: AbstractPolarModifier = UnchangedPolar()
+    polar_modifier: AbstractPolarModifier = field(default_factory=UnchangedPolar)
 
     #: The reference area, in m**2.
     reference_area: float = MANDATORY_FIELD

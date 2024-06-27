@@ -23,6 +23,7 @@ import plotly.graph_objects as go
 from IPython.display import clear_output, display
 
 from fastoad._utils.files import as_path
+from fastoad.model_base import FlightPoint
 
 
 class MissionViewer:
@@ -74,16 +75,24 @@ class MissionViewer:
         self._output_widget = widgets.Output()
 
         # By default ground distance
-        self._x_widget = widgets.Dropdown(value=keys[2], options=keys)
+        column_ground_distance = self._get_label(keys, "ground_distance", 3)
+        self._x_widget = widgets.Dropdown(value=column_ground_distance, options=keys)
         self._x_widget.observe(self._show_plot, "value")
+
         # By default altitude
-        self._y_widget = widgets.Dropdown(value=keys[1], options=keys)
+        column_altitude = self._get_label(keys, "altitude", 1)
+        self._y_widget = widgets.Dropdown(value=column_altitude, options=keys)
         self._y_widget.observe(self._show_plot, "value")
 
         self._show_plot()
 
         toolbar = widgets.HBox(
-            [widgets.Label(value="x:"), self._x_widget, widgets.Label(value="y:"), self._y_widget]
+            [
+                widgets.Label(value="x:"),
+                self._x_widget,
+                widgets.Label(value="y:"),
+                self._y_widget,
+            ]
         )
 
         ui = display(toolbar, self._output_widget)
@@ -97,7 +106,6 @@ class MissionViewer:
         """
 
         with self._output_widget:
-
             clear_output(wait=True)
 
             x_name = self._x_widget.value
@@ -106,7 +114,6 @@ class MissionViewer:
             fig = None
 
             for mission_name in self.missions:
-
                 if fig is None:
                     fig = go.Figure()
                 # pylint: disable=invalid-name # that's a common naming
@@ -119,8 +126,25 @@ class MissionViewer:
                 fig.add_trace(scatter)
 
             fig.update_layout(
-                title_text="Mission", title_x=0.5, xaxis_title=x_name, yaxis_title=y_name
+                title_text="Mission",
+                title_x=0.5,
+                xaxis_title=x_name,
+                yaxis_title=y_name,
             )
 
             fig = go.FigureWidget(fig)
             display(fig)
+
+    @staticmethod
+    def _get_label(keys: pd.Index, quantity_name: str, default_idx: int):
+        """
+        Gets the label corresponding to the desired quantity in the mission data if it exists.
+        Otherwise return the column corresponding to the default index.
+        """
+
+        flight_point_units = FlightPoint.get_units()
+        unit_quantity = flight_point_units[quantity_name]
+        column_quantity = f"{quantity_name} [{unit_quantity}]"
+        label_quantity = column_quantity if column_quantity in keys else keys[default_idx]
+
+        return label_quantity

@@ -19,7 +19,7 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from pandas.util.testing import assert_frame_equal
+from pandas.testing import assert_frame_equal
 
 from .. import VariableViewer
 
@@ -54,51 +54,41 @@ def test_variable_reader_load():
     col_names = ["Name", "Value", "Unit", "Description", "I/O"]
     ref_df = pd.DataFrame()
 
-    ref_df = ref_df.append(
+    ref_df = pd.concat(
         [
-            {
-                "Name": "data:geometry:cabin:seats:economical:width",
-                "Value": 0.46,
-                "Unit": "m",
-                "Description": "width of economical class seats",
-                "I/O": "IN",
-            }
-        ]
-    )[col_names]
-
-    ref_df = ref_df.append(
-        [
-            {
-                "Name": "data:geometry:cabin:seats:economical:length",
-                "Value": 0.86,
-                "Unit": "m",
-                "Description": "length of economical class seats",
-                "I/O": "IN",
-            }
-        ]
-    )[col_names]
-
-    ref_df = ref_df.append(
-        [
-            {
-                "Name": "data:geometry:cabin:aisle_width",
-                "Value": 0.48,
-                "Unit": "m",
-                "Description": "width of aisles",
-                "I/O": "IN",
-            }
-        ]
-    )[col_names]
-
-    ref_df = ref_df.append(
-        [
-            {
-                "Name": "data:geometry:propulsion:engine:count",
-                "Value": 2.0,
-                "Unit": None,
-                "Description": "number of engines",
-                "I/O": "IN",
-            }
+            ref_df,
+            pd.DataFrame(
+                [
+                    {
+                        "Name": "data:geometry:cabin:seats:economical:width",
+                        "Value": 0.46,
+                        "Unit": "m",
+                        "Description": "width of economical class seats",
+                        "I/O": "IN",
+                    },
+                    {
+                        "Name": "data:geometry:cabin:seats:economical:length",
+                        "Value": 0.86,
+                        "Unit": "m",
+                        "Description": "length of economical class seats",
+                        "I/O": "IN",
+                    },
+                    {
+                        "Name": "data:geometry:cabin:aisle_width",
+                        "Value": 0.48,
+                        "Unit": "m",
+                        "Description": "width of aisles",
+                        "I/O": "IN",
+                    },
+                    {
+                        "Name": "data:geometry:propulsion:engine:count",
+                        "Value": 2.0,
+                        "Unit": None,
+                        "Description": "number of engines",
+                        "I/O": "IN",
+                    },
+                ]
+            ),
         ]
     )[col_names]
 
@@ -123,51 +113,34 @@ def test_variable_reader_save():
     col_names = ["Name", "Value", "Unit", "Description", "I/O"]
     ref_df = pd.DataFrame()
 
-    ref_df = ref_df.append(
+    ref_df = pd.concat(
         [
-            {
-                "Name": "data:geometry:cabin:seats:economical:width",
-                "Value": 0.46,
-                "Unit": "m",
-                "Description": "width of economical class seats",
-                "I/O": "IN",
-            }
-        ]
-    )[col_names]
-
-    ref_df = ref_df.append(
-        [
-            {
-                "Name": "data:geometry:cabin:seats:economical:length",
-                "Value": 0.86,
-                "Unit": "m",
-                "Description": "length of economical class seats",
-                "I/O": "IN",
-            }
-        ]
-    )[col_names]
-
-    ref_df = ref_df.append(
-        [
-            {
-                "Name": "data:geometry:cabin:aisle_width",
-                "Value": 0.48,
-                "Unit": "m",
-                "Description": "width of aisles",
-                "I/O": "IN",
-            }
-        ]
-    )[col_names]
-
-    ref_df = ref_df.append(
-        [
-            {
-                "Name": "data:geometry:propulsion:engine:count",
-                "Value": 2.0,
-                "Unit": None,
-                "Description": "number of engines",
-                "I/O": "IN",
-            }
+            ref_df,
+            pd.DataFrame(
+                [
+                    {
+                        "Name": "data:geometry:cabin:seats:economical:width",
+                        "Value": 0.46,
+                        "Unit": "m",
+                        "Description": "width of economical class seats",
+                        "I/O": "IN",
+                    },
+                    {
+                        "Name": "data:geometry:cabin:seats:economical:length",
+                        "Value": 0.86,
+                        "Unit": "m",
+                        "Description": "length of economical class seats",
+                        "I/O": "IN",
+                    },
+                    {
+                        "Name": "data:geometry:propulsion:engine:count",
+                        "Value": 2.0,
+                        "Unit": None,
+                        "Description": "number of engines",
+                        "I/O": "IN",
+                    },
+                ]
+            ),
         ]
     )[col_names]
 

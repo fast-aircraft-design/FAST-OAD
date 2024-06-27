@@ -18,8 +18,8 @@ import pytest
 from numpy.testing import assert_allclose
 from scipy.constants import foot, knot, nautical_mile
 
-from fastoad._utils.testing import run_system
-from fastoad.io import DataFile, VariableIO
+from fastoad.io import DataFile
+from fastoad.testing import run_system
 from ..mission import OMMission
 from ..mission_run import AdvancedMissionComp
 from ..mission_wrapper import MissionWrapper
@@ -398,11 +398,10 @@ def test_mission_group_with_fuel_objective(cleanup, with_dummy_plugin_2):
 def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
 
     input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
-    vars = VariableIO(input_file_path).read(ignore=["data:mission:operational:max_CL"])
-    ivc = vars.to_ivc()
+    vars = DataFile(input_file_path)
 
     # Activate CL limitation during cruise and climb
-    ivc.add_output("data:mission:operational:max_CL", val=0.45)
+    vars["data:mission:operational:max_CL"].value = 0.45
 
     problem = run_system(
         AdvancedMissionComp(
@@ -415,7 +414,7 @@ def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
             ),
             reference_area_variable="data:geometry:aircraft:reference_area",
         ),
-        ivc,
+        vars,
     )
 
     flight_points = problem.model.component.flight_points
@@ -427,13 +426,13 @@ def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
     assert_allclose(CL_end_climb, 0.445, atol=1e-3)
     assert_allclose(altitude_end_climb, 9753.6, atol=1e-1)
 
-    # Now check climbing cruise with contant CL
-    ivc.add_output("data:mission:operational_optimal:max_CL", val=0.45)
-    ivc.add_output("data:mission:operational_optimal:taxi_out:thrust_rate", val=0.3)
-    ivc.add_output("data:mission:operational_optimal:taxi_out:duration", val=300, units="s")
-    ivc.add_output("data:mission:operational_optimal:takeoff:fuel", val=100, units="kg")
-    ivc.add_output("data:mission:operational_optimal:takeoff:V2", val=70, units="m/s")
-    ivc.add_output("data:mission:operational_optimal:TOW", val=70000, units="kg")
+    # Now check climbing cruise with constant CL
+    vars.add_var("data:mission:operational_optimal:max_CL", val=0.45)
+    vars.add_var("data:mission:operational_optimal:taxi_out:thrust_rate", val=0.3)
+    vars.add_var("data:mission:operational_optimal:taxi_out:duration", val=300, units="s")
+    vars.add_var("data:mission:operational_optimal:takeoff:fuel", val=100, units="kg")
+    vars.add_var("data:mission:operational_optimal:takeoff:V2", val=70, units="m/s")
+    vars.add_var("data:mission:operational_optimal:TOW", val=70000, units="kg")
 
     problem = run_system(
         AdvancedMissionComp(
@@ -446,7 +445,7 @@ def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
             ),
             reference_area_variable="data:geometry:aircraft:reference_area",
         ),
-        ivc,
+        vars,
     )
 
     flight_points = problem.model.component.flight_points

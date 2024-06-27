@@ -60,11 +60,13 @@ def copyable_problem(problem: om.Problem) -> om.Problem:
     problem.comm = FakeComm()
 
     try:
-        if not problem._metadata:
-            # Adding this attribute ensures that the post-hook for N2 reports
-            # will not crash. Indeed, due to the copy, it tries to post-process
-            # the 'problem' instance at the end of setup of the 'problem_copy' instance.
-            problem._metadata = {"saved_errors": [], "setup_status": _SetupStatus.PRE_SETUP}
+        # Adding this attribute ensures that the post-hook for N2 reports
+        # will not crash. Indeed, due to the copy, it tries to post-process
+        # the 'problem' instance at the end of setup of the 'problem_copy' instance.
+        if problem._metadata is None:
+            problem._metadata = {}
+        problem._metadata.update({"saved_errors": [], "setup_status": _SetupStatus.PRE_SETUP})
+
         yield problem
     finally:
         problem.comm = actual_comm

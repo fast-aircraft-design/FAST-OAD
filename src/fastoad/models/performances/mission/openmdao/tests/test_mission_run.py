@@ -18,8 +18,8 @@ import pytest
 from numpy.testing import assert_allclose
 from scipy.constants import nautical_mile
 
-from fastoad._utils.testing import run_system
 from fastoad.io import DataFile
+from fastoad.testing import run_system
 from ..mission_run import MissionComp
 
 DATA_FOLDER_PATH = Path(__file__).parent / "data"
