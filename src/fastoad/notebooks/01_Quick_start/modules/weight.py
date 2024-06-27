@@ -37,8 +37,8 @@ class LinearWeight(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs):
-        l = inputs["data:geometry:l"]
-        h = inputs["data:geometry:h"]
+        length = inputs["data:geometry:l"]
+        height = inputs["data:geometry:h"]
         rho = inputs["data:material:density"]
 
-        outputs["data:weight:linear_weight"] = l * h * rho * 9.81
+        outputs["data:weight:linear_weight"] = length * height * rho * 9.81

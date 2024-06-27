@@ -14,5 +14,7 @@ Package for managing OpenMDAO variables
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# pylint: disable=unused-import
+# flake8: noqa
 from .variable import Variable
 from .variable_list import VariableList

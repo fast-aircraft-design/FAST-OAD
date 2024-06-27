@@ -137,7 +137,7 @@ def test_payload_range_plot():
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
     # Only contour
-    fig = payload_range_plot(
+    payload_range_plot(
         filename,
         name="Payload-Range",
         mission_name="sizing",
@@ -147,7 +147,7 @@ def test_payload_range_plot():
 
     # Second plot
     # With grid
-    fig = payload_range_plot(
+    payload_range_plot(
         filename,
         name="Payload-Range",
         mission_name="sizing",
