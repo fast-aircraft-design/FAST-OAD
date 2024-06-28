@@ -19,13 +19,15 @@ import openmdao.api as om
 import pytest
 from numpy.testing import assert_allclose
 
-from fastoad.openmdao.exceptions import (
-    FASTOpenMDAONanInInputFile,
-)
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.openmdao.variables import Variable, VariableList
+from .openmdao_sellar_example.disc1 import Disc1Quater
+from .openmdao_sellar_example.disc2 import Disc2Bis
+from .openmdao_sellar_example.functions import FunctionF
 from .openmdao_sellar_example.sellar import SellarModel
-from ...io import VariableIO
+from ..exceptions import FASTOpenMDAONanInInputsError
+from ..._utils.sellar.sellar_base import GenericSellarFactory
+from ...io import DataFile, VariableIO
 
 DATA_FOLDER_PATH = Path(__file__).parent / "data"
 RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
@@ -37,7 +39,7 @@ def cleanup():
     RESULTS_FOLDER_PATH.mkdir(parents=True)
 
 
-def test_write_outputs():
+def test_write_outputs(cleanup):
     problem = FASTOADProblem()
     problem.model.add_subsystem("sellar", SellarModel(), promotes=["*"])
     problem.output_file_path = RESULTS_FOLDER_PATH / "output.xml"
@@ -83,7 +85,7 @@ def test_problem_read_inputs_after_setup(cleanup):
 
     problem.setup()
 
-    assert problem.get_val(name="x") == [2.0]
+    assert problem.get_val(name="x") == [2.0]  # Here x is set by integrated IVC
     with pytest.raises(RuntimeError):
         # Several default values are defined for "z", thus OpenMDAO raises an error that
         # will be solved only after run_model() has been used.
@@ -100,6 +102,7 @@ def test_problem_read_inputs_after_setup(cleanup):
 def test_problem_read_inputs_before_setup(cleanup):
     """Tests what happens when reading inputs using existing XML with correct var"""
 
+    # Set only values of inputs
     problem = FASTOADProblem()
     problem.model.add_subsystem("sellar", SellarModel(), promotes=["*"])
 
@@ -112,6 +115,33 @@ def test_problem_read_inputs_before_setup(cleanup):
     assert_allclose(problem.get_val(name="x"), 1.0)
     assert_allclose(problem.get_val(name="z", units="m**2"), [4.0, 3.0])
     assert_allclose(problem["f"], 21.7572, atol=1.0e-4)
+
+    # Set values of inputs and outputs
+    # (FASTOADProblem has to defer output setting after setup to have it effective,
+    #  so this test works also for read after setup)
+    problem = FASTOADProblem()
+    problem.model.add_subsystem("sellar", SellarModel(), promotes=["*"])
+
+    problem.input_file_path = RESULTS_FOLDER_PATH / "inputs_outputs.xml"
+    problem.write_needed_inputs(DATA_FOLDER_PATH / "ref_inputs_outputs.xml", write_outputs=True)
+
+    written_data = DataFile(problem.input_file_path)
+    assert written_data["y2"].is_input is False
+
+    problem.read_inputs()
+    problem.setup()
+    problem.run_model()
+
+    assert_allclose(problem.get_val(name="x"), 1.0)
+    assert_allclose(problem.get_val(name="z", units="m**2"), [4.0, 3.0])
+    assert_allclose(problem["f"], 21.7572, atol=1.0e-4)
+
+    # We start from solution, so we should converge with only 2 iterations.
+    iter_count = [
+        iter_desc[2]
+        for iter_desc in problem.iter_count_iter(include_driver=False, include_solvers=True)
+    ][0]
+    assert iter_count == 2
 
 
 def test_problem_with_case_recorder(cleanup):
@@ -137,7 +167,9 @@ def test_problem_with_case_recorder(cleanup):
 
 
 def test_problem_read_inputs_with_nan_inputs(cleanup):
-    """Tests that when reading inputs using existing XML with some nan values an exception is raised"""
+    """
+    Tests that when, reading inputs using existing XML with some nan values, an exception is raised.
+    """
 
     problem = FASTOADProblem()
     problem.model.add_subsystem("sellar", SellarModel(), promotes=["*"])
@@ -146,17 +178,51 @@ def test_problem_read_inputs_with_nan_inputs(cleanup):
 
     problem.input_file_path = input_data_path
 
-    with pytest.raises(FASTOpenMDAONanInInputFile) as exc_info:
+    with pytest.raises(FASTOpenMDAONanInInputsError) as exc_info_1:
         problem.read_inputs()
-        assert exc_info.value.input_file_path == input_data_path
-        assert exc_info.value.nan_variable_names == ["x"]
+    assert exc_info_1.value.input_file_path == input_data_path
+    assert exc_info_1.value.nan_variable_names == ["x", "z"]
 
     problem.setup()
 
-    with pytest.raises(FASTOpenMDAONanInInputFile) as exc_info:
+    with pytest.raises(FASTOpenMDAONanInInputsError) as exc_info_2:
         problem.read_inputs()
-        assert exc_info.value.input_file_path == input_data_path
-        assert exc_info.value.nan_variable_names == ["x"]
+    assert exc_info_2.value.input_file_path == input_data_path
+    assert exc_info_2.value.nan_variable_names == ["x", "z"]
+
+
+def test_problem_read_inputs_with_missing_inputs(cleanup):
+    """
+    Tests that, when reading inputs using existing XML with missing value (for a
+    variable with default nan), an exception is raised.
+    """
+
+    problem = FASTOADProblem()
+    problem.model.add_subsystem(
+        "sellar",
+        SellarModel(
+            sellar_factory=GenericSellarFactory(
+                disc1_class=Disc1Quater, disc2_class=Disc2Bis, f_class=FunctionF
+            )
+        ),
+        promotes=["*"],
+    )
+
+    input_data_path = DATA_FOLDER_PATH / "missing_inputs.xml"
+
+    problem.input_file_path = input_data_path
+
+    with pytest.raises(FASTOpenMDAONanInInputsError) as exc_info_1:
+        problem.read_inputs()
+    assert exc_info_1.value.input_file_path == input_data_path
+    assert exc_info_1.value.nan_variable_names == ["z"]
+
+    problem.setup()
+
+    with pytest.raises(FASTOpenMDAONanInInputsError) as exc_info_2:
+        problem.read_inputs()
+    assert exc_info_2.value.input_file_path == input_data_path
+    assert exc_info_2.value.nan_variable_names == ["z"]
 
 
 def test_problem_with_dynamically_shaped_inputs(cleanup):

@@ -22,9 +22,8 @@ import pandas as pd
 import plotly.graph_objects as go
 from IPython.display import clear_output, display
 
-from fastoad.model_base import FlightPoint
-
 from fastoad._utils.files import as_path
+from fastoad.model_base import FlightPoint
 
 
 class MissionViewer:
@@ -88,7 +87,12 @@ class MissionViewer:
         self._show_plot()
 
         toolbar = widgets.HBox(
-            [widgets.Label(value="x:"), self._x_widget, widgets.Label(value="y:"), self._y_widget]
+            [
+                widgets.Label(value="x:"),
+                self._x_widget,
+                widgets.Label(value="y:"),
+                self._y_widget,
+            ]
         )
 
         ui = display(toolbar, self._output_widget)
@@ -102,7 +106,6 @@ class MissionViewer:
         """
 
         with self._output_widget:
-
             clear_output(wait=True)
 
             x_name = self._x_widget.value
@@ -111,7 +114,6 @@ class MissionViewer:
             fig = None
 
             for mission_name in self.missions:
-
                 if fig is None:
                     fig = go.Figure()
                 # pylint: disable=invalid-name # that's a common naming
@@ -124,7 +126,10 @@ class MissionViewer:
                 fig.add_trace(scatter)
 
             fig.update_layout(
-                title_text="Mission", title_x=0.5, xaxis_title=x_name, yaxis_title=y_name
+                title_text="Mission",
+                title_x=0.5,
+                xaxis_title=x_name,
+                yaxis_title=y_name,
             )
 
             fig = go.FigureWidget(fig)

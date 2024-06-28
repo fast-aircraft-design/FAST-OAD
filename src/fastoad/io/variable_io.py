@@ -14,7 +14,7 @@
 from fnmatch import fnmatchcase
 from os import PathLike
 from pathlib import Path
-from typing import List, Sequence, Union, IO, Optional
+from typing import IO, List, Optional, Sequence, Union
 
 from fastoad.openmdao.variables import VariableList
 from . import IVariableIOFormatter
@@ -150,7 +150,7 @@ class DataFile(VariableList):
         self,
         data_source: Union[str, PathLike, IO, list] = None,
         formatter: IVariableIOFormatter = None,
-        load_data=True,
+        load_data: bool = True,
     ):
         """
         If variable list is specified for data_source, :attr:`file_path` will have to be set before
