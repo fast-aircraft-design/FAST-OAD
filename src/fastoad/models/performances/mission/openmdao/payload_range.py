@@ -1,4 +1,5 @@
 """Payload-Range diagram computation."""
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -17,7 +18,7 @@ from typing import Dict
 
 import numpy as np
 import openmdao.api as om
-from pyDOE2 import lhs
+from pyDOE3 import lhs
 from scipy.interpolate import interp1d
 
 from fastoad.module_management.constants import ModelDomain

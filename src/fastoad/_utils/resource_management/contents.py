@@ -1,4 +1,5 @@
 """Checks about packages and resources"""
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -12,7 +13,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from importlib.resources import contents
+from importlib.resources import files
 from typing import List
 
 
@@ -41,14 +42,16 @@ class PackageReader:
         return self._package_name
 
     @package_name.setter
-    def package_name(self, package_name):
+    def package_name(self, package_name: str):
         self._package_name = package_name
         if package_name:
             try:
-                self._contents = list(contents(package_name))
-                self.is_package = True
-            except TypeError:
-                self.is_module = True
+                traversable = files(package_name)
+                if traversable.name == package_name.split(".")[-1]:
+                    self._contents = [resource.name for resource in traversable.iterdir()]
+                    self.is_package = True
+                else:
+                    self.is_module = True
             except ModuleNotFoundError:
                 # Either the indicated package does not exist, or it is a file with no extension.
                 # We want to ensure existence to correctly set self.exists.
