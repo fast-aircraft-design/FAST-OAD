@@ -103,6 +103,9 @@ matplotlib = [
 pyzmq = "25.1.1"
 pyyaml = "6.0.1"
 tabulate = "0.9.0"
+traitlets = "5.4.0"
+setuptools = "65.3.0"
+ipykernel = "6.28.0"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.0"
