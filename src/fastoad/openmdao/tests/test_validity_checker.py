@@ -254,3 +254,7 @@ def test_sellar(caplog):
     problem.setup()
     problem.run_model()
     assert 'Variable "x" out of bound: value [2.] is over upper limit ( 1 )' in caplog.text
+    assert (
+        'Variable "z" out of bound: value [5. 2.] m**2 is over upper limit ( 1 m**2 )'
+        in caplog.text
+    )
