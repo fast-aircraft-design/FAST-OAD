@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 1.7.3
+=============
+- Added:
+    - Compatibility with Python 3.11 (#538)
+
+- Fixed:
+    - Fixed validity checker for array variables (#537)
+
 Version 1.7.2
 =============
 - Added:
@@ -17,7 +25,6 @@ Version 1.7.2
     - Fixed behavior when input variables could be added using `model_options`. (#530)
     - Fixed the variables displayed by default in MissionViewer. (#535)
 
-
 Version 1.7.1
 =============
 - Added:
@@ -25,7 +32,6 @@ Version 1.7.1
 
 - Fixed:
     - Missions can now be defined without route. (#515)
-
 
 Version 1.7.0
 =============
