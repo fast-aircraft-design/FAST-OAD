@@ -1,5 +1,5 @@
-from .geometry.geometry import compute_geometry
 from .aerodynamics.aerodynamics import compute_aerodynamics
+from .geometry.geometry import compute_geometry
 from .mass.mass import compute_mass
 from .performance.performance import compute_performance
 from .update_mtow.update_mtow import update_mtow

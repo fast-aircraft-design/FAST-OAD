@@ -1,5 +1,5 @@
-from .sub_components.compute_wing_mass import compute_wing_mass
 from .sub_components.compute_owe import compute_owe
+from .sub_components.compute_wing_mass import compute_wing_mass
 
 
 def compute_mass(mtow, wing_area, aspect_ratio):

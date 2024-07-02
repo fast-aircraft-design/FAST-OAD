@@ -400,7 +400,6 @@ def test_list_variables(cleanup):
 
 
 def test_write_n2(cleanup):
-
     n2_file_path = RESULTS_FOLDER_PATH / "other_n2.html"
     api.write_n2(CONFIGURATION_FILE_PATH, n2_file_path)
     # Running again without forcing overwrite of outputs will make it fail
@@ -467,7 +466,6 @@ def test_optimization_viewer(cleanup):
 
 
 def test_variable_viewer(cleanup):
-
     file_path = DATA_FOLDER_PATH / "short_inputs.xml"
 
     # Using default file formatter

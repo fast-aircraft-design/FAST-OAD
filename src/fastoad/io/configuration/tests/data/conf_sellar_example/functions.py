@@ -67,7 +67,7 @@ class FunctionF(om.ExplicitComponent):
         y1 = inputs["yy1"]
         y2 = inputs["yy2"]
 
-        outputs["f"] = x1 ** 2 + z2 + y1 + exp(-y2)
+        outputs["f"] = x1**2 + z2 + y1 + exp(-y2)
 
 
 @RegisterSubmodel(SERVICE_FUNCTION_F, "function.f.alternate")
@@ -96,7 +96,7 @@ class FunctionFAlt(FunctionF):
         y1 = inputs["yy1"]
         y2 = inputs["yy2"]
 
-        outputs["f"] = x1 ** 2 + z2 + y1 + exp(-y2) - 28.0
+        outputs["f"] = x1**2 + z2 + y1 + exp(-y2) - 28.0
 
         if "bar" in inputs:
             outputs["baz"] = inputs["bar"]

@@ -42,7 +42,7 @@ def propulsion():
 def high_speed_polar() -> Polar:
     """Returns a dummy polar where max L/D ratio is about 16., around CL=0.5"""
     cl = np.arange(0.0, 1.5, 0.01)
-    cd = 0.6e-1 * cl ** 2 + 0.016
+    cd = 0.6e-1 * cl**2 + 0.016
     return Polar(cl, cd)
 
 
@@ -50,7 +50,7 @@ def high_speed_polar() -> Polar:
 def low_speed_polar() -> Polar:
     """Returns a dummy polar where max L/D ratio is around CL=0.5"""
     cl = np.arange(0.0, 2.0, 0.01)
-    cd = 0.6e-1 * cl ** 2 + 0.03
+    cd = 0.6e-1 * cl**2 + 0.03
     return Polar(cl, cd)
 
 
@@ -103,7 +103,7 @@ def plot_flight(flight_points, fig_filename, results_folder_path):
     )
     plt.ylabel("Mach")
 
-    labels = [l.get_label() for l in lines]
+    labels = [line.get_label() for line in lines]
     plt.legend(lines, labels, loc=0)
 
     plt.savefig(Path(results_folder_path, fig_filename))

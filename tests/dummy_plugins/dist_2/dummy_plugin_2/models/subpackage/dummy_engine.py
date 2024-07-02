@@ -38,7 +38,6 @@ class DummyEngine(AbstractFuelPropulsion):
         self.max_sfc = max_sfc
 
     def compute_flight_points(self, flight_point: FlightPoint):
-
         if flight_point.thrust_is_regulated or flight_point.thrust_rate is None:
             flight_point.thrust_rate = flight_point.thrust / self.max_thrust
         else:

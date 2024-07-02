@@ -446,7 +446,7 @@ def test_gen_source_data_several_plugin(cleanup, with_dummy_plugins, plugin_root
 
 def test_eval(cleanup):
     runner = CliRunner()
-    with runner.isolated_filesystem(temp_dir=RESULTS_FOLDER_PATH) as temp_dir:
+    with runner.isolated_filesystem(temp_dir=RESULTS_FOLDER_PATH):
         result_1 = runner.invoke(
             fast_oad,
             [
@@ -466,7 +466,7 @@ def test_eval(cleanup):
 
 def test_optim(cleanup):
     runner = CliRunner()
-    with runner.isolated_filesystem(temp_dir=RESULTS_FOLDER_PATH) as temp_dir:
+    with runner.isolated_filesystem(temp_dir=RESULTS_FOLDER_PATH):
         result_1 = runner.invoke(
             fast_oad,
             [

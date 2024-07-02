@@ -20,19 +20,18 @@ from ..flight_point import FlightPoint
 
 
 def test_add_remove_field():
-
     # Without add_field(), an unknown field will raise errors
     fp1 = FlightPoint(time=100.0, mass=70000.0)
     with pytest.raises(AttributeError):
         fp1.foo
     with pytest.raises(TypeError):
-        fp2 = FlightPoint(time=100.0, mass=70000.0, foo=42)
+        _ = FlightPoint(time=100.0, mass=70000.0, foo=42)
 
     # After add_field(), no problem
     FlightPoint.add_field("foo", annotation_type=int, default_value=5)
     fp1 = FlightPoint(time=100.0, mass=70000.0)
     fp1.foo
-    fp2 = FlightPoint(time=100.0, mass=70000.0, foo=42)
+    _ = FlightPoint(time=100.0, mass=70000.0, foo=42)
 
     # After remove_field(), back to initial state, an unknown field will raise errors
     FlightPoint.remove_field("foo")
@@ -40,7 +39,7 @@ def test_add_remove_field():
     with pytest.raises(AttributeError):
         fp1.foo
     with pytest.raises(TypeError):
-        fp2 = FlightPoint(time=100.0, mass=70000.0, foo=42)
+        _ = FlightPoint(time=100.0, mass=70000.0, foo=42)
 
 
 def test_create():

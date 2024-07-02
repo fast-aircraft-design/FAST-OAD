@@ -33,7 +33,6 @@ class GroundSpeedChangeSegment(AbstractGroundSegment):
     def get_distance_to_target(
         self, flight_points: List[FlightPoint], target: FlightPoint
     ) -> float:
-
         if target.true_airspeed is not None:
             return target.true_airspeed - flight_points[-1].true_airspeed
         if target.equivalent_airspeed is not None:

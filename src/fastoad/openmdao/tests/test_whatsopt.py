@@ -35,7 +35,6 @@ def cleanup():
     "Moreover, fastoad/cmd/tests/test_apy.py:test_write_xdsm does a similar test."
 )
 def test_write_xdsm(cleanup):
-
     problem = FASTOADProblem()
     problem.model.add_subsystem("sellar", SellarModel(), promotes=["*"])
     problem.output_file_path = RESULTS_FOLDER_PATH / "output.xml"

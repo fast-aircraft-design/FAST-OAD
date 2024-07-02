@@ -560,5 +560,4 @@ for main_name in [
     "TOW",
     "specific_burned_fuel",
 ]:
-
     setattr(_VariableNamer, main_name, _get_property(main_name))

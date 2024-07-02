@@ -9,7 +9,6 @@ class UpdateMTOW(om.ExplicitComponent):
     """
 
     def setup(self):
-
         # Defining the input(s)
 
         self.add_input(name="owe", units="kg", val=np.nan)
@@ -21,7 +20,6 @@ class UpdateMTOW(om.ExplicitComponent):
         self.add_output(name="mtow", units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         # Assigning the input to local variable for clarity
         owe = inputs["owe"]
         payload = inputs["payload"]
