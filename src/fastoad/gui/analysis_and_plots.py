@@ -333,7 +333,8 @@ def mass_breakdown_bar_plot(
     # Get data:weight decomposition
     main_weight_values, main_weight_names, _ = _data_weight_decomposition(variables, owe=None)
     fig.add_trace(
-        go.Bar(name=name, x=main_weight_names, y=main_weight_values, marker_color=COLS[i]),
+        go.Bar(name=name, x=main_weight_names, y=main_weight_values, marker_color=COLS[i],
+               legendgroup=aircraft_config),
         row=1,
         col=2,
     )
