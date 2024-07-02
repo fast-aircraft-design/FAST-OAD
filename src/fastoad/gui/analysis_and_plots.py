@@ -324,7 +324,8 @@ def mass_breakdown_bar_plot(
     weight_labels = ["MTOW", "OWE", "Fuel - Mission", "Payload"]
     weight_values = [mtow, owe, fuel_mission, payload]
     fig.add_trace(
-        go.Bar(name="", x=weight_labels, y=weight_values, marker_color=COLS[i], showlegend=False, legendgroup=aircraft_config),
+        go.Bar(name="", x=weight_labels, y=weight_values, marker_color=COLS[i], showlegend=False, 
+               legendgroup=aircraft_config),
         row=1,
         col=1,
     )
