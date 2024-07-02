@@ -320,11 +320,11 @@ def mass_breakdown_bar_plot(
     # Same legend for each aircraft configuration
     l = int(len(fig.data)/2)
     aircraft_config = f"aircraft{l}"
-    
+
     weight_labels = ["MTOW", "OWE", "Fuel - Mission", "Payload"]
     weight_values = [mtow, owe, fuel_mission, payload]
     fig.add_trace(
-        go.Bar(name="", x=weight_labels, y=weight_values, marker_color=COLS[i], showlegend=False, 
+        go.Bar(name="", x=weight_labels, y=weight_values, marker_color=COLS[i], showlegend=False,
                legendgroup=aircraft_config),
         row=1,
         col=1,
