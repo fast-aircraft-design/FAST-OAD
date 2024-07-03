@@ -148,7 +148,11 @@ def aircraft_geometry_plot(
     )
 
     # Horizontal Tail parameters
-    ht_root_chord = variables["data:geometry:horizontal_tail:root:chord"].value[0]
+    # Keeping backward compatibility for horizontal_tail:root
+    if "data:geometry:horizontal_tail:center:chord" not in variables.names():
+        ht_root_chord = variables["data:geometry:horizontal_tail:root:chord"].value[0]
+    else:
+        ht_root_chord = variables["data:geometry:horizontal_tail:center:chord"].value[0]
     ht_tip_chord = variables["data:geometry:horizontal_tail:tip:chord"].value[0]
     ht_span = variables["data:geometry:horizontal_tail:span"].value[0]
     ht_sweep_0 = variables["data:geometry:horizontal_tail:sweep_0"].value[0]
