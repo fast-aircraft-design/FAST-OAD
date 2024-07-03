@@ -148,6 +148,7 @@ def aircraft_geometry_plot(
     )
 
     # Horizontal Tail parameters
+    # Keeping backward compatibility for horizontal_tail:root
     if "data:geometry:horizontal_tail:center:chord" not in variables.names():
         ht_root_chord = variables["data:geometry:horizontal_tail:root:chord"].value[0]
     else:
