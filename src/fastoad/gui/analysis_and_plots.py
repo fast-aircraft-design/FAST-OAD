@@ -314,18 +314,25 @@ def mass_breakdown_bar_plot(
             subplot_titles=("Maximum Take-Off Weight Breakdown", "Overall Weight Empty Breakdown"),
         )
 
-    # Same color for each aircraft configuration
-    i = int(len(fig.data) / 2) % 10
+    conf_number = int(len(fig.data) / 2)
 
-    # Same legend for each aircraft configuration
-    l = int(len(fig.data)/2)
-    aircraft_config = f"aircraft{l}"
+    # Same color for each aircraft configuration
+    color_idx = conf_number % 10
+
+    # Each aircraft configuration controlled by same legend item
+    legend_group = f"aircraft{conf_number}"
 
     weight_labels = ["MTOW", "OWE", "Fuel - Mission", "Payload"]
     weight_values = [mtow, owe, fuel_mission, payload]
     fig.add_trace(
-        go.Bar(name="", x=weight_labels, y=weight_values, marker_color=COLS[i], showlegend=False,
-               legendgroup=aircraft_config),
+        go.Bar(
+            name="",
+            x=weight_labels,
+            y=weight_values,
+            marker_color=COLS[color_idx],
+            showlegend=False,
+            legendgroup=legend_group,
+        ),
         row=1,
         col=1,
     )
@@ -333,8 +340,13 @@ def mass_breakdown_bar_plot(
     # Get data:weight decomposition
     main_weight_values, main_weight_names, _ = _data_weight_decomposition(variables, owe=None)
     fig.add_trace(
-        go.Bar(name=name, x=main_weight_names, y=main_weight_values, marker_color=COLS[i],
-               legendgroup=aircraft_config),
+        go.Bar(
+            name=name,
+            x=main_weight_names,
+            y=main_weight_values,
+            marker_color=COLS[color_idx],
+            legendgroup=legend_group,
+        ),
         row=1,
         col=2,
     )
