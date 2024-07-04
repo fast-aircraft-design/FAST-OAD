@@ -359,7 +359,7 @@ def mass_breakdown_bar_plot(
 def mass_breakdown_sun_plot(
     aircraft_file_path: Union[str, PathLike],
     *,
-    file_formatter=None,
+    file_formatter= None,
     input_mass_name="data:weight:aircraft:MTOW",
 ):
     """
