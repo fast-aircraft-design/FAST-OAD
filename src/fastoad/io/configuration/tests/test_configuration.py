@@ -150,13 +150,12 @@ def test_problem_definition_with_xml_ref(cleanup, caplog):
 
         # check that path options are made absolute
         assert (
-            problem.model.functions.options["input_path"]
-            == (DATA_FOLDER_PATH / "translator.txt").as_posix()
+            Path(problem.model.functions.options["input_path"])
+            == DATA_FOLDER_PATH / "translator.txt"
         )
 
         assert (
-            problem.model_options["cycle.*"]["input_file"]
-            == (DATA_FOLDER_PATH / "__init__.py").as_posix()
+            Path(problem.model_options["cycle.*"]["input_file"]) == DATA_FOLDER_PATH / "__init__.py"
         )
 
         # runs evaluation without optimization loop to check that inputs are taken into account
