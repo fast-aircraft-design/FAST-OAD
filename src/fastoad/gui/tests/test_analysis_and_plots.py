@@ -15,6 +15,7 @@ Tests for analysis and plots functions
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from pathlib import Path
+import pytest
 
 from .. import (
     aircraft_geometry_plot,
@@ -124,6 +125,28 @@ def test_mass_breakdown_sun_plot():
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
     _ = mass_breakdown_sun_plot(filename)
+
+
+def test_mass_breakdown_sun_plot_specific_mission():
+    """
+    Test for testing the sun mass breakdown plotting for a specific mission.
+    """
+
+    filename = DATA_FOLDER_PATH / "problem_outputs_multi_mission.xml"
+
+    mission_1 = "evaluation_mission"
+
+    # Plot 1
+    # Specific mission plot
+    _ = mass_breakdown_sun_plot(filename, mission_name=mission_1)
+
+    mission_2 = "toto"
+
+    # Plot 2
+    # Specific mission plot error
+    with pytest.raises(ValueError) as e:
+        _ = mass_breakdown_sun_plot(filename, mission_name=mission_2)
+        assert f"{mission_2}" in str(e.value)
 
 
 def test_payload_range_plot():
