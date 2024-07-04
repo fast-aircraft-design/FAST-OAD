@@ -365,10 +365,11 @@ def mass_breakdown_sun_plot(
             missions_set.append(v.name.split(":")[2])
     missions_set = set(missions_set)  # set of all the missions defined in aircraft_file_path
 
-    if mission_name not in missions_set:
-        raise ValueError(
-            f"The provided mission_name {mission_name} does not correspond to an existing mission. The available mission(s) are: {missions_set}."
-        )
+    if mission_name: # Check if mission_name is used and exists
+        if mission_name not in missions_set:
+            raise ValueError(
+                f"The provided mission_name {mission_name} does not correspond to an existing mission. The available mission(s) are: {missions_set}."
+            )
 
     if not mission_name:  # Print sizing mission
         var_names_and_new_units = {

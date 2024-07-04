@@ -144,9 +144,9 @@ def test_mass_breakdown_sun_plot_specific_mission():
 
     # Plot 2
     # Specific mission plot error
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(ValueError) as exc_info:
         _ = mass_breakdown_sun_plot(filename, mission_name=mission_2)
-        assert f"{mission_2}" in str(e.value)
+        assert f"{mission_2}" in str(exc_info.value)
 
 
 def test_payload_range_plot():
