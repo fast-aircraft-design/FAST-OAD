@@ -5,13 +5,13 @@ repos:
       - id: black
         name: black
         language: system
-        entry: poetry run black
+        entry: black
         types: [ python ]
 
       - id: flake8
         name: flake8
         language: system
-        entry: poetry run flake8
+        entry: flake8
         types: [ python ]
 
       - id: sync_doc_requirements
