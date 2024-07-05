@@ -147,7 +147,7 @@ def test_mass_breakdown_sun_plot_specific_mission():
     f = mass_breakdown_sun_plot(filename, mission_name=mission_2)
     f.show()
 
-    mission_3 = "toto"
+    mission_3 = "not_a_mission_name"
 
     # Plot 3
     # Specific mission plot error

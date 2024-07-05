@@ -463,74 +463,74 @@
         </taxi_out>
       </MTOW_mission>
       <evaluation_mission>
-        <TOW units="kg" is_input="False">80390.86557814683<!--Loaded fuel at beginning for mission "evaluation_mission"--></TOW>
+        <TOW units="kg" is_input="False">80391.87793659794<!--Loaded fuel at beginning for mission "evaluation_mission"--></TOW>
         <ZFW units="kg" is_input="False">73285.65252143066<!--Zero Fuel Weight for mission "evaluation_mission"--></ZFW>
-        <block_fuel units="kg" is_input="False">7473.098549876487<!--Loaded fuel at beginning for mission "evaluation_mission"_inp_data:mission:evaluation_mission:block_fuel--></block_fuel>
+        <block_fuel units="kg" is_input="False">7473.152454206695<!--Loaded fuel at beginning for mission "evaluation_mission"_inp_data:mission:evaluation_mission:block_fuel--></block_fuel>
         <consumed_fuel_before_input_weight units="kg" is_input="False">366.924313915908<!--consumed fuel quantity before target mass defined for "evaluation_mission", if any (e.g. TakeOff Weight)--></consumed_fuel_before_input_weight>
-        <distance units="m" is_input="False">2088632.5211383025<!--covered ground distance during mission "evaluation_mission"--></distance>
-        <duration units="s" is_input="False">11488.214120079867<!--duration of mission "evaluation_mission"--></duration>
-        <fuel units="kg" is_input="False">7337.817023124051<!--burned fuel during mission "evaluation_mission"--></fuel>
-        <needed_block_fuel units="kg" is_input="False">7473.098549876487<!--Needed fuel to complete mission "evaluation_mission", including reserve fuel--></needed_block_fuel>
+        <distance units="m" is_input="False">2088632.5225387935<!--covered ground distance during mission "evaluation_mission"--></distance>
+        <duration units="s" is_input="False">11488.21753010304<!--duration of mission "evaluation_mission"--></duration>
+        <fuel units="kg" is_input="False">7337.86980765991<!--burned fuel during mission "evaluation_mission"--></fuel>
+        <needed_block_fuel units="kg" is_input="False">7473.152454206695<!--Needed fuel to complete mission "evaluation_mission", including reserve fuel--></needed_block_fuel>
         <payload units="kg" is_input="True">22700.0<!--Zero Fuel Weight for mission "evaluation_mission"_inp_data:mission:evaluation_mission:payload--></payload>
-        <specific_burned_fuel units="1/nmi" is_input="False">0.00041152294471774034</specific_burned_fuel>
+        <specific_burned_fuel units="1/nmi" is_input="False">0.00041152591268322347</specific_burned_fuel>
         <diversion>
           <distance units="nmi" is_input="True">200.0<!--Input defined by the mission.--></distance>
-          <duration units="s" is_input="False">1999.6618823689496<!--duration of route "diversion" in mission "evaluation_mission"--></duration>
-          <fuel units="kg" is_input="False">1353.4542895605118<!--burned fuel during route "diversion" in mission "evaluation_mission"--></fuel>
+          <duration units="s" is_input="False">1999.6631588877508<!--duration of route "diversion" in mission "evaluation_mission"--></duration>
+          <fuel units="kg" is_input="False">1353.4619519764965<!--burned fuel during route "diversion" in mission "evaluation_mission"--></fuel>
           <cruise>
-            <distance units="m" is_input="False">104597.63617618848<!--covered ground distance during phase "cruise" of route "diversion" in mission "evaluation_mission"--></distance>
-            <duration units="s" is_input="False">453.68977546904625<!--duration of phase "cruise" of route "diversion" in mission "evaluation_mission"--></duration>
-            <fuel units="kg" is_input="False">368.6199361221661<!--burned fuel during phase "cruise" of route "diversion" in mission "evaluation_mission"--></fuel>
+            <distance units="m" is_input="False">104595.70547223324<!--covered ground distance during phase "cruise" of route "diversion" in mission "evaluation_mission"--></distance>
+            <duration units="s" is_input="False">453.68140108625994<!--duration of phase "cruise" of route "diversion" in mission "evaluation_mission"--></duration>
+            <fuel units="kg" is_input="False">368.61459500579804<!--burned fuel during phase "cruise" of route "diversion" in mission "evaluation_mission"--></fuel>
           </cruise>
           <descent>
-            <distance units="m" is_input="False">181203.0574728006<!--covered ground distance during phase "descent" of route "diversion" in mission "evaluation_mission"--></distance>
-            <duration units="s" is_input="False">1088.3286977035295<!--duration of phase "descent" of route "diversion" in mission "evaluation_mission"--></duration>
-            <fuel units="kg" is_input="False">233.8597113124124<!--burned fuel during phase "descent" of route "diversion" in mission "evaluation_mission"--></fuel>
+            <distance units="m" is_input="False">181203.50184066198<!--covered ground distance during phase "descent" of route "diversion" in mission "evaluation_mission"--></distance>
+            <duration units="s" is_input="False">1088.3304958573244<!--duration of phase "descent" of route "diversion" in mission "evaluation_mission"--></duration>
+            <fuel units="kg" is_input="False">233.85999301314587<!--burned fuel during phase "descent" of route "diversion" in mission "evaluation_mission"--></fuel>
           </descent>
           <diversion_climb>
-            <distance units="m" is_input="False">84599.49897874193<!--covered ground distance during phase "diversion_climb" of route "diversion" in mission "evaluation_mission"--></distance>
-            <duration units="s" is_input="False">457.6434091963738<!--duration of phase "diversion_climb" of route "diversion" in mission "evaluation_mission"--></duration>
-            <fuel units="kg" is_input="False">750.9746421259333<!--burned fuel during phase "diversion_climb" of route "diversion" in mission "evaluation_mission"--></fuel>
+            <distance units="m" is_input="False">84600.98528444837<!--covered ground distance during phase "diversion_climb" of route "diversion" in mission "evaluation_mission"--></distance>
+            <duration units="s" is_input="False">457.65126194416644<!--duration of phase "diversion_climb" of route "diversion" in mission "evaluation_mission"--></duration>
+            <fuel units="kg" is_input="False">750.9873639575526<!--burned fuel during phase "diversion_climb" of route "diversion" in mission "evaluation_mission"--></fuel>
           </diversion_climb>
         </diversion>
         <evaluation_route>
-          <distance units="m" is_input="False">1481568.650912897<!--covered ground distance during route "evaluation_route" in mission "evaluation_mission"--></distance>
-          <duration units="s" is_input="False">6848.552237710917<!--duration of route "evaluation_route" in mission "evaluation_mission"--></duration>
-          <fuel units="kg" is_input="False">4509.880526167704<!--burned fuel during route "evaluation_route" in mission "evaluation_mission"--></fuel>
+          <distance units="m" is_input="False">1481568.6523437754<!--covered ground distance during route "evaluation_route" in mission "evaluation_mission"--></distance>
+          <duration units="s" is_input="False">6848.554371215289<!--duration of route "evaluation_route" in mission "evaluation_mission"--></duration>
+          <fuel units="kg" is_input="False">4509.917852652492<!--burned fuel during route "evaluation_route" in mission "evaluation_mission"--></fuel>
           <range units="nmi" is_input="True">800.0<!--Input defined by the mission.--></range>
           <climb>
             <CL_max_cruise is_input="True">1.0<!--Input defined by the mission.--></CL_max_cruise>
-            <distance units="m" is_input="False">168315.25430574935<!--covered ground distance during phase "climb" of route "evaluation_route" in mission "evaluation_mission"--></distance>
-            <duration units="s" is_input="False">844.4140180018269<!--duration of phase "climb" of route "evaluation_route" in mission "evaluation_mission"--></duration>
-            <fuel units="kg" is_input="False">1183.5254123052146<!--burned fuel during phase "climb" of route "evaluation_route" in mission "evaluation_mission"--></fuel>
+            <distance units="m" is_input="False">168318.86386865185<!--covered ground distance during phase "climb" of route "evaluation_route" in mission "evaluation_mission"--></distance>
+            <duration units="s" is_input="False">844.43148901236<!--duration of phase "climb" of route "evaluation_route" in mission "evaluation_mission"--></duration>
+            <fuel units="kg" is_input="False">1183.548774669558<!--burned fuel during phase "climb" of route "evaluation_route" in mission "evaluation_mission"--></fuel>
             <max_flight_level is_input="True">350.0<!--Input defined by the mission.--></max_flight_level>
           </climb>
           <cruise>
-            <distance units="m" is_input="False">1066325.1156360325<!--covered ground distance during phase "cruise" of route "evaluation_route" in mission "evaluation_mission"--></distance>
-            <duration units="s" is_input="False">4610.168983021844<!--duration of phase "cruise" of route "evaluation_route" in mission "evaluation_mission"--></duration>
-            <fuel units="kg" is_input="False">2926.6461042561423<!--burned fuel during phase "cruise" of route "evaluation_route" in mission "evaluation_mission"--></fuel>
+            <distance units="m" is_input="False">1066320.705385892<!--covered ground distance during phase "cruise" of route "evaluation_route" in mission "evaluation_mission"--></distance>
+            <duration units="s" is_input="False">4610.149915667899<!--duration of phase "cruise" of route "evaluation_route" in mission "evaluation_mission"--></duration>
+            <fuel units="kg" is_input="False">2926.6573461003572<!--burned fuel during phase "cruise" of route "evaluation_route" in mission "evaluation_mission"--></fuel>
           </cruise>
           <cruise_part>
             <maximum_flight_level is_input="True">350.0<!--Input defined by the mission.--></maximum_flight_level>
           </cruise_part>
           <descent>
-            <distance units="m" is_input="False">241727.83428596193<!--covered ground distance during phase "descent" of route "evaluation_route" in mission "evaluation_mission"--></distance>
-            <duration units="s" is_input="False">1345.834136575645<!--duration of phase "descent" of route "evaluation_route" in mission "evaluation_mission"--></duration>
-            <fuel units="kg" is_input="False">278.38569127318624<!--burned fuel during phase "descent" of route "evaluation_route" in mission "evaluation_mission"--></fuel>
+            <distance units="m" is_input="False">241728.53997367155<!--covered ground distance during phase "descent" of route "evaluation_route" in mission "evaluation_mission"--></distance>
+            <duration units="s" is_input="False">1345.836969112327<!--duration of phase "descent" of route "evaluation_route" in mission "evaluation_mission"--></duration>
+            <fuel units="kg" is_input="False">278.3861552110029<!--burned fuel during phase "descent" of route "evaluation_route" in mission "evaluation_mission"--></fuel>
           </descent>
           <initial_climb>
-            <distance units="m" is_input="False">5200.446685153138<!--covered ground distance during phase "initial_climb" of route "evaluation_route" in mission "evaluation_mission"--></distance>
-            <duration units="s" is_input="False">48.135100111601105<!--duration of phase "initial_climb" of route "evaluation_route" in mission "evaluation_mission"--></duration>
-            <fuel units="kg" is_input="False">121.3233183331613<!--burned fuel during phase "initial_climb" of route "evaluation_route" in mission "evaluation_mission"--></fuel>
+            <distance units="m" is_input="False">5200.543115560098<!--covered ground distance during phase "initial_climb" of route "evaluation_route" in mission "evaluation_mission"--></distance>
+            <duration units="s" is_input="False">48.13599742270287<!--duration of phase "initial_climb" of route "evaluation_route" in mission "evaluation_mission"--></duration>
+            <fuel units="kg" is_input="False">121.3255766715738<!--burned fuel during phase "initial_climb" of route "evaluation_route" in mission "evaluation_mission"--></fuel>
           </initial_climb>
         </evaluation_route>
         <holding>
           <distance units="m" is_input="False">236663.67759767454<!--covered ground distance during route "holding" in mission "evaluation_mission"--></distance>
           <duration units="min" is_input="True">30.0<!--Input defined by the mission.--></duration>
-          <fuel units="kg" is_input="False">923.3897461628512<!--burned fuel during route "holding" in mission "evaluation_mission"--></fuel>
+          <fuel units="kg" is_input="False">923.3975417979382<!--burned fuel during route "holding" in mission "evaluation_mission"--></fuel>
         </holding>
         <reserve>
-          <fuel units="kg" is_input="False">135.28152675216552<!--reserve fuel for mission "evaluation_mission"--></fuel>
+          <fuel units="kg" is_input="False">135.28264654670784<!--reserve fuel for mission "evaluation_mission"--></fuel>
         </reserve>
         <takeoff>
           <V2 units="m/s" is_input="True">79.3<!--Input defined by the mission.--></V2>
