@@ -384,23 +384,15 @@ def mass_breakdown_sun_plot(
         )
     else:
         payload_test_name = f"data:mission:{mission_name}:payload"
-        if payload_test_name in variables.names():
-            var_names_and_new_units = {
-                f"data:mission:{mission_name}:TOW": "kg",
-                "data:weight:aircraft:OWE": "kg",
-                f"data:mission:{mission_name}:payload": "kg",
-                f"data:mission:{mission_name}:block_fuel": "kg",
-                f"data:mission:{mission_name}:consumed_fuel_before_input_weight": "kg",
-            }
-        else:
-            var_names_and_new_units = {
-                f"data:mission:{mission_name}:TOW": "kg",
-                "data:weight:aircraft:OWE": "kg",
-                "data:weight:aircraft:payload": "kg",
-                f"data:mission:{mission_name}:block_fuel": "kg",
-                f"data:mission:{mission_name}:consumed_fuel_before_input_weight": "kg",
-            }
-
+        if payload_test_name not in variables.names():
+            payload_test_name = "data:weight:aircraft:payload"
+        var_names_and_new_units = {
+            f"data:mission:{mission_name}:TOW": "kg",
+            "data:weight:aircraft:OWE": "kg",
+            payload_test_name: "kg",
+            f"data:mission:{mission_name}:block_fuel": "kg",
+            f"data:mission:{mission_name}:consumed_fuel_before_input_weight": "kg",
+        }
         (
             tow,
             owe,
