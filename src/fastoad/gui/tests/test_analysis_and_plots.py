@@ -140,13 +140,20 @@ def test_mass_breakdown_sun_plot_specific_mission():
     # Specific mission plot
     _ = mass_breakdown_sun_plot(filename, mission_name=mission_1)
 
-    mission_2 = "toto"
+    mission_2 = "MTOW_mission"
 
     # Plot 2
+    # Specific mission plot (sizing mission)
+    f = mass_breakdown_sun_plot(filename, mission_name=mission_2)
+    f.show()
+
+    mission_3 = "toto"
+
+    # Plot 3
     # Specific mission plot error
     with pytest.raises(ValueError) as exc_info:
-        _ = mass_breakdown_sun_plot(filename, mission_name=mission_2)
-        assert f"{mission_2}" in str(exc_info.value)
+        _ = mass_breakdown_sun_plot(filename, mission_name=mission_3)
+        assert f"{mission_3}" in str(exc_info.value)
 
 
 def test_payload_range_plot():
