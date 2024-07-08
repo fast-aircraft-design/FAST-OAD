@@ -1,6 +1,7 @@
 """
 Tests for FAST-OAD mission viewer
 """
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -38,6 +39,19 @@ def test_mission_viewer():
     # Testing with DataFrame
     dataframe = pd.read_csv(filename, index_col=0)
     mission_viewer.add_mission(dataframe, name="Mission 2")
+
+    # Testing layout update with dictionary
+    mission_viewer.update_layout(
+        {
+            "title": None,
+        }
+    )
+
+    # Testing layout update with keywords
+    mission_viewer.update_layout(title_text="Title")
+
+    # Testing layout overwrite = True
+    mission_viewer.update_layout(overwrite=True, title_text="mission")
 
     # Testing with existing .yml
     with pytest.raises(TypeError):
