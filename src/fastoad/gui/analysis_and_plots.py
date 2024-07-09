@@ -1,6 +1,7 @@
 """
 Defines the analysis and plotting functions for postprocessing
 """
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -427,30 +428,17 @@ def mass_breakdown_sun_plot(
 
     fig = make_subplots(1, 2, specs=[[{"type": "domain"}, {"type": "domain"}]])
 
+    labels = [
+        f"{tow_name}<br>{tow:.0f} [kg]",
+        f"payload<br>{payload:.0f} [kg] ({payload / tow:.1%})",
+        f"onboard_fuel_at_takeoff<br>{onboard_fuel_at_takeoff:.0f} [kg] "
+        f"({onboard_fuel_at_takeoff / tow:.1%})",
+        f"OWE<br>{owe:.0f} [kg] ({owe / tow:.1%})",
+    ]
     fig.add_trace(
         go.Sunburst(
-            labels=[
-                tow_name + "<br>" + str(int(tow)) + " [kg]",
-                "payload"
-                + "<br>"
-                + str(int(payload))
-                + " [kg] ("
-                + str(round(payload / tow * 100, 1))
-                + "%)",
-                "onboard_fuel_at_takeoff"
-                + "<br>"
-                + str(int(onboard_fuel_at_takeoff))
-                + " [kg] ("
-                + str(round(onboard_fuel_at_takeoff / tow * 100, 1))
-                + "%)",
-                "OWE" + "<br>" + str(int(owe)) + " [kg] (" + str(round(owe / tow * 100, 1)) + "%)",
-            ],
-            parents=[
-                "",
-                tow_name + "<br>" + str(int(tow)) + " [kg]",
-                tow_name + "<br>" + str(int(tow)) + " [kg]",
-                tow_name + "<br>" + str(int(tow)) + " [kg]",
-            ],
+            labels=labels,
+            parents=["", labels[0], labels[0], labels[0]],
             values=[tow, payload, onboard_fuel_at_takeoff, owe],
             branchvalues="total",
         ),
@@ -479,12 +467,12 @@ def mass_breakdown_sun_plot(
                 sub_categories_names.append(variable_name)
 
     # Define figure data
-    figure_labels = ["OWE" + "<br>" + str(int(owe)) + " [kg]"]
+    figure_labels = [f"OWE<br>{owe:.0f} [kg]"]
     figure_labels.extend(categories_labels)
     figure_labels.extend(sub_categories_names)
     figure_parents = [""]
     for _ in categories_names:
-        figure_parents.append("OWE" + "<br>" + str(int(owe)) + " [kg]")
+        figure_parents.append(figure_labels[0])
     figure_parents.extend(sub_categories_parent)
     figure_values = [owe]
     figure_values.extend(categories_values)
@@ -663,12 +651,8 @@ def _data_weight_decomposition(variables: VariableList, owe=None):
                 category_names.append(name_split[2])
                 if owe:
                     owe_subcategory_names.append(
-                        name_split[2]
-                        + "<br>"
-                        + str(int(variables[variable].value[0]))
-                        + " [kg] ("
-                        + str(round(variables[variable].value[0] / owe * 100, 1))
-                        + "%)"
+                        f"{name_split[2]}<br>{variables[variable].value[0]:.0f} [kg] "
+                        f"({variables[variable].value[0] / owe:.1%})"
                     )
     if owe:
         result = category_values, category_names, owe_subcategory_names
