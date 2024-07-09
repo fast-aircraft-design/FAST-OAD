@@ -44,6 +44,7 @@ classifiers = [
 # the commit fail because "files were modified by this hook". In that case,
 # doing again the commit including changes in docs/requirements.txt will succeed.
 python = ">=3.8, <3.12"
+panel = "^1.2.3"
 numpy = [
     { version = ">=1.22.0, <1.25", python = "~3.8" },
     { version = ">=1.23.2, <3", python = ">=3.9, <3.12" },
