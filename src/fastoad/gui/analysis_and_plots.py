@@ -429,11 +429,12 @@ def mass_breakdown_sun_plot(
     fig = make_subplots(1, 2, specs=[[{"type": "domain"}, {"type": "domain"}]])
 
     labels = [
-        f"{tow_name}<br>{tow:.0f} [kg]",
-        f"payload<br>{payload:.0f} [kg] ({payload / tow:.1%})",
-        f"onboard_fuel_at_takeoff<br>{onboard_fuel_at_takeoff:.0f} [kg] "
-        f"({onboard_fuel_at_takeoff / tow:.1%})",
-        f"OWE<br>{owe:.0f} [kg] ({owe / tow:.1%})",
+        _get_sunburst_mass_label(tow_name, tow),
+        _get_sunburst_mass_label("payload", payload, parent_value=tow),
+        _get_sunburst_mass_label(
+            "onboard fuel at takeoff", onboard_fuel_at_takeoff, parent_value=tow
+        ),
+        _get_sunburst_mass_label("OWE", owe, parent_value=tow),
     ]
     fig.add_trace(
         go.Sunburst(
@@ -467,7 +468,7 @@ def mass_breakdown_sun_plot(
                 sub_categories_names.append(variable_name)
 
     # Define figure data
-    figure_labels = [f"OWE<br>{owe:.0f} [kg]"]
+    figure_labels = [_get_sunburst_mass_label("OWE", owe)]
     figure_labels.extend(categories_labels)
     figure_labels.extend(sub_categories_names)
     figure_parents = [""]
@@ -651,8 +652,9 @@ def _data_weight_decomposition(variables: VariableList, owe=None):
                 category_names.append(name_split[2])
                 if owe:
                     owe_subcategory_names.append(
-                        f"{name_split[2]}<br>{variables[variable].value[0]:.0f} [kg] "
-                        f"({variables[variable].value[0] / owe:.1%})"
+                        _get_sunburst_mass_label(
+                            name_split[2], variables[variable].value[0], parent_value=owe
+                        ),
                     )
     if owe:
         result = category_values, category_names, owe_subcategory_names
@@ -660,3 +662,20 @@ def _data_weight_decomposition(variables: VariableList, owe=None):
         result = category_values, category_names, None
 
     return result
+
+
+def _get_sunburst_mass_label(quantity_name, value, parent_value=None, unit="kg"):
+    """
+    Builds mass label for sunburst mass breakdown plot like this:
+        `quantity_name`
+        `value` [`unit`]
+    or, if parent_value is provided:
+        `quantity_name`
+        `value` `unit` (<part_in_parent>%)
+    """
+    label = f"{quantity_name}<br>{value:.0f} [{unit}]"
+
+    if parent_value:
+        label += f" ({value / parent_value:.1%})"
+
+    return label
