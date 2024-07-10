@@ -8,6 +8,9 @@ on:
       - '**'
     tags-ignore:
       - '**'
+  pull_request:
+    branches: [ 'master', 'master-v*' ]
+
 
 jobs:
   tests:
