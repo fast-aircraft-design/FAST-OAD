@@ -96,26 +96,40 @@ class OptionWidgetFactory:
 
 
 class OptionsViewer(Viewer):
-    value = OptionsParameter(default=om.OptionsDictionary())
+    value = OptionsParameter(default=om.OptionsDictionary(), allow_refs=True)
 
     def __panel__(self):
-        widgets = [
-            OptionWidgetFactory.get_option_viewer(name, definition)
-            for name, definition in self.value._dict.items()
-        ]
+        widgets = []
+        for name, definition in self.value._dict.items():
+
+            widget = OptionWidgetFactory.get_option_viewer(name, definition)
+
+            def update_value(val):
+                self.value[name] = val
+                print(val)
+                return widget
+
+            b = pn.bind(
+                update_value,
+                widget,
+            )
+            widgets.append(b)
+            pn.bind(update_value, widgets[-1])
 
         return pn.Card(*[w for w in widgets if w], title="Component")
 
 
 options = om.OptionsDictionary()
-options.declare("toto", types=str, desc="test desc")
-options.declare("foo", values=["a", 1, True], desc="test desc")
-# options.declare(
-#     "deprecated", types=int, lower=0, upper=100, deprecation="deprecated", desc="test desc"
-# )
-options.declare("tutu", types=int, lower=0, upper=100, desc="test desc")
-options.declare("truc", types=float, lower=0.0, upper=100.0, desc="test desc")
-options.declare("titi", desc="test desc")
-print(options._dict)
+options.declare("toto", default="foo", types=str, desc="test desc")
+# options.declare("foo", values=["a", 1, True], desc="test desc")
+# # options.declare(
+# #     "deprecated", types=int, lower=0, upper=100, deprecation="deprecated", desc="test desc"
+# # )
+# options.declare("tutu", types=int, lower=0, upper=100, desc="test desc")
+# options.declare("truc", types=float, lower=0.0, upper=100.0, desc="test desc")
+# options.declare("titi", desc="test desc")
+# print(options._dict)
 # options["deprecated"] = 50
 ov = OptionsViewer(value=options).servable()
+
+pn.panel({name: value for name, value in options.items()}).servable()
