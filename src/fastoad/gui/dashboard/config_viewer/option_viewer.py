@@ -24,55 +24,75 @@ class OptionsParameter(ClassSelector):
 
 class OptionWidgetFactory:
     @classmethod
-    def get_option_viewer(cls, name, option_definition):
-        print(option_definition["deprecation"])
+    def get_widget_class(cls, option_definition):
         if option_definition["deprecation"] and option_definition["deprecation"][1]:
             return None
 
-        widget_class, widget_kwargs = cls._get_common_kwargs(name, option_definition)
-
-        if option_definition["deprecation"]:
-            widget_kwargs["background"] = "gray"
-            widget_kwargs["description"] = option_definition["deprecation"][0]
+        if option_definition["types"]:
+            try:
+                option_types = list(option_definition["types"])
+            except TypeError:
+                option_types = [option_definition["types"]]
+        else:
+            option_types = []
 
         if option_definition["values"] is not None:
             widget_class = pn.widgets.Select
-            widget_kwargs["options"] = option_definition["values"]
-
         elif option_definition["lower"] is not None and option_definition["upper"] is not None:
-            del widget_kwargs["description"]
-            widget_kwargs["fixed_start"] = option_definition["lower"]
-            widget_kwargs["fixed_end"] = option_definition["upper"]
-
-            try:
-                types = list(option_definition["types"])
-            except TypeError:
-                types = [option_definition["types"]]
-            if any(map(lambda t: issubclass(t, float), types)):
+            if any(map(lambda t: issubclass(t, float), option_types)):
                 widget_class = pn.widgets.EditableFloatSlider
             else:
                 widget_class = pn.widgets.EditableIntSlider
+        elif any(map(lambda t: issubclass(t, str), option_types)):
+            widget_class = pn.widgets.TextInput
+        else:
+            widget_class = pn.widgets.LiteralInput
 
-            if widget_kwargs["value"] is None:
-                widget_kwargs["value"] = widget_kwargs["fixed_start"]
-
-        widget = widget_class(**widget_kwargs)
-
-        return widget
+        return widget_class
 
     @classmethod
-    def _get_common_kwargs(cls, name, option_definition):
+    def get_widget(cls, name, option_definition, widget_class):
+
         widget_kwargs = {"name": name}
-        widget_class = pn.widgets.TextInput
+
+        matching = {
+            "value": "val",
+            "desc": "description",
+            "options": "values",
+            "fixed_start": "lower",
+            "fixed_end": "upper",
+        }
+
         if option_definition["val"] is _UNDEFINED:
             widget_kwargs["value"] = None
         elif option_definition["has_been_set"]:
             widget_kwargs["value"] = option_definition["val"]
         else:
-            widget_kwargs["value"] = option_definition["val"]
-        if option_definition["desc"]:
-            widget_kwargs["description"] = option_definition["desc"]
-        return widget_class, widget_kwargs
+            widget_kwargs["placeholder"] = option_definition["val"]
+
+        for kwarg_name, option_key in matching.items():
+            if option_definition.get(option_key) and hasattr(widget_class, kwarg_name):
+                if option_definition[option_key] is not _UNDEFINED:
+                    widget_kwargs[kwarg_name] = option_definition[option_key]
+        if option_definition["val"] is _UNDEFINED:
+            if issubclass(
+                widget_class, (pn.widgets.EditableIntSlider, pn.widgets.EditableFloatSlider)
+            ):
+                widget_kwargs["value"] = widget_kwargs.get("fixed_start", 0)
+            else:
+                widget_kwargs["value"] = None
+        print(widget_kwargs)
+        return widget_class(**widget_kwargs)
+
+    @classmethod
+    def get_option_viewer(cls, name, option_definition):
+        if option_definition["deprecation"] and option_definition["deprecation"][1]:
+            return None
+
+        widget_class = cls.get_widget_class(option_definition)
+        widget = cls.get_widget(name, option_definition, widget_class)
+
+        return widget
 
 
 class OptionsViewer(Viewer):
@@ -90,11 +110,12 @@ class OptionsViewer(Viewer):
 options = om.OptionsDictionary()
 options.declare("toto", types=str, desc="test desc")
 options.declare("foo", values=["a", 1, True], desc="test desc")
-options.declare(
-    "deprecated", types=int, lower=0, upper=100, deprecation="deprecated", desc="test desc"
-)
+# options.declare(
+#     "deprecated", types=int, lower=0, upper=100, deprecation="deprecated", desc="test desc"
+# )
 options.declare("tutu", types=int, lower=0, upper=100, desc="test desc")
-options.declare("truc", types=float, lower=-10.0, upper=100.0, desc="test desc")
+options.declare("truc", types=float, lower=0.0, upper=100.0, desc="test desc")
+options.declare("titi", desc="test desc")
 print(options._dict)
-options["deprecated"] = 50
+# options["deprecated"] = 50
 ov = OptionsViewer(value=options).servable()
