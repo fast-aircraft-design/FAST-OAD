@@ -29,12 +29,14 @@ from .. import (
 DATA_FOLDER_PATH = Path(__file__).parent / "data"
 
 
-def test_wing_geometry_plot():
+@pytest.mark.parametrize(
+    "filename",
+    [DATA_FOLDER_PATH / "problem_outputs.xml", DATA_FOLDER_PATH / "problem_outputs_updated.xml"],
+)
+def test_wing_geometry_plot(filename):
     """
     Basic tests for testing the plotting.
     """
-
-    filename = DATA_FOLDER_PATH / "problem_outputs.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
@@ -53,12 +55,14 @@ def test_wing_geometry_plot():
         fig = wing_geometry_plot(filename, name=f"Plot {i}", fig=fig)
 
 
-def test_aircraft_geometry_plot():
+@pytest.mark.parametrize(
+    "filename",
+    [DATA_FOLDER_PATH / "problem_outputs.xml", DATA_FOLDER_PATH / "problem_outputs_updated.xml"],
+)
+def test_aircraft_geometry_plot(filename):
     """
     Basic tests for testing the plotting.
     """
-
-    filename = DATA_FOLDER_PATH / "problem_outputs.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
@@ -77,12 +81,14 @@ def test_aircraft_geometry_plot():
         fig = aircraft_geometry_plot(filename, name=f"Plot {i}", fig=fig)
 
 
-def test_mass_breakdown_bar_plot():
+@pytest.mark.parametrize(
+    "filename",
+    [DATA_FOLDER_PATH / "problem_outputs.xml", DATA_FOLDER_PATH / "problem_outputs_updated.xml"],
+)
+def test_mass_breakdown_bar_plot(filename):
     """
     Basic tests for testing the plotting.
     """
-
-    filename = DATA_FOLDER_PATH / "problem_outputs.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
@@ -101,12 +107,14 @@ def test_mass_breakdown_bar_plot():
         _ = mass_breakdown_bar_plot(filename, name=f"Plot {i}", fig=fig)
 
 
-def test_drag_polar_plot():
+@pytest.mark.parametrize(
+    "filename",
+    [DATA_FOLDER_PATH / "problem_outputs.xml", DATA_FOLDER_PATH / "problem_outputs_updated.xml"],
+)
+def test_drag_polar_plot(filename):
     """
     Basic tests for testing the plotting.
     """
-
-    filename = DATA_FOLDER_PATH / "problem_outputs.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
@@ -114,12 +122,14 @@ def test_drag_polar_plot():
     _ = drag_polar_plot(filename)
 
 
-def test_mass_breakdown_sun_plot():
+@pytest.mark.parametrize(
+    "filename",
+    [DATA_FOLDER_PATH / "problem_outputs.xml", DATA_FOLDER_PATH / "problem_outputs_updated.xml"],
+)
+def test_mass_breakdown_sun_plot(filename):
     """
     Basic tests for testing the plotting.
     """
-
-    filename = DATA_FOLDER_PATH / "problem_outputs.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
@@ -157,12 +167,14 @@ def test_mass_breakdown_sun_plot_specific_mission():
         assert f"{mission_3}" in str(exc_info.value)
 
 
-def test_payload_range_plot():
+@pytest.mark.parametrize(
+    "filename",
+    [DATA_FOLDER_PATH / "problem_outputs.xml", DATA_FOLDER_PATH / "problem_outputs_updated.xml"],
+)
+def test_payload_range_plot(filename):
     """
     Basic tests for testing the plotting.
     """
-
-    filename = DATA_FOLDER_PATH / "problem_outputs.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify

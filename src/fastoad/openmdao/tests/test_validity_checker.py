@@ -25,7 +25,8 @@ from ..problem import FASTOADProblem
 from ..validity_checker import ValidityDomainChecker, ValidityStatus
 from ..variables import Variable, VariableList
 
-RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
+THIS_FILE_PATH = Path(__file__)
+RESULTS_FOLDER_PATH = THIS_FILE_PATH.parent / "results" / Path(__file__).stem
 
 
 @pytest.fixture(scope="module")
@@ -83,17 +84,24 @@ def test_register_checks_instantiation(cleanup):
             rec.status,
             rec.limit_value,
             rec.value,
-            rec.source_file,
+            Path(rec.source_file),
             rec.logger_name,
         )
         for rec in records
     ] == [
-        ("var_with_upper_and_lower", ValidityStatus.TOO_LOW, -1.0, -2.0, __file__, "main.logger1"),
-        ("var_with_upper_and_lower", ValidityStatus.OK, None, -2.0, __file__, "main.logger2"),
-        ("var_with_lower", ValidityStatus.OK, None, -1.0, __file__, "main.logger1"),
-        ("var_with_lower", ValidityStatus.TOO_LOW, 0.0, -1.0, __file__, "main.logger2"),
-        ("var_with_upper", ValidityStatus.TOO_HIGH, 5.0, 10.0, __file__, "main.logger1"),
-        ("other_var", ValidityStatus.TOO_HIGH, 1.0, 1.1, __file__, "main.logger1"),
+        (
+            "var_with_upper_and_lower",
+            ValidityStatus.TOO_LOW,
+            -1.0,
+            -2.0,
+            THIS_FILE_PATH,
+            "main.logger1",
+        ),
+        ("var_with_upper_and_lower", ValidityStatus.OK, None, -2.0, THIS_FILE_PATH, "main.logger2"),
+        ("var_with_lower", ValidityStatus.OK, None, -1.0, THIS_FILE_PATH, "main.logger1"),
+        ("var_with_lower", ValidityStatus.TOO_LOW, 0.0, -1.0, THIS_FILE_PATH, "main.logger2"),
+        ("var_with_upper", ValidityStatus.TOO_HIGH, 5.0, 10.0, THIS_FILE_PATH, "main.logger1"),
+        ("other_var", ValidityStatus.TOO_HIGH, 1.0, 1.1, THIS_FILE_PATH, "main.logger1"),
     ]
 
     ValidityDomainChecker.log_records(records)
@@ -120,17 +128,24 @@ def test_register_checks_instantiation(cleanup):
             rec.status,
             rec.limit_value,
             rec.value,
-            rec.source_file,
+            Path(rec.source_file),
             rec.logger_name,
         )
         for rec in records
     ] == [
-        ("other_var", ValidityStatus.TOO_LOW, -10.0, -11.0, __file__, "main.logger1"),
-        ("var_with_lower", ValidityStatus.TOO_LOW, -10.0, -15.0, __file__, "main.logger1"),
-        ("var_with_lower", ValidityStatus.TOO_LOW, 0.0, -15.0, __file__, "main.logger2"),
-        ("var_with_upper", ValidityStatus.OK, None, 0.0, __file__, "main.logger1"),
-        ("var_with_upper_and_lower", ValidityStatus.OK, None, 7.0, __file__, "main.logger1"),
-        ("var_with_upper_and_lower", ValidityStatus.TOO_HIGH, 5.0, 7.0, __file__, "main.logger2"),
+        ("other_var", ValidityStatus.TOO_LOW, -10.0, -11.0, THIS_FILE_PATH, "main.logger1"),
+        ("var_with_lower", ValidityStatus.TOO_LOW, -10.0, -15.0, THIS_FILE_PATH, "main.logger1"),
+        ("var_with_lower", ValidityStatus.TOO_LOW, 0.0, -15.0, THIS_FILE_PATH, "main.logger2"),
+        ("var_with_upper", ValidityStatus.OK, None, 0.0, THIS_FILE_PATH, "main.logger1"),
+        ("var_with_upper_and_lower", ValidityStatus.OK, None, 7.0, THIS_FILE_PATH, "main.logger1"),
+        (
+            "var_with_upper_and_lower",
+            ValidityStatus.TOO_HIGH,
+            5.0,
+            7.0,
+            THIS_FILE_PATH,
+            "main.logger2",
+        ),
     ]
 
     ValidityDomainChecker.log_records(records)
@@ -156,16 +171,16 @@ def test_register_checks_instantiation(cleanup):
             rec.status,
             rec.limit_value,
             rec.value,
-            rec.source_file,
+            Path(rec.source_file),
             rec.logger_name,
         )
         for rec in records
     ] == [
-        ("var_with_upper_and_lower", ValidityStatus.OK, None, 1.0, __file__, "main.logger1"),
-        ("var_with_upper_and_lower", ValidityStatus.OK, None, 1.0, __file__, "main.logger2"),
-        ("other_var", ValidityStatus.OK, None, -5.0, __file__, "main.logger1"),
-        ("var_with_lower", ValidityStatus.OK, None, 1.0, __file__, "main.logger1"),
-        ("var_with_lower", ValidityStatus.OK, None, 1.0, __file__, "main.logger2"),
+        ("var_with_upper_and_lower", ValidityStatus.OK, None, 1.0, THIS_FILE_PATH, "main.logger1"),
+        ("var_with_upper_and_lower", ValidityStatus.OK, None, 1.0, THIS_FILE_PATH, "main.logger2"),
+        ("other_var", ValidityStatus.OK, None, -5.0, THIS_FILE_PATH, "main.logger1"),
+        ("var_with_lower", ValidityStatus.OK, None, 1.0, THIS_FILE_PATH, "main.logger1"),
+        ("var_with_lower", ValidityStatus.OK, None, 1.0, THIS_FILE_PATH, "main.logger2"),
     ]
 
     ValidityDomainChecker.log_records(records)
@@ -216,15 +231,15 @@ def test_register_checks_as_decorator(cleanup):
             rec.status,
             rec.limit_value,
             rec.value,
-            rec.source_file,
+            Path(rec.source_file),
             rec.logger_name,
         )
         for rec in records
     ] == [
-        ("input1", ValidityStatus.TOO_LOW, 1.0, 3.0, __file__, "main.dec"),
-        ("output1", ValidityStatus.TOO_HIGH, 130.0, 40.0, __file__, "main.dec"),
-        ("output2", ValidityStatus.TOO_HIGH, 500.0, 310.0, __file__, "main.dec"),
-        ("output3", ValidityStatus.TOO_HIGH, 5000.0, 6.0, __file__, "main.dec"),
+        ("input1", ValidityStatus.TOO_LOW, 1.0, 3.0, THIS_FILE_PATH, "main.dec"),
+        ("output1", ValidityStatus.TOO_HIGH, 130.0, 40.0, THIS_FILE_PATH, "main.dec"),
+        ("output2", ValidityStatus.TOO_HIGH, 500.0, 310.0, THIS_FILE_PATH, "main.dec"),
+        ("output3", ValidityStatus.TOO_HIGH, 5000.0, 6.0, THIS_FILE_PATH, "main.dec"),
     ]
 
     ValidityDomainChecker.log_records(records)
