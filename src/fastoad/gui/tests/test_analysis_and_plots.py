@@ -137,6 +137,36 @@ def test_mass_breakdown_sun_plot(filename):
     _ = mass_breakdown_sun_plot(filename)
 
 
+def test_mass_breakdown_sun_plot_specific_mission():
+    """
+    Test for testing the sun mass breakdown plotting for a specific mission.
+    """
+
+    filename = DATA_FOLDER_PATH / "problem_outputs_multi_mission.xml"
+
+    mission_1 = "evaluation_mission"
+
+    # Plot 1
+    # Specific mission plot
+    f = mass_breakdown_sun_plot(filename, mission_name=mission_1)
+    # f.show()
+
+    mission_2 = "MTOW_mission"
+
+    # Plot 2
+    # Specific mission plot (sizing mission)
+    f = mass_breakdown_sun_plot(filename, mission_name=mission_2)
+    # f.show()
+
+    mission_3 = "not_a_mission_name"
+
+    # Plot 3
+    # Specific mission plot error
+    with pytest.raises(ValueError) as exc_info:
+        _ = mass_breakdown_sun_plot(filename, mission_name=mission_3)
+        assert f"{mission_3}" in str(exc_info.value)
+
+
 @pytest.mark.parametrize(
     "filename",
     [DATA_FOLDER_PATH / "problem_outputs.xml", DATA_FOLDER_PATH / "problem_outputs_updated.xml"],

@@ -361,9 +361,10 @@ def mass_breakdown_sun_plot(
     *,
     file_formatter=None,
     input_mass_name="data:weight:aircraft:MTOW",
+    mission_name=None,
 ):
     """
-    Returns a figure sunburst plot of the mass breakdown.
+    Returns a figure sunburst plot of the mass breakdown of the aircraft of the sizing mission.
     On the left a MTOW sunburst and on the right a OWE sunburst.
     Different designs can be superposed by providing an existing fig.
     Each design can be provided a name.
@@ -373,53 +374,84 @@ def mass_breakdown_sun_plot(
                            default format will be assumed.
     :param input_mass_name: the variable name for the mass input as defined in the mission
                             definition file.
+    :param mission_name: the name of the specific mission for which the mass breakdown is plotted.
+                         If not provided, the sizing mission configuration is plotted.
     :return: sunburst plot figure
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
-    var_names_and_new_units = {
-        input_mass_name: "kg",
-        "data:weight:aircraft:OWE": "kg",
-        "data:weight:aircraft:payload": "kg",
-        "data:weight:aircraft:sizing_onboard_fuel_at_input_weight": "kg",
-    }
+    if mission_name:  # Check if mission_name is used
+        tow_name = "TOW"
+        mission_tow_var = f"data:mission:{mission_name}:TOW"
+        if mission_tow_var not in variables.names():  # Check if the provided mission_name exists
+            raise ValueError(
+                f"The provided mission_name {mission_name} does not correspond to an existing "
+                + "mission. The available mission(s) are: {missions_set}."
+            )
+        payload_var_name = f"data:mission:{mission_name}:payload"
+        if payload_var_name not in variables.names():  # If mission_name is a sizing mission
+            payload_var_name = "data:weight:aircraft:payload"
+        var_names_and_new_units = {
+            mission_tow_var: "kg",
+            "data:weight:aircraft:OWE": "kg",
+            payload_var_name: "kg",
+            f"data:mission:{mission_name}:block_fuel": "kg",
+            f"data:mission:{mission_name}:consumed_fuel_before_input_weight": "kg",
+        }
+        (
+            tow,
+            owe,
+            payload,
+            block_fuel,
+            consumed_fuel_before_input_weight,
+        ) = _get_variable_values_with_new_units(variables, var_names_and_new_units)
+        onboard_fuel_at_takeoff = block_fuel - consumed_fuel_before_input_weight
+    else:  # Print default sizing mission
+        mission_name = "Sizing Mission"
+        tow_name = "MTOW"
+        var_names_and_new_units = {
+            input_mass_name: "kg",
+            "data:weight:aircraft:OWE": "kg",
+            "data:weight:aircraft:payload": "kg",
+            "data:weight:aircraft:sizing_onboard_fuel_at_input_weight": "kg",
+        }
+        tow, owe, payload, onboard_fuel_at_takeoff = _get_variable_values_with_new_units(
+            variables, var_names_and_new_units
+        )
 
     # pylint: disable=unbalanced-tuple-unpacking # It is balanced for the parameters provided
-    mtow, owe, payload, onboard_fuel_at_takeoff = _get_variable_values_with_new_units(
-        variables, var_names_and_new_units
-    )
 
     # TODO: Deal with this in a more generic manner ?
-    if round(mtow, 6) == round(owe + payload + onboard_fuel_at_takeoff, 6):
-        mtow = owe + payload + onboard_fuel_at_takeoff
+    if round(tow, 6) == round(owe + payload + onboard_fuel_at_takeoff, 6):
+        tow = owe + payload + onboard_fuel_at_takeoff
 
     fig = make_subplots(1, 2, specs=[[{"type": "domain"}, {"type": "domain"}]])
 
     fig.add_trace(
         go.Sunburst(
             labels=[
-                "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
+                tow_name + "<br>" + str(int(tow)) + " [kg]",
                 "payload"
                 + "<br>"
                 + str(int(payload))
                 + " [kg] ("
-                + str(round(payload / mtow * 100, 1))
+                + str(round(payload / tow * 100, 1))
                 + "%)",
                 "onboard_fuel_at_takeoff"
                 + "<br>"
                 + str(int(onboard_fuel_at_takeoff))
                 + " [kg] ("
-                + str(round(onboard_fuel_at_takeoff / mtow * 100, 1))
+                + str(round(onboard_fuel_at_takeoff / tow * 100, 1))
                 + "%)",
-                "OWE" + "<br>" + str(int(owe)) + " [kg] (" + str(round(owe / mtow * 100, 1)) + "%)",
+                "OWE" + "<br>" + str(int(owe)) + " [kg] (" + str(round(owe / tow * 100, 1)) + "%)",
             ],
             parents=[
                 "",
-                "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
-                "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
-                "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
+                tow_name + "<br>" + str(int(tow)) + " [kg]",
+                tow_name + "<br>" + str(int(tow)) + " [kg]",
+                tow_name + "<br>" + str(int(tow)) + " [kg]",
             ],
-            values=[mtow, payload, onboard_fuel_at_takeoff, owe],
+            values=[tow, payload, onboard_fuel_at_takeoff, owe],
             branchvalues="total",
         ),
         1,
@@ -467,7 +499,7 @@ def mass_breakdown_sun_plot(
         2,
     )
 
-    fig.update_layout(title_text="Mass Breakdown", title_x=0.5)
+    fig.update_layout(title_text=f"Mass Breakdown - {mission_name}", title_x=0.5)
 
     return fig
 
