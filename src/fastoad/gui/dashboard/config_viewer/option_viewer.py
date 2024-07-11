@@ -64,7 +64,16 @@ class OptionWidgetFactory:
         }
 
         if option_definition["val"] is _UNDEFINED:
-            widget_kwargs["value"] = None
+            if option_definition.get("default") is not None:
+                widget_kwargs["value"] = option_definition["default"]
+            elif issubclass(
+                widget_class, (pn.widgets.EditableIntSlider, pn.widgets.EditableFloatSlider)
+            ):
+                widget_kwargs["value"] = widget_kwargs.get("fixed_start", 0)
+            elif issubclass(widget_class, pn.widgets.Select):
+                widget_kwargs["value"] = option_definition["values"][0]
+            else:
+                widget_kwargs["value"] = None
         elif option_definition["has_been_set"]:
             widget_kwargs["value"] = option_definition["val"]
         else:
@@ -74,14 +83,7 @@ class OptionWidgetFactory:
             if option_definition.get(option_key) and hasattr(widget_class, kwarg_name):
                 if option_definition[option_key] is not _UNDEFINED:
                     widget_kwargs[kwarg_name] = option_definition[option_key]
-        if option_definition["val"] is _UNDEFINED:
-            if issubclass(
-                widget_class, (pn.widgets.EditableIntSlider, pn.widgets.EditableFloatSlider)
-            ):
-                widget_kwargs["value"] = widget_kwargs.get("fixed_start", 0)
-            else:
-                widget_kwargs["value"] = None
-        print(widget_kwargs)
+
         return widget_class(**widget_kwargs)
 
     @classmethod
@@ -100,36 +102,35 @@ class OptionsViewer(Viewer):
 
     def __panel__(self):
         widgets = []
+        bindings = {}
+
         for name, definition in self.value._dict.items():
 
             widget = OptionWidgetFactory.get_option_viewer(name, definition)
 
-            def update_value(val):
-                self.value[name] = val
-                print(val)
-                return widget
+            bindings[name] = widget
 
-            b = pn.bind(
-                update_value,
-                widget,
-            )
-            widgets.append(b)
-            pn.bind(update_value, widgets[-1])
+            widgets.append(widget)
 
-        return pn.Card(*[w for w in widgets if w], title="Component")
+        bound_display = pn.bind(self.update_options, **bindings)
+
+        return pn.Card(*[w for w in widgets if w], bound_display, title="Component")
+
+    def update_options(self, **kwargs):
+        for name, value in kwargs.items():
+            self.value[name] = value
+        return {n: v for n, v in self.value.items()}
 
 
 options = om.OptionsDictionary()
 options.declare("toto", default="foo", types=str, desc="test desc")
-# options.declare("foo", values=["a", 1, True], desc="test desc")
-# # options.declare(
-# #     "deprecated", types=int, lower=0, upper=100, deprecation="deprecated", desc="test desc"
-# # )
-# options.declare("tutu", types=int, lower=0, upper=100, desc="test desc")
+options.declare("foo", values=["a", 10, True], desc="test desc")
+options.declare(
+    "deprecated", types=int, lower=0, upper=10, deprecation="deprecated", desc="test desc"
+)
+options.declare("tutu", types=int, lower=0, upper=10, desc="test desc")
 # options.declare("truc", types=float, lower=0.0, upper=100.0, desc="test desc")
-# options.declare("titi", desc="test desc")
+options.declare("titi", desc="test desc")
 # print(options._dict)
 # options["deprecated"] = 50
 ov = OptionsViewer(value=options).servable()
-
-pn.panel({name: value for name, value in options.items()}).servable()
