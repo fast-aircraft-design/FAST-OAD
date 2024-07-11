@@ -1,7 +1,6 @@
 """
 Defines the analysis and plotting functions for postprocessing
 """
-
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -473,7 +472,6 @@ def _get_TOW_sunburst_plot(variables: VariableList, input_mass_name, mission_nam
 
 def _get_OWE_sunburst_plot(variables: VariableList):
     """
-
     :param variables:
     :return: sunburst trace
     """
