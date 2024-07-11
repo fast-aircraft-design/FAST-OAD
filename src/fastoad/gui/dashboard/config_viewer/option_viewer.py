@@ -114,7 +114,7 @@ class OptionsViewer(Viewer):
 
         bound_display = pn.bind(self.update_options, **bindings)
 
-        return pn.Card(*[w for w in widgets if w], bound_display, title="Component")
+        return pn.Card(*[w for w in widgets if w], bound_display, title="Options")
 
     def update_options(self, **kwargs):
         for name, value in kwargs.items():
