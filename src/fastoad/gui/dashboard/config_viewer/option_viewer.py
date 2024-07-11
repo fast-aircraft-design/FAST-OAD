@@ -109,14 +109,19 @@ class OptionsViewer(Viewer):
             bindings[name] = widget
             widgets.append(widget)
 
-        bound_display = pn.panel(pn.bind(self.update_options, **bindings))
-        bound_display.visible = False
-
-        return pn.Card(*[w for w in widgets if w], bound_display, title="Options")
+        pn.bind(self.update_options, **bindings, watch=True)
+        # bound_display = pn.panel(pn.bind(self.update_display, **bindings))
+        # bound_display.visible = True
+        return pn.Card(*[w for w in widgets if w], title="Options")
 
     def update_options(self, **kwargs):
+        print("update_options")
         for name, value in kwargs.items():
             self.value[name] = value
+
+    def update_display(self, **kwargs):
+        print("update_display")
+        self.update_options(**kwargs)
         return {n: v for n, v in self.value.items()}
 
 
