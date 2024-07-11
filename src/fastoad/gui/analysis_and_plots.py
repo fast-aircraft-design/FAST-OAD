@@ -24,7 +24,7 @@ import plotly.graph_objects as go
 from openmdao.utils.units import convert_units
 from plotly.subplots import make_subplots
 
-from fastoad.io import VariableIO
+from fastoad.io import DataFile, VariableIO
 from fastoad.openmdao.variables import VariableList
 
 COLS = px.colors.qualitative.Plotly
@@ -379,8 +379,39 @@ def mass_breakdown_sun_plot(
                          If not provided, the sizing mission configuration is plotted.
     :return: sunburst plot figure
     """
-    variables = VariableIO(aircraft_file_path, file_formatter).read()
+    variables = DataFile(aircraft_file_path, formatter=file_formatter)
 
+    fig = make_subplots(1, 2, specs=[[{"type": "domain"}, {"type": "domain"}]])
+
+    fig.add_trace(
+        _get_TOW_sunburst_plot(variables, input_mass_name, mission_name),
+        1,
+        1,
+    )
+
+    fig.add_trace(
+        _get_OWE_sunburst_plot(variables),
+        1,
+        2,
+    )
+
+    if mission_name is None:
+        mission_name = "Sizing Mission"
+
+    fig.update_layout(title_text=f"Mass Breakdown - {mission_name}", title_x=0.5)
+
+    return fig
+
+
+def _get_TOW_sunburst_plot(variables: VariableList, input_mass_name, mission_name):
+    """
+    :param variables:
+    :param input_mass_name: the variable name for the mass input as defined in the mission
+                            definition file.
+    :param mission_name: the name of the specific mission for which the mass breakdown is plotted.
+                         If not provided, the sizing mission configuration is plotted.
+    :return: sunburst trace
+    """
     if mission_name:  # Check if mission_name is used
         tow_name = "TOW"
         mission_tow_var = f"data:mission:{mission_name}:TOW"
@@ -408,7 +439,6 @@ def mass_breakdown_sun_plot(
         ) = _get_variable_values_with_new_units(variables, var_names_and_new_units)
         onboard_fuel_at_takeoff = block_fuel - consumed_fuel_before_input_weight
     else:  # Print default sizing mission
-        mission_name = "Sizing Mission"
         tow_name = "MTOW"
         var_names_and_new_units = {
             input_mass_name: "kg",
@@ -420,13 +450,9 @@ def mass_breakdown_sun_plot(
             variables, var_names_and_new_units
         )
 
-    # pylint: disable=unbalanced-tuple-unpacking # It is balanced for the parameters provided
-
     # TODO: Deal with this in a more generic manner ?
     if round(tow, 6) == round(owe + payload + onboard_fuel_at_takeoff, 6):
         tow = owe + payload + onboard_fuel_at_takeoff
-
-    fig = make_subplots(1, 2, specs=[[{"type": "domain"}, {"type": "domain"}]])
 
     labels = [
         _get_sunburst_mass_label(tow_name, tow),
@@ -436,22 +462,26 @@ def mass_breakdown_sun_plot(
         ),
         _get_sunburst_mass_label("OWE", owe, parent_value=tow),
     ]
-    fig.add_trace(
-        go.Sunburst(
-            labels=labels,
-            parents=["", labels[0], labels[0], labels[0]],
-            values=[tow, payload, onboard_fuel_at_takeoff, owe],
-            branchvalues="total",
-        ),
-        1,
-        1,
+
+    return go.Sunburst(
+        labels=labels,
+        parents=["", labels[0], labels[0], labels[0]],
+        values=[tow, payload, onboard_fuel_at_takeoff, owe],
+        branchvalues="total",
     )
 
+
+def _get_OWE_sunburst_plot(variables: VariableList):
+    """
+
+    :param variables:
+    :return: sunburst trace
+    """
+    (owe,) = _get_variable_values_with_new_units(variables, {"data:weight:aircraft:OWE": "kg"})
     # Get data:weight 2-levels decomposition
     categories_values, categories_names, categories_labels = _data_weight_decomposition(
         variables, owe=owe
     )
-
     sub_categories_values = []
     sub_categories_names = []
     sub_categories_parent = []
@@ -466,7 +496,6 @@ def mass_breakdown_sun_plot(
                 )
                 sub_categories_parent.append(categories_labels[categories_names.index(parent_name)])
                 sub_categories_names.append(variable_name)
-
     # Define figure data
     figure_labels = [_get_sunburst_mass_label("OWE", owe)]
     figure_labels.extend(categories_labels)
@@ -478,19 +507,27 @@ def mass_breakdown_sun_plot(
     figure_values = [owe]
     figure_values.extend(categories_values)
     figure_values.extend(sub_categories_values)
-
     # Plot figure
-    fig.add_trace(
-        go.Sunburst(
-            labels=figure_labels, parents=figure_parents, values=figure_values, branchvalues="total"
-        ),
-        1,
-        2,
+    return go.Sunburst(
+        labels=figure_labels, parents=figure_parents, values=figure_values, branchvalues="total"
     )
 
-    fig.update_layout(title_text=f"Mass Breakdown - {mission_name}", title_x=0.5)
 
-    return fig
+def _get_sunburst_mass_label(quantity_name, value, parent_value=None, unit="kg"):
+    """
+    Builds mass label for sunburst mass breakdown plot like this:
+        `quantity_name`
+        `value` [`unit`]
+    or, if parent_value is provided:
+        `quantity_name`
+        `value` `unit` (<part_in_parent>%)
+    """
+    label = f"{quantity_name}<br>{value:.0f} [{unit}]"
+
+    if parent_value:
+        label += f" ({value / parent_value:.1%})"
+
+    return label
 
 
 def payload_range_plot(
@@ -612,7 +649,7 @@ def _get_variable_values_with_new_units(
 ):
     """
     Returns the value of the requested variable names with respect to their new units in the order
-    in which their were given. This function works only for variable of value with shape=1 or float.
+    in which they were given. This function works only for variable of value with shape=1 or float.
 
     :param variables: instance containing variables information
     :param var_names_and_new_units: dictionary of the variable names as keys and units as value
@@ -662,20 +699,3 @@ def _data_weight_decomposition(variables: VariableList, owe=None):
         result = category_values, category_names, None
 
     return result
-
-
-def _get_sunburst_mass_label(quantity_name, value, parent_value=None, unit="kg"):
-    """
-    Builds mass label for sunburst mass breakdown plot like this:
-        `quantity_name`
-        `value` [`unit`]
-    or, if parent_value is provided:
-        `quantity_name`
-        `value` `unit` (<part_in_parent>%)
-    """
-    label = f"{quantity_name}<br>{value:.0f} [{unit}]"
-
-    if parent_value:
-        label += f" ({value / parent_value:.1%})"
-
-    return label
