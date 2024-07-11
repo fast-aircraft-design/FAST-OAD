@@ -26,7 +26,7 @@ from fastoad.module_management.service_registry import RegisterSubmodel
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 from fastoad.openmdao.variables import Variable, VariableList
 from ._utils import get_mpi_safe_problem_copy
-from .exceptions import FASTOpenMDAONanInInputsError
+from .exceptions import FASTNanInInputsError
 from ..module_management._bundle_loader import BundleLoader
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
@@ -212,7 +212,7 @@ class FASTOADProblem(om.Problem):
         non_filled_variable_names = self._get_remaining_nan_variable_names(input_file_variables)
 
         if non_filled_variable_names:
-            raise FASTOpenMDAONanInInputsError(self.input_file_path, non_filled_variable_names)
+            raise FASTNanInInputsError(self.input_file_path, non_filled_variable_names)
 
         return input_file_variables, unused_variables
 

@@ -21,7 +21,7 @@ from fastoad._utils.files import as_path
 from fastoad.exceptions import FastError
 
 
-class FASTOpenMDAONanInInputsError(FastError):
+class FASTNanInInputsError(FastError):
     """Raised if NaN values are read in input data file."""
 
     def __init__(self, input_file_path: [str, PathLike], nan_variable_names: Iterable[str]):

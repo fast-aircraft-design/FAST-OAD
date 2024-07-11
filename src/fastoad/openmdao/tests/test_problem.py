@@ -25,7 +25,7 @@ from .openmdao_sellar_example.disc1 import Disc1Quater
 from .openmdao_sellar_example.disc2 import Disc2Bis
 from .openmdao_sellar_example.functions import FunctionF
 from .openmdao_sellar_example.sellar import SellarModel
-from ..exceptions import FASTOpenMDAONanInInputsError
+from ..exceptions import FASTNanInInputsError
 from ..._utils.sellar.sellar_base import GenericSellarFactory
 from ...io import VariableIO
 
@@ -150,14 +150,14 @@ def test_problem_read_inputs_with_nan_inputs(cleanup):
 
     problem.input_file_path = input_data_path
 
-    with pytest.raises(FASTOpenMDAONanInInputsError) as exc_info_1:
+    with pytest.raises(FASTNanInInputsError) as exc_info_1:
         problem.read_inputs()
     assert exc_info_1.value.input_file_path == input_data_path
     assert exc_info_1.value.nan_variable_names == ["x", "z"]
 
     problem.setup()
 
-    with pytest.raises(FASTOpenMDAONanInInputsError) as exc_info_2:
+    with pytest.raises(FASTNanInInputsError) as exc_info_2:
         problem.read_inputs()
     assert exc_info_2.value.input_file_path == input_data_path
     assert exc_info_2.value.nan_variable_names == ["x", "z"]
@@ -184,14 +184,14 @@ def test_problem_read_inputs_with_missing_inputs(cleanup):
 
     problem.input_file_path = input_data_path
 
-    with pytest.raises(FASTOpenMDAONanInInputsError) as exc_info_1:
+    with pytest.raises(FASTNanInInputsError) as exc_info_1:
         problem.read_inputs()
     assert exc_info_1.value.input_file_path == input_data_path
     assert exc_info_1.value.nan_variable_names == ["z"]
 
     problem.setup()
 
-    with pytest.raises(FASTOpenMDAONanInInputsError) as exc_info_2:
+    with pytest.raises(FASTNanInInputsError) as exc_info_2:
         problem.read_inputs()
     assert exc_info_2.value.input_file_path == input_data_path
     assert exc_info_2.value.nan_variable_names == ["z"]
