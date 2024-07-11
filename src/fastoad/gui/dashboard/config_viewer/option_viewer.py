@@ -98,21 +98,19 @@ class OptionWidgetFactory:
 
 
 class OptionsViewer(Viewer):
-    value = OptionsParameter(default=om.OptionsDictionary(), allow_refs=True)
+    value = OptionsParameter(default=om.OptionsDictionary())
 
     def __panel__(self):
         widgets = []
         bindings = {}
 
         for name, definition in self.value._dict.items():
-
             widget = OptionWidgetFactory.get_option_viewer(name, definition)
-
             bindings[name] = widget
-
             widgets.append(widget)
 
-        bound_display = pn.bind(self.update_options, **bindings)
+        bound_display = pn.panel(pn.bind(self.update_options, **bindings))
+        bound_display.visible = False
 
         return pn.Card(*[w for w in widgets if w], bound_display, title="Options")
 
@@ -133,4 +131,14 @@ options.declare("tutu", types=int, lower=0, upper=10, desc="test desc")
 options.declare("titi", desc="test desc")
 # print(options._dict)
 # options["deprecated"] = 50
-ov = OptionsViewer(value=options).servable()
+ov = OptionsViewer(value=options)
+ov.servable()
+display = pn.widgets.LiteralInput(name="options")
+
+
+def print_options(toto):
+    display.value = {name: value for name, value in ov.value.items()}
+
+
+pn.widgets.Button(name="result", on_click=print_options).servable()
+display.servable()
