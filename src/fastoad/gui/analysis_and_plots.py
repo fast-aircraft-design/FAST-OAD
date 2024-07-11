@@ -25,7 +25,7 @@ from openmdao.utils.units import convert_units
 from plotly.subplots import make_subplots
 
 from fastoad.io import DataFile, VariableIO
-from fastoad.openmdao.variables import VariableList
+from fastoad.openmdao.variables import Variable, VariableList
 
 COLS = px.colors.qualitative.Plotly
 
@@ -477,7 +477,8 @@ def _get_OWE_sunburst_plot(variables: VariableList):
     :param variables:
     :return: sunburst trace
     """
-    (owe,) = _get_variable_values_with_new_units(variables, {"data:weight:aircraft:OWE": "kg"})
+    owe = _get_variable_value_with_new_units(variables["data:weight:aircraft:OWE"], "kg")
+
     # Get data:weight 2-levels decomposition
     categories_values, categories_names, categories_labels = _data_weight_decomposition(
         variables, owe=owe
@@ -644,6 +645,15 @@ def payload_range_plot(
     return fig
 
 
+def _get_variable_value_with_new_units(variable: Variable, new_units):
+    """
+    This function works only for variable of value with shape=1 or float.
+
+    :return: value of the requested variable with respect to its new units
+    """
+    return convert_units(variable.value[0], variable.units, new_units)
+
+
 def _get_variable_values_with_new_units(
     variables: VariableList, var_names_and_new_units: Dict[str, str]
 ):
@@ -655,11 +665,10 @@ def _get_variable_values_with_new_units(
     :param var_names_and_new_units: dictionary of the variable names as keys and units as value
     :return: values of the requested variables with respect to their new units
     """
-    new_values = []
-    for variable_name, unit in var_names_and_new_units.items():
-        new_values.append(
-            convert_units(variables[variable_name].value[0], variables[variable_name].units, unit)
-        )
+    new_values = [
+        _get_variable_value_with_new_units(variables[variable_name], unit)
+        for variable_name, unit in var_names_and_new_units.items()
+    ]
 
     return new_values
 
