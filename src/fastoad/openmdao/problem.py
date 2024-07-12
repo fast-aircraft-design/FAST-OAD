@@ -26,7 +26,7 @@ from fastoad.module_management.service_registry import RegisterSubmodel
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 from fastoad.openmdao.variables import Variable, VariableList
 from ._utils import get_mpi_safe_problem_copy
-from .exceptions import FASTOpenMDAONanInInputFile
+from .exceptions import FASTNanInInputsError
 from ..module_management._bundle_loader import BundleLoader
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
@@ -198,21 +198,44 @@ class FASTOADProblem(om.Problem):
 
         :return: VariableList of needed input variables, VariableList with unused variables.
         """
+
         problem_inputs_names = [var.name for var in self.analysis.problem_variables if var.is_input]
 
-        input_variables = DataFile(self.input_file_path)
+        input_file_variables = DataFile(self.input_file_path)
 
         unused_variables = VariableList(
-            [var for var in input_variables if var.name not in problem_inputs_names]
+            [var for var in input_file_variables if var.name not in problem_inputs_names]
         )
         for name in unused_variables.names():
-            del input_variables[name]
+            del input_file_variables[name]
 
-        nan_variable_names = [var.name for var in input_variables if np.any(np.isnan(var.value))]
-        if nan_variable_names:
-            raise FASTOpenMDAONanInInputFile(self.input_file_path, nan_variable_names)
+        non_filled_variable_names = self._get_remaining_nan_variable_names(input_file_variables)
 
-        return input_variables, unused_variables
+        if non_filled_variable_names:
+            raise FASTNanInInputsError(self.input_file_path, non_filled_variable_names)
+
+        return input_file_variables, unused_variables
+
+    def _get_remaining_nan_variable_names(self, input_file_variables):
+        """
+        Returns names of variables that will still be NaN after reading input_file_variables
+        """
+        problem_input_variables = VariableList(
+            [var for var in self.analysis.problem_variables if var.is_input]
+        )
+        default_nan_problem_variable_names = {
+            var.name for var in problem_input_variables if np.any(np.isnan(var.value))
+        }
+        non_nan_input_file_variable_names = {
+            var.name for var in input_file_variables if not np.any(np.isnan(var.value))
+        }
+        nan_input_file_variable_names = {
+            var.name for var in input_file_variables if np.any(np.isnan(var.value))
+        }
+        non_filled_variable_names = (
+            default_nan_problem_variable_names - non_nan_input_file_variable_names
+        ) | nan_input_file_variable_names
+        return non_filled_variable_names
 
     def _set_input_values_post_setup(self):
         """
