@@ -117,8 +117,11 @@ def test_problem_read_inputs_before_setup(cleanup):
     assert_allclose(problem["f"], 21.7572, atol=1.0e-4)
 
     # Set values of inputs and outputs
-    # (FASTOADProblem has to defer output setting after setup to have it effective,
-    #  so this test works also for read after setup)
+    # We test only the sequence read_inputs()->setup() (not setup()->read_inputs())
+    # because defining any output value before the setup (i.e. in an IVC) would
+    # result in a crash.
+    # Then we know that FASTOADProblem has to set output values after setup
+    # using set_val(), which happens anyway in the setup()->read_inputs() sequence.
     problem = FASTOADProblem()
     problem.model.add_subsystem("sellar", SellarModel(), promotes=["*"])
 

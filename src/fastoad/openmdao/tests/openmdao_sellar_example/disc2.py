@@ -1,4 +1,5 @@
 """Sellar discipline 2"""
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -38,4 +39,6 @@ class Disc2Bis(BasicDisc2):
         )  # for testing non-None units
         self.add_input("y1", val=1.0, desc="")
 
-        self.add_output("y2", val=1.0, desc="")
+        # shape_by_conn=True here to be sure it does not create problems
+        # in input reading.
+        self.add_output("y2", shape_by_conn=True, val=1.0, desc="")
