@@ -199,12 +199,14 @@ class FASTOADProblem(om.Problem):
         :return: VariableList of needed input variables, VariableList with unused variables.
         """
 
-        problem_inputs_names = [var.name for var in self.analysis.problem_variables if var.is_input]
-
         input_file_variables = DataFile(self.input_file_path)
 
         unused_variables = VariableList(
-            [var for var in input_file_variables if var.name not in problem_inputs_names]
+            [
+                var
+                for var in input_file_variables
+                if var.name not in self.analysis.problem_variables.names()
+            ]
         )
         for name in unused_variables.names():
             del input_file_variables[name]
