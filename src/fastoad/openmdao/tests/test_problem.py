@@ -110,6 +110,7 @@ def test_problem_read_inputs_before_setup(cleanup):
 
     problem.read_inputs()
     problem.setup()
+    assert_allclose(problem["y2"], 1.0)  # This value will be different in the run below.
     problem.run_model()
 
     assert_allclose(problem.get_val(name="x"), 1.0)
@@ -120,8 +121,8 @@ def test_problem_read_inputs_before_setup(cleanup):
     # We test only the sequence read_inputs()->setup() (not setup()->read_inputs())
     # because defining any output value before the setup (i.e. in an IVC) would
     # result in a crash.
-    # Then we know that FASTOADProblem has to set output values after setup
-    # using set_val(), which happens anyway in the setup()->read_inputs() sequence.
+    # The FASTOADProblem will automatically set output values after setup using set_val(),
+    # which is functionally the same as doing the setup()->read_inputs() sequence.
     problem = FASTOADProblem()
     problem.model.add_subsystem("sellar", SellarModel(), promotes=["*"])
 
@@ -129,6 +130,8 @@ def test_problem_read_inputs_before_setup(cleanup):
 
     problem.read_inputs()
     problem.setup()
+    # Value taken from XML. y2 is the key for reducing the iteration count.
+    assert_allclose(problem["y2"], 11.213930922023598)
     problem.run_model()
 
     assert_allclose(problem.get_val(name="x"), 1.0)
