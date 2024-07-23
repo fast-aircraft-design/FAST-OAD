@@ -1,6 +1,5 @@
-from IPython.display import display
-
 import ipywidgets as widgets
+from IPython.display import display
 
 
 class ChoiceForOWE:

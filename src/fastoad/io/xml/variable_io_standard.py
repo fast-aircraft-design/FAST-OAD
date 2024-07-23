@@ -16,7 +16,7 @@ Defines how OpenMDAO variables are serialized to XML
 
 import logging
 from os import PathLike
-from typing import Union, IO
+from typing import IO, Union
 
 from fastoad.openmdao.variables import VariableList
 from .exceptions import FastXPathEvalError

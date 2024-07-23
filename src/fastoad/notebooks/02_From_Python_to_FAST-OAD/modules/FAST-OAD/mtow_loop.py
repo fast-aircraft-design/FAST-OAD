@@ -1,12 +1,11 @@
-from .geometry.geometry import ComputeGeometry
-from .aerodynamics.aerodynamics import ComputeAerodynamics
-from .mass.mass import ComputeMass
-from .performance.performance import ComputePerformance
-from .update_mtow.update_mtow import UpdateMTOW
-
 import openmdao.api as om
 
 import fastoad.api as oad
+from .aerodynamics.aerodynamics import ComputeAerodynamics
+from .geometry.geometry import ComputeGeometry
+from .mass.mass import ComputeMass
+from .performance.performance import ComputePerformance
+from .update_mtow.update_mtow import UpdateMTOW
 
 
 @oad.RegisterOpenMDAOSystem("tutorial.fast_oad.global")

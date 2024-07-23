@@ -17,7 +17,7 @@ Helper module for copying resources
 import shutil
 from importlib.resources import Package, is_resource, path
 from os import PathLike
-from typing import Union, Iterable
+from typing import Iterable, Union
 
 from .contents import PackageReader
 from ..files import as_path, make_parent_dir

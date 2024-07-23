@@ -14,7 +14,7 @@
 import shutil
 from os import PathLike
 from pathlib import Path
-from typing import Union, IO
+from typing import IO, Union
 
 import openmdao.api as om
 import pytest

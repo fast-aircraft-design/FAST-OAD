@@ -1,10 +1,10 @@
-from .geometry.geometry import ComputeGeometry
+import openmdao.api as om
+
 from .aerodynamics.aerodynamics import ComputeAerodynamics
+from .geometry.geometry import ComputeGeometry
 from .mass.mass import ComputeMassCorrect, ComputeMassExercise
 from .performance.performance import ComputePerformance
 from .update_mtow.update_mtow import UpdateMTOW
-
-import openmdao.api as om
 
 
 class SizingLoopMTOWCorrect(om.Group):

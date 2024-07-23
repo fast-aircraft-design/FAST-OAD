@@ -26,13 +26,13 @@ from fastoad.cmd.cli_utils import (
 from fastoad.cmd.exceptions import FastNoAvailableNotebookError
 from fastoad.module_management.exceptions import (
     FastNoAvailableConfigurationFileError,
+    FastNoAvailableSourceDataFileError,
     FastNoDistPluginError,
     FastSeveralConfigurationFilesError,
     FastSeveralDistPluginsError,
+    FastSeveralSourceDataFilesError,
     FastUnknownConfigurationFileError,
     FastUnknownDistPluginError,
-    FastNoAvailableSourceDataFileError,
-    FastSeveralSourceDataFilesError,
     FastUnknownSourceDataFileError,
 )
 from . import api

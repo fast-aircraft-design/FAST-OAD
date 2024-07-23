@@ -4,7 +4,7 @@ column contains old OpenMDAO variable names and the new names.
 Replaces old names by new ones in all files of ./src and ./tests.
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -26,8 +26,8 @@ import numpy as np
 from fastoad.io import VariableIO
 from fastoad.io.xml import VariableXmlBaseFormatter
 from fastoad.io.xml.exceptions import (
-    FastXpathTranslatorXPathError,
     FastXpathTranslatorVariableError,
+    FastXpathTranslatorXPathError,
 )
 from fastoad.io.xml.translator import VarXpathTranslator
 from fastoad.io.xml.variable_io_standard import BasicVarXpathTranslator

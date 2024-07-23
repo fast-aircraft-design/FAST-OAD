@@ -14,6 +14,7 @@ Defines the variable viewer for postprocessing
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from math import isnan
 from pathlib import Path
 from typing import Dict
 
@@ -22,7 +23,6 @@ import ipywidgets as widgets
 import numpy as np
 import pandas as pd
 from IPython.display import clear_output, display
-from math import isnan
 
 from fastoad.io import DataFile
 from fastoad.io.configuration.configuration import (

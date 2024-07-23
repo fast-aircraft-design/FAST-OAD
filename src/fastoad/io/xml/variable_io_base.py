@@ -19,7 +19,7 @@ import logging
 import re
 from os import PathLike
 from pathlib import Path
-from typing import IO, Union, Optional
+from typing import IO, Optional, Union
 
 import numpy as np
 from lxml import etree
