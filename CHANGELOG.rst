@@ -2,6 +2,12 @@
 Changelog
 =========
 
+
+Version 1.7.4
+=============
+- Fixed:
+    - Fixed compatibility of ValidityDomainChecker class with OpenMDAO 3.34. (#553)
+
 Version 1.7.3
 =============
 - Added:
