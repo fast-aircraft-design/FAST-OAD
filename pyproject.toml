@@ -110,10 +110,8 @@ sphinxcontrib-bibtex = "^2.3.0"
 
 [tool.poetry.group.lint.dependencies]
 pre-commit = "^2.14.1"
-black = { version = "21.9b0", extras = ["jupyter"], allow-prereleases = true }
-pylint = "^2.10.2"
-flake8 = "^4.0.1"
 nbstripout = "^0.6.0"
+ruff = "0.5.4"
 
 [tool.poetry.scripts]
 fastoad = "fastoad.cmd.cli:fast_oad"
@@ -128,11 +126,14 @@ vcs = "git"
 style = "semver"
 
 [build-system]
-requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
 build-backend = "poetry_dynamic_versioning.backend"
 
-[tool.black]
+[tool.ruff]
 line-length = 100
+target-version = "py39"
+extend-include = ["*.ipynb"]
+exclude = ["tests/dummy_plugins/"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"

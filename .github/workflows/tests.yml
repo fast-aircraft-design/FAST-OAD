@@ -45,10 +45,10 @@ jobs:
           poetry env use ${{ matrix.python-version }}
           poetry install -E mpi4py
 
-      - name: Check with Black
+      - name: Check with Ruff
         run: |
-          # Fails if Black format is not respected
-          poetry run black --check .
+          poetry run ruff check .           # Check coding rules
+          poetry run ruff format --check .  # Check format
         shell: bash
 
       - name: Unit tests
