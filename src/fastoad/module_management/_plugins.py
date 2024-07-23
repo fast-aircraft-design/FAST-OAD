@@ -14,7 +14,6 @@ Plugin system for declaration of FAST-OAD models.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 # We need __future__ to allow using DistributionNameDict as annotation in FastoadLoader
 # Otherwise, in Python 3.8, we get "TypeError: 'ABCMeta' object is not subscriptable"
 from __future__ import annotations

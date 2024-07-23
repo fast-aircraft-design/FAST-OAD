@@ -45,4 +45,4 @@ class BasicDisc1(om.ExplicitComponent):
         x1 = inputs["x"]
         y2 = inputs["y2"]
 
-        outputs["y1"] = z1 ** 2 + z2 + x1 - 0.2 * y2
+        outputs["y1"] = z1**2 + z2 + x1 - 0.2 * y2

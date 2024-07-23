@@ -32,7 +32,6 @@ def cleanup():
 
 
 def test_mission_run(cleanup, with_dummy_plugin_2):
-
     input_file_path = DATA_FOLDER_PATH / "test_mission_run.xml"
     ivc = DataFile(input_file_path).to_ivc()
 

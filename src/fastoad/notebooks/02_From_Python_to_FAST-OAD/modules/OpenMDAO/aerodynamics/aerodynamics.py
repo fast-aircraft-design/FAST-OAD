@@ -7,7 +7,6 @@ from .sub_components.compute_lift_to_drag_ratio import ComputeLiftToDragRatio
 
 class ComputeAerodynamics(om.Group):
     def setup(self):
-
         self.add_subsystem(name="compute_profile_drag", subsys=ComputeProfileDrag(), promotes=["*"])
         self.add_subsystem(
             name="compute_induced_drag", subsys=ComputeInducedDragCoefficient(), promotes=["*"]

@@ -10,7 +10,6 @@ class ComputeWingMass(om.ExplicitComponent):
     """
 
     def setup(self):
-
         # Defining the input(s)
 
         self.add_input(name="wing_area", units="ft**2", val=np.nan)
@@ -27,7 +26,6 @@ class ComputeWingMass(om.ExplicitComponent):
         # we will just have to ask for units="kg" and OpenMDAO automatically handles the conversion
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         # Assigning the input to local variable for clarity
         wing_area = inputs["wing_area"]
         aspect_ratio = inputs["aspect_ratio"]
@@ -38,7 +36,7 @@ class ComputeWingMass(om.ExplicitComponent):
             96.948
             * (
                 (5.7 * mtow / 1.0e5) ** 0.65
-                * aspect_ratio ** 0.57
+                * aspect_ratio**0.57
                 * (wing_area / 100.0) ** 0.61
                 * 2.5
             )

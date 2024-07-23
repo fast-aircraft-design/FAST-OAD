@@ -14,7 +14,6 @@ Basic "Hello World" services using iPOPO decorators
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 from pelix.ipopo.decorators import ComponentFactory, Provides, Instantiate, Property
 
 

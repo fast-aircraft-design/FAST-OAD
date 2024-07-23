@@ -21,6 +21,7 @@ from ..service_registry import RegisterSpecializedService
 
 DATA_FOLDER_PATH = Path(__file__).parent / "data"
 
+
 # Initialization of services ###############
 class DummyBase:
     def my_class(self):

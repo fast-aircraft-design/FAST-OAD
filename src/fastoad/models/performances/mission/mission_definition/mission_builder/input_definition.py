@@ -77,7 +77,6 @@ class InputDefinition:
     _variable_name: Optional[str] = field(default=None, init=False, repr=True)
 
     def __post_init__(self, variable_name, use_opposite):
-
         if self.parameter_name.startswith("delta_"):
             self.is_relative = True
             self.parameter_name = self.parameter_name[6:]

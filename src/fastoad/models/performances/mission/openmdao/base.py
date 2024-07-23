@@ -150,7 +150,7 @@ class BaseMissionComp(System, metaclass=ABCMeta):
 
     @staticmethod
     def get_mission_definition(
-        mission_file_path: Optional[Union[str, PathLike, MissionDefinition]]
+        mission_file_path: Optional[Union[str, PathLike, MissionDefinition]],
     ) -> MissionDefinition:
         """
 

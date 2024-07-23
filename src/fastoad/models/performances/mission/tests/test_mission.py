@@ -23,7 +23,6 @@ from ..segments.registered.cruise import CruiseSegment
 
 
 def test_mission(low_speed_polar, high_speed_polar, propulsion):
-
     first_route_distance = 2.0e6
     second_route_distance = 5.0e5
 

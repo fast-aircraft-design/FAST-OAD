@@ -1,4 +1,4 @@
-""" Aerodynamics polar modifier."""
+"""Aerodynamics polar modifier."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2023 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -22,14 +22,12 @@ from .polar import Polar
 
 @dataclass
 class AbstractPolarModifier(ABC):
-
     """
     Base class to implement a change to the polar during the mission computation
     """
 
     @abstractmethod
     def modify_polar(self, polar: Polar, flight_point: FlightPoint) -> Polar:
-
         """
         :param polar: an instance of Polar
         :param flight_point: an intance of FlightPoint containg only floats
@@ -70,7 +68,6 @@ class UnchangedPolar(AbstractPolarModifier):
 @RegisterPolarModifier("ground_effect_raymer")
 @dataclass
 class GroundEffectRaymer(AbstractPolarModifier):
-
     """
     Evaluates the drag in ground effect, using Raymer's model:
         'Aircraft Design A conceptual approach', D. Raymer p304
@@ -110,10 +107,10 @@ class GroundEffectRaymer(AbstractPolarModifier):
             + flight_point.altitude
             - self.ground_altitude
         ) / self.span
-        k_ground = 33.0 * h_b ** 1.5 / (1 + 33.0 * h_b ** 1.5)
+        k_ground = 33.0 * h_b**1.5 / (1 + 33.0 * h_b**1.5)
         cd_ground = (
             self.induced_drag_coefficient
-            * polar.definition_cl ** 2
+            * polar.definition_cl**2
             * self.k_winglet
             * self.k_cd
             * (k_ground - 1)

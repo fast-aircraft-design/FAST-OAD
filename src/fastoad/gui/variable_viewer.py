@@ -59,7 +59,6 @@ class VariableViewer:
     }
 
     def __init__(self):
-
         #: The path of the data file that will be viewed/edited
         self.file = None
 

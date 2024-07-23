@@ -21,7 +21,6 @@ class DictWithLowerCaseKeys(AbstractNormalizedDict):
 
 
 def test_normalized_dict():
-
     for d in [
         DictWithLowerCaseKeys({"Aa": "Aa", "bB": "bB"}),
         DictWithLowerCaseKeys(Aa="Aa", bB="bB"),

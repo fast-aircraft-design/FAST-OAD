@@ -8,5 +8,4 @@ import fastoad.api as oad
 @oad.RegisterOpenMDAOSystem("tutorial.fast_oad.geometry")
 class ComputeGeometry(om.Group):
     def setup(self):
-
         self.add_subsystem(name="compute_wing_area", subsys=ComputeWingArea(), promotes=["*"])

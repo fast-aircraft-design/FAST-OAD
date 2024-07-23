@@ -14,7 +14,6 @@ import fastoad.api as oad
 @oad.RegisterOpenMDAOSystem("tutorial.fast_oad.aerodynamics")
 class ComputeAerodynamics(om.Group):
     def setup(self):
-
         self.add_subsystem(name="compute_profile_drag", subsys=ComputeProfileDrag(), promotes=["*"])
         self.add_subsystem(
             name="compute_induced_drag", subsys=ComputeInducedDragCoefficient(), promotes=["*"]

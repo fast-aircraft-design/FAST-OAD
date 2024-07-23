@@ -13,7 +13,6 @@ class SizingLoopMTOWCorrect(om.Group):
     """
 
     def setup(self):
-
         self.add_subsystem(name="compute_geometry", subsys=ComputeGeometry(), promotes=["*"])
         self.add_subsystem(
             name="compute_aerodynamics", subsys=ComputeAerodynamics(), promotes=["*"]
@@ -29,7 +28,6 @@ class SizingLoopMTOWExercise(om.Group):
     """
 
     def setup(self):
-
         self.add_subsystem(name="compute_geometry", subsys=ComputeGeometry(), promotes=["*"])
         self.add_subsystem(
             name="compute_aerodynamics", subsys=ComputeAerodynamics(), promotes=["*"]

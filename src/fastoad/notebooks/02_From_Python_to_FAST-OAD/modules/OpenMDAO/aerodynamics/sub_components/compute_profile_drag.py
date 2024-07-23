@@ -9,7 +9,6 @@ class ComputeProfileDrag(om.ExplicitComponent):
     """
 
     def setup(self):
-
         # Defining the input(s)
 
         self.add_input(name="wing_area", units="m**2", val=np.nan)
@@ -19,7 +18,6 @@ class ComputeProfileDrag(om.ExplicitComponent):
         self.add_output(name="profile_drag_coefficient")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         # Assigning the input to local variable for clarity
         wing_area = inputs["wing_area"]
 
