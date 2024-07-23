@@ -40,19 +40,6 @@ def test_mission_viewer():
     dataframe = pd.read_csv(filename, index_col=0)
     mission_viewer.add_mission(dataframe, name="Mission 2")
 
-    # Testing layout update with dictionary
-    mission_viewer.update_layout(
-        {
-            "title": None,
-        }
-    )
-
-    # Testing layout update with keywords
-    mission_viewer.update_layout(title_text="Title")
-
-    # Testing layout overwrite = True
-    mission_viewer.update_layout(overwrite=True, title_text="mission")
-
     # Testing with existing .yml
     with pytest.raises(TypeError):
         filename = DATA_FOLDER_PATH / "valid_sellar.yml"
@@ -99,3 +86,23 @@ def test_mission_display():
     assert mission_viewer._x_widget.value == "consumed_fuel [kg]"
     # It's missing the ground distance column so it will use the column at index 1
     assert mission_viewer._y_widget.value == "altitude [m]"
+
+
+def test_mission_layout():
+    """
+    Basic tests for testing the mission viewer layout update functionality
+    """
+    filename = DATA_FOLDER_PATH / "flight_points.csv"
+
+    mission_viewer = MissionViewer()
+
+    mission_viewer.add_mission(filename, name="Mission 1")
+
+    # Testing layout update with dictionary
+    mission_viewer.display({"title": None})
+
+    # Testing layout update with keywords
+    mission_viewer.display(title_text="Title")
+
+    # Testing layout overwrite = True
+    mission_viewer.display(layout_overwrite=True, title_text="mission")

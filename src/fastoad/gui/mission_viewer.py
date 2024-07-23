@@ -46,11 +46,6 @@ class MissionViewer:
         # The y selector
         self._y_widget = None
 
-        # The layout properties to add when display is called
-        self._layout_dict = None
-        self._layout_overwrite = False
-        self._layout_kwargs = None
-
     def add_mission(self, mission_data: Union[str, PathLike, pd.DataFrame], name=None):
         """
         Adds the mission to the mission database (self.missions)
@@ -70,9 +65,16 @@ class MissionViewer:
             else:
                 raise TypeError("Unknown type for mission data, please use .csv of DataFrame")
 
-    def display(self):
+    def display(self, layout_dict=None, layout_overwrite=False, **kwargs):
         """
         Display the user interface
+
+        :param dict: Dictionary of properties to be updated
+        :param overwrite: If True, overwrite existing properties. If False, apply updates
+            to existing properties recursively, preserving existing
+            properties that are not specified in the update operation.
+        :param kwargs: Keyword/value pair of properties to be updated
+
         :return the display object
         """
 
@@ -91,7 +93,7 @@ class MissionViewer:
         self._y_widget = widgets.Dropdown(value=column_altitude, options=keys)
         self._y_widget.observe(self._show_plot, "value")
 
-        self._show_plot()
+        self._show_plot(layout_dict=layout_dict, layout_overwrite=layout_overwrite, **kwargs)
 
         toolbar = widgets.HBox(
             [widgets.Label(value="x:"), self._x_widget, widgets.Label(value="y:"), self._y_widget]
@@ -101,25 +103,16 @@ class MissionViewer:
 
         return ui
 
-    def update_layout(self, dict1=None, overwrite=False, **kwargs):
+    # pylint: disable=unused-argument # change has to be there for observe() to work
+    def _show_plot(self, change=None, layout_dict=None, layout_overwrite=False, **kwargs):
         """
-        Stores the properties of the figure's layout with a dict and/or with
-        keyword arguments to update it when display is called.
+        Updates and shows the plots
 
         :param dict: Dictionary of properties to be updated
         :param overwrite: If True, overwrite existing properties. If False, apply updates
             to existing properties recursively, preserving existing
             properties that are not specified in the update operation.
-        param kwargs: Keyword/value pair of properties to be updated
-        """
-        self._layout_dict = dict1
-        self._layout_overwrite = overwrite
-        self._layout_kwargs = kwargs
-
-    # pylint: disable=unused-argument # change has to be there for observe() to work
-    def _show_plot(self, change=None):
-        """
-        Updates and shows the plots
+        :param kwargs: Keyword/value pair of properties to be updated
         """
 
         with self._output_widget:
@@ -147,9 +140,7 @@ class MissionViewer:
             fig.update_layout(
                 title_text="Mission", title_x=0.5, xaxis_title=x_name, yaxis_title=y_name
             )
-            fig.layout.update(
-                self._layout_dict, overwrite=self._layout_overwrite, **self._layout_kwargs
-            )
+            fig.update_layout(layout_dict, overwrite=layout_overwrite, **kwargs)
 
             fig = go.FigureWidget(fig)
             display(fig)
