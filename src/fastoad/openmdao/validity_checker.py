@@ -190,10 +190,10 @@ class ValidityDomainChecker:
                 ) and var.name in limit_definitions:
                     limit_def = limit_definitions[var.name]
                     value = convert_units(var.value, var.units, limit_def.units)
-                    if value < limit_def.lower:
+                    if np.any(value < limit_def.lower):
                         status = ValidityStatus.TOO_LOW
                         limit = limit_def.lower
-                    elif value > limit_def.upper:
+                    elif np.any(value > limit_def.upper):
                         status = ValidityStatus.TOO_HIGH
                         limit = limit_def.upper
                     else:
@@ -226,7 +226,9 @@ class ValidityDomainChecker:
         for record in records:
             if record.status != ValidityStatus.OK:
                 logger = logging.getLogger(record.logger_name)
-                limit_text = "under lower" if record.value < record.limit_value else "over upper"
+                limit_text = (
+                    "under lower" if np.any(record.value < record.limit_value) else "over upper"
+                )
                 logger.warning(
                     'Variable "%s" out of bound: value %s%s is %s limit ( %s%s ) in file %s',
                     record.variable_name,
@@ -275,11 +277,11 @@ class ValidityDomainChecker:
                     # Get bounds if defined in add_output.
                     lower = var.metadata.get("lower")
                     # lower can be None if it is not found OR if it defined and set to None
-                    if lower is None:
+                    if lower is None or lower == "n/a":
                         lower = -np.inf
                     upper = var.metadata.get("upper")
                     # upper can be None if it is not found OR if it defined and set to None
-                    if upper is None:
+                    if upper is None or upper == "n/a":
                         upper = np.inf
                     units = var.metadata.get("units")
                     if lower > -np.inf or upper < np.inf:

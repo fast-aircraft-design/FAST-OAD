@@ -23,8 +23,8 @@ import plotly.graph_objects as go
 from openmdao.utils.units import convert_units
 from plotly.subplots import make_subplots
 
-from fastoad.io import VariableIO
-from fastoad.openmdao.variables import VariableList
+from fastoad.io import DataFile, VariableIO
+from fastoad.openmdao.variables import Variable, VariableList
 
 COLS = px.colors.qualitative.Plotly
 
@@ -148,7 +148,11 @@ def aircraft_geometry_plot(
     )
 
     # Horizontal Tail parameters
-    ht_root_chord = variables["data:geometry:horizontal_tail:root:chord"].value[0]
+    # Keeping backward compatibility for horizontal_tail:root
+    if "data:geometry:horizontal_tail:center:chord" not in variables.names():
+        ht_root_chord = variables["data:geometry:horizontal_tail:root:chord"].value[0]
+    else:
+        ht_root_chord = variables["data:geometry:horizontal_tail:center:chord"].value[0]
     ht_tip_chord = variables["data:geometry:horizontal_tail:tip:chord"].value[0]
     ht_span = variables["data:geometry:horizontal_tail:span"].value[0]
     ht_sweep_0 = variables["data:geometry:horizontal_tail:sweep_0"].value[0]
@@ -310,13 +314,25 @@ def mass_breakdown_bar_plot(
             subplot_titles=("Maximum Take-Off Weight Breakdown", "Overall Weight Empty Breakdown"),
         )
 
+    conf_number = int(len(fig.data) / 2)
+
     # Same color for each aircraft configuration
-    i = int(len(fig.data) / 2) % 10
+    color_idx = conf_number % 10
+
+    # Each aircraft configuration controlled by same legend item
+    legend_group = f"aircraft{conf_number}"
 
     weight_labels = ["MTOW", "OWE", "Fuel - Mission", "Payload"]
     weight_values = [mtow, owe, fuel_mission, payload]
     fig.add_trace(
-        go.Bar(name="", x=weight_labels, y=weight_values, marker_color=COLS[i], showlegend=False),
+        go.Bar(
+            name="",
+            x=weight_labels,
+            y=weight_values,
+            marker_color=COLS[color_idx],
+            showlegend=False,
+            legendgroup=legend_group,
+        ),
         row=1,
         col=1,
     )
@@ -324,7 +340,13 @@ def mass_breakdown_bar_plot(
     # Get data:weight decomposition
     main_weight_values, main_weight_names, _ = _data_weight_decomposition(variables, owe=None)
     fig.add_trace(
-        go.Bar(name=name, x=main_weight_names, y=main_weight_values, marker_color=COLS[i]),
+        go.Bar(
+            name=name,
+            x=main_weight_names,
+            y=main_weight_values,
+            marker_color=COLS[color_idx],
+            legendgroup=legend_group,
+        ),
         row=1,
         col=2,
     )
@@ -339,9 +361,10 @@ def mass_breakdown_sun_plot(
     *,
     file_formatter=None,
     input_mass_name="data:weight:aircraft:MTOW",
+    mission_name=None,
 ):
     """
-    Returns a figure sunburst plot of the mass breakdown.
+    Returns a figure sunburst plot of the mass breakdown of the aircraft of the sizing mission.
     On the left a MTOW sunburst and on the right a OWE sunburst.
     Different designs can be superposed by providing an existing fig.
     Each design can be provided a name.
@@ -351,64 +374,113 @@ def mass_breakdown_sun_plot(
                            default format will be assumed.
     :param input_mass_name: the variable name for the mass input as defined in the mission
                             definition file.
+    :param mission_name: the name of the specific mission for which the mass breakdown is plotted.
+                         If not provided, the sizing mission configuration is plotted.
     :return: sunburst plot figure
     """
-    variables = VariableIO(aircraft_file_path, file_formatter).read()
-
-    var_names_and_new_units = {
-        input_mass_name: "kg",
-        "data:weight:aircraft:OWE": "kg",
-        "data:weight:aircraft:payload": "kg",
-        "data:weight:aircraft:sizing_onboard_fuel_at_input_weight": "kg",
-    }
-
-    # pylint: disable=unbalanced-tuple-unpacking # It is balanced for the parameters provided
-    mtow, owe, payload, onboard_fuel_at_takeoff = _get_variable_values_with_new_units(
-        variables, var_names_and_new_units
-    )
-
-    # TODO: Deal with this in a more generic manner ?
-    if round(mtow, 6) == round(owe + payload + onboard_fuel_at_takeoff, 6):
-        mtow = owe + payload + onboard_fuel_at_takeoff
+    variables = DataFile(aircraft_file_path, formatter=file_formatter)
 
     fig = make_subplots(1, 2, specs=[[{"type": "domain"}, {"type": "domain"}]])
 
     fig.add_trace(
-        go.Sunburst(
-            labels=[
-                "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
-                "payload"
-                + "<br>"
-                + str(int(payload))
-                + " [kg] ("
-                + str(round(payload / mtow * 100, 1))
-                + "%)",
-                "onboard_fuel_at_takeoff"
-                + "<br>"
-                + str(int(onboard_fuel_at_takeoff))
-                + " [kg] ("
-                + str(round(onboard_fuel_at_takeoff / mtow * 100, 1))
-                + "%)",
-                "OWE" + "<br>" + str(int(owe)) + " [kg] (" + str(round(owe / mtow * 100, 1)) + "%)",
-            ],
-            parents=[
-                "",
-                "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
-                "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
-                "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
-            ],
-            values=[mtow, payload, onboard_fuel_at_takeoff, owe],
-            branchvalues="total",
-        ),
+        _get_TOW_sunburst_plot(variables, input_mass_name, mission_name),
         1,
         1,
     )
+
+    fig.add_trace(
+        _get_OWE_sunburst_plot(variables),
+        1,
+        2,
+    )
+
+    if mission_name is None:
+        mission_name = "Sizing Mission"
+
+    fig.update_layout(title_text=f"Mass Breakdown - {mission_name}", title_x=0.5)
+
+    return fig
+
+
+def _get_TOW_sunburst_plot(variables: VariableList, input_mass_name, mission_name):
+    """
+    :param variables:
+    :param input_mass_name: the variable name for the mass input as defined in the mission
+                            definition file.
+    :param mission_name: the name of the specific mission for which the mass breakdown is plotted.
+                         If not provided, the sizing mission configuration is plotted.
+    :return: sunburst trace
+    """
+    if mission_name:  # Check if mission_name is used
+        tow_name = "TOW"
+        mission_tow_var = f"data:mission:{mission_name}:TOW"
+        if mission_tow_var not in variables.names():  # Check if the provided mission_name exists
+            raise ValueError(
+                f"The provided mission_name {mission_name} does not correspond to an existing "
+                + "mission. The available mission(s) are: {missions_set}."
+            )
+        payload_var_name = f"data:mission:{mission_name}:payload"
+        if payload_var_name not in variables.names():  # If mission_name is a sizing mission
+            payload_var_name = "data:weight:aircraft:payload"
+        var_names_and_new_units = {
+            mission_tow_var: "kg",
+            "data:weight:aircraft:OWE": "kg",
+            payload_var_name: "kg",
+            f"data:mission:{mission_name}:block_fuel": "kg",
+            f"data:mission:{mission_name}:consumed_fuel_before_input_weight": "kg",
+        }
+        (
+            tow,
+            owe,
+            payload,
+            block_fuel,
+            consumed_fuel_before_input_weight,
+        ) = _get_variable_values_with_new_units(variables, var_names_and_new_units)
+        onboard_fuel_at_takeoff = block_fuel - consumed_fuel_before_input_weight
+    else:  # Print default sizing mission
+        tow_name = "MTOW"
+        var_names_and_new_units = {
+            input_mass_name: "kg",
+            "data:weight:aircraft:OWE": "kg",
+            "data:weight:aircraft:payload": "kg",
+            "data:weight:aircraft:sizing_onboard_fuel_at_input_weight": "kg",
+        }
+        tow, owe, payload, onboard_fuel_at_takeoff = _get_variable_values_with_new_units(
+            variables, var_names_and_new_units
+        )
+
+    # TODO: Deal with this in a more generic manner ?
+    if round(tow, 6) == round(owe + payload + onboard_fuel_at_takeoff, 6):
+        tow = owe + payload + onboard_fuel_at_takeoff
+
+    labels = [
+        _get_sunburst_mass_label(tow_name, tow),
+        _get_sunburst_mass_label("payload", payload, parent_value=tow),
+        _get_sunburst_mass_label(
+            "onboard fuel at takeoff", onboard_fuel_at_takeoff, parent_value=tow
+        ),
+        _get_sunburst_mass_label("OWE", owe, parent_value=tow),
+    ]
+
+    return go.Sunburst(
+        labels=labels,
+        parents=["", labels[0], labels[0], labels[0]],
+        values=[tow, payload, onboard_fuel_at_takeoff, owe],
+        branchvalues="total",
+    )
+
+
+def _get_OWE_sunburst_plot(variables: VariableList):
+    """
+    :param variables:
+    :return: sunburst trace
+    """
+    owe = _get_variable_value_with_new_units(variables["data:weight:aircraft:OWE"], "kg")
 
     # Get data:weight 2-levels decomposition
     categories_values, categories_names, categories_labels = _data_weight_decomposition(
         variables, owe=owe
     )
-
     sub_categories_values = []
     sub_categories_names = []
     sub_categories_parent = []
@@ -423,31 +495,38 @@ def mass_breakdown_sun_plot(
                 )
                 sub_categories_parent.append(categories_labels[categories_names.index(parent_name)])
                 sub_categories_names.append(variable_name)
-
     # Define figure data
-    figure_labels = ["OWE" + "<br>" + str(int(owe)) + " [kg]"]
+    figure_labels = [_get_sunburst_mass_label("OWE", owe)]
     figure_labels.extend(categories_labels)
     figure_labels.extend(sub_categories_names)
     figure_parents = [""]
     for _ in categories_names:
-        figure_parents.append("OWE" + "<br>" + str(int(owe)) + " [kg]")
+        figure_parents.append(figure_labels[0])
     figure_parents.extend(sub_categories_parent)
     figure_values = [owe]
     figure_values.extend(categories_values)
     figure_values.extend(sub_categories_values)
-
     # Plot figure
-    fig.add_trace(
-        go.Sunburst(
-            labels=figure_labels, parents=figure_parents, values=figure_values, branchvalues="total"
-        ),
-        1,
-        2,
+    return go.Sunburst(
+        labels=figure_labels, parents=figure_parents, values=figure_values, branchvalues="total"
     )
 
-    fig.update_layout(title_text="Mass Breakdown", title_x=0.5)
 
-    return fig
+def _get_sunburst_mass_label(quantity_name, value, parent_value=None, unit="kg"):
+    """
+    Builds mass label for sunburst mass breakdown plot like this:
+        `quantity_name`
+        `value` [`unit`]
+    or, if parent_value is provided:
+        `quantity_name`
+        `value` `unit` (<part_in_parent>%)
+    """
+    label = f"{quantity_name}<br>{value:.0f} [{unit}]"
+
+    if parent_value:
+        label += f" ({value / parent_value:.1%})"
+
+    return label
 
 
 def payload_range_plot(
@@ -564,22 +643,30 @@ def payload_range_plot(
     return fig
 
 
+def _get_variable_value_with_new_units(variable: Variable, new_units):
+    """
+    This function works only for variable of value with shape=1 or float.
+
+    :return: value of the requested variable with respect to its new units
+    """
+    return convert_units(variable.value[0], variable.units, new_units)
+
+
 def _get_variable_values_with_new_units(
     variables: VariableList, var_names_and_new_units: Dict[str, str]
 ):
     """
     Returns the value of the requested variable names with respect to their new units in the order
-    in which their were given. This function works only for variable of value with shape=1 or float.
+    in which they were given. This function works only for variable of value with shape=1 or float.
 
     :param variables: instance containing variables information
     :param var_names_and_new_units: dictionary of the variable names as keys and units as value
     :return: values of the requested variables with respect to their new units
     """
-    new_values = []
-    for variable_name, unit in var_names_and_new_units.items():
-        new_values.append(
-            convert_units(variables[variable_name].value[0], variables[variable_name].units, unit)
-        )
+    new_values = [
+        _get_variable_value_with_new_units(variables[variable_name], unit)
+        for variable_name, unit in var_names_and_new_units.items()
+    ]
 
     return new_values
 
@@ -609,12 +696,9 @@ def _data_weight_decomposition(variables: VariableList, owe=None):
                 category_names.append(name_split[2])
                 if owe:
                     owe_subcategory_names.append(
-                        name_split[2]
-                        + "<br>"
-                        + str(int(variables[variable].value[0]))
-                        + " [kg] ("
-                        + str(round(variables[variable].value[0] / owe * 100, 1))
-                        + "%)"
+                        _get_sunburst_mass_label(
+                            name_split[2], variables[variable].value[0], parent_value=owe
+                        ),
                     )
     if owe:
         result = category_values, category_names, owe_subcategory_names

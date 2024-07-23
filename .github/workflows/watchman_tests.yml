@@ -7,10 +7,10 @@ on:
   workflow_dispatch:
   workflow_call:
   push:
-    branches: [ master ]
+    branches: [ 'master', 'master-v*' ]
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ master ]
+    branches: ['master', 'master-v*' ]
   schedule:
     - cron: '12 4 * * *'
 
@@ -20,7 +20,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: [ "3.10" ]
+        python-version: [ "3.11" ]
         os: [ ubuntu-latest, windows-latest, macos-latest ]
 
     steps:
@@ -33,11 +33,10 @@ jobs:
       - name: Install
         # Development version of OpenMDAO is installed to ensure preview of any problem.
         # Installing pytest-cov is needed because of pytest.ini
-        # Note: nbval 0.10 incompatible with pytest 8.1
         run: |
           pip install git+https://github.com/OpenMDAO/OpenMDAO.git
           pip install .
-          pip install pytest==8.0.2 pytest-cov nbval
+          pip install pytest pytest-cov nbval
         shell: bash
 
       - name: List installed packages

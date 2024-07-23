@@ -8,6 +8,9 @@ on:
       - '**'
     tags-ignore:
       - '**'
+  pull_request:
+    branches: [ 'master', 'master-v*' ]
+
 
 jobs:
   tests:
@@ -15,17 +18,15 @@ jobs:
     if: ${{ !contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]') }}
     strategy:
       matrix:
-        python-version: [ "3.8", "3.9", "3.10" ]
+        python-version: [ "3.8", "3.10", "3.11" ]
         os: [ ubuntu-20.04, windows-latest, macos-latest ] # on 2024-04-24, serious problems on ubuntu-latest (MPI installation)
         # Exceptions:
         # - Python 3.8 and 3.9 is on macos-13 but not macos-latest (macos-14-arm64)
         #   https://github.com/actions/setup-python/issues/696#issuecomment-1637587760
         exclude:
         - { python-version: "3.8", os: "macos-latest" }
-        - { python-version: "3.9", os: "macos-latest" }
         include:
         - { python-version: "3.8", os: "macos-13" }
-        - { python-version: "3.9", os: "macos-13" }
 
     steps:
       - uses: actions/checkout@v4
@@ -57,7 +58,7 @@ jobs:
         shell: bash
 
       - name: Run codacy coverage reporter
-        if: ${{ runner.os == 'Linux' && matrix.python-version == '3.9' }} # This action runs only on Linux
+        if: ${{ runner.os == 'Linux' && matrix.python-version == '3.10' }} # This step runs only on Linux
         env:
           CODACY_PROJECT_TOKEN: ${{ secrets.codacy }}
         run: |
@@ -66,7 +67,7 @@ jobs:
 
       - name: Publish code coverage on Codecov
         uses: codecov/codecov-action@v4
-        if: ${{ runner.os == 'Windows' && matrix.python-version == '3.9' }} # Using Windows for covering XFOIL calls
+        if: ${{ runner.os == 'macOS' && matrix.python-version == '3.10' }} # Here we use the currently fastest runner
         with:
           #          flags: unittests  # optional
           name: codecov-FAST-OAD  # optional

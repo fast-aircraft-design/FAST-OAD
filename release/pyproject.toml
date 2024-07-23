@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "FAST-OAD"
-version = "1.4.2" # This version number is overwritten by GitHub packaging workflow but setting 1.3 here will allow installation of CS25 models in development mode
+version = "0.0.0"
 description = "FAST-OAD is a framework for performing rapid Overall Aircraft Design"
 readme = "README.md"
 authors = [
@@ -27,14 +27,15 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX :: Linux",
     "Operating System :: MacOS",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Topic :: Scientific/Engineering :: Physics"
 ]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
 fast-oad-core = "^0.0.0.0.0"
 fast-oad-cs25 = ">=0.1.4"
 
