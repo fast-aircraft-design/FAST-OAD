@@ -1,9 +1,8 @@
 """
 Base features for FAST-OAD models
 """
-
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,7 +14,6 @@ Base features for FAST-OAD models
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# pylint: disable=unused-import
 # flake8: noqa
 from .atmosphere import Atmosphere, AtmosphereSI
 from .flight_point import FlightPoint
