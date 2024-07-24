@@ -21,5 +21,8 @@ exclude_patterns:
 plugins:
   pylint:
     enabled: true
+    checks:
+      function-redefined: # Checked by Ruff F811
+        enabled: false
   sonar-python:
     enabled: true
