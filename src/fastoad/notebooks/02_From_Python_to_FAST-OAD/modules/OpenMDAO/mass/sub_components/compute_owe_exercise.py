@@ -1,3 +1,5 @@
+import numpy as np  # noqa: F401
+
 import openmdao.api as om
 
 
