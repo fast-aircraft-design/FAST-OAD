@@ -151,16 +151,17 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "--cov fastoad --cov-report term-missing --cov-report html --verbose"
+addopts = "--cov-report term-missing --cov-report html --verbose"
 testpaths = ["src", "tests"]
 norecursedirs = ["dist", "build", ".tox", ".ipynb_checkpoints"]
+
 
 [tool.coverage.run]
 branch = true
 source = ["fastoad"]
 omit = ["*/test/*", "*/tests/*"]
 [tool.coverage.paths]
-source = ["src/", "*/site-packages/"]
+source = ["src/"]
 [tool.coverage.report]
 # Regexes for lines to exclude from consideration
 exclude_lines = [
