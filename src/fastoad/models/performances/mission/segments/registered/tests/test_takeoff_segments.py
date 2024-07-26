@@ -44,7 +44,6 @@ class DummyEngine(AbstractFuelPropulsion):
         self.max_sfc = max_sfc
 
     def compute_flight_points(self, flight_point: FlightPoint):
-
         if flight_point.thrust_is_regulated or flight_point.thrust_rate is None:
             flight_point.thrust_rate = flight_point.thrust / self.max_thrust
         else:
@@ -57,7 +56,7 @@ class DummyEngine(AbstractFuelPropulsion):
 def polar() -> Polar:
     """Returns a dummy polar where max L/D ratio is around 16."""
     cl = np.arange(0.0, 1.5, 0.01) + 0.5
-    cd = 0.5e-1 * cl ** 2 + 0.01
+    cd = 0.5e-1 * cl**2 + 0.01
     alpha = np.linspace(-2.2918311, 14.7823111, 150) / 180 * np.pi
 
     return Polar(cl, cd, alpha)

@@ -2,7 +2,7 @@
 Basic "Hello World" services using iPOPO decorators
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,8 +14,7 @@ Basic "Hello World" services using iPOPO decorators
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
-from pelix.ipopo.decorators import ComponentFactory, Provides, Instantiate, Property
+from pelix.ipopo.decorators import ComponentFactory, Instantiate, Property, Provides
 
 
 @ComponentFactory("hello-world-factory")

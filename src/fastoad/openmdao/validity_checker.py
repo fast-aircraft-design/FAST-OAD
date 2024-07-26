@@ -143,9 +143,7 @@ class ValidityDomainChecker:
         # We add to the OpenMDAO class a reference to self._limit_definitions[self._uuid]
         # to be able to update it with OpenMDAO declarations after problem setup.
         # See _update_problem_limit_definitions()
-        om_class._fastoad_limit_definitions = self._limit_definitions[
-            self._uuid
-        ]  # pylint: disable=protected-access # We create it
+        om_class._fastoad_limit_definitions = self._limit_definitions[self._uuid]
         return om_class
 
     @classmethod
@@ -264,7 +262,6 @@ class ValidityDomainChecker:
             var_name = system_path[-1]
 
             if hasattr(system, "_fastoad_limit_definitions"):
-
                 limit_definitions = system._fastoad_limit_definitions
                 limit_definitions.activated = True
 

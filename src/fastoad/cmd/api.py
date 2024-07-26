@@ -25,7 +25,7 @@ from enum import Enum
 from os import PathLike
 from pathlib import Path
 from time import time
-from typing import Dict, List, Union, TextIO
+from typing import Dict, List, TextIO, Union
 
 import openmdao.api as om
 import pandas as pd

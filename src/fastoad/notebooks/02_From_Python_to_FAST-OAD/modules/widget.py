@@ -1,11 +1,9 @@
-from IPython.display import display
-
 import ipywidgets as widgets
+from IPython.display import display
 
 
 class ChoiceForOWE:
     def __init__(self):
-
         box_layout = widgets.Layout(
             display="flex", flex_flow="column", align_items="stretch", width="100%"
         )
@@ -29,7 +27,6 @@ class ChoiceForOWE:
         display(self.choice_button)
 
     def select_component(self, b):
-
         if self.choice_button.value == "Corrected component":
             self.choice = "correct"
         else:

@@ -9,7 +9,6 @@ class ComputeWingArea(om.ExplicitComponent):
     """
 
     def setup(self):
-
         # Defining the input(s)
 
         self.add_input(name="mtow", units="kg", val=np.nan)
@@ -20,7 +19,6 @@ class ComputeWingArea(om.ExplicitComponent):
         self.add_output(name="wing_area", units="m**2")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         # Assigning the input to local variable for clarity
         mtow = inputs["mtow"]
 

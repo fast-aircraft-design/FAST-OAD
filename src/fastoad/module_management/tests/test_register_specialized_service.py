@@ -21,6 +21,7 @@ from ..service_registry import RegisterSpecializedService
 
 DATA_FOLDER_PATH = Path(__file__).parent / "data"
 
+
 # Initialization of services ###############
 class DummyBase:
     def my_class(self):
@@ -73,7 +74,7 @@ def test_get_provider_ids(load):
 
 def test_get_provider(load):
     with pytest.raises(FastBundleLoaderUnknownFactoryNameError):
-        my_dummy0 = RegisterDummyServiceA.get_provider("dummy.provider.0")
+        _ = RegisterDummyServiceA.get_provider("dummy.provider.0")
 
     my_dummy1: DummyBase = RegisterDummyServiceA.get_provider("dummy.provider.1")
     assert my_dummy1.my_class() == "Dummy1"

@@ -80,7 +80,7 @@ def plot_flight(flight_points, fig_filename):
     )
     plt.ylabel("Mach")
 
-    labels = [l.get_label() for l in lines]
+    labels = [line.get_label() for line in lines]
     plt.legend(lines, labels, loc=0)
 
     plt.savefig(RESULTS_FOLDER_PATH / fig_filename)
@@ -158,7 +158,6 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
 
 
 def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
-
     input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
     vars = DataFile(input_file_path)
     ivc = vars.to_ivc()
@@ -264,7 +263,6 @@ def test_mission_group_breguet_without_fuel_adjustment(cleanup, with_dummy_plugi
 
 
 def test_mission_group_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
-
     input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
     vars = DataFile(input_file_path)
     del vars["data:mission:operational:TOW"]
@@ -357,7 +355,6 @@ def test_mission_group_breguet_with_fuel_adjustment(cleanup, with_dummy_plugin_2
 
 
 def test_mission_group_with_fuel_objective(cleanup, with_dummy_plugin_2):
-
     input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
     vars = DataFile(input_file_path)
     ivc = vars.to_ivc()
@@ -396,7 +393,6 @@ def test_mission_group_with_fuel_objective(cleanup, with_dummy_plugin_2):
 
 
 def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
-
     input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
     vars = DataFile(input_file_path)
 

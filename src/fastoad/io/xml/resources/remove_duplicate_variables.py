@@ -1,6 +1,7 @@
 """
 Enables to remove duplicate variables from text file
 """
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -43,5 +44,4 @@ def remove_duplicate(input_file_name: str):
 
 
 if __name__ == "__main__":
-
     remove_duplicate("legacy1.txt")

@@ -12,7 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 from os import PathLike
 from types import MethodType
 from typing import Any, Dict, List, Optional, Type, TypeVar, Union
@@ -203,7 +202,6 @@ class _RegisterOpenMDAOService(RegisterService, base_class=System):
         return properties
 
     def __call__(self, service_class: Type[T]) -> Type[T]:
-
         # service_class.__module__ provides the name for the .py file, but
         # we want just the parent package name.
         package_name = ".".join(service_class.__module__.split(".")[:-1])

@@ -8,9 +8,6 @@ on:
       - '**'
     tags-ignore:
       - '**'
-  pull_request:
-    branches: [ 'master', 'master-v*' ]
-
 
 jobs:
   tests:
@@ -45,15 +42,22 @@ jobs:
           poetry env use ${{ matrix.python-version }}
           poetry install -E mpi4py
 
-      - name: Check with Black
+      - name: Check with Ruff
         run: |
-          # Fails if Black format is not respected
-          poetry run black --check .
+          poetry run ruff check .           # Check coding rules
+          poetry run ruff format --check .  # Check format
         shell: bash
 
-      - name: Unit tests
+      - name: Unit tests without coverage
+        # Runners that won't send coverage report are run without coverage overhead
+        run: poetry run pytest src
+        shell: bash
+
+      - name: Unit tests with coverage
+        # Only for runners that will send coverage reports (see below)
+        if: ${{ (runner.os == 'Linux' || runner.os == 'macOS' ) && matrix.python-version == '3.10' }}
         run: |
-          poetry run pytest src
+          poetry run pytest src --cov
           poetry run coverage xml  # for sending coverage report
         shell: bash
 

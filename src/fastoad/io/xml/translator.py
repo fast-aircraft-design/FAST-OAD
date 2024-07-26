@@ -40,7 +40,7 @@ class VarXpathTranslator:
         *,
         variable_names: Sequence[str] = None,
         xpaths: Sequence[str] = None,
-        source: Union[str, IO] = None
+        source: Union[str, IO] = None,
     ):
         if variable_names is not None and xpaths is not None:
             self.set(variable_names, xpaths)

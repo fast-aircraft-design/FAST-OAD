@@ -1,5 +1,5 @@
-from ..pure_python.geometry.geometry import compute_geometry
 from ..pure_python.aerodynamics.aerodynamics import compute_aerodynamics
+from ..pure_python.geometry.geometry import compute_geometry
 from ..pure_python.mass.mass import compute_mass
 from ..pure_python.performance.performance import compute_fuel_mission
 

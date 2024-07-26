@@ -39,4 +39,4 @@ class BasicFunctionF(om.ExplicitComponent):
         y1 = inputs["y1"]
         y2 = inputs["y2"]
 
-        outputs["f"] = x1 ** 2 + z2 + y1 + exp(-y2)
+        outputs["f"] = x1**2 + z2 + y1 + exp(-y2)

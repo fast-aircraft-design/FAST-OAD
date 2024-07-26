@@ -109,11 +109,9 @@ sphinx-rtd-theme = "^1.0"
 sphinxcontrib-bibtex = "^2.3.0"
 
 [tool.poetry.group.lint.dependencies]
-pre-commit = "^2.14.1"
-black = { version = "21.9b0", extras = ["jupyter"], allow-prereleases = true }
-pylint = "^2.10.2"
-flake8 = "^4.0.1"
+pre-commit = "^3.5.0"
 nbstripout = "^0.6.0"
+ruff = "0.5.4"
 
 [tool.poetry.scripts]
 fastoad = "fastoad.cmd.cli:fast_oad"
@@ -128,24 +126,42 @@ vcs = "git"
 style = "semver"
 
 [build-system]
-requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
 build-backend = "poetry_dynamic_versioning.backend"
 
-[tool.black]
+[tool.ruff]
 line-length = 100
+target-version = "py39"
+extend-include = ["*.ipynb"]
+exclude = ["tests/dummy_plugins/"]
+
+[tool.ruff.lint]
+# Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)  codes by default.
+# Unlike Flake8, Ruff doesn't enable pycodestyle warnings (`W`) or
+# McCabe complexity (`C901`) by default.
+select = ["E4", "E7", "E9", "F"]
+ignore = []
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "--cov fastoad --cov-report term-missing --cov-report html --verbose"
+addopts = "--cov-report term-missing --cov-report html --verbose"
 testpaths = ["src", "tests"]
 norecursedirs = ["dist", "build", ".tox", ".ipynb_checkpoints"]
+
 
 [tool.coverage.run]
 branch = true
 source = ["fastoad"]
 omit = ["*/test/*", "*/tests/*"]
 [tool.coverage.paths]
-source = ["src/", "*/site-packages/"]
+source = ["src/"]
 [tool.coverage.report]
 # Regexes for lines to exclude from consideration
 exclude_lines = [

@@ -130,7 +130,9 @@ class AbstractTimeStepFlightSegment(
         """
 
     def get_next_alpha(
-        self, previous_point: FlightPoint, time_step: float  # pylint: disable=unused-argument
+        self,
+        previous_point: FlightPoint,
+        time_step: float,  # pylint: disable=unused-argument
     ) -> float:
         """
         Determine the next angle of attack.
@@ -145,7 +147,7 @@ class AbstractTimeStepFlightSegment(
         if flight_point.altitude is not None:
             atm = self._get_atmosphere_point(flight_point.altitude)
             reference_force = (
-                0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_area
+                0.5 * atm.density * flight_point.true_airspeed**2 * self.reference_area
             )
 
             if self.polar:
@@ -173,7 +175,6 @@ class AbstractTimeStepFlightSegment(
                 np.abs(last_point_to_target) > tol
                 and last_point_to_target * previous_point_to_target < 0.0
             ):
-
                 # Target has been exceeded. Let's look for the exact time step using root_scalar.
                 def replace_last_point(time_step):
                     """
@@ -326,7 +327,7 @@ class AbstractTimeStepFlightSegment(
             else:
                 CL_optimal = self.polar.optimal_cl
             optimal_air_density = (
-                2.0 * mass * g / (self.reference_area * true_airspeed ** 2 * CL_optimal)
+                2.0 * mass * g / (self.reference_area * true_airspeed**2 * CL_optimal)
             )
             return (atm.density - optimal_air_density) * 100.0
 
@@ -444,7 +445,7 @@ class AbstractGroundSegment(AbstractTakeOffSegment, ABC):
         flight_point.engine_setting = self.engine_setting
 
         atm = self._get_atmosphere_point(flight_point.altitude)
-        reference_force = 0.5 * atm.density * flight_point.true_airspeed ** 2 * self.reference_area
+        reference_force = 0.5 * atm.density * flight_point.true_airspeed**2 * self.reference_area
 
         if self.polar:
             alpha = flight_point.alpha

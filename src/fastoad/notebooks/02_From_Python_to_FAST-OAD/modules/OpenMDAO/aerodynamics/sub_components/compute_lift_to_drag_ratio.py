@@ -1,7 +1,7 @@
 import numpy as np
+import openmdao.api as om
 import scipy.constants as sc
 
-import openmdao.api as om
 from fastoad.model_base import Atmosphere
 
 
@@ -12,7 +12,6 @@ class ComputeLiftToDragRatio(om.ExplicitComponent):
     """
 
     def setup(self):
-
         # Defining the input(s)
 
         self.add_input(
@@ -36,7 +35,6 @@ class ComputeLiftToDragRatio(om.ExplicitComponent):
         self.add_output(name="l_d_ratio")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         # Assigning the input to local variable for clarity
         cruise_altitude = inputs["cruise_altitude"]
         cruise_speed = inputs["cruise_speed"]
@@ -52,10 +50,10 @@ class ComputeLiftToDragRatio(om.ExplicitComponent):
         rho = atm.density
 
         # Computation of the cruise lift coefficient using a simple equilibrium
-        cl = (mtow * sc.g) / (0.5 * rho * cruise_speed ** 2.0 * wing_area)
+        cl = (mtow * sc.g) / (0.5 * rho * cruise_speed**2.0 * wing_area)
 
         # Computation of the cruise drag coefficient using the simple quadratic model
-        cd = cd0 + k * cl ** 2
+        cd = cd0 + k * cl**2
 
         # Computation of the ratio
         l_d = cl / cd

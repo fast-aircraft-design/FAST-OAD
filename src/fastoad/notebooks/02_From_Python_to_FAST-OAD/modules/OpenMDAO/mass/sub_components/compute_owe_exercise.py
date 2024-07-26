@@ -1,4 +1,4 @@
-import numpy as np
+import numpy as np  # noqa: F401
 
 import openmdao.api as om
 
@@ -9,7 +9,6 @@ class ComputeOweExercise(om.ExplicitComponent):
     """
 
     def setup(self):
-
         # Defining the input(s)
 
         # Defining the output(s)
@@ -17,5 +16,4 @@ class ComputeOweExercise(om.ExplicitComponent):
         pass
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         pass

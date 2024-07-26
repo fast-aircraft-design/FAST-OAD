@@ -77,7 +77,6 @@ class InputDefinition:
     _variable_name: Optional[str] = field(default=None, init=False, repr=True)
 
     def __post_init__(self, variable_name, use_opposite):
-
         if self.parameter_name.startswith("delta_"):
             self.is_relative = True
             self.parameter_name = self.parameter_name[6:]
@@ -182,9 +181,8 @@ class InputDefinition:
             )
         return None
 
-    # pylint: disable=function-redefined  # the variable_name field is an InitVar.
     @property
-    def variable_name(self):
+    def variable_name(self):  # noqa: F811 #  the variable_name field is an InitVar.
         """Associated variable name."""
         return self._variable_name
 

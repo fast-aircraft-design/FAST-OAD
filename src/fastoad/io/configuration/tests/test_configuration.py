@@ -81,7 +81,7 @@ def test_problem_definition_incorrect_attribute(cleanup):
         conf = FASTOADProblemConfigurator()
         conf.load(DATA_FOLDER_PATH / f"invalid_attribute.{extension}")
         with pytest.raises(FASTConfigurationBadOpenMDAOInstructionError) as exc_info:
-            problem = conf.get_problem(read_inputs=False)
+            _ = conf.get_problem(read_inputs=False)
         assert exc_info.value.key == "model.cycle.other_group.nonlinear_solver"
 
 

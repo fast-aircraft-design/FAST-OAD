@@ -56,7 +56,6 @@ class OptimizationViewer:
     }
 
     def __init__(self):
-
         #: Instance of the FAST-OAD problem configuration
         self.problem_configuration: FASTOADProblemConfigurator = None
 

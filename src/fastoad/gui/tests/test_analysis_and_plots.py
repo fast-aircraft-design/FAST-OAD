@@ -15,6 +15,7 @@ Tests for analysis and plots functions
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from pathlib import Path
+
 import pytest
 
 from .. import (
@@ -148,14 +149,14 @@ def test_mass_breakdown_sun_plot_specific_mission():
 
     # Plot 1
     # Specific mission plot
-    f = mass_breakdown_sun_plot(filename, mission_name=mission_1)
+    f = mass_breakdown_sun_plot(filename, mission_name=mission_1)  # noqa: F841
     # f.show()
 
     mission_2 = "MTOW_mission"
 
     # Plot 2
     # Specific mission plot (sizing mission)
-    f = mass_breakdown_sun_plot(filename, mission_name=mission_2)
+    f = mass_breakdown_sun_plot(filename, mission_name=mission_2)  # noqa: F841
     # f.show()
 
     mission_3 = "not_a_mission_name"
@@ -180,7 +181,7 @@ def test_payload_range_plot(filename):
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
     # Only contour
-    fig = payload_range_plot(
+    payload_range_plot(
         filename,
         name="Payload-Range",
         mission_name="sizing",
@@ -190,7 +191,7 @@ def test_payload_range_plot(filename):
 
     # Second plot
     # With grid
-    fig = payload_range_plot(
+    payload_range_plot(
         filename,
         name="Payload-Range",
         mission_name="sizing",

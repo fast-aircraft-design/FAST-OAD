@@ -22,9 +22,8 @@ import pandas as pd
 import plotly.graph_objects as go
 from IPython.display import clear_output, display
 
-from fastoad.model_base import FlightPoint
-
 from fastoad._utils.files import as_path
+from fastoad.model_base import FlightPoint
 
 
 class MissionViewer:
@@ -102,7 +101,6 @@ class MissionViewer:
         """
 
         with self._output_widget:
-
             clear_output(wait=True)
 
             x_name = self._x_widget.value
@@ -111,7 +109,6 @@ class MissionViewer:
             fig = None
 
             for mission_name in self.missions:
-
                 if fig is None:
                     fig = go.Figure()
                 # pylint: disable=invalid-name # that's a common naming

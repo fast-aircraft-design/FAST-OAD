@@ -32,7 +32,6 @@ from ..service_registry import RegisterService
 
 # Tests ####################################
 def test_plugins(with_dummy_plugins):
-
     FastoadLoader._loaded = True  # Ensures next instantiation will NOT trigger reloading
 
     # Before FastoadLoader.load(), services are not registered
@@ -196,7 +195,7 @@ def test_get_plugin_notebook_folder_list_with_one_plugin(with_dummy_plugin_distr
     }
     # improper name
     with pytest.raises(FastUnknownDistPluginError):
-        file_list = FastoadLoader().get_notebook_folder_list("unknown-dist")
+        _ = FastoadLoader().get_notebook_folder_list("unknown-dist")
 
 
 def test_get_plugin_notebook_folder_list_with_plugins(with_dummy_plugins):
@@ -225,7 +224,7 @@ def test_get_plugin_notebook_folder_list_with_plugins(with_dummy_plugins):
 
     # improper name
     with pytest.raises(FastUnknownDistPluginError):
-        file_list = FastoadLoader().get_notebook_folder_list("unknown-dist")
+        _ = FastoadLoader().get_notebook_folder_list("unknown-dist")
 
 
 def test_get_configuration_file_info_with_1_plugin(with_dummy_plugin_1):

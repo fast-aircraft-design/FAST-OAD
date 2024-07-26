@@ -14,7 +14,6 @@ Basic "Hello World" services without using iPOPO decorators
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 # Define the component factory, with a given name
 from fastoad.module_management._bundle_loader import BundleLoader
 

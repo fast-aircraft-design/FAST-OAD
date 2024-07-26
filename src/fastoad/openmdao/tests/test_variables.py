@@ -190,7 +190,9 @@ def test_df_from_to_variables():
 
 
 def _compare_variable_lists(vars: List[Variable], expected_vars: List[Variable]):
-    sort_key = lambda v: v.name
+    def sort_key(v):
+        return v.name
+
     vars.sort(key=sort_key)
     expected_vars.sort(key=sort_key)
     assert vars == expected_vars

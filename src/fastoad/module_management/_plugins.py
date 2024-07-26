@@ -14,7 +14,6 @@ Plugin system for declaration of FAST-OAD models.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 # We need __future__ to allow using DistributionNameDict as annotation in FastoadLoader
 # Otherwise, in Python 3.8, we get "TypeError: 'ABCMeta' object is not subscriptable"
 from __future__ import annotations
@@ -22,7 +21,7 @@ from __future__ import annotations
 import logging
 import sys
 import warnings
-from dataclasses import InitVar, dataclass, field
+from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 from typing import Callable, Dict, List, Optional
@@ -167,19 +166,18 @@ class DistributionPluginDefinition(dict):
     Stores and provides data for FAST-OAD plugins provided by a Python distribution.
     """
 
-    dist_name: InitVar[str] = None
-
-    def __post_init__(self, dist_name):
-        self._dist_name = dist_name
+    dist_name: str = None
+    _dist_name: str = field(default=None, init=False)
 
     @property
-    def dist_name(self):
+    def dist_name(self):  # noqa: F811 #  the variable_name field is an InitVar.
         """Name of the distribution that contains the defined plugin."""
         return self._dist_name
 
     @dist_name.setter
     def dist_name(self, dist_name):
-        self._dist_name = DistributionNameDict.normalize(dist_name)
+        if isinstance(dist_name, str):
+            self._dist_name = DistributionNameDict.normalize(dist_name)
 
     def read_entry_point(self, entry_point: importlib_metadata.EntryPoint, group: str):
         """

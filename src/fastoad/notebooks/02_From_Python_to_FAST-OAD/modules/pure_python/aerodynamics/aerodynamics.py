@@ -1,6 +1,6 @@
-from .sub_components.compute_profile_drag import compute_cd0
 from .sub_components.compute_induced_drag_coefficient import compute_k
 from .sub_components.compute_lift_to_drag_ratio import compute_l_d
+from .sub_components.compute_profile_drag import compute_cd0
 
 
 def compute_aerodynamics(cruise_altitude, cruise_speed, mtow, wing_area, aspect_ratio):

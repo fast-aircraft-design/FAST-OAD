@@ -143,7 +143,9 @@ disable =
         bad-continuation,
         import-error,
         no-member,
-        no-name-in-module
+        no-name-in-module,
+        function-redefined, # Checked by Ruff F811
+        unused-import, # Checked by Ruff F401
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

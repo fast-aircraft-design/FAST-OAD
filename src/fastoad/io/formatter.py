@@ -16,7 +16,7 @@ Base class for VariableIOFormatter objects.
 
 from abc import ABC, abstractmethod
 from os import PathLike
-from typing import Union, IO
+from typing import IO, Union
 
 from fastoad.openmdao.variables import VariableList
 

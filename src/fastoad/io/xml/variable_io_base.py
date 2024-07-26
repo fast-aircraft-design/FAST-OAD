@@ -19,7 +19,7 @@ import logging
 import re
 from os import PathLike
 from pathlib import Path
-from typing import IO, Union, Optional
+from typing import IO, Optional, Union
 
 import numpy as np
 from lxml import etree
@@ -141,11 +141,9 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
         return variables
 
     def write_variables(self, data_source: Union[str, PathLike, IO], variables: VariableList):
-
         root = etree.Element(ROOT_TAG)
 
         for variable in variables:
-
             try:
                 xpath = self._translator.get_xpath(variable.name)
             except FastXpathTranslatorVariableError as exc:

@@ -27,17 +27,15 @@ class RectangularSection(om.ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:geometry:l", val=np.nan, units="m")
         self.add_input("data:geometry:Ixx", val=np.nan, units="m**4")
         self.add_output("data:geometry:h", val=0.01, units="m")
 
     def setup_partials(self):
-
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs):
-        l = inputs["data:geometry:l"]
+        length = inputs["data:geometry:l"]
         I_xx = inputs["data:geometry:Ixx"]
 
-        outputs["data:geometry:h"] = (12 * I_xx / l) ** (1 / 3)
+        outputs["data:geometry:h"] = (12 * I_xx / length) ** (1 / 3)

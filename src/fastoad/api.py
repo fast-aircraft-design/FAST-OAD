@@ -12,7 +12,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# pylint: disable=unused-import
+
 # flake8: noqa
 
 # The comment below prevents PyCharm from "optimizing" (i.e. removing) these imports.
@@ -65,7 +65,7 @@ from fastoad.model_base import Atmosphere, AtmosphereSI, FlightPoint
 from fastoad.model_base.datacls import MANDATORY_FIELD
 
 # noinspection PyUnresolvedReferences
-from fastoad.model_base.openmdao.group import CycleGroup, BaseCycleGroup
+from fastoad.model_base.openmdao.group import BaseCycleGroup, CycleGroup
 
 # noinspection PyUnresolvedReferences
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
