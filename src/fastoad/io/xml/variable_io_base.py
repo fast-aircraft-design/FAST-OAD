@@ -90,14 +90,14 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
         }
 
     def read_variables(self, data_source: Union[str, PathLike, IO]) -> VariableList:
+        if isinstance(data_source, Path):
+            data_source = data_source.as_posix()
+
         variables = VariableList()
 
         # If there is a comment, it will be used as description if the previous
         # element described a variable.
         previous_variable_name = None
-
-        if isinstance(data_source, Path):
-            data_source = data_source.as_posix()
 
         root = etree.parse(
             data_source,
@@ -120,7 +120,10 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
             if value is None:
                 continue
 
-            variable_name = self._get_matching_variable_name(elem)
+            path_tags = [ancestor.tag for ancestor in elem.iterancestors()]
+            path_tags.reverse()
+            path_tags.append(elem.tag)
+            variable_name = self._get_matching_variable_name(path_tags)
             if variable_name is None:
                 continue
 
@@ -186,10 +189,7 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
                 units = units.replace(legacy_chars, om_chars)
         return units
 
-    def _get_matching_variable_name(self, elem: _Element) -> Optional[str]:
-        path_tags = [ancestor.tag for ancestor in elem.iterancestors()]
-        path_tags.reverse()
-        path_tags.append(elem.tag)
+    def _get_matching_variable_name(self, path_tags) -> Optional[str]:
         xpath = "/".join(path_tags[1:])  # Do not use root tag
         try:
             variable_name = self._translator.get_variable_name(xpath)
