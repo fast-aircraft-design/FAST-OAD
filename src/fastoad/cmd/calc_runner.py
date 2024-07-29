@@ -16,10 +16,10 @@ import logging
 import multiprocessing as mp
 from contextlib import contextmanager
 from dataclasses import dataclass
+from math import ceil, log10
 from os import PathLike
 from typing import List, Optional, Union
 
-from math import ceil, log10
 from openmdao.utils.mpi import FakeComm
 
 from fastoad._utils.files import as_path, make_parent_dir
@@ -99,8 +99,9 @@ class CalcRunner:
         self,
         input_list: List[VariableList],
         destination_folder: Union[str, PathLike],
-        n_proc: Optional[int] = None,
+        max_workers: Optional[int] = None,
         use_MPI_if_available: bool = True,
+        overwrite_subfolders: bool = False,
     ):
         """
         Run computations concurrently.
@@ -111,14 +112,16 @@ class CalcRunner:
         :param input_list: a computation will be run for each item of this list
         :param destination_folder:  The data of each computation will be isolated in a dedicated
                                     subfolder of this folder.
-        :param n_proc: if not specified, all available processors will be used.
+        :param max_workers: if not specified, all available processors will be used.
         :param use_MPI_if_available: If False, or if no MPI implementation is available,
                                      computations will be run concurrently using the multiprocessing
                                      library.
+        :param overwrite_subfolders: if False, calculations that match existing subfolders won't be
+                                     run (allows batch continuation)
         """
         destination_folder = as_path(destination_folder)
-        if n_proc == 0:
-            n_proc = mp.cpu_count() - 1
+        if max_workers == 0:
+            max_workers = mp.cpu_count() - 1
 
         case_count = len(input_list)
         n_digits = ceil(log10(case_count))
@@ -126,7 +129,8 @@ class CalcRunner:
         calculation_inputs = []
         for i, input_vars in enumerate(input_list):
             calculation_folder = destination_folder / f"calc_{i:0{n_digits}d}"
-            calculation_inputs.append((self, input_vars, calculation_folder))
+            if overwrite_subfolders or not calculation_folder.is_dir():
+                calculation_inputs.append((self, input_vars, calculation_folder))
 
         use_MPI = False
         max_proc = mp.cpu_count()
@@ -139,15 +143,15 @@ class CalcRunner:
             except ImportError:
                 _LOGGER.warning("No MPI environment found. Using multiprocessing instead.")
 
-        if n_proc is not None:
-            n_proc = min(n_proc, max_proc)
+        if max_workers is not None:
+            max_workers = min(max_workers, max_proc)
 
         if use_MPI:
             pool = _MPIPool
         else:
             pool = mp.Pool
 
-        with pool(n_proc) as pool:
+        with pool(max_workers) as pool:
             pool.starmap(CalcRunner.run, calculation_inputs)
 
 

@@ -62,7 +62,7 @@ def test_MPI_run_2cpu(cleanup):
     run_case.run_cases(
         input_vars,
         RESULTS_FOLDER_PATH / "with_MPI_2",
-        n_proc=2,
+        max_workers=2,
         use_MPI_if_available=True,
     )
 
@@ -80,6 +80,6 @@ def test_multiprocessing_run_2cpu(cleanup):
     run_case.run_cases(
         input_vars,
         RESULTS_FOLDER_PATH / "without_MPI_2",
-        n_proc=2,
+        max_workers=2,
         use_MPI_if_available=False,
     )
