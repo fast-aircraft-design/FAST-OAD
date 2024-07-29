@@ -108,7 +108,21 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
         for event, elem in context:
             if event == "comment":
                 comment = elem.text.strip()
-            if event == "end":  # Adjust if your XML uses a different tag
+            if event == "end":
+                if comment and var_name:
+                    variables[var_name].desc = comment
+
+                var_name = None
+                comment = ""
+                path_tags.pop()
+                elem.clear()
+            elif event == "start":
+                if comment and var_name:
+                    variables[var_name].desc = comment
+                comment = ""
+
+                path_tags.append(elem.tag)
+
                 if elem.text:
                     var_name = self._get_matching_variable_name(path_tags)
                     if var_name:
@@ -122,18 +136,8 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
                                     val=value,
                                     units=units,
                                     is_input=is_input,
-                                    desc=comment,
                                 ),
                             )
-                comment = ""
-                path_tags.pop()
-
-                elem.clear()  # Clear the element to save memory
-            elif event == "start":
-                if comment and var_name:
-                    variables[var_name].desc = comment
-                comment = ""
-                path_tags.append(elem.tag)
 
         return variables
 
