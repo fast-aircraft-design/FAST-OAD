@@ -27,6 +27,16 @@ from fastoad.io import DataFile
 from fastoad.io.configuration import FASTOADProblemConfigurator
 from fastoad.openmdao.variables import VariableList
 
+# Import MPI4Py at the module level to avoid repeated imports
+try:
+    from mpi4py import MPI
+    from mpi4py.futures import MPIPoolExecutor
+except ImportError:
+    HAVE_MPI = False
+else:
+    HAVE_MPI = True
+
+
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
@@ -112,7 +122,9 @@ class CalcRunner:
         :param input_list: a computation will be run for each item of this list
         :param destination_folder:  The data of each computation will be isolated in a dedicated
                                     subfolder of this folder.
-        :param max_workers: if not specified, all available processors will be used.
+        :param max_workers: if not specified, all available processors will be used. Set to -1
+                            to use all available processors except 1 (useful when running
+                            locally while keeping some CPU for working meanwhile).
         :param use_MPI_if_available: If False, or if no MPI implementation is available,
                                      computations will be run concurrently using the multiprocessing
                                      library.
@@ -120,8 +132,6 @@ class CalcRunner:
                                      run (allows batch continuation)
         """
         destination_folder = as_path(destination_folder)
-        if max_workers == 0:
-            max_workers = mp.cpu_count() - 1
 
         case_count = len(input_list)
         n_digits = ceil(log10(case_count))
@@ -132,35 +142,35 @@ class CalcRunner:
             if overwrite_subfolders or not calculation_folder.is_dir():
                 calculation_inputs.append((self, input_vars, calculation_folder))
 
-        use_MPI = False
-        max_proc = mp.cpu_count()
-        if use_MPI_if_available:
-            try:
-                from mpi4py import MPI  # noqa: F401
+        use_MPI = use_MPI_if_available and HAVE_MPI
+        if use_MPI_if_available and not HAVE_MPI:
+            _LOGGER.warning("No MPI environment found. Using multiprocessing instead.")
 
-                use_MPI = True
-                max_proc = MPI.COMM_WORLD.Get_size()
-            except ImportError:
-                _LOGGER.warning("No MPI environment found. Using multiprocessing instead.")
+        if use_MPI:
+            # One worker is consumed by the MPIPoolExecutor
+            max_proc = MPI.COMM_WORLD.Get_size() - 1
+        else:
+            max_proc = mp.cpu_count()
 
-        if max_workers is not None:
+        if max_workers == -1:
+            max_workers = max_proc - 1
+        elif max_workers is not None:
             max_workers = min(max_workers, max_proc)
 
         if use_MPI:
-            pool = _MPIPool
+            pool_cls = _MPIPool
         else:
-            pool = mp.Pool
+            pool_cls = mp.Pool
 
-        with pool(max_workers) as pool:
+        with pool_cls(max_workers) as pool:
             pool.starmap(CalcRunner.run, calculation_inputs)
 
 
 @contextmanager
 def _MPIPool(*args, **kwargs):
     """Assumes availability of MPI environment."""
-    from mpi4py.futures import MPIPoolExecutor
 
-    pool = MPIPoolExecutor(*args, **kwargs)
+    pool = MPIPoolExecutor(*args, main=False, **kwargs)
     try:
         yield pool
     finally:
