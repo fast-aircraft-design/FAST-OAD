@@ -121,6 +121,9 @@ class AltitudeChangeSegment(AbstractManualThrustSegment):
         if current.altitude >= max_authorized_altitude:
             return max_authorized_altitude - current.altitude
 
+        if isinstance(target.CL, float):
+            return target.CL - current.CL
+
         if target.CL:
             # Optimal altitude is based on a target Mach number, though target speed
             # may be specified as TAS or EAS. If so, Mach number has to be computed

@@ -178,7 +178,7 @@ equivalent_airspeed) is reached.
 An :code:`altitude_change` segment simulates a climb or descent flight part at constant thrust rate.
 Typically, it ends when the target altitude is reached.
 
-But also, a target speed can be set, while keeping another speed constant (e.g. climbing up to
+But also, a target speed, or CL, can be set, while keeping another speed constant (e.g. climbing up to
 Mach 0.8 while keeping equivalent_airspeed constant).
 
 **Examples:**
@@ -218,6 +218,17 @@ Mach 0.8 while keeping equivalent_airspeed constant).
     maximum_CL: 0.6                             # Limitation on lift coefficient.
                                                 # The altitude will be limited to the closest
                                                 # flight level within the CL limitation.
+
+.. code-block:: yaml
+
+    segment: altitude_change
+    polar: data:aerodynamics:aircraft:cruise    # High speed aerodynamic polar
+    engine_setting: climb
+    thrust_rate: 0.93                           # Climb throttle
+    target:
+      mach: constant                            # Climb at constant Mach until target CL
+      CL: 0.55                                  # is reached.
+
 
 .. seealso::
 
