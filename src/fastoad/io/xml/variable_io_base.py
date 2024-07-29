@@ -17,15 +17,17 @@ Defines how OpenMDAO variables are serialized to XML using a conversion table
 import json
 import logging
 import re
+import xml.etree.cElementTree as ET
 from os import PathLike
 from pathlib import Path
 from typing import IO, Optional, Union
 
 import numpy as np
+
+# from defusedxml import ElementTree as ET
 from lxml import etree
 from lxml.etree import (
     XPathEvalError,
-    _Comment,
     _Element,
 )  # pylint: disable=protected-access  # Useful for type hinting
 from openmdao.vectors.vector import Vector
@@ -35,12 +37,11 @@ from fastoad._utils.strings import get_float_list_from_string
 from fastoad.io.formatter import IVariableIOFormatter
 from fastoad.io.xml.exceptions import (
     FastXPathEvalError,
-    FastXmlFormatterDuplicateVariableError,
     FastXpathTranslatorVariableError,
     FastXpathTranslatorXPathError,
 )
 from fastoad.io.xml.translator import VarXpathTranslator
-from fastoad.openmdao.variables import VariableList
+from fastoad.openmdao.variables import Variable, VariableList
 from .constants import DEFAULT_IO_ATTRIBUTE, DEFAULT_UNIT_ATTRIBUTE, ROOT_TAG
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
@@ -89,57 +90,50 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
             r"\bin\b": "inch",
         }
 
+    def _parse_xml(self, file_path):
+        """
+        Parse the XML file using a streaming approach to minimize memory usage.
+
+        :param file_path: Path to the XML file
+        :return: Generator yielding (XPath, value) tuples
+        """
+
     def read_variables(self, data_source: Union[str, PathLike, IO]) -> VariableList:
-        if isinstance(data_source, Path):
-            data_source = data_source.as_posix()
-
         variables = VariableList()
+        path_tags = []
+        comment = ""
+        var_name = None
+        context = ET.iterparse(data_source, events=("start", "end", "comment"))
 
-        # If there is a comment, it will be used as description if the previous
-        # element described a variable.
-        previous_variable_name = None
+        for event, elem in context:
+            if event == "comment":
+                comment = elem.text.strip()
+            if event == "end":  # Adjust if your XML uses a different tag
+                if elem.text:
+                    var_name = self._get_matching_variable_name(path_tags)
+                    if var_name:
+                        value = get_float_list_from_string(elem.text)
+                        if value:
+                            units = self._read_units(elem)
+                            is_input = elem.attrib.get(self.xml_io_attribute)
+                            variables.append(
+                                Variable(
+                                    name=var_name,
+                                    val=value,
+                                    units=units,
+                                    is_input=is_input,
+                                    desc=comment,
+                                ),
+                            )
+                comment = ""
+                path_tags.pop()
 
-        root = etree.parse(
-            data_source,
-            etree.XMLParser(remove_blank_text=True, remove_comments=False),
-        ).getroot()
-
-        for elem in root.iter():
-            if isinstance(elem, _Comment) and previous_variable_name is not None:
-                variables[previous_variable_name].description = elem.text.strip()
-                previous_variable_name = None
-                continue
-
-            units = self._read_units(elem)
-
-            value = None
-            if elem.text:
-                value = get_float_list_from_string(elem.text)
-
-            previous_variable_name = None
-            if value is None:
-                continue
-
-            path_tags = [ancestor.tag for ancestor in elem.iterancestors()]
-            path_tags.reverse()
-            path_tags.append(elem.tag)
-            variable_name = self._get_matching_variable_name(path_tags)
-            if variable_name is None:
-                continue
-
-            if variable_name in variables.names():
-                raise FastXmlFormatterDuplicateVariableError(
-                    f"Variable {variable_name} is defined in more than one "
-                    f"place in file {data_source}"
-                )
-
-            # Add Variable
-            is_input = elem.attrib.get(self.xml_io_attribute, None)
-            if is_input is not None:
-                is_input = is_input == "True"
-
-            variables[variable_name] = {"val": value, "units": units, "is_input": is_input}
-            previous_variable_name = variable_name
+                elem.clear()  # Clear the element to save memory
+            elif event == "start":
+                if comment and var_name:
+                    variables[var_name].desc = comment
+                comment = ""
+                path_tags.append(elem.tag)
 
         return variables
 
