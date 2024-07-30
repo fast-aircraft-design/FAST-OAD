@@ -1,6 +1,7 @@
 """
 Tests for FAST-OAD mission viewer
 """
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -85,3 +86,23 @@ def test_mission_display():
     assert mission_viewer._x_widget.value == "consumed_fuel [kg]"
     # It's missing the ground distance column so it will use the column at index 1
     assert mission_viewer._y_widget.value == "altitude [m]"
+
+
+def test_mission_layout():
+    """
+    Basic tests for testing the mission viewer layout update functionality
+    """
+    filename = DATA_FOLDER_PATH / "flight_points.csv"
+
+    mission_viewer = MissionViewer()
+
+    mission_viewer.add_mission(filename, name="Mission 1")
+
+    # Testing layout update with dictionary
+    mission_viewer.display({"title": None})
+
+    # Testing layout update with keywords
+    mission_viewer.display(title_text="Title")
+
+    # Testing layout overwrite = True
+    mission_viewer.display(layout_overwrite=True, title_text="mission")
