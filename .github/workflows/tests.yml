@@ -50,12 +50,13 @@ jobs:
 
       - name: Unit tests without coverage
         # Runners that won't send coverage report are run without coverage overhead
+        if: ${{ (runner.os != 'Linux' ) || matrix.python-version != '3.10' }}
         run: poetry run pytest src
         shell: bash
 
       - name: Unit tests with coverage
-        # Only for runners that will send coverage reports (see below)
-        if: ${{ (runner.os == 'Linux' || runner.os == 'macOS' ) && matrix.python-version == '3.10' }}
+        # Only for runner that will send coverage reports (see below)
+        if: ${{ (runner.os == 'Linux' ) && matrix.python-version == '3.10' }}
         run: |
           poetry run pytest src --cov
           poetry run coverage xml  # for sending coverage report
@@ -71,7 +72,7 @@ jobs:
 
       - name: Publish code coverage on Codecov
         uses: codecov/codecov-action@v4
-        if: ${{ runner.os == 'macOS' && matrix.python-version == '3.10' }} # Here we use the currently fastest runner
+        if: ${{ runner.os == 'Linux' && matrix.python-version == '3.10' }}
         with:
           #          flags: unittests  # optional
           name: codecov-FAST-OAD  # optional
