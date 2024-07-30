@@ -294,7 +294,8 @@ def test_generate_inputs(cleanup):
     assert input_file_path.exists()
     data = DataFile(input_file_path)
     assert len(data) == 2
-    assert "x" in data.names() and "z" in data.names()
+    assert "x" in data.names()
+    assert "z" in data.names()
 
     # Let's add another variable to ensure overwrite is correctly done (issue #328)
     data["dummy_var"] = {"value": 0.0}
@@ -309,21 +310,35 @@ def test_generate_inputs(cleanup):
             CONFIGURATION_FILE_PATH, DATA_FOLDER_PATH / "inputs.xml", overwrite=True
         )
     )
-
     assert input_file_path == RESULTS_FOLDER_PATH / "inputs.xml"
     assert input_file_path.exists()
     data = DataFile(input_file_path)
     assert len(data) == 2
-    assert "x" in data.names() and "z" in data.names()
+    assert "x" in data.names()
+    assert "z" in data.names()
+
+    # Test with output writing
+    input_file_path = Path(
+        api.generate_inputs(
+            CONFIGURATION_FILE_PATH,
+            DATA_FOLDER_PATH / "inputs.xml",
+            overwrite=True,
+            write_output_variables=True,
+        )
+    )
+    assert input_file_path == RESULTS_FOLDER_PATH / "inputs.xml"
+    data = DataFile(input_file_path)
+    assert len(data) == 7
+    assert all([name in data.names() for name in ["x", "z", "y1", "y2", "g1", "g2", "f"]])
 
     # We test without source data file to see if variable description in "desc" kwargs
     # is captured (issue #319)
     input_file_path = Path(api.generate_inputs(CONFIGURATION_FILE_PATH, overwrite=True))
     assert input_file_path == RESULTS_FOLDER_PATH / "inputs.xml"
-    assert input_file_path.exists()
     data = DataFile(input_file_path)
     assert len(data) == 2
-    assert "x" in data.names() and "z" in data.names()
+    assert "x" in data.names()
+    assert "z" in data.names()
 
 
 def test_list_modules(cleanup):

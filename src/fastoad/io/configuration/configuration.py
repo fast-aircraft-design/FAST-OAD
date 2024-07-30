@@ -198,6 +198,7 @@ class FASTOADProblemConfigurator:
         self,
         source_file_path: Union[str, PathLike] = None,
         source_formatter: IVariableIOFormatter = None,
+        write_outputs: bool = False,
     ):
         """
         Writes the input file of the problem with unconnected inputs of the
@@ -211,9 +212,10 @@ class FASTOADProblemConfigurator:
         :param source_file_path: if provided, variable values will be read from it
         :param source_formatter: the class that defines format of input file. if
                                  not provided, expected format will be the default one.
+        :param write_outputs: if True, the generated file will also contain output variables.
         """
         problem = self.get_problem(read_inputs=False)
-        problem.write_needed_inputs(source_file_path, source_formatter)
+        problem.write_needed_inputs(source_file_path, source_formatter, write_outputs=write_outputs)
 
     def get_optimization_definition(self) -> Dict:
         """
