@@ -109,6 +109,7 @@ class CalcRunner:
         self,
         input_list: List[VariableList],
         destination_folder: Union[str, PathLike],
+        *,
         max_workers: Optional[int] = None,
         use_MPI_if_available: bool = True,
         overwrite_subfolders: bool = False,
@@ -133,37 +134,37 @@ class CalcRunner:
         """
         destination_folder = as_path(destination_folder)
 
-        case_count = len(input_list)
-        n_digits = ceil(log10(case_count))
-
-        calculation_inputs = []
-        for i, input_vars in enumerate(input_list):
-            calculation_folder = destination_folder / f"calc_{i:0{n_digits}d}"
-            if overwrite_subfolders or not calculation_folder.is_dir():
-                calculation_inputs.append((self, input_vars, calculation_folder))
-
         use_MPI = use_MPI_if_available and HAVE_MPI
         if use_MPI_if_available and not HAVE_MPI:
             _LOGGER.warning("No MPI environment found. Using multiprocessing instead.")
 
-        if use_MPI:
-            # One worker is consumed by the MPIPoolExecutor
-            max_proc = MPI.COMM_WORLD.Get_size() - 1
-        else:
-            max_proc = mp.cpu_count()
+        # One worker is consumed by the MPIPoolExecutor
+        max_proc = (MPI.COMM_WORLD.Get_size() - 1) if use_MPI else mp.cpu_count()
 
         if max_workers == -1:
             max_workers = max_proc - 1
         elif max_workers is not None:
-            max_workers = min(max_workers, max_proc)
+            max_workers = max(1, min(max_workers, max_proc))
 
-        if use_MPI:
-            pool_cls = _MPIPool
-        else:
-            pool_cls = mp.Pool
+        pool_cls = _MPIPool if use_MPI else mp.Pool
 
         with pool_cls(max_workers) as pool:
-            pool.starmap(CalcRunner.run, calculation_inputs)
+            pool.starmap(
+                CalcRunner.run,
+                self._calculation_inputs(input_list, destination_folder, overwrite_subfolders),
+            )
+
+    def _calculation_inputs(self, input_list, destination_folder, overwrite_subfolders):
+        """Iterator for providing inputs of :meth:`run`."""
+        case_count = len(input_list)
+        n_digits = ceil(log10(case_count))
+
+        for i, input_vars in enumerate(input_list):
+            calculation_folder = destination_folder / f"calc_{i:0{n_digits}d}"
+            if overwrite_subfolders or not calculation_folder.is_dir():
+                yield (self, input_vars, calculation_folder)
+            else:
+                _LOGGER.info('Subfolder "%s" exists. Computation skipped', calculation_folder)
 
 
 @contextmanager
