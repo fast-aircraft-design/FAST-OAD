@@ -548,8 +548,6 @@ def _get_detailed_system_list():
         path = BundleLoader().get_factory_path(identifier)
         domain = RegisterOpenMDAOSystem.get_provider_domain(identifier)
         description = RegisterOpenMDAOSystem.get_provider_description(identifier)
-        if description is None:
-            description = ""
 
         # We remove OpenMDAO's native options from the description
         component = RegisterOpenMDAOSystem.get_system(identifier)

@@ -150,7 +150,10 @@ class RegisterService:
         :return: the description associated to given instance or identifier
         """
 
-        return cls._get_provider_property(instance_or_id, DESCRIPTION_PROPERTY_NAME)
+        description = cls._get_provider_property(instance_or_id, DESCRIPTION_PROPERTY_NAME)
+        if description is None or isinstance(description, property):
+            description = ""
+        return description
 
     @classmethod
     def get_provider_domain(cls, instance_or_id: Union[str, System]) -> ModelDomain:
