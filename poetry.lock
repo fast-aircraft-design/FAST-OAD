@@ -767,6 +767,30 @@ zeroconf = ["zeroconf (==0.19)"]
 zookeeper = ["kazoo (>=2.4)"]
 
 [[package]]
+name = "ipopo"
+version = "3.0.0"
+description = "A service-oriented component model framework"
+optional = false
+python-versions = "*"
+files = [
+    {file = "iPOPO-3.0.0-py2.py3-none-any.whl", hash = "sha256:d4efe853067430307942dc1c8ad66dcda430f235add4c4b826d746e0fbebf9d0"},
+    {file = "iPOPO-3.0.0.tar.gz", hash = "sha256:ba26c0bca5a404959c7128156a57325aba402a2512593426daa3f219cc8dff28"},
+]
+
+[package.dependencies]
+jsonrpclib-pelix = ">=0.4.3"
+
+[package.extras]
+etcd2 = ["osgiservicebridge (>=1.5.7)", "python-etcd (==0.4.5)"]
+mqtt = ["paho-mqtt (>=2.1)"]
+redis = ["redis (>=2.10)"]
+rsa = ["etcd3 (>=0.12.0)", "osgiservicebridge (>=1.5.7)"]
+xmpp = ["slixmpp (>=1.8.4)"]
+yaml = ["pyyaml (>=6.0)"]
+zeroconf = ["zeroconf (==0.19)"]
+zookeeper = ["kazoo (==2.8.0)"]
+
+[[package]]
 name = "ipykernel"
 version = "6.4.1"
 description = "IPython Kernel for Jupyter"
@@ -3277,4 +3301,4 @@ mpi4py = ["mpi4py", "mpi4py", "mpi4py"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8, <3.12"
-content-hash = "52c7bfe2e7aede7d8c55677cd0eac16378403958b7c2d096a7374954e02e7985"
+content-hash = "db69f3b8b3c71758f0588cc95edf227b6347f2ff10a4b605d2963c6dc71e0f06"

@@ -57,7 +57,10 @@ pandas = [
     { version = ">=1.5.3, <3", python = "^3.11" },
 ]
 openmdao = "^3.27"
-ipopo = "^1.0.0"
+ipopo = [
+    { version = "^1.0.0", python = ">=3.8,<3.10" },
+    { version = "^3.0.0", python = "^3.10" }
+]
 ipywidgets = "^7.7.0"
 ipysheet = ">=0.5.0, <1"
 plotly = "^5.0.0"
