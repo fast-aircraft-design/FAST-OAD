@@ -13,7 +13,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from numpy import ndarray
-from scipy.interpolate import interp1d
+from scipy.interpolate import interp1d, make_interp_spline
 from scipy.optimize import fmin
 
 
@@ -39,7 +39,7 @@ class Polar:
         self._definition_CD = cd
 
         # Interpolate cd
-        self._cd_vs_cl = interp1d(cl, cd, kind="quadratic", fill_value="extrapolate")
+        self._cd_vs_cl = make_interp_spline(cl, cd, k=2)
 
         # CL as a function of AoA
         self._definition_alpha = alpha
