@@ -12,13 +12,14 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from numpy import ndarray
-from scipy.interpolate import interp1d, make_interp_spline
+
+import numpy as np
+from scipy.interpolate import make_interp_spline
 from scipy.optimize import fmin
 
 
 class Polar:
-    def __init__(self, cl: ndarray, cd: ndarray, alpha: ndarray = None):
+    def __init__(self, cl: np.ndarray, cd: np.ndarray, alpha: np.ndarray = None):
         """
         Class for managing aerodynamic polar data.
 
@@ -43,8 +44,6 @@ class Polar:
 
         # CL as a function of AoA
         self._definition_alpha = alpha
-        if alpha is not None:
-            self._cl_vs_alpha = interp1d(alpha, cl, kind="linear", fill_value="extrapolate")
 
         def _negated_lift_drag_ratio(lift_coeff):
             """Returns -CL/CD."""
@@ -94,4 +93,4 @@ class Polar:
         if self._definition_alpha is None:
             raise ValueError("Polar was instantiated without alpha vector.")
 
-        return self._cl_vs_alpha(alpha)
+        return np.interp(alpha, self._definition_alpha, self._definition_CL)
