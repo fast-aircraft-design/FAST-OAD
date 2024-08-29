@@ -75,27 +75,33 @@ class FlightPoint:
         smoothly, especially when exchanging data with pandas, you have to work at class level.
         This can be done using :meth:`add_field`, preferably outside any class or function::
 
-            # Adds a float field with None as default value
-            >>> FlightPoint.add_field("ion_drive_power")
+            # Adding a float field with None as default value
+            >>> FlightPoint.add_field(
+            ...    "ion_drive_power",
+            ...    unit="W",
+            ...    is_cumulative=False, # Tells if quantity sums up during mission
+            ...    is_output=True, # Tells if quantity is expected as mission output
+            ...    )
 
-            # Adds a field and define its type and default value
+            # Adding a field and defining its type and default value
             >>> FlightPoint.add_field("warp", annotation_type=int, default_value=9)
 
             # Now these fields can be used at instantiation
             >>> fp = FlightPoint(ion_drive_power=110.0, warp=12)
 
-            # Removes a field, even an original one (useful only to avoid having it in outputs)
+            # Removing a field, even an original one
             >>> FlightPoint.remove_field("sfc")
 
     .. note::
 
-        All parameters in FlightPoint instances are expected to be in SI units.
+        All original parameters in FlightPoint instances are expected to be in SI units.
 
     """
 
+    #: Time in seconds.
     time: float = field(
         default=0.0, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(is_cumulative=True, unit="s")}
-    )  #: Time in seconds.
+    )
 
     #: Altitude in meters.
     altitude: float = field(default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="m")})

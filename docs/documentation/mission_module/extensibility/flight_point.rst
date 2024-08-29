@@ -23,12 +23,11 @@ Available flight parameters
 ***************************
 The documentation of :class:`~fastoad.model_base.flight_point.FlightPoint` provides
 the list of available flight parameters, available as attributes.
-As FlightPoint is a dataclass, this list is available through Python using::
+This list is available through Python using::
 
     >>> import fastoad.api as oad
-    >>> from dataclasses import fields
 
-    >>> [f.name for f in fields(oad.FlightPoint)]
+    >>> oad.FlightPoint.get_field_names()
 
 *******************************
 Exchanges with pandas DataFrame
@@ -64,15 +63,20 @@ smoothly, especially when exchanging data with pandas, you have to work at class
 This can be done using :meth:`~fastoad.model_base.flight_point.FlightPoint.add_field`, preferably
 outside of any class or function::
 
-    # Adds a float field with None as default value
-    >>> FlightPoint.add_field("ion_drive_power")
+    # Adding a float field with None as default value
+    >>> FlightPoint.add_field(
+    ...    "ion_drive_power",
+    ...    unit="YW",
+    ...    is_cumulative=False, # Tells if quantity sums up during mission
+    ...    is_output=True, # Tells if quantity is expected as mission output
+    ...    )
 
-    # Adds a field and define its type and default value
+    # Adding a field and defining its type and default value
     >>> FlightPoint.add_field("warp", annotation_type=int, default_value=9)
 
     # Now these fields can be used at instantiation
     >>> fp = FlightPoint(ion_drive_power=110.0, warp=12)
 
-    # Removes a field, even an original one (useful only to avoid having it in outputs)
+    # Removing a field, even an original one
     >>> FlightPoint.remove_field("sfc")
 
