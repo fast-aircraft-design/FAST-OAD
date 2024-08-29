@@ -230,7 +230,7 @@ class FlightPoint:
         """
         :return: names of all fields of the flight point.
         """
-        return [field.name for field in fields(cls) if not field.name.startswith("_")]
+        return [cls_field.name for cls_field in fields(cls) if not cls_field.name.startswith("_")]
 
     @classmethod
     def get_units(cls) -> dict:
@@ -240,9 +240,9 @@ class FlightPoint:
         A dimensionless physical quantity will have "-" as unit.
         """
         return {
-            field.name: field.metadata[FIELD_STATUS].unit
-            for field in fields(cls)
-            if not field.name.startswith("_")
+            cls_field.name: cls_field.metadata[FIELD_STATUS].unit
+            for cls_field in fields(cls)
+            if not cls_field.name.startswith("_")
         }
 
     @classmethod
