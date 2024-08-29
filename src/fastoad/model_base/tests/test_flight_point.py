@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -80,3 +80,15 @@ def test_scalarize():
     assert fp.mass == 70000.0
     assert fp.altitude == 1000.0
     assert_allclose(fp.mach, [0.7, 0.8])
+
+
+def test_get_units():
+    FlightPoint.add_field("foo", annotation_type=float, default_value=42.0, unit="slug/ft")
+
+    assert FlightPoint.get_units()["time"] == "s"
+    assert FlightPoint.get_units()["foo"] == "slug/ft"
+
+    FlightPoint.remove_field("foo")
+
+    assert FlightPoint.get_units().get("altitude") == "m"
+    assert FlightPoint.get_units().get("engine_setting") is None
