@@ -290,8 +290,6 @@ class FlightPoint:
         :param cumulative: True if field value is sums up during mission
         :param output: True if field should be written in mission outputs
         """
-        cls.remove_field(name)
-
         cls._redeclare_fields()
 
         del cls.__init__  # Delete constructor to allow it being rebuilt with dataclass() call

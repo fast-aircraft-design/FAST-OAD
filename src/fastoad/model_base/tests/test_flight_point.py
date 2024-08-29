@@ -83,6 +83,7 @@ def test_scalarize():
 
 
 def test_get_units():
+    FlightPoint.add_field("foo", annotation_type=float, default_value=42.0, unit="m")
     FlightPoint.add_field("foo", annotation_type=float, default_value=42.0, unit="slug/ft")
 
     assert FlightPoint.get_units()["time"] == "s"
