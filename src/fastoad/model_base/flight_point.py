@@ -225,6 +225,16 @@ class FlightPoint:
         new_point.scalarize()
         return new_point
 
+    def scalarize(self):
+        """
+        Convenience method for converting to scalars all fields that have a
+        one-item array-like value.
+        """
+        self_as_dict = asdict(self)
+        for field_name, value in self_as_dict.items():
+            if np.size(value) == 1:
+                setattr(self, field_name, np.asarray(value).item())
+
     @classmethod
     def get_field_names(cls):
         """
@@ -319,16 +329,6 @@ class FlightPoint:
             delattr(cls, name)
             del cls.__annotations__[name]
             dataclass(cls)
-
-    def scalarize(self):
-        """
-        Convenience method for converting to scalars all fields that have a
-        one-item array-like value.
-        """
-        self_as_dict = asdict(self)
-        for field_name, value in self_as_dict.items():
-            if np.size(value) == 1:
-                setattr(self, field_name, np.asarray(value).item())
 
     @classmethod
     def _redeclare_fields(cls):
