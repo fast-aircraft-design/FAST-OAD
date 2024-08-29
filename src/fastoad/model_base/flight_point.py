@@ -32,8 +32,8 @@ class _FieldDescriptor:
     Class to be used as dataclass field metadata.
     """
 
-    cumulative: bool = False
-    output: bool = True
+    is_cumulative: Optional[bool] = False
+    is_output: Optional[bool] = True
     unit: Optional[str] = None
 
 
@@ -73,7 +73,7 @@ class FlightPoint:
 
         Python allows to add attributes to any instance at runtime, but for FlightPoint to run
         smoothly, especially when exchanging data with pandas, you have to work at class level.
-        This can be done using :meth:`add_field`, preferably outside of any class or function::
+        This can be done using :meth:`add_field`, preferably outside any class or function::
 
             # Adds a float field with None as default value
             >>> FlightPoint.add_field("ion_drive_power")
@@ -94,7 +94,7 @@ class FlightPoint:
     """
 
     time: float = field(
-        default=0.0, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(cumulative=True, unit="s")}
+        default=0.0, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(is_cumulative=True, unit="s")}
     )  #: Time in seconds.
 
     #: Altitude in meters.
@@ -113,7 +113,7 @@ class FlightPoint:
 
     #: Consumed fuel since mission start, in kg.
     consumed_fuel: float = field(
-        default=0.0, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(cumulative=True, unit="kg")}
+        default=0.0, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(is_cumulative=True, unit="kg")}
     )
 
     #: True airspeed (TAS) in m/s.
@@ -186,7 +186,7 @@ class FlightPoint:
     #: Name of current phase.
     name: str = field(default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor()})
 
-    __field_descriptors = {}  # Will store field metadata when needed
+    __field_descriptors = {}  # Will store field metadata when needed. Must be accessed through
 
     def __post_init__(self):
         self._relative_parameters = {"ground_distance", "time"}
@@ -271,6 +271,41 @@ class FlightPoint:
         }
 
     @classmethod
+    def get_unit(cls, field_name) -> Optional[str]:
+        """
+        Returns unit for asked field.
+
+        A dimensionless physical quantity will have "-" as unit.
+        """
+        return cls._get_field_descriptors().get(field_name, _FieldDescriptor()).unit
+
+    @classmethod
+    def is_cumulative(cls, field_name) -> Optional[bool]:
+        """
+        Tells if asked field is cumulative (sums up during mission).
+
+        Returns None if field not found.
+        """
+        return (
+            cls._get_field_descriptors()
+            .get(field_name, _FieldDescriptor(None, None, None))
+            .is_cumulative
+        )
+
+    @classmethod
+    def is_output(cls, field_name) -> Optional[bool]:
+        """
+        Tells if asked field should be a mission output.
+
+        Returns None if field not found.
+        """
+        return (
+            cls._get_field_descriptors()
+            .get(field_name, _FieldDescriptor(None, None, None))
+            .is_output
+        )
+
+    @classmethod
     def create(cls, data: Mapping) -> "FlightPoint":
         """
         Instantiate FlightPoint from provided data.
@@ -310,8 +345,8 @@ class FlightPoint:
         :param name: field name
         :param annotation_type: field type
         :param default_value: field default value
-        :param unit: expected unit for the added field ("-" should be provided for a dimensionless
-                     physical quantity)
+        :param unit: expected unit for the added field. "-" should be provided for a dimensionless
+                     physical quantity. Set to None, when unit concept does not apply.
         :param cumulative: True if field value is sums up during mission
         :param output: True if field should be written in mission outputs
         """
@@ -325,7 +360,7 @@ class FlightPoint:
                 default=default_value,
                 metadata={
                     FIELD_DESCRIPTOR: _FieldDescriptor(
-                        unit=unit, cumulative=cumulative, output=output
+                        unit=unit, is_cumulative=cumulative, is_output=output
                     )
                 },
             ),
