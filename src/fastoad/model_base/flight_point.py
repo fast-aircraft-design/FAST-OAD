@@ -292,6 +292,8 @@ class FlightPoint:
         """
         cls.remove_field(name)
 
+        cls._redeclare_fields()
+
         del cls.__init__  # Delete constructor to allow it being rebuilt with dataclass() call
         setattr(
             cls,
@@ -314,6 +316,7 @@ class FlightPoint:
         :param name: field name
         """
         if name in cls.__annotations__:
+            cls._redeclare_fields()
             del cls.__init__  # Delete constructor to allow it being rebuilt with dataclass() call
             delattr(cls, name)
             del cls.__annotations__[name]
@@ -328,3 +331,16 @@ class FlightPoint:
         for field_name, value in self_as_dict.items():
             if np.size(value) == 1:
                 setattr(self, field_name, np.asarray(value).item())
+
+    @classmethod
+    def _redeclare_fields(cls):
+        """
+        To be done before "re-dataclassing" cls.
+
+        In current state, fields are now declared using only default value (no metadata). We have
+        to redo the field declaration properly.
+        """
+        for cls_field in fields(cls):
+            setattr(
+                cls, cls_field.name, field(default=cls_field.default, metadata=cls_field.metadata)
+            )
