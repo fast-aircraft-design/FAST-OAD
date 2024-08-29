@@ -570,8 +570,6 @@ def _get_detailed_system_list():
     for identifier in sorted(RegisterPropulsion.get_provider_ids()):
         path = BundleLoader().get_factory_path(identifier)
         description = RegisterPropulsion.get_provider_description(identifier)
-        if description is None:
-            description = ""
 
         cell_content = (
             f"IDENTIFIER:   {identifier}\n"
