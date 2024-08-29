@@ -216,6 +216,10 @@ class MissionWrapper(MissionBuilder):
 
         names = part_name.split(":")
         mission_name, route_name, phase_name = names + [""] * (3 - len(names))
+        if not phase_name and route_name not in self.get_route_names():
+            phase_name = route_name
+            route_name = ""
+
         if route_name and phase_name:
             flight_part_desc = (
                 f'phase "{phase_name}" of route "{route_name}" in mission "{mission_name}"'
