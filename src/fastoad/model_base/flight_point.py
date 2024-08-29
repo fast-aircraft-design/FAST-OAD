@@ -1,7 +1,7 @@
 """Structure for managing flight point data."""
 
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -12,15 +12,29 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 from copy import deepcopy
-from dataclasses import asdict, dataclass, fields
+from dataclasses import asdict, dataclass, field, fields
 from numbers import Number
-from typing import Any, List, Mapping, Sequence, Union
+from typing import Any, List, Mapping, Optional, Sequence, Union
 
 import numpy as np
 import pandas as pd
 
 from fastoad.constants import EngineSetting
+
+FIELD_STATUS = "field_status"
+
+
+@dataclass
+class _FieldStatus:
+    """
+    Class to be used as dataclass field metadata.
+    """
+
+    cumulative: bool = False
+    output: bool = True
+    unit: Optional[str] = None
 
 
 @dataclass
@@ -79,57 +93,84 @@ class FlightPoint:
 
     """
 
-    time: float = 0.0  #: Time in seconds.
-    altitude: float = None  #: Altitude in meters.
-    isa_offset: float = 0.0  #: temperature deviation from Standard Atmosphere
-    ground_distance: float = 0.0  #: Covered ground distance in meters.
-    mass: float = None  #: Mass in kg.
-    consumed_fuel: float = 0.0  #: Consumed fuel since mission start, in kg.
-    true_airspeed: float = None  #: True airspeed (TAS) in m/s.
-    equivalent_airspeed: float = None  #: Equivalent airspeed (EAS) in m/s.
-    mach: float = None  #: Mach number.
-    engine_setting: EngineSetting = None  #: Engine setting.
+    time: float = field(
+        default=0.0, metadata={FIELD_STATUS: _FieldStatus(cumulative=True, unit="s")}
+    )  #: Time in seconds.
+
+    #: Altitude in meters.
+    altitude: float = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="m")})
+
+    #: temperature deviation from Standard Atmosphere
+    isa_offset: float = field(default=0.0, metadata={FIELD_STATUS: _FieldStatus(unit="K")})
+
+    #: Covered ground distance in meters.
+    ground_distance: float = field(default=0.0, metadata={FIELD_STATUS: _FieldStatus(unit="m")})
+
+    #: Mass in kg.
+    mass: float = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="kg")})
+
+    #: Consumed fuel since mission start, in kg.
+    consumed_fuel: float = field(
+        default=0.0, metadata={FIELD_STATUS: _FieldStatus(cumulative=True, unit="kg")}
+    )
+
+    #: True airspeed (TAS) in m/s.
+    true_airspeed: float = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="m/s")})
+
+    #: Equivalent airspeed (EAS) in m/s.
+    equivalent_airspeed: float = field(
+        default=None, metadata={FIELD_STATUS: _FieldStatus(unit="m/s")}
+    )
+
+    #: Mach number.
+    mach: float = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="-")})
+
+    #: Engine setting.
+    engine_setting: EngineSetting = field(default=None, metadata={FIELD_STATUS: _FieldStatus()})
+
+    # pylint: disable=invalid-name
     #: Lift coefficient.
-    CL: float = None  # pylint: disable=invalid-name
+    CL: float = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="-")})
+
+    # pylint: disable=invalid-name
     #: Drag coefficient.
-    CD: float = None  # pylint: disable=invalid-name
-    lift: float = None  #: Aircraft lift in Newtons
-    drag: float = None  #: Aircraft drag in Newtons.
-    thrust: float = None  #: Thrust in Newtons.
-    thrust_rate: float = None  #: Thrust rate (between 0. and 1.)
+    CD: float = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="-")})
+
+    #: Aircraft lift in Newtons
+    lift: float = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="N")})
+
+    #: Aircraft drag in Newtons.
+    drag: float = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="N")})
+
+    #: Thrust in Newtons.
+    thrust: float = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="N")})
+
+    #: Thrust rate (between 0. and 1.)
+    thrust_rate: float = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="-")})
 
     #: If True, propulsion should match the thrust value.
     #: If False, propulsion should match thrust rate.
-    thrust_is_regulated: bool = None
+    thrust_is_regulated: bool = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="-")})
 
-    sfc: float = None  #: Specific Fuel Consumption in kg/N/s.
-    slope_angle: float = None  #: Slope angle in radians.
-    acceleration: float = None  #: Acceleration value in m/s**2.
-    alpha: float = 0.0  #: angle of attack in radians
-    slope_angle_derivative: float = None  #: slope angle derivative in rad/s
-    name: str = None  #: Name of current phase.
+    #: Specific Fuel Consumption in kg/N/s.
+    sfc: float = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="kg/N/s")})
 
-    _units = dict(
-        time="s",
-        altitude="m",
-        ground_distance="m",
-        mass="kg",
-        consumed_fuel="kg",
-        true_airspeed="m/s",
-        equivalent_airspeed="m/s",
-        mach="-",
-        CL="-",
-        CD="-",
-        lift="N",
-        drag="N",
-        thrust="N",
-        thrust_rate="-",
-        sfc="kg/N/s",
-        slope_angle="rad",
-        acceleration="m/s**2",
-        alpha="rad",
-        slope_angle_derivative="rad/s",
+    #: Slope angle in radians.
+    slope_angle: float = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="rad")})
+
+    #: Acceleration value in m/s**2.
+    acceleration: float = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="m/s**2")})
+
+    #: angle of attack in radians
+    alpha: float = field(default=0.0, metadata={FIELD_STATUS: _FieldStatus(unit="rad")})
+
+    #: slope angle derivative in rad/s
+    slope_angle_derivative: float = field(
+        default=None, metadata={FIELD_STATUS: _FieldStatus(unit="rad/s")}
     )
+
+    #: Name of current phase.
+    name: str = field(default=None, metadata={FIELD_STATUS: _FieldStatus()})
 
     def __post_init__(self):
         self._relative_parameters = {"ground_distance", "time"}
@@ -175,12 +216,12 @@ class FlightPoint:
         :return: the copied flight point with no relative field.
         """
         new_point = deepcopy(self)
-        for field in fields(new_point):
-            reference_value = getattr(reference_point, field.name)
-            target_value = getattr(new_point, field.name)
-            if isinstance(target_value, Number) and new_point.is_relative(field.name):
-                setattr(new_point, field.name, reference_value + target_value)
-                new_point.set_as_absolute(field.name)
+        for cls_field in fields(new_point):
+            reference_value = getattr(reference_point, cls_field.name)
+            target_value = getattr(new_point, cls_field.name)
+            if isinstance(target_value, Number) and new_point.is_relative(cls_field.name):
+                setattr(new_point, cls_field.name, reference_value + target_value)
+                new_point.set_as_absolute(cls_field.name)
         new_point.scalarize()
         return new_point
 
@@ -198,7 +239,11 @@ class FlightPoint:
 
         A dimensionless physical quantity will have "-" as unit.
         """
-        return cls._units
+        return {
+            field.name: field.metadata[FIELD_STATUS].unit
+            for field in fields(cls)
+            if not field.name.startswith("_")
+        }
 
     @classmethod
     def create(cls, data: Mapping) -> "FlightPoint":
@@ -223,7 +268,15 @@ class FlightPoint:
         return [cls.create(row) for row in data.iloc]
 
     @classmethod
-    def add_field(cls, name: str, annotation_type=float, default_value: Any = None, unit=None):
+    def add_field(
+        cls,
+        name: str,
+        annotation_type=float,
+        default_value: Any = None,
+        unit="-",
+        cumulative=False,
+        output=True,
+    ):
         """
         Adds the named field to FlightPoint class.
 
@@ -234,15 +287,24 @@ class FlightPoint:
         :param default_value: field default value
         :param unit: expected unit for the added field ("-" should be provided for a dimensionless
                      physical quantity)
+        :param cumulative: True if field value is sums up during mission
+        :param output: True if field should be written in mission outputs
         """
         cls.remove_field(name)
 
         del cls.__init__  # Delete constructor to allow it being rebuilt with dataclass() call
-        setattr(cls, name, default_value)
+        setattr(
+            cls,
+            name,
+            field(
+                default=default_value,
+                metadata={
+                    FIELD_STATUS: _FieldStatus(unit=unit, cumulative=cumulative, output=output)
+                },
+            ),
+        )
         cls.__annotations__[name] = annotation_type
         dataclass(cls)
-        if unit:
-            cls._units[name] = unit
 
     @classmethod
     def remove_field(cls, name):
@@ -256,8 +318,6 @@ class FlightPoint:
             delattr(cls, name)
             del cls.__annotations__[name]
             dataclass(cls)
-            if name in cls._units:
-                del cls._units[name]
 
     def scalarize(self):
         """
