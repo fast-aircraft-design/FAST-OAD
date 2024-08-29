@@ -1,6 +1,6 @@
 """Management of mission input definitions."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -81,7 +81,7 @@ class InputDefinition:
             self.is_relative = True
             self.parameter_name = self.parameter_name[6:]
 
-        self.output_unit = FlightPoint.get_units().get(self.parameter_name)
+        self.output_unit = FlightPoint.get_unit(self.parameter_name)
         if self.output_unit is None:
             self.output_unit = BASE_UNITS.get(self.parameter_name)
         if self.output_unit == "-":
