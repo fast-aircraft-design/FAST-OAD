@@ -1,7 +1,6 @@
 """
 Mission wrapper.
 """
-
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -15,6 +14,7 @@ Mission wrapper.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from collections.abc import MutableMapping
 from os import PathLike
 from typing import Dict, Optional, Tuple, Union
 
@@ -128,15 +128,6 @@ class MissionWrapper(MissionBuilder):
         """
         mission = self.build(inputs, self.mission_name)
 
-        def _compute_vars(name_root, start: FlightPoint, end: FlightPoint):
-            """Computes duration, burned fuel and covered distance."""
-            if name_root + ":duration" in outputs:
-                outputs[name_root + ":duration"] = end.time - start.time
-            if name_root + ":fuel" in outputs:
-                outputs[name_root + ":fuel"] = start.mass - end.mass
-            if name_root + ":distance" in outputs:
-                outputs[name_root + ":distance"] = end.ground_distance - start.ground_distance
-
         flight_points = mission.compute_from(start_flight_point)
         flight_points.loc[0, "name"] = flight_points.loc[1, "name"]
 
@@ -149,14 +140,14 @@ class MissionWrapper(MissionBuilder):
             for part_name1, part_name2 in zip(part_names[:-1], part_names[1:]):
                 part1 = grouped_points.get_group(part_name1)
                 part2 = grouped_points.get_group(part_name2)
-                _compute_vars(
-                    f"{self.variable_prefix}:{part_name2}", part1.iloc[-1], part2.iloc[-1]
+                self._compute_vars(
+                    outputs, f"{self.variable_prefix}:{part_name2}", part1.iloc[-1], part2
                 )
 
             start_part_name = part_names[0]
             start_part = grouped_points.get_group(start_part_name)
-            _compute_vars(
-                f"{self.variable_prefix}:{start_part_name}", start_part.iloc[0], start_part.iloc[-1]
+            self._compute_vars(
+                outputs, f"{self.variable_prefix}:{start_part_name}", start_part.iloc[0], start_part
             )
         del flight_points["name2"]
 
@@ -202,12 +193,13 @@ class MissionWrapper(MissionBuilder):
 
         return output_definition
 
-    def _add_vars(self, part_name) -> dict:
+    def _add_vars(self, part_name) -> Dict[str, Tuple[str, str]]:
         """
         Builds names of OpenMDAO outputs for provided mission, route and phase names.
 
         :param part_name: part name in the form <mission_name>:<route_name:<phase_name>, route_name
         and phase_name being independently optional.
+
         :return: dictionary with variable name as key and unit, description as value
         """
         output_definition = {}
@@ -232,6 +224,7 @@ class MissionWrapper(MissionBuilder):
         else:
             flight_part_desc = f'mission "{mission_name}"'
 
+        # TODO: These 3 values are now duplicated by the detailed output below
         output_definition[name_root + ":duration"] = ("s", f"duration of {flight_part_desc}")
         output_definition[name_root + ":fuel"] = ("kg", f"burned fuel during {flight_part_desc}")
         output_definition[name_root + ":distance"] = (
@@ -239,4 +232,89 @@ class MissionWrapper(MissionBuilder):
             f"covered ground distance during {flight_part_desc}",
         )
 
+        self._add_vars_for_flight_point_fields(output_definition, name_root, flight_part_desc)
+
         return output_definition
+
+    @staticmethod
+    def _add_vars_for_flight_point_fields(
+        output_definition: Dict[str, Tuple[str, str]], name_root: str, flight_part_desc: str
+    ):
+        """Handles flight point output variables for the mission part"""
+        for name, unit in FlightPoint.get_units().items():
+            if name == "name":
+                continue
+            if unit == "-":
+                unit = None
+
+            var_patterns = {
+                "_end": "value of {name} at end of {flight_part_desc}",
+                "_evolution": "evolution of {name} during {flight_part_desc}",
+            }
+            if not FlightPoint.is_cumulative(name):
+                var_patterns["_mean"] = "mean value of {name} during {flight_part_desc}"
+                var_patterns["_min"] = "minimum value of {name} during {flight_part_desc}"
+                var_patterns["_max"] = "maximum value of {name} during {flight_part_desc}"
+
+            for category, desc_pattern in var_patterns.items():
+                output_definition[":".join([name_root, category, name])] = (
+                    unit,
+                    desc_pattern.format(name=name, flight_part_desc=flight_part_desc),
+                )
+
+    @staticmethod
+    def _compute_vars(
+        outputs: MutableMapping,
+        name_root: str,
+        start_flight_point: pd.Series,
+        flight_points: pd.DataFrame,
+    ):
+        """
+        Computes output variables for each part of the mission (whole mission, phases and routes).
+
+        For all FlightPoint fields declared as outputs:
+        - end value at the end of the considered part
+        - evolution of the value during the considered part
+
+        For all FlightPoint fields declared as outputs and not cumulative:
+        - mean value during the considered part
+        - minimum value during the considered part
+        - maximum value during the considered part
+
+        :param outputs: OpenMDAO outputs
+        :param name_root: e.g. "data:mission:operational:main_route:descent"
+        :param start_flight_point: starting point of the considered part
+                                   (generally the end point of previous part)
+        :param flight_points: flight points of the considered part
+        """
+        start = start_flight_point
+        end = flight_points.iloc[-1]
+
+        if name_root + ":duration" in outputs:
+            outputs[name_root + ":duration"] = end.time - start.time
+        if name_root + ":fuel" in outputs:
+            outputs[name_root + ":fuel"] = start.mass - end.mass
+        if name_root + ":distance" in outputs:
+            outputs[name_root + ":distance"] = end.ground_distance - start.ground_distance
+
+        for name in FlightPoint.get_field_names():
+            if f"{name_root}:_end:{name}" not in outputs:
+                continue
+
+            if FlightPoint.is_output(name):
+                end_value = end[name]
+                if end_value is None:
+                    continue
+                start_value = start[name]
+                if start_value is None:
+                    start_value = 0.0
+                outputs[f"{name_root}:_end:{name}"] = end_value
+                try:
+                    # won't work for booleans, but then, the output is not needed.
+                    outputs[f"{name_root}:_evolution:{name}"] = end_value - start_value
+                except TypeError:
+                    pass
+                if not FlightPoint.is_cumulative(name):
+                    outputs[f"{name_root}:_mean:{name}"] = np.mean(flight_points[name])
+                    outputs[f"{name_root}:_min:{name}"] = np.min(flight_points[name])
+                    outputs[f"{name_root}:_max:{name}"] = np.max(flight_points[name])
