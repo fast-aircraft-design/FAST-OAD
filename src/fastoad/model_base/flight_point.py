@@ -16,18 +16,18 @@
 from copy import deepcopy
 from dataclasses import asdict, dataclass, field, fields
 from numbers import Number
-from typing import Any, List, Mapping, Optional, Sequence, Union
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Union
 
 import numpy as np
 import pandas as pd
 
 from fastoad.constants import EngineSetting
 
-FIELD_STATUS = "field_status"
+FIELD_DESCRIPTOR = "field_descriptor"
 
 
 @dataclass
-class _FieldStatus:
+class _FieldDescriptor:
     """
     Class to be used as dataclass field metadata.
     """
@@ -94,83 +94,99 @@ class FlightPoint:
     """
 
     time: float = field(
-        default=0.0, metadata={FIELD_STATUS: _FieldStatus(cumulative=True, unit="s")}
+        default=0.0, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(cumulative=True, unit="s")}
     )  #: Time in seconds.
 
     #: Altitude in meters.
-    altitude: float = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="m")})
+    altitude: float = field(default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="m")})
 
     #: temperature deviation from Standard Atmosphere
-    isa_offset: float = field(default=0.0, metadata={FIELD_STATUS: _FieldStatus(unit="K")})
+    isa_offset: float = field(default=0.0, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="K")})
 
     #: Covered ground distance in meters.
-    ground_distance: float = field(default=0.0, metadata={FIELD_STATUS: _FieldStatus(unit="m")})
+    ground_distance: float = field(
+        default=0.0, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="m")}
+    )
 
     #: Mass in kg.
-    mass: float = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="kg")})
+    mass: float = field(default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="kg")})
 
     #: Consumed fuel since mission start, in kg.
     consumed_fuel: float = field(
-        default=0.0, metadata={FIELD_STATUS: _FieldStatus(cumulative=True, unit="kg")}
+        default=0.0, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(cumulative=True, unit="kg")}
     )
 
     #: True airspeed (TAS) in m/s.
-    true_airspeed: float = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="m/s")})
+    true_airspeed: float = field(
+        default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="m/s")}
+    )
 
     #: Equivalent airspeed (EAS) in m/s.
     equivalent_airspeed: float = field(
-        default=None, metadata={FIELD_STATUS: _FieldStatus(unit="m/s")}
+        default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="m/s")}
     )
 
     #: Mach number.
-    mach: float = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="-")})
+    mach: float = field(default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="-")})
 
     #: Engine setting.
-    engine_setting: EngineSetting = field(default=None, metadata={FIELD_STATUS: _FieldStatus()})
+    engine_setting: EngineSetting = field(
+        default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor()}
+    )
 
     # pylint: disable=invalid-name
     #: Lift coefficient.
-    CL: float = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="-")})
+    CL: float = field(default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="-")})
 
     # pylint: disable=invalid-name
     #: Drag coefficient.
-    CD: float = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="-")})
+    CD: float = field(default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="-")})
 
     #: Aircraft lift in Newtons
-    lift: float = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="N")})
+    lift: float = field(default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="N")})
 
     #: Aircraft drag in Newtons.
-    drag: float = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="N")})
+    drag: float = field(default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="N")})
 
     #: Thrust in Newtons.
-    thrust: float = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="N")})
+    thrust: float = field(default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="N")})
 
     #: Thrust rate (between 0. and 1.)
-    thrust_rate: float = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="-")})
+    thrust_rate: float = field(
+        default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="-")}
+    )
 
     #: If True, propulsion should match the thrust value.
     #: If False, propulsion should match thrust rate.
-    thrust_is_regulated: bool = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="-")})
+    thrust_is_regulated: bool = field(
+        default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="-")}
+    )
 
     #: Specific Fuel Consumption in kg/N/s.
-    sfc: float = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="kg/N/s")})
+    sfc: float = field(default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="kg/N/s")})
 
     #: Slope angle in radians.
-    slope_angle: float = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="rad")})
+    slope_angle: float = field(
+        default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="rad")}
+    )
 
     #: Acceleration value in m/s**2.
-    acceleration: float = field(default=None, metadata={FIELD_STATUS: _FieldStatus(unit="m/s**2")})
+    acceleration: float = field(
+        default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="m/s**2")}
+    )
 
     #: angle of attack in radians
-    alpha: float = field(default=0.0, metadata={FIELD_STATUS: _FieldStatus(unit="rad")})
+    alpha: float = field(default=0.0, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="rad")})
 
     #: slope angle derivative in rad/s
     slope_angle_derivative: float = field(
-        default=None, metadata={FIELD_STATUS: _FieldStatus(unit="rad/s")}
+        default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="rad/s")}
     )
 
     #: Name of current phase.
-    name: str = field(default=None, metadata={FIELD_STATUS: _FieldStatus()})
+    name: str = field(default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor()})
+
+    __field_descriptors = {}  # Will store field metadata when needed
 
     def __post_init__(self):
         self._relative_parameters = {"ground_distance", "time"}
@@ -250,9 +266,8 @@ class FlightPoint:
         A dimensionless physical quantity will have "-" as unit.
         """
         return {
-            cls_field.name: cls_field.metadata[FIELD_STATUS].unit
-            for cls_field in fields(cls)
-            if not cls_field.name.startswith("_")
+            name: field_descriptor.unit
+            for name, field_descriptor in cls._get_field_descriptors().items()
         }
 
     @classmethod
@@ -309,7 +324,9 @@ class FlightPoint:
             field(
                 default=default_value,
                 metadata={
-                    FIELD_STATUS: _FieldStatus(unit=unit, cumulative=cumulative, output=output)
+                    FIELD_DESCRIPTOR: _FieldDescriptor(
+                        unit=unit, cumulative=cumulative, output=output
+                    )
                 },
             ),
         )
@@ -331,6 +348,21 @@ class FlightPoint:
             dataclass(cls)
 
     @classmethod
+    def _get_field_descriptors(cls) -> Dict[str, _FieldDescriptor]:
+        """
+        Uses this method instead of accessing cls.__field_descriptors to ensure it
+        will always be correctly populated.
+        """
+        if not cls.__field_descriptors:
+            cls.__field_descriptors = {
+                cls_field.name: cls_field.metadata[FIELD_DESCRIPTOR]
+                for cls_field in fields(cls)
+                if not cls_field.name.startswith("_")
+            }
+
+        return cls.__field_descriptors
+
+    @classmethod
     def _redeclare_fields(cls):
         """
         To be done before "re-dataclassing" cls.
@@ -342,3 +374,5 @@ class FlightPoint:
             setattr(
                 cls, cls_field.name, field(default=cls_field.default, metadata=cls_field.metadata)
             )
+
+        cls.__field_descriptors = {}  # Will need to rebuild this dict on next usage.
