@@ -47,7 +47,6 @@ python = ">=3.8, <3.12"
 numpy = [
     { version = ">=1.22.0, <1.25", python = "~3.8" },
     { version = ">=1.23.2, <3", python = ">=3.9, <3.12" },
-    { version = ">=1.26, <3", python = "^3.12" },
 ]
 scipy = [
     { version = ">=1.9.3, <1.11", python = "~3.8" },
