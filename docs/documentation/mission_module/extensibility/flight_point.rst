@@ -61,7 +61,7 @@ assessment, but one might need additional fields.
 Python allows to add attributes to any instance at runtime, but for FlightPoint to run
 smoothly, especially when exchanging data with pandas, you have to work at class level.
 This can be done using :meth:`~fastoad.model_base.flight_point.FlightPoint.add_field`, preferably
-outside of any class or function::
+outside any class or function::
 
     # Adding a float field with None as default value
     >>> FlightPoint.add_field(
