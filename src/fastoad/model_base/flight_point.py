@@ -192,7 +192,8 @@ class FlightPoint:
     #: Name of current phase.
     name: str = field(default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor()})
 
-    __field_descriptors = {}  # Will store field metadata when needed. Must be accessed through
+    # Will store field metadata when needed. Must be accessed through _get_field_descriptors()
+    __field_descriptors = {}
 
     def __post_init__(self):
         self._relative_parameters = {"ground_distance", "time"}
