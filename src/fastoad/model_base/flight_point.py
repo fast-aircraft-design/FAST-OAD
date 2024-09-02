@@ -346,7 +346,7 @@ class FlightPoint:
         :param default_value: field default value
         :param unit: expected unit for the added field. "-" should be provided for a dimensionless
                      physical quantity. Set to None, when unit concept does not apply.
-        :param cumulative: True if field value is sums up during mission
+        :param cumulative: True if field value is summed up during mission
         :param output: True if field should be written in mission outputs
         """
         cls._redeclare_fields()
