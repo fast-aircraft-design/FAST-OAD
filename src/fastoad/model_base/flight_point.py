@@ -284,7 +284,7 @@ class FlightPoint:
 
         A dimensionless physical quantity will have "-" as unit.
         """
-        return cls._get_field_descriptors().get(field_name, _FieldDescriptor()).unit
+        return cls._get_field_descriptor(field_name).unit
 
     @classmethod
     def is_cumulative(cls, field_name) -> Optional[bool]:
@@ -293,11 +293,7 @@ class FlightPoint:
 
         Returns None if field not found.
         """
-        return (
-            cls._get_field_descriptors()
-            .get(field_name, _FieldDescriptor(None, None, None))
-            .is_cumulative
-        )
+        return cls._get_field_descriptor(field_name).is_cumulative
 
     @classmethod
     def is_output(cls, field_name) -> Optional[bool]:
@@ -306,11 +302,7 @@ class FlightPoint:
 
         Returns None if field not found.
         """
-        return (
-            cls._get_field_descriptors()
-            .get(field_name, _FieldDescriptor(None, None, None))
-            .is_output
-        )
+        return cls._get_field_descriptor(field_name).is_output
 
     @classmethod
     def create(cls, data: Mapping) -> "FlightPoint":
@@ -403,6 +395,14 @@ class FlightPoint:
             }
 
         return cls.__field_descriptors
+
+    @classmethod
+    def _get_field_descriptor(cls, field_name) -> _FieldDescriptor:
+        """
+        Returns the _FieldDescriptor class for provided field_name.
+        Returns _FieldDescriptor(None, None, None) if field_name is not present.
+        """
+        return cls._get_field_descriptors().get(field_name, _FieldDescriptor(None, None, None))
 
     @classmethod
     def _redeclare_fields(cls):
