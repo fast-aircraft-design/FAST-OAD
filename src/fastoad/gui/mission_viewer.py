@@ -134,8 +134,7 @@ class MissionViewer:
         Otherwise return the column corresponding to the default index.
         """
 
-        flight_point_units = FlightPoint.get_units()
-        unit_quantity = flight_point_units[quantity_name]
+        unit_quantity = FlightPoint.get_unit(quantity_name)
         column_quantity = f"{quantity_name} [{unit_quantity}]"
         label_quantity = column_quantity if column_quantity in keys else keys[default_idx]
 

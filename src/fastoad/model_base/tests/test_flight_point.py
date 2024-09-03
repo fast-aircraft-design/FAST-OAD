@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -80,3 +80,37 @@ def test_scalarize():
     assert fp.mass == 70000.0
     assert fp.altitude == 1000.0
     assert_allclose(fp.mach, [0.7, 0.8])
+
+
+def test_descriptors():
+    FlightPoint.add_field(
+        "foo", annotation_type=float, default_value=42.0, unit="m", cumulative=False, output=True
+    )
+    # Testing redeclaration
+    FlightPoint.add_field(
+        "foo",
+        annotation_type=float,
+        default_value=42.0,
+        unit="slug/ft",
+        cumulative=True,
+        output=False,
+    )
+
+    assert FlightPoint.get_units()["time"] == "s"
+    assert FlightPoint.get_units()["foo"] == "slug/ft"
+
+    assert FlightPoint.get_unit("time") == "s"
+    assert FlightPoint.get_unit("foo") == "slug/ft"
+
+    assert FlightPoint.is_cumulative("time")
+    assert not FlightPoint.is_cumulative("altitude")
+    assert FlightPoint.is_cumulative("foo")
+
+    assert FlightPoint.is_output("time")
+    assert FlightPoint.is_output("altitude")
+    assert not FlightPoint.is_output("foo")
+
+    FlightPoint.remove_field("foo")
+
+    assert FlightPoint.get_unit("altitude") == "m"
+    assert FlightPoint.get_unit("engine_setting") is None

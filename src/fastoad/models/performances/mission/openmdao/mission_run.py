@@ -110,7 +110,7 @@ class MissionComp(om.ExplicitComponent, BaseMissionComp):
 
         flight_points = flight_points.applymap(as_scalar)
         rename_dict = {
-            field_name: f"{field_name} [{unit}]"
+            field_name: f"{field_name}{' ['+unit+']' if unit else ''}"
             for field_name, unit in FlightPoint.get_units().items()
         }
         flight_points.rename(columns=rename_dict, inplace=True)
