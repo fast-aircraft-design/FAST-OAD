@@ -17,6 +17,7 @@ Test module for configuration.py
 import os
 import shutil
 from pathlib import Path
+import importlib.util
 
 import pytest
 import tomlkit
@@ -336,3 +337,35 @@ def test_set_optimization_definition(cleanup):
         conf_dict_opt = conf_dict["optimization"]
         # Should be equal
         assert optimization_conf == conf_dict_opt
+
+
+def test_imports_handling():
+    # Mock the importlib.import_module to return a dummy class
+    class DummyClass:
+        pass
+
+    # Create a dummy module and add it to sys.modules
+    dummy_module_spec = importlib.util.spec_from_loader("my_driver_1", loader=None)
+    dummy_module = importlib.util.module_from_spec(dummy_module_spec)
+    dummy_module.MyDriver1 = DummyClass
+    import sys
+
+    sys.modules["my_driver_1"] = dummy_module
+
+    dummy_module_spec = importlib.util.spec_from_loader("my_driver_2", loader=None)
+    dummy_module = importlib.util.module_from_spec(dummy_module_spec)
+    dummy_module.MyDriver2 = DummyClass
+    sys.modules["my_driver_2"] = dummy_module
+
+    conf = FASTOADProblemConfigurator()
+    conf.load(DATA_FOLDER_PATH / "conf_with_imports.yml")
+
+    # Check that the classes are correctly imported and stored
+    assert "MyDriver1" in conf._imported_classes
+    assert "MyDriver2" in conf._imported_classes
+    assert conf._imported_classes["MyDriver1"] == DummyClass
+    assert conf._imported_classes["MyDriver2"] == DummyClass
+
+    # Check that _om_eval can use the imported classes
+    result = conf._om_eval("MyDriver1()")
+    assert isinstance(result, DummyClass)
