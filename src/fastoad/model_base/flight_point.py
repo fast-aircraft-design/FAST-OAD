@@ -111,7 +111,7 @@ class FlightPoint:
 
     #: Covered ground distance in meters.
     ground_distance: float = field(
-        default=0.0, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="m")}
+        default=0.0, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(is_cumulative=True, unit="m")}
     )
 
     #: Mass in kg.
