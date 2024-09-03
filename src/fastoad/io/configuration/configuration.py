@@ -18,6 +18,7 @@ import json
 import logging
 from abc import ABC, abstractmethod
 from importlib.resources import open_text
+from importlib import import_module
 from os import PathLike
 from pathlib import Path
 from typing import Dict, List, Optional, Union
@@ -66,6 +67,8 @@ class FASTOADProblemConfigurator:
 
     def __init__(self, conf_file_path: Union[str, PathLike] = None):
         self._serializer: _IDictSerializer = _YAMLSerializer()
+        # Store imported classes
+        self._imported_classes = {}
 
         # self._configuration_modifier offers a way to modify problems after
         # they have been generated from configuration (private usage for now)
@@ -129,7 +132,7 @@ class FASTOADProblemConfigurator:
 
         driver = self._data.get(KEY_DRIVER, "")
         if driver:
-            problem.driver = _om_eval(driver)
+            problem.driver = self._om_eval(driver)
 
         if self.get_optimization_definition():
             self._add_constraints(problem.model, auto_scaling)
@@ -162,6 +165,11 @@ class FASTOADProblemConfigurator:
         with open_text(resources, JSON_SCHEMA_NAME) as json_file:
             json_schema = json.loads(json_file.read())
         validate(self._data, json_schema)
+
+        # Handle imports
+        imports = self._data.get("imports", {})
+        for module_name, class_name in imports.items():
+            self._imported_classes[class_name] = getattr(import_module(module_name), class_name)
 
         # Issue a simple warning for unknown keys at root level
         for key in self._data:
@@ -333,7 +341,7 @@ class FASTOADProblemConfigurator:
                 # value may have to be literally interpreted
                 if key.endswith(("solver", "driver")):
                     try:
-                        value = _om_eval(str(value))
+                        value = self._om_eval(str(value))
                     except Exception as err:
                         raise FASTConfigurationBadOpenMDAOInstructionError(err, key, value)
 
@@ -419,19 +427,20 @@ class FASTOADProblemConfigurator:
     def _set_configuration_modifier(self, modifier: "_IConfigurationModifier"):
         self._configuration_modifier = modifier
 
+    def _om_eval(self, string_to_eval: str):
+        """
+        Evaluates strings that assume `import openmdao.api as om` is done.
 
-def _om_eval(string_to_eval: str):
-    """
-    Evaluates strings that assume `import openmdao.api as om` is done.
+        eval() is used for that, as safely as possible.
 
-    eval() is used for that, as safely as possible.
-
-    :param string_to_eval:
-    :return: result of eval()
-    """
-    if "__" in string_to_eval:
-        raise ValueError("No double underscore allowed in evaluated string for security reasons")
-    return eval(string_to_eval, {"__builtins__": {}}, {"om": om})
+        :param string_to_eval:
+        :return: result of eval()
+        """
+        if "__" in string_to_eval:
+            raise ValueError(
+                "No double underscore allowed in evaluated string for security reasons"
+            )
+        return eval(string_to_eval, {"__builtins__": {}}, {"om": om, **self._imported_classes})
 
 
 class _IDictSerializer(ABC):
