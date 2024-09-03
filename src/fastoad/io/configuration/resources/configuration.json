@@ -134,6 +134,12 @@
       "type": "string",
       "default": "./outputs.xml"
     },
+    "imports": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
     "driver": {
       "type": "string",
       "default": "om.ScipyOptimizeDriver(tol=1e-6, optimizer='SLSQP')"
