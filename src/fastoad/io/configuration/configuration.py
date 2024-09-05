@@ -67,7 +67,8 @@ class FASTOADProblemConfigurator:
 
     def __init__(self, conf_file_path: Union[str, PathLike] = None):
         self._serializer: _IDictSerializer = _YAMLSerializer()
-        # Store imported classes
+
+        # for storing imported classes
         self._imported_classes = {}
 
         # self._configuration_modifier offers a way to modify problems after
