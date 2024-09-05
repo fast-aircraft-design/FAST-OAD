@@ -30,6 +30,12 @@ A quick tutorial for YAML (among many ones) is available
     input_file: ./problem_inputs.xml
     output_file: ./problem_outputs.xml
 
+    # List of registered modules
+    imports:
+        my_driver_1: MyDriver1
+        utils.my_drivers.my_driver_2: MyDriver2
+        utils.my_solvers.my_favourite_solver: MyFavouriteSolver
+
     # Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
     driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
 
@@ -119,6 +125,25 @@ Input and output files
 
 Specifies the input and output files of the problem. They are defined in the configuration file
 and DO NOT APPEAR in the command line interface.
+
+Imports
+=======
+.. code:: yaml
+
+    imports:
+        my_driver_1: MyDriver1
+        utils.my_drivers.my_driver_2: MyDriver2
+        utils.my_solvers.my_favourite_solver: MyFavouriteSolver
+
+This section is used to import modules such as solvers and drivers that are not available in OpenMDAO.
+The key is the path of the module or Python file, and the value is the name of the object to import.
+The YAML code lines above will do the equivalent in Python of:
+
+.. code:: python
+
+    from my_driver_1 import MyDriver1
+    from utils.my_drivers.my_driver_2 import MyDriver2
+    from utils.my_solvers.my_favourite_solver import MyFavouriteSolver
 
 Problem driver
 ==============
