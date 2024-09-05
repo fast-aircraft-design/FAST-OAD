@@ -5,8 +5,8 @@
 
 
   imports:
-      my_driver_1: MyDriver1
-      my_driver_2: MyDriver2
+      fastoad.io.configuration.tests.data.to_be_imported.my_driver_1: MyDriver1
+      "fastoad.io.configuration.tests.data.to_be_imported.my_driver_2": MyDriver2
 
   driver: MyDriver1(tol=1e-2, optimizer='COBYLA', maxiter=maxiter)
 
