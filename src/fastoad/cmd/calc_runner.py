@@ -18,6 +18,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from math import ceil, log10
 from os import PathLike
+from pathlib import Path
 from typing import List, Optional, Union
 
 from openmdao.utils.mpi import FakeComm
@@ -154,7 +155,12 @@ class CalcRunner:
                 self._calculation_inputs(input_list, destination_folder, overwrite_subfolders),
             )
 
-    def _calculation_inputs(self, input_list, destination_folder, overwrite_subfolders):
+    def _calculation_inputs(
+        self,
+        input_list: List[VariableList],
+        destination_folder: Path,
+        overwrite_subfolders: bool,
+    ):
         """Iterator for providing inputs of :meth:`run`."""
         case_count = len(input_list)
         n_digits = ceil(log10(case_count))
