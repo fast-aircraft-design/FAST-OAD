@@ -309,13 +309,42 @@ class FASTOADProblemConfigurator:
             ]
 
         self._make_options_local(self._data[KEY_MODEL], new_folder_path)
+        if KEY_MODEL_OPTIONS in self._data:
+            self._make_options_local(
+                self._data[KEY_MODEL_OPTIONS], new_folder_path, local_path=Path("model_options")
+            )
         self.save(new_folder_path.joinpath(self._conf_file_path.name))
 
-    def _make_options_local(self, structure: dict, new_root_path, local_path=Path(".")):
+    def _make_options_local(
+        self,
+        structure: dict,
+        new_root_path: Path,
+        local_path: Path = Path("."),
+    ):
+        """
+        Recursively modifies `structure` to make each path-like value local with respect to
+        `new_root_path`: the value is replaced by `local_path` / <file_name> and if a matching
+        file already exists, it is copied in `new_root_path` / `local_path` / <file_name>.
+
+        `local_path` is incremented while the structure is browsed, e.g., with
+        `local_path`== "./initial_path" and
+        structure["group_1"]["model_2"]["input_file"] == "/any/path/to/foo.txt",
+         it will be modified to
+         structure["group_1"]["model_2"]["input_file"] == "./initial_path/group_1/model_2/foo.txt".
+
+        Wildcards, that could be encountered in 'model_options', are removed,
+        e.g., with `local_path`== ".", result will be:
+        structure["model_options"]["loop?.*"]["input_file"] == "./model_options/loop./foo.txt".
+
+        :param structure:
+        :param new_root_path:
+        :param local_path:
+        """
         for key, value in structure.items():
             if isinstance(value, dict) and key != KEY_CONNECTION_ID:
-                self._make_options_local(value, new_root_path, local_path=local_path / key)
-                continue
+                # wildcards, that could be encountered in 'model_options', are removed.
+                new_local_path = local_path / key.replace("*", "").replace("?", "")
+                self._make_options_local(value, new_root_path, local_path=new_local_path)
             if key == KEY_COMPONENT_ID or not isinstance(value, str):
                 continue
 
@@ -330,7 +359,7 @@ class FASTOADProblemConfigurator:
                     or key.endswith(("file", "path", "dir", "directory", "folder"))
                 ):
                     structure[key] = self._make_path_local(
-                        original_file_path, new_root_path, local_path / option_value_as_path.parent
+                        original_file_path, new_root_path, local_path
                     )
 
     def _configure_driver(self, prob):
@@ -391,12 +420,12 @@ class FASTOADProblemConfigurator:
         :param local_path:
         :return: the relative path
         """
-        original_path = Path(original_path)
-        new_path = Path(new_folder_path)
+        original_path = as_path(original_path)
+        new_path = as_path(new_folder_path)
         if local_path:
-            new_path = new_path.joinpath(local_path)
+            new_path /= local_path
         new_path.mkdir(parents=True, exist_ok=True)
-        new_path = new_path.joinpath(original_path.name)
+        new_path /= original_path.name
         if original_path.is_file():
             shutil.copy(original_path, new_path)
         if original_path.is_dir():

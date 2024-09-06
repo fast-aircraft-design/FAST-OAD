@@ -390,7 +390,14 @@ def test_make_local(cleanup):
                 target_folder / "group" / "functions" / "translator.txt",
                 DATA_FOLDER_PATH / "translator.txt",
             )
-
+            assert filecmp.cmp(
+                target_folder / "model_options" / "functions.py",
+                DATA_FOLDER_PATH / "conf_sellar_example" / "functions.py",
+            )
+            assert filecmp.cmp(
+                target_folder / "model_options" / "cycle." / "__init__.py",
+                DATA_FOLDER_PATH / "__init__.py",
+            )
             # Run -----------------------------------------------------
             clear_openmdao_registry()
             local_conf_1 = FASTOADProblemConfigurator(target_folder / f"valid_sellar.{extension}")
