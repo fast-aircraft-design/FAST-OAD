@@ -281,10 +281,11 @@ class FASTOADProblemConfigurator:
         Modify the current configurator so that all input and output files will be in
         the indicated folder.
 
-        :param new_folder_path:
-        :return:
+        :param new_folder_path: the folder path that will contain in/out files
+        :param copy_models: True if local models (declared in `module_folders`) should
+                            be copied in `new_folder_path`
         """
-        new_folder_path = Path(new_folder_path)
+        new_folder_path = as_path(new_folder_path)
 
         self._data[KEY_INPUT_FILE] = self._make_path_local(self.input_file_path, new_folder_path)
         self._data[KEY_OUTPUT_FILE] = self._make_path_local(self.output_file_path, new_folder_path)
