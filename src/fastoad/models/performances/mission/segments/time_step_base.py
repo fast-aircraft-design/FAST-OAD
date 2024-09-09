@@ -1,6 +1,6 @@
 """Base classes for time-step segments"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -165,46 +165,53 @@ class AbstractTimeStepFlightSegment(
 
     def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
         flight_points = [start]
-        previous_point_to_target = self.get_distance_to_target(flight_points, target)
-        tol = 1.0e-5  # Such accuracy is not needed, but ensures reproducibility of results.
-        while np.abs(previous_point_to_target) > tol:
-            self._add_new_flight_point(flight_points, self.time_step)
-            last_point_to_target = self.get_distance_to_target(flight_points, target)
 
-            if (
-                np.abs(last_point_to_target) > tol
-                and last_point_to_target * previous_point_to_target < 0.0
-            ):
+        # will contain distances to target for time steps n-1 and n
+        last_distances_to_target = [self.get_distance_to_target(flight_points, target)] * 2
+
+        tol = 1.0e-5  # Such accuracy is not needed, but ensures reproducibility of results.
+        while np.abs(last_distances_to_target[1]) > tol:
+            self._add_new_flight_point(flight_points, self.time_step)
+
+            last_distances_to_target[:] = (
+                last_distances_to_target[1],
+                self.get_distance_to_target(flight_points, target),
+            )
+
+            if np.abs(last_distances_to_target[1]) <= tol:
+                break
+
+            if last_distances_to_target[0] * last_distances_to_target[1] < 0.0:
                 # Target has been exceeded. Let's look for the exact time step using root_scalar.
+
+                # Time step bracket for root_scalar()
+                # root_scalar convergence criterium is not bases
+                last_time_steps = [0.0, self.time_step]
+
                 def replace_last_point(time_step):
                     """
                     Replaces last point of flight_points.
 
+                    IMPORTANT: Modifies `flight_points`, `last_distances_to_target`
+                               and `last_time_steps`
+
                     :param time_step: time step for new point
                     :return: new distance to target
                     """
-
-                    if isinstance(time_step, np.ndarray):
-                        # root_scalar() will provide time_step ad (1,) array, resulting
-                        # in all parameters of the new flight point being also (1,) arrays.
-                        # We want to avoid that
-                        time_step = time_step.item()
-                    del flight_points[-1]
+                    flight_points.pop()
                     self._add_new_flight_point(flight_points, time_step)
-                    return self.get_distance_to_target(flight_points, target)
+                    last_distances_to_target[1] = self.get_distance_to_target(flight_points, target)
+                    last_time_steps[:] = last_time_steps[1], time_step
+                    return last_distances_to_target[1]
 
                 rtol = tol
-                while np.abs(last_point_to_target) > tol:
-                    rtol *= 0.1
-                    root_scalar(
-                        replace_last_point,
-                        x0=self.time_step,
-                        x1=self.time_step / 2.0,
-                        rtol=rtol,
-                    )
-                    last_point_to_target = self.get_distance_to_target(flight_points, target)
+                while np.abs(last_distances_to_target[1]) > tol:
+                    rtol *= 0.05
+                    _ = root_scalar(replace_last_point, bracket=last_time_steps, rtol=rtol)
+                flight_points[-1].scalarize()
+
             elif (
-                np.abs(last_point_to_target) > np.abs(previous_point_to_target)
+                np.abs(last_distances_to_target[1]) > np.abs(last_distances_to_target[0])
                 # If self.target.CL is defined, it means that we look for an optimal altitude and
                 # that target altitude can move, so it would be normal to get further from target.
                 and self.interrupt_if_getting_further_from_target
@@ -215,15 +222,13 @@ class AbstractTimeStepFlightSegment(
                     "Please review the segment settings, especially thrust_rate.",
                     self.name,
                 )
-                del flight_points[-1]
+                flight_points.pop()
                 break
 
             msg = self._check_values(flight_points[-1])
             if msg:
                 _LOGGER.warning('%s Segment computation interrupted in "%s".', msg, self.name)
                 break
-
-            previous_point_to_target = last_point_to_target
 
         flight_points_df = pd.DataFrame(flight_points)
         return flight_points_df
