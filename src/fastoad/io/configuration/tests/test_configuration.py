@@ -387,15 +387,15 @@ def test_make_local(cleanup):
                 target_folder / "ref_inputs.xml", DATA_FOLDER_PATH / "ref_inputs.xml"
             )
             assert filecmp.cmp(
-                target_folder / "group" / "functions" / "translator.txt",
+                target_folder / "group" / "functions" / "input_path" / "translator.txt",
                 DATA_FOLDER_PATH / "translator.txt",
             )
             assert filecmp.cmp(
-                target_folder / "model_options" / "functions.py",
+                target_folder / "model_options" / "unused_file" / "functions.py",
                 DATA_FOLDER_PATH / "conf_sellar_example" / "functions.py",
             )
             assert filecmp.cmp(
-                target_folder / "model_options" / "cycle." / "__init__.py",
+                target_folder / "model_options" / "cycle." / "input_file" / "__init__.py",
                 DATA_FOLDER_PATH / "__init__.py",
             )
             # Run -----------------------------------------------------

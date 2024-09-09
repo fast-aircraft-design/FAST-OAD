@@ -359,7 +359,7 @@ class FASTOADProblemConfigurator:
                     or key.endswith(("file", "path", "dir", "directory", "folder"))
                 ):
                     structure[key] = self._make_path_local(
-                        original_file_path, new_root_path, local_path
+                        original_file_path, new_root_path, local_path / key
                     )
 
     def _configure_driver(self, prob):
