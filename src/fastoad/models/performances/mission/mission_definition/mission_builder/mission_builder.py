@@ -456,6 +456,7 @@ class MissionBuilder:
                     ]
                     value = FlightPoint(**target_parameters)
                     value.set_as_relative(relative_fields)
+                    value.scalarize()
 
             part_kwargs[key] = value
 

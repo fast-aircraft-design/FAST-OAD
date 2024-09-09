@@ -204,10 +204,10 @@ class AbstractTimeStepFlightSegment(
                     last_time_steps[:] = last_time_steps[1], time_step
                     return last_distances_to_target[1]
 
-                rtol = tol
+                xtol = 0.1
                 while np.abs(last_distances_to_target[1]) > tol:
-                    rtol *= 0.05
-                    _ = root_scalar(replace_last_point, bracket=last_time_steps, rtol=rtol)
+                    xtol *= 0.1
+                    _ = root_scalar(replace_last_point, bracket=last_time_steps, xtol=xtol)
                 flight_points[-1].scalarize()
 
             elif (
