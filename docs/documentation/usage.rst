@@ -30,12 +30,6 @@ A quick tutorial for YAML (among many ones) is available
     input_file: ./problem_inputs.xml
     output_file: ./problem_outputs.xml
 
-    # List of registered modules
-    imports:
-        my_driver_1: MyDriver1
-        utils.my_drivers.my_driver_2: MyDriver2
-        utils.my_solvers.my_favourite_solver: MyFavouriteSolver
-
     # Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
     driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
 
