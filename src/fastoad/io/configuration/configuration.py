@@ -431,6 +431,7 @@ class FASTOADProblemConfigurator:
     def _om_eval(self, string_to_eval: str):
         """
         Evaluates strings that assume `import openmdao.api as om` is done.
+        Evaluates also imports specified in the imports section of the configuration file (if any).
 
         eval() is used for that, as safely as possible.
 
