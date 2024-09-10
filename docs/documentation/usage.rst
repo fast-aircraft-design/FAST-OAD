@@ -126,25 +126,6 @@ Input and output files
 Specifies the input and output files of the problem. They are defined in the configuration file
 and DO NOT APPEAR in the command line interface.
 
-Imports
-=======
-.. code:: yaml
-
-    imports:
-        my_driver_1: MyDriver1
-        utils.my_drivers.my_driver_2: MyDriver2
-        utils.my_solvers.my_favourite_solver: MyFavouriteSolver
-
-This section is used to import modules such as solvers and drivers that are not available in OpenMDAO.
-The key is the path of the module or Python file, and the value is the name of the object to import.
-The YAML code lines above will do the equivalent in Python of:
-
-.. code:: python
-
-    from my_driver_1 import MyDriver1
-    from utils.my_drivers.my_driver_2 import MyDriver2
-    from utils.my_solvers.my_favourite_solver import MyFavouriteSolver
-
 Problem driver
 ==============
 
@@ -246,37 +227,6 @@ as option settings:
 - For FAST-OAD modules, the list of available options is available through the :code:`list_modules`
   sub-command (see :ref:`get-module-list`).
 
-.. _configuration-model-options:
-
-Model options
-==============
-
-OpenMDAO 3.27 introduced a new way to set options for any component in the problem, using the
-:code:`model_options` attribute of the :code:`Problem` object (see OpenMDAO documentation
-`here <https://openmdao.org/newdocs/versions/latest/features/core_features/options/options.html#setting-options-throughout-a-problem-model-problem-model-options>`_).
-
-This can be controlled from the configuration file, using for instance:
-
-.. code:: yaml
-
-    model_options:
-      "*":
-        propulsion_id: fastoad.wrapper.propulsion.rubber_engine
-      "aerodynamics.*":
-        use_xfoil: true
-
-With above lines, we set the :code:`"propulsion_id"` option for all concerned components
-in the problem, and we set the :code:`"use_xfoil"` option for all components inside the
-:code:`aerodynamics` module (please see
-`OpenMDAO documentation <https://openmdao.org/newdocs/versions/latest/features/core_features/options/options.html#using-glob-patterns-to-set-different-option-values-in-different-systems>`_
-for more examples using wildcards).
-
-.. note::
-
-  - Please note that the wildcards have to be (double) quoted.
-  - This feature is especially convenient to set options for sub-components of the declared models,
-    since these options are not directly accessible from the configuration file.
-
 
 Optimization settings
 =====================
@@ -340,6 +290,61 @@ Keys of this section are named after parameters of the OpenMDAO :doc:`System.add
 Several constraint variables can be defined.
 
 Also, see :ref:`get-variable-list`.
+
+***************************
+Advanced configuration file
+***************************
+
+
+Imports
+=======
+.. code:: yaml
+
+    imports:
+        my_driver_1: MyDriver1
+        utils.my_drivers.my_driver_2: MyDriver2
+        utils.my_solvers.my_favourite_solver: MyFavouriteSolver
+
+This section is used to import modules such as solvers and drivers that are not available in OpenMDAO.
+The key is the path of the module or Python file, and the value is the name of the object to import.
+The YAML code lines above will do the equivalent in Python of:
+
+.. code:: python
+
+    from my_driver_1 import MyDriver1
+    from utils.my_drivers.my_driver_2 import MyDriver2
+    from utils.my_solvers.my_favourite_solver import MyFavouriteSolver
+
+.. _configuration-model-options:
+
+Model options
+==============
+
+OpenMDAO 3.27 introduced a new way to set options for any component in the problem, using the
+:code:`model_options` attribute of the :code:`Problem` object (see OpenMDAO documentation
+`here <https://openmdao.org/newdocs/versions/latest/features/core_features/options/options.html#setting-options-throughout-a-problem-model-problem-model-options>`_).
+
+This can be controlled from the configuration file, using for instance:
+
+.. code:: yaml
+
+    model_options:
+      "*":
+        propulsion_id: fastoad.wrapper.propulsion.rubber_engine
+      "aerodynamics.*":
+        use_xfoil: true
+
+With above lines, we set the :code:`"propulsion_id"` option for all concerned components
+in the problem, and we set the :code:`"use_xfoil"` option for all components inside the
+:code:`aerodynamics` module (please see
+`OpenMDAO documentation <https://openmdao.org/newdocs/versions/latest/features/core_features/options/options.html#using-glob-patterns-to-set-different-option-values-in-different-systems>`_
+for more examples using wildcards).
+
+.. note::
+
+  - Please note that the wildcards have to be (double) quoted.
+  - This feature is especially convenient to set options for sub-components of the declared models,
+    since these options are not directly accessible from the configuration file.
 
 
 .. _usage-cli:
