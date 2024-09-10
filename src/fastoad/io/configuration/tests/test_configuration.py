@@ -14,6 +14,9 @@ Test module for configuration.py
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import sys
+import tempfile
+import yaml
 import os
 import shutil
 from pathlib import Path
@@ -336,6 +339,34 @@ def test_set_optimization_definition(cleanup):
         conf_dict_opt = conf_dict["optimization"]
         # Should be equal
         assert optimization_conf == conf_dict_opt
+
+
+def test_sys_paths():
+    # Create a temporary configuration file
+    config_data = {
+        "input_file": "./inputs.xml",
+        "output_file": "./outputs.xml",
+        "model": {},
+        "sys_paths": ["/path/to/local/code1", "/path/to/local/code2"],
+    }
+
+    with tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".yaml") as temp_config_file:
+        yaml.dump(config_data, temp_config_file)
+        temp_config_file_path = temp_config_file.name
+
+    # Instantiate the configurator and load the configuration
+    configurator = FASTOADProblemConfigurator()
+    configurator.load(temp_config_file_path)
+
+    # Check if the paths are added to sys.path
+    for path in config_data["sys_paths"]:
+        assert path in sys.path
+
+    # Cleanup
+    sys.path = [p for p in sys.path if p not in config_data["sys_paths"]]
+
+    # Remove the temporary file
+    os.remove(temp_config_file_path)
 
 
 def test_imports_handling():
