@@ -19,7 +19,6 @@ import numpy as np
 from openmdao import api as om
 
 from fastoad._utils.files import make_parent_dir
-from fastoad._utils.pandas import apply_map
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
 from fastoad.module_management.service_registry import RegisterPropulsion
@@ -104,12 +103,7 @@ class MissionComp(om.ExplicitComponent, BaseMissionComp):
         self._postprocess_flight_points(self.flight_points)
 
     def _postprocess_flight_points(self, flight_points):
-        def as_scalar(value):
-            if isinstance(value, np.ndarray):
-                return value.item()
-            return value
-
-        flight_points = apply_map(flight_points, as_scalar)
+        flight_points = flight_points.copy()  # local copy for renaming columns before CSV export
         rename_dict = {
             field_name: f"{field_name}{' ['+unit+']' if unit else ''}"
             for field_name, unit in FlightPoint.get_units().items()
