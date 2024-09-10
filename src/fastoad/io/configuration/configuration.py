@@ -181,7 +181,7 @@ class FASTOADProblemConfigurator:
                 module = import_module(module_name)
                 self._imported_classes[class_name] = getattr(module, class_name)
             except (ImportError, AttributeError) as e:
-                print(f"Warning: Failed to import {class_name} from {module_name}: {e}")
+                _LOGGER.warning(f"Warning: Failed to import {class_name} from {module_name}: {e}")
                 self._imported_classes[class_name] = None
 
         # Issue a simple warning for unknown keys at root level
