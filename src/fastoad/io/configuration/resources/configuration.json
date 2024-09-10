@@ -147,8 +147,30 @@
       }
     },
     "driver": {
-      "type": "string",
-      "default": "om.ScipyOptimizeDriver(tol=1e-6, optimizer='SLSQP')"
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "Old syntax for driver configuration"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "instance": {
+              "type": "string",
+              "description": "Driver instance string"
+            },
+            "options": {
+              "type": "object",
+              "description": "Driver options",
+              "additionalProperties": {
+                "type": ["string", "number", "boolean"]
+              }
+            }
+          },
+          "required": ["instance"],
+          "additionalProperties": false
+        }
+      ]
     },
     "model_options": {
       "type": "object",

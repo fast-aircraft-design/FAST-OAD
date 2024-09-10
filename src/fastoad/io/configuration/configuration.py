@@ -134,7 +134,7 @@ class FASTOADProblemConfigurator:
 
         driver = self._data.get(KEY_DRIVER, "")
         if driver:
-            problem.driver = self._om_eval(driver)
+            self._configure_driver(problem)
 
         if self.get_optimization_definition():
             self._add_constraints(problem.model, auto_scaling)
@@ -270,6 +270,35 @@ class FASTOADProblemConfigurator:
             subpart[key] = [value for _, value in optimization_definition[key].items()]
         subpart = {"optimization": subpart}
         self._data.update(subpart)
+
+    def _configure_driver(self, prob):
+        driver_config = self._data.get(KEY_DRIVER, {})
+
+        # Check if driver_config is a string (old syntax)
+        if isinstance(driver_config, str):
+            driver_instance_str = driver_config
+            prob.driver = self._om_eval(driver_instance_str)
+        else:
+            # Use new syntax
+            # Set the driver instance
+            driver_instance = driver_config.get("instance")
+            if driver_instance:
+                driver_instance = self._om_eval(driver_instance)
+                prob.driver = driver_instance
+            else:
+                # Raise error if no driver instance is provided
+                raise FASTConfigurationBaseKeyBuildingError(
+                    ValueError("No driver instance provided in configuration file"),
+                    KEY_DRIVER,
+                )
+
+            # Iterate over all keys (attributes) in driver_config except for 'instance'
+            for first_key, first_value in driver_config.items():
+                if first_key != "instance":
+                    # Iterate over all keys (values) in first_value
+                    for second_key, second_value in first_value.items():
+                        # driver.<first_key>[<second_key>] = second_value
+                        getattr(prob.driver, first_key)[second_key] = second_value
 
     def _make_absolute(self, path: Union[str, PathLike]) -> Path:
         """
