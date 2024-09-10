@@ -150,7 +150,7 @@ class AbstractTimeStepFlightSegment(
                 0.5 * atm.density * flight_point.true_airspeed**2 * self.reference_area
             )
 
-            if self.polar:
+            if self.polar and reference_force:
                 modified_polar = self.polar_modifier.modify_polar(self.polar, flight_point)
                 flight_point.CL = flight_point.mass * g / reference_force
                 flight_point.CD = modified_polar.cd(flight_point.CL)

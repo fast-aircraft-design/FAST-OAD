@@ -20,6 +20,7 @@ from typing import Dict, List, Mapping, Optional, Union
 
 import pandas as pd
 
+from fastoad._utils.arrays import scalarize
 from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IPropulsion
@@ -139,7 +140,7 @@ class MissionBuilder:
 
     @reference_area.setter
     def reference_area(self, reference_area: float):
-        self._base_kwargs["reference_area"] = reference_area
+        self._base_kwargs["reference_area"] = scalarize(reference_area)
 
     @property
     def mission_name(self):
