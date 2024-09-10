@@ -26,6 +26,8 @@ import tomlkit
 from jsonschema import ValidationError
 from ruamel.yaml import YAML
 
+import openmdao.api as om
+
 from fastoad.io import DataFile
 from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
 from fastoad.module_management._bundle_loader import BundleLoader
@@ -394,3 +396,53 @@ def test_imports_handling():
     # Check that _om_eval can use the imported classes
     assert isinstance(result1, MyDriver1)
     assert isinstance(result2, MyDriver2)
+
+
+def test_driver_configuration():
+    # Test new syntax
+    config_data_new = {
+        "input_file": "./inputs.xml",
+        "output_file": "./outputs.xml",
+        "model": {},
+        "driver": {
+            "instance": "om.ScipyOptimizeDriver(optimizer='COBYLA')",
+            "options": {"maxiter": 100, "tol": 1e-2},
+        },
+    }
+
+    with tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".yaml") as temp_config_file:
+        yaml.dump(config_data_new, temp_config_file)
+        temp_config_file_path = temp_config_file.name
+
+    configurator = FASTOADProblemConfigurator()
+    configurator.load(temp_config_file_path)
+    problem = configurator.get_problem()
+
+    assert isinstance(problem.driver, om.ScipyOptimizeDriver)
+    assert problem.driver.options["optimizer"] == "COBYLA"
+    assert problem.driver.options["maxiter"] == 100
+    assert problem.driver.options["tol"] == 1e-2
+
+    os.remove(temp_config_file_path)
+
+    # Test old syntax
+    config_data_old = {
+        "input_file": "./inputs.xml",
+        "output_file": "./outputs.xml",
+        "model": {},
+        "driver": "om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')",
+    }
+
+    with tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".yaml") as temp_config_file:
+        yaml.dump(config_data_old, temp_config_file)
+        temp_config_file_path = temp_config_file.name
+
+    configurator = FASTOADProblemConfigurator()
+    configurator.load(temp_config_file_path)
+    problem = configurator.get_problem()
+
+    assert isinstance(problem.driver, om.ScipyOptimizeDriver)
+    assert problem.driver.options["optimizer"] == "COBYLA"
+    assert problem.driver.options["tol"] == 1e-2
+
+    os.remove(temp_config_file_path)
