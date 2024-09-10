@@ -18,9 +18,9 @@ from dataclasses import asdict, dataclass, field, fields
 from numbers import Number
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Union
 
-import numpy as np
 import pandas as pd
 
+from fastoad._utils.arrays import scalarize
 from fastoad.constants import EngineSetting
 
 FIELD_DESCRIPTOR = "field_descriptor"
@@ -255,8 +255,7 @@ class FlightPoint:
         """
         self_as_dict = asdict(self)
         for field_name, value in self_as_dict.items():
-            if np.size(value) == 1:
-                setattr(self, field_name, np.asarray(value).item())
+            setattr(self, field_name, scalarize(value))
 
     @classmethod
     def get_field_names(cls):

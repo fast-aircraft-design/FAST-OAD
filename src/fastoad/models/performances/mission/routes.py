@@ -21,6 +21,7 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import root_scalar
 
+from fastoad._utils.arrays import scalarize
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.datacls import MANDATORY_FIELD
 from .base import FlightSequence, IFlightPart
@@ -74,7 +75,7 @@ class RangedRoute(FlightSequence):
 
     @cruise_distance.setter
     def cruise_distance(self, cruise_distance):
-        self.cruise_segment.target.ground_distance = float(cruise_distance)
+        self.cruise_segment.target.ground_distance = scalarize(cruise_distance)
         self.cruise_segment.target.set_as_relative("ground_distance")
 
     @property

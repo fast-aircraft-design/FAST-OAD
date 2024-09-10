@@ -19,6 +19,7 @@ from typing import Iterable, Mapping, Optional, Tuple, Union
 import numpy as np
 from openmdao import api as om
 
+from fastoad._utils.arrays import scalarize
 from fastoad.model_base import FlightPoint
 from fastoad.openmdao.variables import Variable
 from .constants import BASE_UNITS
@@ -156,10 +157,11 @@ class InputDefinition:
         :param inputs:
         """
         if self.variable_name:
-            # Note: OpenMDAO `inputs` object has no `get()` method, so we need to do this:
-            value = (
+            value = scalarize(
+                # Note: OpenMDAO `inputs` object has no `get()` method, so we need to do this:
                 inputs[self.variable_name] if self.variable_name in inputs else self.default_value
             )
+
             if self._use_opposite:
                 self.input_value = -value
             else:
