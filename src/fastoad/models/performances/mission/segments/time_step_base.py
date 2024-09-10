@@ -162,6 +162,7 @@ class AbstractTimeStepFlightSegment(
         flight_point.slope_angle, flight_point.acceleration = self.get_gamma_and_acceleration(
             flight_point
         )
+        flight_point.scalarize()
 
     def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
         flight_points = [start]
