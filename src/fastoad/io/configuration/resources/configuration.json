@@ -134,6 +134,12 @@
       "type": "string",
       "default": "./outputs.xml"
     },
+    "sys_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "imports": {
       "type": "object",
       "additionalProperties": {

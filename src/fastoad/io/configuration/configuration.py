@@ -14,6 +14,7 @@ Module for building OpenMDAO problem from configuration file
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import sys
 import json
 import logging
 from abc import ABC, abstractmethod
@@ -167,10 +168,21 @@ class FASTOADProblemConfigurator:
             json_schema = json.loads(json_file.read())
         validate(self._data, json_schema)
 
+        # Add paths to sys.path
+        sys_paths = self._data.get("sys_paths", [])
+        for path in sys_paths:
+            if path not in sys.path:
+                sys.path.append(path)
+
         # Handle imports
         imports = self._data.get("imports", {})
         for module_name, class_name in imports.items():
-            self._imported_classes[class_name] = getattr(import_module(module_name), class_name)
+            try:
+                module = import_module(module_name)
+                self._imported_classes[class_name] = getattr(module, class_name)
+            except (ImportError, AttributeError) as e:
+                print(f"Warning: Failed to import {class_name} from {module_name}: {e}")
+                self._imported_classes[class_name] = None
 
         # Issue a simple warning for unknown keys at root level
         for key in self._data:
