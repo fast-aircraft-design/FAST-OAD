@@ -295,6 +295,16 @@ Also, see :ref:`get-variable-list`.
 Advanced configuration file
 ***************************
 
+Sys path
+========
+.. code:: yaml
+
+    sys_path:
+      - /path/to/your/module
+
+This section is used to add a path to the Python sys.path.
+This is useful when you have a module that is not in the Python path.
+
 
 Imports
 =======
