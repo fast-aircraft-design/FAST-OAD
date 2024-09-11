@@ -319,6 +319,43 @@ The YAML code lines above will do the equivalent in Python of:
     from utils.my_drivers.my_driver_2 import MyDriver2
     from utils.my_solvers.my_favourite_solver import MyFavouriteSolver
 
+
+Driver settings
+===============
+
+The `driver` configuration can be specified in two ways: using the old syntax (a string) or the new syntax (an object).
+
+### Old Syntax
+
+In the old syntax, the driver is specified as a string. This string should be a valid Python expression that creates an instance of an OpenMDAO driver.
+
+```yaml
+driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
+```
+
+### New Syntax
+In the new syntax, the driver is specified with an least an instance and more fields such as `options`.
+
+```yaml
+driver:
+  instance: om.ScipyOptimizeDriver(optimizer='COBYLA')
+  options:
+    maxiter: 100
+    tol: 1e-2
+  advanced_options:
+    print_live_convergence: true
+```
+
+The code above is the equivalent in Python of:
+
+```python
+driver = om.ScipyOptimizeDriver(optimizer='COBYLA')
+driver.options['maxiter'] = 100
+driver.options['tol'] = 1e-2
+driver.advanced_options['print_live_convergence'] = True
+```
+
+
 .. _configuration-model-options:
 
 Model options
