@@ -1,6 +1,6 @@
 <!--
-  ~ This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-  ~ Copyright (C) 2020  ONERA & ISAE-SUPAERO
+  ~ This file is part of FAST-OAD_CS25
+  ~ Copyright (C) 2022 ONERA & ISAE-SUPAERO
   ~ FAST is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as published by
   ~ the Free Software Foundation, either version 3 of the License, or
@@ -82,9 +82,9 @@
             </x>
           </at25percent>
         </MAC>
-        <root>
-          <chord units="m">4.43298942427<!--chord length at root of horizontal tail--></chord>
-        </root>
+        <center>
+          <chord units="m">4.43298942427<!--chord length at center of horizontal tail--></chord>
+        </center>
         <tip>
           <chord units="m">1.32989682728<!--chord length at tip of horizontal tail--></chord>
         </tip>
@@ -222,6 +222,7 @@
       </rubber_engine>
     </propulsion>
     <load_case>
+      <gust_intensity>0.5</gust_intensity>
       <lc1>
         <U_gust units="m/s">15.25<!--gust vertical speed for sizing load case 1 (gust with minimum aircraft mass)--></U_gust>
         <Vc_EAS units="m/s">375.0<!--equivalent air speed for sizing load case 1 (gust with minimum aircraft mass)--></Vc_EAS>
