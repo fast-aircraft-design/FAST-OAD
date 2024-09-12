@@ -67,7 +67,7 @@ pickleshare==0.7.5 ; python_version >= "3.8" and python_version < "3.12"
 plotly==5.0.0 ; python_version >= "3.8" and python_version < "3.12"
 prometheus-client==0.11.0 ; python_version >= "3.8" and python_version < "3.12"
 prompt-toolkit==3.0.20 ; python_version >= "3.8" and python_version < "3.12"
-ptyprocess==0.7.0 ; python_version >= "3.8" and python_version < "3.12" and (os_name != "nt" or sys_platform != "win32")
+ptyprocess==0.7.0 ; python_version >= "3.8" and python_version < "3.12" and (sys_platform != "win32" or os_name != "nt")
 py==1.10.0 ; python_version >= "3.8" and python_version < "3.12" and implementation_name == "pypy"
 pybtex-docutils==1.0.3 ; python_version >= "3.8" and python_version < "3.12"
 pybtex==0.24.0 ; python_version >= "3.8" and python_version < "3.12"

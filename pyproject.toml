@@ -61,7 +61,7 @@ ipopo = [
     { version = "^1.0.0", python = ">=3.8,<3.10" },
     { version = "^3.0.0", python = "^3.10" }
 ]
-ipywidgets = "^7.7.0"
+ipywidgets = ">=7.7.0, <9"
 ipysheet = ">=0.5.0, <1"
 plotly = "^5.0.0"
 wop = "^2.2.0"
@@ -75,8 +75,7 @@ jsonschema = ">=3.2.0, <5"
 ensure = "^1.0.0"
 tabulate = ">=0.8.9, <1"
 aenum = "^3.1.0"
-jupyterlab = "^3.3.0"
-notebook = "^6.0"
+jupyterlab = ">=3.3.0, <5"
 stdatm = ">=0.4.2"
 Deprecated = "^1.2.13"
 click = "^8.0.3"
