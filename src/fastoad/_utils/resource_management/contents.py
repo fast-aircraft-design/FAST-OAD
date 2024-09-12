@@ -1,6 +1,7 @@
 """Checks about packages and resources"""
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -12,8 +13,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from importlib.resources import contents
+import sys
 from typing import List
+
+if sys.version_info < (3, 9):
+    from importlib.resources import contents
+else:
+    from importlib.resources import files
 
 
 class PackageReader:
@@ -32,7 +38,7 @@ class PackageReader:
         self.exists = True
         self.is_module = False
         self.has_error = False
-        self._contents = []
+        self._contents: List[str] = []
         self.package_name = package_name
 
     @property
@@ -41,22 +47,20 @@ class PackageReader:
         return self._package_name
 
     @package_name.setter
-    def package_name(self, package_name):
+    def package_name(self, package_name: str):
         self._package_name = package_name
         if package_name:
             try:
-                self._contents = list(contents(package_name))
-                self.is_package = True
-            except TypeError:
-                self.is_module = True
-            except ModuleNotFoundError:
+                self._check_package_content(package_name)
+            except (ModuleNotFoundError, TypeError):
                 # Either the indicated package does not exist, or it is a file with no extension.
                 # We want to ensure existence to correctly set self.exists.
                 if "." in package_name:
                     parent_package_name, module_name = package_name.rsplit(".", 1)
                     parent_package = PackageReader(parent_package_name)
-                    if parent_package.is_package and module_name in parent_package.contents:
+                    if parent_package.is_package and module_name + ".py" in parent_package.contents:
                         self.exists = True
+                        self.is_module = True
                 else:
                     # Here we assume non-existence
                     self.exists = False
@@ -65,9 +69,32 @@ class PackageReader:
                 # Thus, we ensure to not break the application if a module is incorrectly written.
                 self.has_error = True
 
+    def _check_package_content(self, package_name: str):
+        """
+        Sets attributes self._contents, self.is_package and self.is_module.
+        """
+        if sys.version_info < (3, 9):
+            try:
+                self._contents = list(contents(package_name))
+                self.is_package = True
+            except TypeError:
+                self.is_module = True
+        else:
+            traversable = files(package_name)
+            # If package_name matches a module (i.e. a .py file),
+            # importlib.resources.files() returns the path to the parent directory.
+            # Then we check if the result with parent package is the same.
+            parent_package_name = ".".join(package_name.split(".")[:-1])
+            parent_traversable = files(parent_package_name) if parent_package_name else None
+            if traversable == parent_traversable:
+                self.is_module = True
+            else:
+                self._contents = [resource.name for resource in traversable.iterdir()]
+                self.is_package = True
+
     @property
     def contents(self) -> List[str]:
         """
-        An iterator if package exists, otherwise an empty list.
+        The list.
         """
         return self._contents
