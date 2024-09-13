@@ -282,12 +282,6 @@ class FASTOADProblemConfigurator:
             if driver_instance:
                 driver_instance = self._om_eval(driver_instance)
                 prob.driver = driver_instance
-            else:
-                # Raise error if no driver instance is provided
-                raise FASTConfigurationBaseKeyBuildingError(
-                    ValueError("No driver instance provided in configuration file"),
-                    KEY_DRIVER,
-                )
 
             # Iterate over all keys (attributes) in driver_config except for 'instance'
             for first_key, first_value in driver_config.items():
