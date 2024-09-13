@@ -22,6 +22,7 @@ from scipy.constants import foot
 from ..atmosphere import Atmosphere
 
 
+@pytest.mark.filterwarnings("ignore:Call to deprecated class Atmosphere")
 def test_atmosphere():
     """Tests properties of Atmosphere class."""
     # Altitudes in meters Values at disa=0 from "Advanced Aircraft Design (
@@ -133,6 +134,7 @@ def test_atmosphere():
         assert expectations["alt"][idx] / foot == pytest.approx(atm.get_altitude(), rel=1e-3)
 
 
+@pytest.mark.filterwarnings("ignore:Call to deprecated class Atmosphere")
 def test_speed_conversions():
     """Tests for speed conversions."""
     altitudes = [
