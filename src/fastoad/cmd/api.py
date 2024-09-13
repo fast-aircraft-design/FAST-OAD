@@ -705,7 +705,11 @@ def _run_problem(
         problem.run_model()
         problem.optim_failed = False  # Actually, we don't know
     else:
-        problem.optim_failed = problem.run_driver()
+        result = problem.run_driver()
+        if isinstance(result, bool):
+            problem.optim_failed = problem.run_driver()
+        else:  # Since OpenMDAO 3.33, a DriverResult instance is returned
+            problem.optim_failed = not result.success
     end_time = time()
     computation_time = round(end_time - start_time, 2)
 
