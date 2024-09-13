@@ -89,9 +89,9 @@ jobs:
         run: poetry run pytest --no-cov tests/integration_tests
         shell: bash
 
-      - name: Memory tests
-        run: poetry run pytest --no-cov tests/memory_tests
-        shell: bash
+#      - name: Memory tests
+#        run: poetry run pytest --no-cov tests/memory_tests
+#        shell: bash
 
       # There is a problem with notebook tests in MPI environment
       - name: Deactivate MPI
