@@ -14,8 +14,7 @@ Readers for legacy XML format
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from importlib.resources import open_text
-
+from fastoad._utils.resource_management.contents import PackageReader
 from fastoad.io.xml import VariableXmlBaseFormatter
 from fastoad.io.xml.translator import VarXpathTranslator
 from . import resources
@@ -30,7 +29,7 @@ class VariableLegacy1XmlFormatter(VariableXmlBaseFormatter):
 
     def __init__(self):
         translator = VarXpathTranslator()
-        with open_text(resources, CONVERSION_FILENAME_1) as translation_table:
+        with PackageReader(resources).open_text(CONVERSION_FILENAME_1) as translation_table:
             translator.read_translation_table(translation_table)
         super().__init__(translator)
 

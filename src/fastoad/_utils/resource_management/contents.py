@@ -14,23 +14,26 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import sys
-from typing import List
+from types import ModuleType
+from typing import List, TextIO, Union
 
 if sys.version_info < (3, 9):
-    from importlib.resources import contents
+    from importlib_resources import files, Resource, as_file
 else:
-    from importlib.resources import files
+    from importlib.resources import files, Resource, as_file
 
 
 class PackageReader:
     """
-    Wrapper of `importlib.resources.contents` which handles when `package_name` is
+    Wrapper of `importlib.resources.files` which handles when `package_name` is
     not a package or does not exist.
+
+    It also offers a replacement for some old attributes of importlib.resources.
 
     :param package_name: Name of package to inspect.
     """
 
-    def __init__(self, package_name: str):
+    def __init__(self, package_name: Union[str, ModuleType]):
         """
         :param package_name:
         """
@@ -69,32 +72,68 @@ class PackageReader:
                 # Thus, we ensure to not break the application if a module is incorrectly written.
                 self.has_error = True
 
-    def _check_package_content(self, package_name: str):
-        """
-        Sets attributes self._contents, self.is_package and self.is_module.
-        """
-        if sys.version_info < (3, 9):
-            try:
-                self._contents = list(contents(package_name))
-                self.is_package = True
-            except TypeError:
-                self.is_module = True
-        else:
-            traversable = files(package_name)
-            # If package_name matches a module (i.e. a .py file),
-            # importlib.resources.files() returns the path to the parent directory.
-            # Then we check if the result with parent package is the same.
-            parent_package_name = ".".join(package_name.split(".")[:-1])
-            parent_traversable = files(parent_package_name) if parent_package_name else None
-            if traversable == parent_traversable:
-                self.is_module = True
-            else:
-                self._contents = [resource.name for resource in traversable.iterdir()]
-                self.is_package = True
-
     @property
     def contents(self) -> List[str]:
         """
         The list.
         """
         return self._contents
+
+    def is_resource(self, name: str):
+        """
+        Replaces legacy importlib.resources.is_resource().
+
+        True if `name` is a resource inside `package`.
+
+        Directories are *not* resources.
+        """
+        return files(self.package_name).joinpath(name).is_file()
+
+    def open_text(
+        self,
+        resource: Resource,
+        encoding: str = "utf-8",
+        errors: str = "strict",
+    ) -> TextIO:
+        """
+        Replaces legacy importlib.resources.open_text().
+
+        :return: a file-like object opened for text reading of the resource
+        """
+        return (files(self.package_name) / str(resource)).open(
+            "r",
+            encoding=encoding,
+            errors=errors,
+        )
+
+    def path(self, resource: Resource):
+        """
+        Replaces legacy importlib.resources.path().
+
+        A context manager providing a file path object to the resource.
+
+        If the resource does not already exist on its own on the file system,
+        a temporary file will be created. If the file was created, the file
+        will be deleted upon exiting the context manager (no exception is
+        raised if the file was deleted prior to the context manager
+        exiting).
+
+        """
+        return as_file(files(self.package_name).joinpath(resource))
+
+    def _check_package_content(self, package_name: str):
+        """
+        Sets attributes self._contents, self.is_package and self.is_module.
+        """
+
+        traversable = files(package_name)
+        # If package_name matches a module (i.e. a .py file),
+        # importlib.resources.files() returns the path to the parent directory.
+        # Then we check if the result with parent package is the same.
+        parent_package_name = ".".join(package_name.split(".")[:-1])
+        parent_traversable = files(parent_package_name) if parent_package_name else None
+        if traversable == parent_traversable:
+            self.is_module = True
+        else:
+            self._contents = [resource.name for resource in traversable.iterdir()]
+            self.is_package = True

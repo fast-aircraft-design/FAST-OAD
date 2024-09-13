@@ -79,13 +79,14 @@ jupyterlab = ">=3.3.0, <5"
 stdatm = ">=0.4.2"
 Deprecated = "^1.2.13"
 click = "^8.0.3"
-importlib-metadata = { version = "^4.2", python = "<3.10" }
 pyDOE3 = "^1.0.0"
 mpi4py = [
     { version = "^3.1.3", python = ">=3.8, <3.11", optional = true },
     { version = "^3.1.4", python = "~3.11", optional = true },
     { version = "^3.1.5", python = "~3.12", optional = true },
 ]
+importlib-metadata = { version = "^4.2", python = "<3.10" }
+importlib_resources = {version = "^5.12", python = "<3.9"}
 
 [tool.poetry.extras]
 mpi4py = ["mpi4py"]
