@@ -17,6 +17,7 @@ Module for string-related operations
 
 import io
 import re
+import warnings
 
 import numpy as np
 
@@ -38,7 +39,6 @@ def get_float_list_from_string(text: str):
         '[ 1, 2., 3]'
         ' 1, 2., 3'
         ' 1 2  3'
-        ' 1 2  3 dummy 4'
     """
 
     text_value = text.strip()
@@ -60,20 +60,28 @@ def get_float_list_from_string(text: str):
     # Deals with multiple values in same element. numpy.fromstring can parse a string,
     # but we have to test with either ' ' or ',' as separator. The longest result should be
     # the good one.
-    try:
-        value1 = np.fromstring(text_value, dtype=float, sep=" ").tolist()
-    except ValueError:
-        pass
+    with warnings.catch_warnings():
+        # np.fromstring issues these messages for faulty strings
+        #   DeprecationWarning: string or file could not be read to its end due to unmatched data;
+        #   this will raise a ValueError in the future.
+        # The processing of ValueError is ready, so let's ensure we get through the
+        # error management
+        warnings.filterwarnings("error", category=DeprecationWarning)
 
-    try:
-        value2 = np.fromstring(text_value, dtype=float, sep=",").tolist()
-    except ValueError:
-        pass
+        try:
+            value1 = np.fromstring(text_value, dtype=float, sep=" ").tolist()
+        except (ValueError, DeprecationWarning):
+            value1 = []
 
-    if not value1 and not value2:
-        return None
+        try:
+            value2 = np.fromstring(text_value, dtype=float, sep=",").tolist()
+        except (ValueError, DeprecationWarning):
+            value2 = []
 
-    return value1 if len(value1) > len(value2) else value2
+        if not value1 and not value2:
+            return None
+
+        return value1 if len(value1) > len(value2) else value2
 
 
 class FastCouldNotParseStringToArrayError(FastError):
