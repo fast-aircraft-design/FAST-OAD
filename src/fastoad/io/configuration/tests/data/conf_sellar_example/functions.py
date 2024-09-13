@@ -63,9 +63,9 @@ class FunctionF(om.ExplicitComponent):
         """Functions computation"""
 
         z2 = inputs["z"][1]
-        x1 = inputs["x"]
-        y1 = inputs["yy1"]
-        y2 = inputs["yy2"]
+        x1 = inputs["x"][0]
+        y1 = inputs["yy1"][0]
+        y2 = inputs["yy2"][0]
 
         outputs["f"] = x1**2 + z2 + y1 + exp(-y2)
 
@@ -92,9 +92,9 @@ class FunctionFAlt(FunctionF):
         """Functions computation"""
 
         z2 = inputs["z"][1]
-        x1 = inputs["x"]
-        y1 = inputs["yy1"]
-        y2 = inputs["yy2"]
+        x1 = inputs["x"][0]
+        y1 = inputs["yy1"][0]
+        y2 = inputs["yy2"][0]
 
         outputs["f"] = x1**2 + z2 + y1 + exp(-y2) - 28.0
 
