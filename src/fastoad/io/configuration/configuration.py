@@ -169,10 +169,7 @@ class FASTOADProblemConfigurator:
         validate(self._data, json_schema)
 
         # Add paths to sys.path
-        sys_paths = self._data.get("sys_paths", [])
-        for path in sys_paths:
-            if path not in sys.path:
-                sys.path.append(path)
+        sys.path.extend(self._data.get("sys_paths", []))
 
         # Handle imports
         imports = self._data.get("imports", {})
