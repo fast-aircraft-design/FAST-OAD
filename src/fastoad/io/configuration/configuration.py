@@ -284,12 +284,9 @@ class FASTOADProblemConfigurator:
                 prob.driver = driver_instance
 
             # Iterate over all keys (attributes) in driver_config except for 'instance'
-            for first_key, first_value in driver_config.items():
-                if first_key != "instance":
-                    # Iterate over all keys (values) in first_value
-                    for second_key, second_value in first_value.items():
-                        # driver.<first_key>[<second_key>] = second_value
-                        getattr(prob.driver, first_key)[second_key] = second_value
+            for key, value in driver_config.items():
+                if key != "instance":
+                    getattr(prob.driver, key).update(value)
 
     def _make_absolute(self, path: Union[str, PathLike]) -> Path:
         """
