@@ -182,6 +182,7 @@ def test_inputs():
     }
 
 
+@pytest.mark.filterwarnings("ignore:Call to deprecated class RegisteredSegment")
 def test_build():
     mission_definition = MissionDefinition(DATA_FOLDER_PATH / "mission.yml")
     mission_builder = MissionBuilder(
