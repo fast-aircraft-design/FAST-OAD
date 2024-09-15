@@ -43,7 +43,9 @@ DATA_FOLDER_PATH = Path(__file__).parent / "data"
 
 # For this class, we purposely use the deprecated inheritance mechanism
 @dataclass
-class TestSegment(AbstractFlightSegment, RegisteredSegment, mission_file_keyword="test_segment_B"):
+class SegmentForTest(
+    AbstractFlightSegment, RegisteredSegment, mission_file_keyword="test_segment_B"
+):
     scalar_parameter: float = MANDATORY_FIELD
     vector_parameter_1: np.ndarray = MANDATORY_FIELD
     vector_parameter_2: np.ndarray = MANDATORY_FIELD
@@ -305,7 +307,7 @@ def test_build():
     assert isinstance(test_mission[0], FlightSequence)
     assert len(test_mission[0]) == 2
     segment = test_mission[0][0]
-    assert isinstance(segment, TestSegment)
+    assert isinstance(segment, SegmentForTest)
     assert segment.scalar_parameter == 42.0
     assert_allclose(segment.vector_parameter_1, [1.0, 2.0, 3.0])
     assert_allclose(segment.vector_parameter_2, [0.0, 1.0, 2.0, 3.0, 4.0, 5.0])

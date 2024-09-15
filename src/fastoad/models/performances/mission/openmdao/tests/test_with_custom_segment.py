@@ -36,7 +36,7 @@ def cleanup():
 
 @RegisterSegment("test_segment_A")
 @dataclass
-class TestSegment(AbstractFlightSegment):
+class SegmentForTest(AbstractFlightSegment):
     scalar_parameter: float = MANDATORY_FIELD
     vector_parameter_1: np.ndarray = MANDATORY_FIELD
     vector_parameter_2: np.ndarray = MANDATORY_FIELD
