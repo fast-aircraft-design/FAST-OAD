@@ -798,7 +798,7 @@ def variable_viewer(
             columns={"name": "Name", "val": "Value", "units": "Unit", "desc": "Description"}
         )
         table["I/O"] = "OUT"
-        table["I/O"].loc[table["is_input"]] = "IN"
+        table.loc[table["is_input"], "I/O"] = "IN"
         del table["is_input"]
         table.set_index("Name", drop=True, inplace=True)
 

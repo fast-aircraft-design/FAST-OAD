@@ -21,8 +21,8 @@ import ipysheet as sh
 import ipywidgets as widgets
 import pandas as pd
 from IPython.display import display
-from packaging.version import Version
 
+from fastoad._utils.pandas import apply_map
 from fastoad.io import IVariableIOFormatter, VariableIO
 from fastoad.openmdao.variables import VariableList
 
@@ -396,10 +396,7 @@ class VariableViewer:
 
             return submodules[len(modules)]
 
-        if Version(pd.__version__) >= Version("2.1"):
-            submodules = var_names.map(get_next_module)
-        else:
-            submodules = var_names.applymap(get_next_module)
+        submodules = apply_map(var_names, get_next_module)
 
         submodules = submodules[submodules.Name != ""]
 
