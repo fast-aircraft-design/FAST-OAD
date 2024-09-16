@@ -82,7 +82,14 @@ class InputDefinition:
             self.is_relative = True
             self.parameter_name = self.parameter_name[6:]
 
-        self.output_unit = FlightPoint.get_unit(self.parameter_name)
+        if self.parameter_name == "isa_offset":
+            # For ISA offset, it is better to have no unit because we don't want
+            # OpenMDAO to try converting between degK and degC, which
+            # would add or subtract 273.15 to the offset.
+            self.output_unit = None
+        else:
+            self.output_unit = FlightPoint.get_unit(self.parameter_name)
+
         if self.output_unit is None:
             self.output_unit = BASE_UNITS.get(self.parameter_name)
         if self.output_unit == "-":
