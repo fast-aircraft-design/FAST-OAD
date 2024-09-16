@@ -15,12 +15,17 @@ Test module for OpenMDAO checks
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
+import pytest
 
 from .openmdao_sellar_example.disc1 import Disc1
 from .openmdao_sellar_example.disc2 import Disc2
 from .openmdao_sellar_example.functions import FunctionF, FunctionG1, FunctionG2
 from .openmdao_sellar_example.sellar import SellarModel
 from .._utils import get_unconnected_input_names
+
+pytestmark = pytest.mark.filterwarnings(
+    "ignore:Call to deprecated function \(or staticmethod\) get_unconnected_input_names"
+)
 
 
 def test_get_unconnected_input_names_single_component_group():

@@ -150,7 +150,7 @@ class Mission(FlightSequence):
         """
         self.first_route.cruise_distance = cruise_distance
         flight_points = super().compute_from(start)
-        flight_points.loc[flight_points.name.isnull()].name = ""
+        flight_points.loc[flight_points.name.isnull(), "name"] = ""
         self._compute_reserve(flight_points)
         self._flight_points = flight_points
         return self.target_fuel_consumption - self.consumed_fuel

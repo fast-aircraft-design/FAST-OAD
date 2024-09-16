@@ -620,6 +620,12 @@ def test_get_variables_from_problem_sellar_without_promotion_with_computation():
     _compare_variable_lists(vars, expected_vars_computed)
 
 
+pytestmark = pytest.mark.filterwarnings(
+    "ignore:Call to deprecated class method from_unconnected_inputs",
+    "ignore:Call to deprecated function \(or staticmethod\) get_unconnected_input_names",
+)
+
+
 def _test_and_check_from_unconnected_inputs(
     problem: om.Problem,
     expected_mandatory_vars: List[Variable],
