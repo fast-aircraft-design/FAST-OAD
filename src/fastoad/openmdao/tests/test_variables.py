@@ -21,6 +21,7 @@ import numpy as np
 import openmdao.api as om
 import pandas as pd
 import pytest
+from openmdao.utils.om_warnings import UnitsWarning
 
 import fastoad.models
 from fastoad.module_management._plugins import FastoadLoader
@@ -265,7 +266,8 @@ def test_get_variables_from_problem_sellar_with_promotion_without_computation():
     group.add_subsystem("constraint2", FunctionG2(), promotes=["*"])
     group.nonlinear_solver = om.NonlinearBlockGS()
     problem = om.Problem(group)
-    problem.setup()
+    with pytest.warns(UnitsWarning):
+        problem.setup()
 
     expected_vars_promoted = [
         Variable(name="x", val=np.array([1.0]), units="Pa", is_input=True, desc="input x"),
@@ -331,7 +333,8 @@ def test_get_variables_from_problem_sellar_with_promotion_with_computation():
     group.add_subsystem("constraint2", FunctionG2(), promotes=["*"])
     group.nonlinear_solver = om.NonlinearBlockGS()
     problem = om.Problem(group)
-    problem.setup()
+    with pytest.warns(UnitsWarning):
+        problem.setup()
 
     expected_vars_promoted_initial = [
         Variable(name="x", val=np.array([1.0]), units="Pa", is_input=True, desc="input x"),
@@ -438,7 +441,7 @@ def test_get_variables_from_problem_sellar_with_promotion_with_computation():
 def test_get_variables_from_problem_sellar_without_promotion_without_computation():
     group = om.Group()
     indeps = group.add_subsystem("indeps", om.IndepVarComp())
-    indeps.add_output("x", 1.0, units="Pa")
+    indeps.add_output("x", 1.0)
     indeps.add_output("z", [5.0, 2.0], units="m**2")
     group.add_subsystem("disc2", Disc2())
     group.add_subsystem("disc1", Disc1())
@@ -455,7 +458,7 @@ def test_get_variables_from_problem_sellar_without_promotion_without_computation
     problem.setup()
 
     expected_vars_initial = [
-        Variable(name="indeps.x", val=np.array([1.0]), units="Pa", is_input=True),
+        Variable(name="indeps.x", val=np.array([1.0]), is_input=True),
         Variable(name="indeps.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(name="disc1.x", val=np.array([np.nan]), units=None, is_input=True, desc="input x"),
         Variable(name="disc1.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
@@ -516,7 +519,7 @@ def test_get_variables_from_problem_sellar_without_promotion_without_computation
 def test_get_variables_from_problem_sellar_without_promotion_with_computation():
     group = om.Group()
     indeps = group.add_subsystem("indeps", om.IndepVarComp())
-    indeps.add_output("x", 1.0, units="Pa")
+    indeps.add_output("x", 1.0)
     indeps.add_output("z", [5.0, 2.0], units="m**2")
     group.add_subsystem("disc2", Disc2())
     group.add_subsystem("disc1", Disc1())
@@ -533,7 +536,7 @@ def test_get_variables_from_problem_sellar_without_promotion_with_computation():
     problem.setup()
 
     expected_vars_initial = [
-        Variable(name="indeps.x", val=np.array([1.0]), units="Pa", is_input=True),
+        Variable(name="indeps.x", val=np.array([1.0]), is_input=True),
         Variable(name="indeps.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(name="disc1.x", val=np.array([np.nan]), units=None, is_input=True, desc="input x"),
         Variable(name="disc1.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
@@ -559,7 +562,7 @@ def test_get_variables_from_problem_sellar_without_promotion_with_computation():
         Variable(name="constraint2.g2", val=np.array([1.0]), units=None, is_input=False),
     ]
     expected_vars_computed = [
-        Variable(name="indeps.x", val=np.array([1.0]), units="Pa", is_input=True),
+        Variable(name="indeps.x", val=np.array([1.0]), is_input=True),
         Variable(name="indeps.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(name="disc1.x", val=np.array([1.0]), units=None, is_input=True, desc="input x"),
         Variable(name="disc1.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
@@ -757,7 +760,7 @@ def test_get_variables_from_problem_sellar_with_promotion_and_connect():
     group = om.Group()
     indeps = group.add_subsystem("indeps", om.IndepVarComp(), promotes=["*"])
     indeps.add_output("indep:x", 1.0)
-    indeps.add_output("z", [5.0, 2.0])
+    indeps.add_output("z", [5.0, 2.0], units="m**2")
     group.add_subsystem("disc1", Disc1(), promotes=["x", "z"])
     group.add_subsystem("disc2", Disc2(), promotes=["z"])
     group.add_subsystem("objective", FunctionF(), promotes=["*"])
