@@ -326,7 +326,8 @@ Driver settings
 
 The `driver` configuration can be specified in two ways: using the standard syntax (a string) or the advanced syntax (an object).
 
-### Standard Syntax
+Standard Syntax
+---------------
 
 In the standard syntax, the driver is specified as a string. This string should be a valid Python expression that creates an instance of an OpenMDAO driver.
 
@@ -334,7 +335,9 @@ In the standard syntax, the driver is specified as a string. This string should 
     driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
 
 
-### Advanced Syntax
+Advanced Syntax
+---------------
+
 In the advanced syntax, the driver is specified with at least an instance and one or more dict fields such as `options`.
 
 .. code:: yaml
