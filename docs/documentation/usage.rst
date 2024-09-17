@@ -335,7 +335,7 @@ driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
 ```
 
 ### New Syntax
-In the new syntax, the driver is specified with an least an instance and more fields such as `options`.
+In the new syntax, the driver is specified with at least an instance and one or more dict fields such as `options`.
 
 ```yaml
 driver:
