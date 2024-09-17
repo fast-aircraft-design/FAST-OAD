@@ -296,8 +296,9 @@ Sys path
     sys_path:
       - /path/to/your/module
 
-This section is used to add a path to the Python sys.path.
+This section is used to add a path to the Python `sys.path`.
 This is useful when you have a module that is not in the Python path.
+Note that this setting affects only the `imports` section below, which is used for setting drivers and solvers.
 
 
 Imports
