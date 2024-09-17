@@ -168,7 +168,7 @@
             }
           },
           "required": ["instance"],
-          "additionalProperties": false
+          "additionalProperties": true
         }
       ]
     },
