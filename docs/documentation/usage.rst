@@ -324,37 +324,37 @@ The YAML code lines above will do the equivalent in Python of:
 Driver settings
 ===============
 
-The `driver` configuration can be specified in two ways: using the old syntax (a string) or the new syntax (an object).
+The `driver` configuration can be specified in two ways: using the standard syntax (a string) or the advanced syntax (an object).
 
-### Old Syntax
+### Standard Syntax
 
-In the old syntax, the driver is specified as a string. This string should be a valid Python expression that creates an instance of an OpenMDAO driver.
+In the standard syntax, the driver is specified as a string. This string should be a valid Python expression that creates an instance of an OpenMDAO driver.
 
-```yaml
-driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
-```
+.. code:: yaml
+    driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
 
-### New Syntax
-In the new syntax, the driver is specified with at least an instance and one or more dict fields such as `options`.
 
-```yaml
-driver:
-  instance: om.ScipyOptimizeDriver(optimizer='COBYLA')
-  options:
-    maxiter: 100
-    tol: 1e-2
-  advanced_options:
-    print_live_convergence: true
-```
+### Advanced Syntax
+In the advanced syntax, the driver is specified with at least an instance and one or more dict fields such as `options`.
+
+.. code:: yaml
+
+    driver:
+      instance: om.ScipyOptimizeDriver(optimizer='COBYLA')
+      options:
+        maxiter: 100
+        tol: 1e-2
+      advanced_options:
+        print_live_convergence: true
 
 The code above is the equivalent in Python of:
 
-```python
-driver = om.ScipyOptimizeDriver(optimizer='COBYLA')
-driver.options['maxiter'] = 100
-driver.options['tol'] = 1e-2
-driver.advanced_options['print_live_convergence'] = True
-```
+.. code:: python
+
+    driver = om.ScipyOptimizeDriver(optimizer='COBYLA')
+    driver.options['maxiter'] = 100
+    driver.options['tol'] = 1e-2
+    driver.advanced_options['print_live_convergence'] = True
 
 
 .. _configuration-model-options:
