@@ -386,7 +386,8 @@ def test_imports_handling():
     result1 = conf._om_eval("MyDriver1()")
     result2 = conf._om_eval("MyDriver2()")
 
-    # Imports are done here to verify that the classes are correctly imported
+    # Imports are done here to be sure the interpreter does not know
+    # these paths when the code above is run.
     from .data.to_be_imported.my_driver_1 import MyDriver1
     from .data.to_be_imported.my_driver_2 import MyDriver2
 
