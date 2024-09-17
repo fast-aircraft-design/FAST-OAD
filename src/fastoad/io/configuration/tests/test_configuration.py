@@ -400,7 +400,7 @@ def test_imports_handling():
 
 
 def test_driver_configuration():
-    # Test new syntax
+    # Test advanced syntax
     config_data_new = {
         "input_file": "./inputs.xml",
         "output_file": "./outputs.xml",
@@ -408,6 +408,7 @@ def test_driver_configuration():
         "driver": {
             "instance": "om.ScipyOptimizeDriver(optimizer='COBYLA')",
             "options": {"maxiter": 100, "tol": 1e-2},
+            "opt_settings": {"maxtime": 10},
         },
     }
 
@@ -423,10 +424,11 @@ def test_driver_configuration():
     assert problem.driver.options["optimizer"] == "COBYLA"
     assert problem.driver.options["maxiter"] == 100
     assert problem.driver.options["tol"] == 1e-2
+    assert problem.driver.opt_settings["maxtime"] == 10
 
     os.remove(temp_config_file_path)
 
-    # Test old syntax
+    # Test standard syntax
     config_data_old = {
         "input_file": "./inputs.xml",
         "output_file": "./outputs.xml",
