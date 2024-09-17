@@ -1,3 +1,6 @@
+"""
+Module for pandas-related operations
+"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -10,11 +13,14 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 from typing import Callable, Optional
 
 import pandas as pd
 from packaging.version import Version
 
+# DataFrame.applymap() is deprecated since pandas 2.1.0, in favor of DataFrame.map()
+# We get the correct one here once and for all.
 if Version(pd.__version__) >= Version("2.1"):
     map_method = pd.DataFrame.map
 else:
