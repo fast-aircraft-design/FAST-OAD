@@ -332,6 +332,7 @@ Standard Syntax
 In the standard syntax, the driver is specified as a string. This string should be a valid Python expression that creates an instance of an OpenMDAO driver.
 
 .. code:: yaml
+
     driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
 
 
