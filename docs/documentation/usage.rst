@@ -286,7 +286,7 @@ Several constraint variables can be defined.
 Also, see :ref:`get-variable-list`.
 
 ***************************
-Advanced configuration file
+Advanced configuration
 ***************************
 
 Sys path
