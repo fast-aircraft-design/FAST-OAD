@@ -14,19 +14,18 @@ Test module for configuration.py
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import sys
-import tempfile
-import yaml
 import os
 import shutil
+import sys
+import tempfile
 from pathlib import Path
 
+import openmdao.api as om
 import pytest
 import tomlkit
+import yaml
 from jsonschema import ValidationError
 from ruamel.yaml import YAML
-
-import openmdao.api as om
 
 from fastoad.io import DataFile
 from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
@@ -343,35 +342,23 @@ def test_set_optimization_definition(cleanup):
         assert optimization_conf == conf_dict_opt
 
 
-def test_sys_paths():
-    # Create a temporary configuration file
-    config_data = {
-        "input_file": "./inputs.xml",
-        "output_file": "./outputs.xml",
-        "model": {},
-        "sys_paths": ["/path/to/local/code1", "/path/to/local/code2"],
-    }
+@pytest.fixture()
+def added_sys_path():
+    added_paths = ["/path/to/local/code1", "/path/to/local/code2"]
+    yield added_paths
+    sys.path = [p for p in sys.path if p not in added_paths]
 
-    with tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".yaml") as temp_config_file:
-        yaml.dump(config_data, temp_config_file)
-        temp_config_file_path = temp_config_file.name
 
-    # Instantiate the configurator and load the configuration
-    configurator = FASTOADProblemConfigurator()
-    configurator.load(temp_config_file_path)
+def test_sys_paths(added_sys_path):
+    conf = FASTOADProblemConfigurator()
+    conf.load(DATA_FOLDER_PATH / "conf_with_imports.yml")
 
     # Check if the paths are added to sys.path
-    for path in config_data["sys_paths"]:
+    for path in added_sys_path:
         assert path in sys.path
 
-    # Cleanup
-    sys.path = [p for p in sys.path if p not in config_data["sys_paths"]]
 
-    # Remove the temporary file
-    os.remove(temp_config_file_path)
-
-
-def test_imports_handling():
+def test_imports_handling(added_sys_path):
     """
     Tests the handling of imports in the configuration file
     """
@@ -399,7 +386,7 @@ def test_imports_handling():
     assert isinstance(result2, MyDriver2)
 
 
-def test_driver_configuration():
+def test_driver_configuration(added_sys_path):
     # Test advanced syntax
     config_data_new = {
         "input_file": "./inputs.xml",
