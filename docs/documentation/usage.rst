@@ -348,8 +348,8 @@ In the advanced syntax, the driver is specified with at least an instance and on
       options:
         maxiter: 100
         tol: 1e-2
-      advanced_options:
-        print_live_convergence: true
+      opt_settings:
+        maxtime: 10
 
 The code above is the equivalent in Python of:
 
@@ -358,7 +358,7 @@ The code above is the equivalent in Python of:
     driver = om.ScipyOptimizeDriver(optimizer='COBYLA')
     driver.options['maxiter'] = 100
     driver.options['tol'] = 1e-2
-    driver.advanced_options['print_live_convergence'] = True
+    driver.opt_settings['maxtime'] = 10
 
 
 .. _configuration-model-options:
