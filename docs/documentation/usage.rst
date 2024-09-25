@@ -285,21 +285,9 @@ Several constraint variables can be defined.
 
 Also, see :ref:`get-variable-list`.
 
-***************************
+**********************
 Advanced configuration
-***************************
-
-Sys path
-========
-.. code:: yaml
-
-    sys_path:
-      - /path/to/your/module
-
-This section is used to add a path to the Python `sys.path`.
-This is useful when you have a module that is not in the Python path.
-Note that this setting affects only the `imports` section below, which is used for setting drivers and solvers.
-
+**********************
 
 Imports
 =======
@@ -320,6 +308,24 @@ The YAML code lines above will do the equivalent in Python of:
     from utils.my_drivers.my_driver_2 import MyDriver2
     from utils.my_solvers.my_favourite_solver import MyFavouriteSolver
 
+Extending :code:`sys.path`
+------------------
+For using drivers/solvers that are available on the local computer, the imports section
+can be completed to extend the Python path (`sys.path <https://docs.python.org/3/library/sys.html#sys.path>`_):
+
+.. code:: yaml
+
+    imports:
+        sys.path:
+            - /path/to/local/code1
+            - /path/to/local/code2
+        my_driver_1: MyDriver1
+        utils.my_drivers.my_driver_2: MyDriver2
+        utils.my_solvers.my_favourite_solver: MyFavouriteSolver
+
+.. warning::
+
+    Using relative paths here is strongly discouraged.
 
 Driver settings
 ===============
