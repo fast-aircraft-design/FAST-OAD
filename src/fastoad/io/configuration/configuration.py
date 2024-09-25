@@ -44,6 +44,8 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 KEY_FOLDERS = "module_folders"
 KEY_INPUT_FILE = "input_file"
 KEY_OUTPUT_FILE = "output_file"
+KEY_IMPORTS = "imports"
+KEY_SYSPATH = "sys_paths"
 KEY_COMPONENT_ID = "id"
 KEY_CONNECTION_ID = "connections"
 KEY_MODEL = "model"
@@ -168,19 +170,22 @@ class FASTOADProblemConfigurator:
             json_schema = json.loads(json_file.read())
         validate(self._data, json_schema)
 
-        # Add paths to sys.path
-        sys.path.extend(self._data.get("sys_paths", []))
-
         # Handle imports
-        imports = self._data.get("imports", {})
+        imports = self._data.get(KEY_IMPORTS, {})
         for module_name, class_name in imports.items():
-            try:
-                module = import_module(module_name)
-                self._imported_classes[class_name] = getattr(module, class_name)
-            except (ImportError, AttributeError) as e:
-                raise ImportError(
-                    f"Failed to import {class_name} from {module_name} in configuration file."
-                ) from e
+            if module_name == KEY_SYSPATH:
+                # Special case, sys.path is extended.
+                # `class_name` is here a list of paths
+                folder_list = class_name
+                sys.path.extend(folder_list)
+            else:
+                try:
+                    module = import_module(module_name)
+                    self._imported_classes[class_name] = getattr(module, class_name)
+                except (ImportError, AttributeError) as e:
+                    raise ImportError(
+                        f"Failed to import {class_name} from {module_name} in configuration file."
+                    ) from e
 
         # Issue a simple warning for unknown keys at root level
         for key in self._data:
