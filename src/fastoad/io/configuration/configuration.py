@@ -14,12 +14,12 @@ Module for building OpenMDAO problem from configuration file
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import sys
 import json
 import logging
+import sys
 from abc import ABC, abstractmethod
-from importlib.resources import open_text
 from importlib import import_module
+from importlib.resources import open_text
 from os import PathLike
 from pathlib import Path
 from typing import Dict, List, Optional, Union
@@ -45,7 +45,7 @@ KEY_FOLDERS = "module_folders"
 KEY_INPUT_FILE = "input_file"
 KEY_OUTPUT_FILE = "output_file"
 KEY_IMPORTS = "imports"
-KEY_SYSPATH = "sys_paths"
+KEY_SYSPATH = "sys.path"
 KEY_COMPONENT_ID = "id"
 KEY_CONNECTION_ID = "connections"
 KEY_MODEL = "model"

@@ -5,7 +5,7 @@
 
 
   imports:
-      sys_paths:
+      sys.path:
         - /path/to/local/code1
         - /path/to/local/code2
       fastoad.io.configuration.tests.data.to_be_imported.my_driver_1: MyDriver1

@@ -137,7 +137,7 @@
     "imports": {
       "type": "object",
       "properties": {
-        "sys_paths": {
+        "sys.path": {
           "type": "array",
           "items": {
             "type": "string"
