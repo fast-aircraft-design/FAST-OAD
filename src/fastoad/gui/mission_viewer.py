@@ -68,8 +68,8 @@ class MissionViewer:
         """
         Display the user interface
 
-        :param dict: Dictionary of properties to be updated
-        :param overwrite: If True, overwrite existing properties. If False, apply updates
+        :param layout_dict: Dictionary of properties to be updated
+        :param layout_overwrite: If True, overwrite existing properties. If False, apply updates
             to existing properties recursively, preserving existing
             properties that are not specified in the update operation.
         :param kwargs: Keyword/value pair of properties to be updated
@@ -107,8 +107,8 @@ class MissionViewer:
         """
         Updates and shows the plots
 
-        :param dict: Dictionary of properties to be updated
-        :param overwrite: If True, overwrite existing properties. If False, apply updates
+        :param layout_dict: Dictionary of properties to be updated
+        :param layout_overwrite: If True, overwrite existing properties. If False, apply updates
             to existing properties recursively, preserving existing
             properties that are not specified in the update operation.
         :param kwargs: Keyword/value pair of properties to be updated
