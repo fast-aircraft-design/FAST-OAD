@@ -16,10 +16,14 @@ Test module for configuration.py
 
 import os
 import shutil
+import sys
+import tempfile
 from pathlib import Path
 
+import openmdao.api as om
 import pytest
 import tomlkit
+import yaml
 from jsonschema import ValidationError
 from ruamel.yaml import YAML
 
@@ -336,3 +340,99 @@ def test_set_optimization_definition(cleanup):
         conf_dict_opt = conf_dict["optimization"]
         # Should be equal
         assert optimization_conf == conf_dict_opt
+
+
+@pytest.fixture()
+def added_sys_path():
+    added_paths = ["/path/to/local/code1", "/path/to/local/code2"]
+    yield added_paths
+    sys.path = [p for p in sys.path if p not in added_paths]
+
+
+def test_sys_paths(added_sys_path):
+    conf = FASTOADProblemConfigurator()
+    conf.load(DATA_FOLDER_PATH / "conf_with_imports.yml")
+
+    # Check if the paths are added to sys.path
+    for path in added_sys_path:
+        assert path in sys.path
+
+
+def test_imports_handling(added_sys_path):
+    """
+    Tests the handling of imports in the configuration file
+    """
+    conf = FASTOADProblemConfigurator()
+    conf.load(DATA_FOLDER_PATH / "conf_with_imports.yml")
+
+    # Check that the classes are correctly imported and stored
+    assert "MyDriver1" in conf._imported_classes
+    assert "MyDriver2" in conf._imported_classes
+
+    # Check that _om_eval can use the imported classes
+    result1 = conf._om_eval("MyDriver1()")
+    result2 = conf._om_eval("MyDriver2()")
+
+    # Imports are done here to be sure the interpreter does not know
+    # these paths when the code above is run.
+    from .data.to_be_imported.my_driver_1 import MyDriver1
+    from .data.to_be_imported.my_driver_2 import MyDriver2
+
+    assert conf._imported_classes["MyDriver1"] == MyDriver1
+    assert conf._imported_classes["MyDriver2"] == MyDriver2
+
+    # Check that _om_eval can use the imported classes
+    assert isinstance(result1, MyDriver1)
+    assert isinstance(result2, MyDriver2)
+
+
+def test_driver_configuration(added_sys_path):
+    # Test advanced syntax
+    config_data_new = {
+        "input_file": "./inputs.xml",
+        "output_file": "./outputs.xml",
+        "model": {},
+        "driver": {
+            "instance": "om.ScipyOptimizeDriver(optimizer='COBYLA')",
+            "options": {"maxiter": 100, "tol": 1e-2},
+            "opt_settings": {"maxtime": 10},
+        },
+    }
+
+    with tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".yaml") as temp_config_file:
+        yaml.dump(config_data_new, temp_config_file)
+        temp_config_file_path = temp_config_file.name
+
+    configurator = FASTOADProblemConfigurator()
+    configurator.load(temp_config_file_path)
+    problem = configurator.get_problem()
+
+    assert isinstance(problem.driver, om.ScipyOptimizeDriver)
+    assert problem.driver.options["optimizer"] == "COBYLA"
+    assert problem.driver.options["maxiter"] == 100
+    assert problem.driver.options["tol"] == 1e-2
+    assert problem.driver.opt_settings["maxtime"] == 10
+
+    os.remove(temp_config_file_path)
+
+    # Test standard syntax
+    config_data_old = {
+        "input_file": "./inputs.xml",
+        "output_file": "./outputs.xml",
+        "model": {},
+        "driver": "om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')",
+    }
+
+    with tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".yaml") as temp_config_file:
+        yaml.dump(config_data_old, temp_config_file)
+        temp_config_file_path = temp_config_file.name
+
+    configurator = FASTOADProblemConfigurator()
+    configurator.load(temp_config_file_path)
+    problem = configurator.get_problem()
+
+    assert isinstance(problem.driver, om.ScipyOptimizeDriver)
+    assert problem.driver.options["optimizer"] == "COBYLA"
+    assert problem.driver.options["tol"] == 1e-2
+
+    os.remove(temp_config_file_path)

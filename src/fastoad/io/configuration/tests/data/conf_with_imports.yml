@@ -1,0 +1,32 @@
+  title: Sample OAD Process
+
+  input_file: ../results/inputs.xml
+  output_file: ../results/outputs.xml
+
+
+  imports:
+      sys.path:
+        - /path/to/local/code1
+        - /path/to/local/code2
+      fastoad.io.configuration.tests.data.to_be_imported.my_driver_1: MyDriver1
+      "fastoad.io.configuration.tests.data.to_be_imported.my_driver_2": MyDriver2
+
+  driver: MyDriver1(tol=1e-2, optimizer='COBYLA', maxiter=maxiter)
+
+  model:
+        assembled_jac_type: csc  # Tests the ability to set options for groups
+        connections:
+              - source: y1
+                target: yy1
+              - source: y2
+                target: yy2
+        cycle:
+              nonlinear_solver: om.NonlinearBlockGS(iprint=1)
+              linear_solver: om.ScipyKrylov()
+              disc1:
+                    id: configuration_test.sellar.disc1
+              disc2:
+                    id: configuration_test.sellar.disc2
+        functions:
+              id: configuration_test.sellar.functions
+              input_path: "translator.txt"

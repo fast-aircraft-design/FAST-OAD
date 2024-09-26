@@ -134,9 +134,51 @@
       "type": "string",
       "default": "./outputs.xml"
     },
+    "imports": {
+      "type": "object",
+      "properties": {
+        "sys.path": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
     "driver": {
-      "type": "string",
-      "default": "om.ScipyOptimizeDriver(tol=1e-6, optimizer='SLSQP')"
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "Old syntax for driver configuration"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "instance": {
+              "type": "string",
+              "description": "Driver instance string"
+            },
+            "options": {
+              "type": "object",
+              "description": "Driver options",
+              "additionalProperties": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean"
+                ]
+              }
+            }
+          },
+          "required": [
+            "instance"
+          ],
+          "additionalProperties": true
+        }
+      ]
     },
     "model_options": {
       "type": "object",
