@@ -23,9 +23,10 @@ model:
       id: configuration_test.sellar.disc1
     disc2:
       id: configuration_test.sellar.disc2
-  functions:
-    id: configuration_test.sellar.functions
-    input_path: "translator.txt"
+  group:
+    functions:
+      id: configuration_test.sellar.functions
+      input_path: "translator.txt"
 
 model_options:
   "*":
@@ -34,6 +35,7 @@ model_options:
       a: 1
       b: 2
     dummy_generic_option: "it works"
+    unused_file: "conf_sellar_example/functions.py"
   "cycle.*":
     dummy_generic_option: "it works here also"
     input_file: "__init__.py"

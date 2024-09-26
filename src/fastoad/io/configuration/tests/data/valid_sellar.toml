@@ -26,13 +26,15 @@ driver = "om.ScipyOptimizeDriver(optimizer='SLSQP')"
             id = "configuration_test.sellar.disc1"
         [model.cycle.disc2]
             id = "configuration_test.sellar.disc2"
-    [model.functions]
+    [model.group.functions]
         id = "configuration_test.sellar.functions"
         input_path = "translator.txt"
 
 [model_options."*"]
   dummy_f_option = 10
   dummy_generic_option = "it works"
+  unused_file = "conf_sellar_example/functions.py"
+
 [model_options."*".dummy_disc1_option]
     a = 1
     b = 2

@@ -14,6 +14,7 @@ Test module for configuration.py
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import filecmp
 import os
 import shutil
 import sys
@@ -35,6 +36,19 @@ from fastoad.module_management.exceptions import FastBundleLoaderUnknownFactoryN
 from ..exceptions import (
     FASTConfigurationBadOpenMDAOInstructionError,
 )
+
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
+#  FAST is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 DATA_FOLDER_PATH = Path(__file__).parent / "data"
 RESULTS_FOLDER_PATH = Path(__file__).parent / "results"
@@ -147,14 +161,14 @@ def test_problem_definition_with_xml_ref(cleanup, caplog):
         problem.setup()
 
         # check the global way to set options
-        assert problem.model.functions.f.options["dummy_f_option"] == 10
-        assert problem.model.functions.f.options["dummy_generic_option"] == "it works"
+        assert problem.model.group.functions.f.options["dummy_f_option"] == 10
+        assert problem.model.group.functions.f.options["dummy_generic_option"] == "it works"
         assert problem.model.cycle.disc1.options["dummy_disc1_option"] == {"a": 1, "b": 2}
         assert problem.model.cycle.disc1.options["dummy_generic_option"] == "it works here also"
 
         # check that path options are made absolute
         assert (
-            Path(problem.model.functions.options["input_path"])
+            Path(problem.model.group.functions.options["input_path"])
             == DATA_FOLDER_PATH / "translator.txt"
         )
 
@@ -340,6 +354,78 @@ def test_set_optimization_definition(cleanup):
         conf_dict_opt = conf_dict["optimization"]
         # Should be equal
         assert optimization_conf == conf_dict_opt
+
+
+def test_make_local(cleanup):
+    for extension in ["toml", "yml"]:
+        reference_file = DATA_FOLDER_PATH / f"valid_sellar.{extension}"
+        for copy_models in [True, False]:
+            clear_openmdao_registry()
+            conf = FASTOADProblemConfigurator(reference_file)
+            conf.input_file_path = DATA_FOLDER_PATH / "ref_inputs.xml"
+            target_folder = (
+                RESULTS_FOLDER_PATH / f"local_{extension}{'_with_models' if copy_models else ''}"
+            )
+
+            conf.make_local(target_folder, copy_models=copy_models)
+
+            # Check files -----------------------------------------------------
+            if copy_models:
+                original_model_folder_path = DATA_FOLDER_PATH / "conf_sellar_example"
+                for file_path in original_model_folder_path.rglob("*.py"):
+                    copied_file_path = (
+                        target_folder
+                        / "models_0"
+                        / "conf_sellar_example"
+                        / file_path.relative_to(original_model_folder_path)
+                    )
+                    assert filecmp.cmp(copied_file_path, file_path)
+            else:
+                assert next(target_folder.glob("models_*"), None) is None
+
+            assert filecmp.cmp(
+                target_folder / "ref_inputs.xml", DATA_FOLDER_PATH / "ref_inputs.xml"
+            )
+            assert filecmp.cmp(
+                target_folder / "group" / "functions" / "input_path" / "translator.txt",
+                DATA_FOLDER_PATH / "translator.txt",
+            )
+            assert filecmp.cmp(
+                target_folder / "model_options" / "unused_file" / "functions.py",
+                DATA_FOLDER_PATH / "conf_sellar_example" / "functions.py",
+            )
+            assert filecmp.cmp(
+                target_folder / "model_options" / "cycle." / "input_file" / "__init__.py",
+                DATA_FOLDER_PATH / "__init__.py",
+            )
+            # Run -----------------------------------------------------
+            clear_openmdao_registry()
+            local_conf_1 = FASTOADProblemConfigurator(target_folder / f"valid_sellar.{extension}")
+            problem = local_conf_1.get_problem(read_inputs=True)
+            problem.setup()
+            problem.run_model()
+            problem.write_outputs()
+
+            assert (target_folder / "outputs.xml").is_file()
+
+            # Check that local input file is used --------------
+            (target_folder / "ref_inputs.xml").unlink()
+
+            clear_openmdao_registry()
+            local_conf_2 = FASTOADProblemConfigurator(target_folder / f"valid_sellar.{extension}")
+            with pytest.raises(FileNotFoundError):
+                _ = local_conf_2.get_problem(read_inputs=True)
+
+            # Check that local models are used --------------
+            if copy_models:
+                shutil.rmtree(target_folder / "models_0" / "conf_sellar_example")
+
+                clear_openmdao_registry()
+                local_conf_3 = FASTOADProblemConfigurator(
+                    target_folder / f"valid_sellar.{extension}"
+                )
+                with pytest.raises(FastBundleLoaderUnknownFactoryNameError):
+                    _ = local_conf_3.get_problem(read_inputs=True)
 
 
 @pytest.fixture()
