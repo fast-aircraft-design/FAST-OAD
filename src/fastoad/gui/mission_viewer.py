@@ -1,6 +1,7 @@
 """
 Defines the analysis and plotting functions for postprocessing regarding the mission
 """
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -63,9 +64,16 @@ class MissionViewer:
             else:
                 raise TypeError("Unknown type for mission data, please use .csv of DataFrame")
 
-    def display(self):
+    def display(self, layout_dict=None, layout_overwrite=False, **kwargs):
         """
         Display the user interface
+
+        :param dict: Dictionary of properties to be updated
+        :param overwrite: If True, overwrite existing properties. If False, apply updates
+            to existing properties recursively, preserving existing
+            properties that are not specified in the update operation.
+        :param kwargs: Keyword/value pair of properties to be updated
+
         :return the display object
         """
 
@@ -84,7 +92,7 @@ class MissionViewer:
         self._y_widget = widgets.Dropdown(value=column_altitude, options=keys)
         self._y_widget.observe(self._show_plot, "value")
 
-        self._show_plot()
+        self._show_plot(layout_dict=layout_dict, layout_overwrite=layout_overwrite, **kwargs)
 
         toolbar = widgets.HBox(
             [widgets.Label(value="x:"), self._x_widget, widgets.Label(value="y:"), self._y_widget]
@@ -95,9 +103,15 @@ class MissionViewer:
         return ui
 
     # pylint: disable=unused-argument # change has to be there for observe() to work
-    def _show_plot(self, change=None):
+    def _show_plot(self, change=None, layout_dict=None, layout_overwrite=False, **kwargs):
         """
         Updates and shows the plots
+
+        :param dict: Dictionary of properties to be updated
+        :param overwrite: If True, overwrite existing properties. If False, apply updates
+            to existing properties recursively, preserving existing
+            properties that are not specified in the update operation.
+        :param kwargs: Keyword/value pair of properties to be updated
         """
 
         with self._output_widget:
@@ -123,6 +137,7 @@ class MissionViewer:
             fig.update_layout(
                 title_text="Mission", title_x=0.5, xaxis_title=x_name, yaxis_title=y_name
             )
+            fig.update_layout(layout_dict, overwrite=layout_overwrite, **kwargs)
 
             fig = go.FigureWidget(fig)
             display(fig)
