@@ -120,57 +120,62 @@ class AltitudeChangeSegment(AbstractManualThrustSegment):
     ) -> float:
         current = flight_points[-1]
 
+        distance_to_target = None
+
         # Max flight level is first priority
         max_authorized_altitude = self.maximum_flight_level * 100.0 * foot
         if current.altitude >= max_authorized_altitude:
-            return max_authorized_altitude - current.altitude
+            distance_to_target = max_authorized_altitude - current.altitude
 
-        if isinstance(target.CL, float):
-            return target.CL - current.CL
+        elif isinstance(target.CL, float):
+            distance_to_target = target.CL - current.CL
 
-        if self._original_target_altitude:
-            # Optimal altitude is based on a target Mach number, though target speed
-            # may be specified as TAS or EAS. If so, Mach number has to be computed
-            # for target altitude and speed.
+        else:
+            if self._original_target_altitude:
+                self._manage_optimal_altitude(current, flight_points[0], target)
 
-            # First, as target speed is expected to be set to self.CONSTANT_VALUE for one
-            # parameter. Let's get the real value from start point.
-            target_speed = copy(target)
-            for speed_param in ["true_airspeed", "equivalent_airspeed", "mach"]:
-                if isinstance(getattr(target_speed, speed_param), str):
-                    setattr(target_speed, speed_param, getattr(flight_points[0], speed_param))
+            if target.altitude is not None:
+                distance_to_target = target.altitude - current.altitude
+            elif target.true_airspeed and target.true_airspeed != self.CONSTANT_VALUE:
+                distance_to_target = target.true_airspeed - current.true_airspeed
+            elif target.equivalent_airspeed and target.equivalent_airspeed != self.CONSTANT_VALUE:
+                distance_to_target = target.equivalent_airspeed - current.equivalent_airspeed
+            elif target.mach is not None and target.mach != self.CONSTANT_VALUE:
+                distance_to_target = target.mach - current.mach
 
-            # Now, let's compute target Mach number
-            atm = self._get_atmosphere_point(max(target.altitude, current.altitude))
-            if target_speed.equivalent_airspeed:
-                atm.equivalent_airspeed = target_speed.equivalent_airspeed
-                target_speed.true_airspeed = atm.true_airspeed
-            if target_speed.true_airspeed:
-                atm.true_airspeed = target_speed.true_airspeed
-                target_speed.mach = atm.mach
-
-            # Now we compute optimal altitude
-            optimal_altitude = self._get_optimal_altitude(
-                current.mass, target_speed.mach, current.altitude
+        if distance_to_target is None:
+            raise FastFlightSegmentIncompleteFlightPoint(
+                "No valid target definition for altitude change."
             )
-            if self._original_target_altitude == self.OPTIMAL_ALTITUDE:
-                target.altitude = optimal_altitude
-            else:  # self._original_target_altitude == self.OPTIMAL_FLIGHT_LEVEL:
-                target.altitude = get_closest_flight_level(optimal_altitude, up_direction=False)
-
-        if target.altitude is not None:
-            return target.altitude - current.altitude
-        if target.true_airspeed and target.true_airspeed != self.CONSTANT_VALUE:
-            return target.true_airspeed - current.true_airspeed
-        if target.equivalent_airspeed and target.equivalent_airspeed != self.CONSTANT_VALUE:
-            return target.equivalent_airspeed - current.equivalent_airspeed
-        if target.mach is not None and target.mach != self.CONSTANT_VALUE:
-            return target.mach - current.mach
-
-        raise FastFlightSegmentIncompleteFlightPoint(
-            "No valid target definition for altitude change."
-        )
+        return distance_to_target
 
     def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
         gamma = (flight_point.thrust - flight_point.drag) / flight_point.mass / g
         return gamma, 0.0
+
+    def _manage_optimal_altitude(self, current, start, target):
+        # Optimal altitude is based on a target Mach number, though target speed
+        # may be specified as TAS or EAS. If so, Mach number has to be computed
+        # for target altitude and speed.
+        # First, as target speed is expected to be set to self.CONSTANT_VALUE for one
+        # parameter. Let's get the real value from start point.
+        target_speed = copy(target)
+        for speed_param in ["true_airspeed", "equivalent_airspeed", "mach"]:
+            if isinstance(getattr(target_speed, speed_param), str):
+                setattr(target_speed, speed_param, getattr(start, speed_param))
+        # Now, let's compute target Mach number
+        atm = self._get_atmosphere_point(max(target.altitude, current.altitude))
+        if target_speed.equivalent_airspeed:
+            atm.equivalent_airspeed = target_speed.equivalent_airspeed
+            target_speed.true_airspeed = atm.true_airspeed
+        if target_speed.true_airspeed:
+            atm.true_airspeed = target_speed.true_airspeed
+            target_speed.mach = atm.mach
+        # Now we compute optimal altitude
+        optimal_altitude = self._get_optimal_altitude(
+            current.mass, target_speed.mach, current.altitude
+        )
+        if self._original_target_altitude == self.OPTIMAL_ALTITUDE:
+            target.altitude = optimal_altitude
+        else:  # self._original_target_altitude == self.OPTIMAL_FLIGHT_LEVEL:
+            target.altitude = get_closest_flight_level(optimal_altitude, up_direction=False)
