@@ -61,6 +61,12 @@ class CalcRunner:
     #: For activating MDO instead MDA
     optimize: bool = False
 
+    def __post_init__(self):
+        # Let's ensure we have absolute paths
+        self.configuration_file_path = as_path(self.configuration_file_path).resolve()
+        if self.input_file_path:
+            self.input_file_path = as_path(self.input_file_path).resolve()
+
     def run(
         self,
         input_values: Optional[VariableList] = None,
@@ -141,7 +147,7 @@ class CalcRunner:
         :param overwrite_subfolders: if False, calculations that match existing subfolders won't be
                                      run (allows batch continuation)
         """
-        destination_folder = as_path(destination_folder)
+        destination_folder = as_path(destination_folder).resolve()
 
         use_MPI = use_MPI_if_available and HAVE_MPI
         if use_MPI_if_available and not HAVE_MPI:
