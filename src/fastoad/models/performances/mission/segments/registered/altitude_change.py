@@ -13,8 +13,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from copy import copy
-from dataclasses import dataclass
-from typing import List, Tuple
+from dataclasses import dataclass, field
+from typing import List, Tuple, Optional, Union
 
 import pandas as pd
 from scipy.constants import foot, g
@@ -73,6 +73,9 @@ class AltitudeChangeSegment(AbstractManualThrustSegment):
     #: The maximum allowed flight level (i.e. multiple of 100 feet).
     maximum_flight_level: float = 500.0
 
+    # To keep track of originally instructed target (used for "optimal_altitude" and so on)
+    _original_target_altitude: Optional[Union[str]] = field(default=None, init=False)
+
     #: Using this value will tell to target the altitude with max lift/drag ratio.
     OPTIMAL_ALTITUDE = "optimal_altitude"  # pylint: disable=invalid-name # used as constant
 
@@ -84,8 +87,9 @@ class AltitudeChangeSegment(AbstractManualThrustSegment):
         if target.altitude is not None:
             if isinstance(target.altitude, str):
                 # Target altitude will be modified along the process, so we keep track
-                # of the original order in target CL, that is not used otherwise.
-                target.CL = target.altitude  # pylint: disable=invalid-name
+                # of the original order.
+                self._original_target_altitude = target.altitude
+
                 # let's put a numerical, negative value in target.altitude to
                 # ensure there will be no problem in self.get_distance_to_target()
                 target.altitude = -1000.0
@@ -98,7 +102,7 @@ class AltitudeChangeSegment(AbstractManualThrustSegment):
             else:
                 # Target altitude is fixed, back to original settings (in case
                 # this instance is used more than once)
-                target.CL = None
+                self._original_target_altitude = None
                 self.interrupt_if_getting_further_from_target = True
 
         atm = self._get_atmosphere_point(start.altitude)
@@ -124,7 +128,7 @@ class AltitudeChangeSegment(AbstractManualThrustSegment):
         if isinstance(target.CL, float):
             return target.CL - current.CL
 
-        if target.CL:
+        if self._original_target_altitude:
             # Optimal altitude is based on a target Mach number, though target speed
             # may be specified as TAS or EAS. If so, Mach number has to be computed
             # for target altitude and speed.
@@ -149,9 +153,9 @@ class AltitudeChangeSegment(AbstractManualThrustSegment):
             optimal_altitude = self._get_optimal_altitude(
                 current.mass, target_speed.mach, current.altitude
             )
-            if target.CL == self.OPTIMAL_ALTITUDE:
+            if self._original_target_altitude == self.OPTIMAL_ALTITUDE:
                 target.altitude = optimal_altitude
-            else:  # target.CL == self.OPTIMAL_FLIGHT_LEVEL:
+            else:  # self._original_target_altitude == self.OPTIMAL_FLIGHT_LEVEL:
                 target.altitude = get_closest_flight_level(optimal_altitude, up_direction=False)
 
         if target.altitude is not None:
