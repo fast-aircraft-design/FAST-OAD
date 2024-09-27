@@ -97,7 +97,7 @@ class MissionWrapper(MissionBuilder):
 
     def force_all_block_fuel_usage(self):
         """Modifies mission definition to set block fuel as target fuel consumption."""
-        if self.mission_name:
+        if self._mission_name:
             self.definition.force_all_block_fuel_usage(self.mission_name)
             self._update_structure_builders()
 
