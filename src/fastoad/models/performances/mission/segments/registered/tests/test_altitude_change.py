@@ -255,6 +255,7 @@ def test_climb_target_CL_at_fixed_mach(polar):
         assert_allclose(last_point.true_airspeed, 246.44, rtol=1e-4)
         assert_allclose(last_point.mass, 69843.0, rtol=1e-4)
         assert_allclose(last_point.ground_distance, 19179.0, rtol=1e-3)
+      assert_allclose(last_point.CL, 0.4418, rtol=1e-3)
 
     run()
 
