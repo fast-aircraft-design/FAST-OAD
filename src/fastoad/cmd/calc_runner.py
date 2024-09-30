@@ -75,21 +75,29 @@ class CalcRunner:
         :param input_values: if provided, these values will supersede the content
                              of input file (specified in configuration file)
         :param calculation_folder: if specified, all data, including configuration file,
-                                   will be stored in that folder
-        :return: the written data
+                                   will be stored in that folder. The input file in this folder
+                                   will contain data from `input_values`
+
+        :return: the written output data
         """
         configuration = FASTOADProblemConfigurator(self.configuration_file_path)
+
         if self.input_file_path:
             configuration.input_file_path = self.input_file_path
+
         if calculation_folder:
             make_parent_dir(calculation_folder)
             configuration.make_local(calculation_folder)
+            if input_values:
+                input_data = DataFile(configuration.input_file_path)
+                input_data.update(input_values)
+                input_data.save()
 
         problem = configuration.get_problem(read_inputs=True)
         problem.comm = FakeComm()
         problem.setup()
 
-        if input_values:
+        if input_values and not calculation_folder:
             for input_variable in input_values:
                 problem.set_val(
                     input_variable.name,
@@ -168,7 +176,7 @@ class CalcRunner:
         for i, input_vars in enumerate(input_list):
             calculation_folder = destination_folder / f"calc_{i:0{n_digits}d}"
             if overwrite_subfolders or not calculation_folder.is_dir():
-                yield (self, input_vars, calculation_folder)
+                yield self, input_vars, calculation_folder
             else:
                 _LOGGER.info('Subfolder "%s" exists. Computation skipped', calculation_folder)
 
