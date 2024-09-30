@@ -231,6 +231,38 @@ def test_climb_optimal_flight_level_at_fixed_mach(polar):
     run()
 
 
+def test_climb_target_CL_at_fixed_mach(polar):
+    propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
+
+    segment = AltitudeChangeSegment(
+        target=FlightPoint(CL=0.4418, mach="constant"),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        thrust_rate=1.0,
+        time_step=2.0,
+        maximum_CL=0.1,
+    )
+
+    def run():
+        flight_points = segment.compute_from(FlightPoint(altitude=5000.0, mach=0.82, mass=70000.0))
+
+        last_point = flight_points.iloc[-1]
+        # Note: reference values are obtained by running the process with 0.01s as time step
+        assert_allclose(flight_points.mach, 0.82)
+        assert_allclose(last_point.altitude / foot, 32000.0, atol=0.1)
+        assert_allclose(last_point.time, 77.5, rtol=1e-2)
+        assert_allclose(last_point.true_airspeed, 246.44, rtol=1e-4)
+        assert_allclose(last_point.mass, 69843.0, rtol=1e-4)
+        assert_allclose(last_point.ground_distance, 19179.0, rtol=1e-3)
+        assert_allclose(last_point.CL, 0.4418, rtol=1e-3)
+
+    run()
+
+    # A second call is done to ensure first run did not modify anything (like target definition)
+    run()
+
+
 def test_climb_optimal_flight_level_at_fixed_mach_with_capped_flight_level(polar):
     propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
