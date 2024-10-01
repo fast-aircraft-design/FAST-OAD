@@ -27,8 +27,6 @@ from unittest.mock import Mock
 import pytest
 import wrapt
 
-from fastoad._utils.files import as_path
-
 if sys.version_info >= (3, 10):
     import importlib.metadata as importlib_metadata
 else:
@@ -49,7 +47,7 @@ def no_xfoil_skip(request, xfoil_path):
 
 
 @pytest.fixture
-def xfoil_path() -> Optional[Path]:
+def xfoil_path() -> Optional[str]:
     """
     On a system that is not Windows, a XFOIL executable with name "xfoil" can
     be put in "<project_root>/tests/xfoil_exe/".
@@ -64,10 +62,10 @@ def xfoil_path() -> Optional[Path]:
     path = Path("tests/xfoil_exe", "xfoil").resolve()
     if path.exists():
         # If there is a local xfoil, use it
-        return path
+        return path.as_posix()
 
     # Otherwise, use one that is in PATH, if it exists
-    return as_path(which("xfoil"))
+    return which("xfoil")
 
 
 @pytest.fixture
