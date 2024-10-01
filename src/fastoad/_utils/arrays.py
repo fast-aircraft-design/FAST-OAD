@@ -1,8 +1,8 @@
 """
-Readers for legacy XML format
+Module for array-related operations
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,23 +14,18 @@ Readers for legacy XML format
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastoad._utils.resource_management.contents import PackageReader
-from fastoad.io.xml import VariableXmlBaseFormatter
-from fastoad.io.xml.translator import VarXpathTranslator
-from . import resources
+from typing import Any
 
-CONVERSION_FILENAME_1 = "legacy1.txt"
+import numpy as np
 
 
-class VariableLegacy1XmlFormatter(VariableXmlBaseFormatter):
+def scalarize(value: Any):
     """
-    Formatter for legacy XML format (version "1")
+    :param value:
+    :return: the scalar value inside input array if it is a one-element array/sequence.
+             Returns `value` itself otherwise
     """
-
-    def __init__(self):
-        translator = VarXpathTranslator()
-        with PackageReader(resources).open_text(CONVERSION_FILENAME_1) as translation_table:
-            translator.read_translation_table(translation_table)
-        super().__init__(translator)
-
-        self.xml_unit_attribute = "unit"
+    try:
+        return np.asarray(value).item()
+    except ValueError:
+        return value

@@ -19,6 +19,7 @@ from typing import Iterable, Mapping, Optional, Tuple, Union
 import numpy as np
 from openmdao import api as om
 
+from fastoad._utils.arrays import scalarize
 from fastoad.model_base import FlightPoint
 from fastoad.openmdao.variables import Variable
 from .constants import BASE_UNITS
@@ -66,22 +67,29 @@ class InputDefinition:
     prefix: str = ""
 
     #: Used only for tests
-    variable_name: InitVar[Optional[str]] = None
+    variable_name_: InitVar[Optional[str]] = None
 
     #: Used only for tests
-    use_opposite: InitVar[Optional[bool]] = None
+    use_opposite_: InitVar[Optional[bool]] = None
 
     #: True if the opposite value should be used, if input is defined by a variable.
     _use_opposite: bool = field(default=False, init=False, repr=True)
 
     _variable_name: Optional[str] = field(default=None, init=False, repr=True)
 
-    def __post_init__(self, variable_name, use_opposite):
+    def __post_init__(self, variable_name_: Optional[str], use_opposite_: Optional[bool]):
         if self.parameter_name.startswith("delta_"):
             self.is_relative = True
             self.parameter_name = self.parameter_name[6:]
 
-        self.output_unit = FlightPoint.get_unit(self.parameter_name)
+        if self.parameter_name == "isa_offset":
+            # For ISA offset, it is better to have no unit because we don't want
+            # OpenMDAO to try converting between degK and degC, which
+            # would add or subtract 273.15 to the offset.
+            self.output_unit = None
+        else:
+            self.output_unit = FlightPoint.get_unit(self.parameter_name)
+
         if self.output_unit is None:
             self.output_unit = BASE_UNITS.get(self.parameter_name)
         if self.output_unit == "-":
@@ -90,10 +98,8 @@ class InputDefinition:
         if self.input_unit is None:
             self.input_unit = self.output_unit
 
-        if variable_name and not isinstance(variable_name, property):
-            # dataclass "feature": default value of 'variable_name' is 'property' because it
-            # is defined as a property.
-            self.variable_name = variable_name
+        if variable_name_:
+            self.variable_name = variable_name_
             self.input_value = None
         elif isinstance(self.input_value, str) and (
             ":" in self.input_value or self.input_value.startswith(("~", "-~"))
@@ -103,21 +109,8 @@ class InputDefinition:
             self.variable_name = self.input_value
             self.input_value = None
 
-        if use_opposite is not None:
-            self._use_opposite = use_opposite
-
-    @property
-    def value(self):
-        """
-
-        :return: Value of variable in DEFAULT unit (unit used by mission calculation),
-                 or None if input is a variable and set_variable_input() has NOT been called,
-                 or the unchanged value if it is not a number.
-        """
-        try:
-            return om.convert_units(self.input_value, self.input_unit, self.output_unit)
-        except TypeError:
-            return self.input_value
+        if use_opposite_ is not None:
+            self._use_opposite = use_opposite_
 
     @classmethod
     def from_dict(cls, parameter_name, definition_dict: dict, part_identifier=None, prefix=None):
@@ -147,39 +140,18 @@ class InputDefinition:
         )
         return input_def
 
-    def set_variable_value(self, inputs: Mapping):
+    @property
+    def value(self):
         """
-        Sets numerical value from OpenMDAO inputs.
 
-        OpenMDAO value is assumed to be provided with unit self.input_unit.
-
-        :param inputs:
+        :return: Value of variable in DEFAULT unit (unit used by mission calculation),
+                 or None if input is a variable and set_variable_input() has NOT been called,
+                 or the unchanged value if it is not a number.
         """
-        if self.variable_name:
-            # Note: OpenMDAO `inputs` object has no `get()` method, so we need to do this:
-            value = (
-                inputs[self.variable_name] if self.variable_name in inputs else self.default_value
-            )
-            if self._use_opposite:
-                self.input_value = -value
-            else:
-                self.input_value = value
-
-    def get_input_definition(self) -> Optional[Variable]:
-        """
-        Provides information for input definition in OpenMDAO.
-
-        :return: Variable instance with input definition, or None if no variable name was defined.
-        """
-        if self.variable_name:
-            return Variable(
-                name=self.variable_name,
-                val=self.default_value,
-                shape_by_conn=self.shape_by_conn,
-                units=self.input_unit,
-                desc="Input defined by the mission.",
-            )
-        return None
+        try:
+            return om.convert_units(self.input_value, self.input_unit, self.output_unit)
+        except TypeError:
+            return self.input_value
 
     @property
     def variable_name(self):  # noqa: F811 #  the variable_name field is an InitVar.
@@ -221,6 +193,41 @@ class InputDefinition:
             self._variable_name = var_name
         else:
             self._variable_name = None
+
+    def set_variable_value(self, inputs: Mapping):
+        """
+        Sets numerical value from OpenMDAO inputs.
+
+        OpenMDAO value is assumed to be provided with unit self.input_unit.
+
+        :param inputs:
+        """
+        if self.variable_name:
+            value = scalarize(
+                # Note: OpenMDAO `inputs` object has no `get()` method, so we need to do this:
+                inputs[self.variable_name] if self.variable_name in inputs else self.default_value
+            )
+
+            if self._use_opposite:
+                self.input_value = -value
+            else:
+                self.input_value = value
+
+    def get_input_definition(self) -> Optional[Variable]:
+        """
+        Provides information for input definition in OpenMDAO.
+
+        :return: Variable instance with input definition, or None if no variable name was defined.
+        """
+        if self.variable_name:
+            return Variable(
+                name=self.variable_name,
+                val=self.default_value,
+                shape_by_conn=self.shape_by_conn,
+                units=self.input_unit,
+                desc="Input defined by the mission.",
+            )
+        return None
 
     def __str__(self):
         return str(self.value)

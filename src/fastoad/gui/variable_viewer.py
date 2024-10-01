@@ -22,6 +22,7 @@ import ipywidgets as widgets
 import pandas as pd
 from IPython.display import display
 
+from fastoad._utils.pandas import apply_map
 from fastoad.io import IVariableIOFormatter, VariableIO
 from fastoad.openmdao.variables import VariableList
 
@@ -395,7 +396,8 @@ class VariableViewer:
 
             return submodules[len(modules)]
 
-        submodules = var_names.applymap(get_next_module)
+        submodules = apply_map(var_names, get_next_module)
+
         submodules = submodules[submodules.Name != ""]
 
         return set(submodules["Name"].tolist())
@@ -424,7 +426,9 @@ class VariableViewer:
             else:
                 path = ":".join(modules)
         path_filter = df.Name.str.startswith(path)
-        io_filter = [True] * len(df) if var_io_type == TAG_ALL else df["I/O"] == var_io_type
+        io_filter = pd.Series(
+            [True] * len(df) if var_io_type == TAG_ALL else df["I/O"] == var_io_type
+        )
 
         filtered_df = df[path_filter & io_filter]
 

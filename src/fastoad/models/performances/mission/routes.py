@@ -74,7 +74,7 @@ class RangedRoute(FlightSequence):
 
     @cruise_distance.setter
     def cruise_distance(self, cruise_distance):
-        self.cruise_segment.target.ground_distance = float(cruise_distance)
+        self.cruise_segment.target.ground_distance = np.asarray(cruise_distance).item()
         self.cruise_segment.target.set_as_relative("ground_distance")
 
     @property

@@ -20,7 +20,6 @@ import shutil
 import sys
 from abc import ABC, abstractmethod
 from importlib import import_module
-from importlib.resources import open_text
 from os import PathLike
 from pathlib import Path
 from typing import Dict, List, Optional, Union
@@ -31,6 +30,7 @@ from jsonschema import validate
 from ruamel.yaml import YAML
 
 from fastoad._utils.files import as_path, make_parent_dir
+from fastoad._utils.resource_management.contents import PackageReader
 from fastoad.io import IVariableIOFormatter
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from fastoad.openmdao.problem import FASTOADProblem
@@ -167,7 +167,7 @@ class FASTOADProblemConfigurator:
         self._serializer.read(self._conf_file_path)
 
         # Syntax validation
-        with open_text(resources, JSON_SCHEMA_NAME) as json_file:
+        with PackageReader(resources).open_text(JSON_SCHEMA_NAME) as json_file:
             json_schema = json.loads(json_file.read())
         validate(self._data, json_schema)
 

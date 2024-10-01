@@ -1,5 +1,5 @@
 <!--
-  ~ This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
+  ~ This file is part of FAST-OAD_CS25
   ~ Copyright (C) 2022 ONERA & ISAE-SUPAERO
   ~ FAST is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as published by
@@ -112,10 +112,10 @@
                         </x>
                     </at25percent>
                 </MAC>
-                <root>
+                <center>
                     <chord units="m">
-                        4.194457341357644<!--chord length at root of horizontal tail--></chord>
-                </root>
+                        4.194457341357644<!--chord length at center of horizontal tail--></chord>
+                </center>
                 <tip>
                     <chord units="m">
                         1.2583372024072932<!--chord length at tip of horizontal tail--></chord>
@@ -334,6 +334,7 @@
             </taxi>
         </propulsion>
         <load_case>
+            <gust_intensity>0.0</gust_intensity>
             <lc1>
                 <U_gust units="m/s">
                     15.25<!--gust vertical speed for sizing load case 1 (gust with minimum aircraft mass)--></U_gust>
@@ -456,11 +457,12 @@
                         0.0<!--altitude at takeoff in sizing mission--></altitude>
                     <flap_angle units="deg">
                         10.0<!--flap angle during takeoff phase in sizing mission--></flap_angle>
+                    <duration units="min">
+                        0.675833333333<!--duration of takeoff phase in sizing mission--></duration>
                     <fuel units="kg">
                         82.4<!--mass of consumed fuel during takeoff phase in sizing mission--></fuel>
                     <slat_angle units="deg">
                         18.0<!--slat angle during takeoff phase in sizing mission--></slat_angle>
-                    <duration units="s">0.0</duration>
                 </takeoff>
                 <taxi_in>
                     <distance units="m">39443.94626640342</distance>

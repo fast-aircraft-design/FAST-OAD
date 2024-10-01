@@ -717,21 +717,21 @@ testing = ["flake8 (<5)", "flufl.flake8", "importlib-resources (>=1.3)", "packag
 
 [[package]]
 name = "importlib-resources"
-version = "6.4.0"
+version = "5.13.0"
 description = "Read resources from Python packages"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "importlib_resources-6.4.0-py3-none-any.whl", hash = "sha256:50d10f043df931902d4194ea07ec57960f66a80449ff867bfe782b4c486ba78c"},
-    {file = "importlib_resources-6.4.0.tar.gz", hash = "sha256:cdb2b453b8046ca4e3798eb1d84f3cce1446a0e8e7b5ef4efb600f19fc398145"},
+    {file = "importlib_resources-5.13.0-py3-none-any.whl", hash = "sha256:9f7bd0c97b79972a6cce36a366356d16d5e13b09679c11a58f1014bfdf8e64b2"},
+    {file = "importlib_resources-5.13.0.tar.gz", hash = "sha256:82d5c6cca930697dbbd86c93333bb2c2e72861d4789a11c2662b933e5ad2b528"},
 ]
 
 [package.dependencies]
 zipp = {version = ">=3.1.0", markers = "python_version < \"3.10\""}
 
 [package.extras]
-docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (<7.2.5)", "sphinx (>=3.5)", "sphinx-lint"]
-testing = ["jaraco.test (>=5.4)", "pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-mypy", "pytest-ruff (>=0.2.1)", "zipp (>=3.17)"]
+docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-lint"]
+testing = ["pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-mypy (>=0.9.1)", "pytest-ruff"]
 
 [[package]]
 name = "iniconfig"
@@ -2169,13 +2169,14 @@ files = [
 ]
 
 [[package]]
-name = "pydoe2"
-version = "1.3.0"
+name = "pydoe3"
+version = "1.0.4"
 description = "Design of experiments for Python"
 optional = false
 python-versions = "*"
 files = [
-    {file = "pyDOE2-1.3.0.tar.gz", hash = "sha256:5492b0f984af52da3af20b1cd61deb21b067c858e65243ec3ba573375f0d6720"},
+    {file = "pydoe3-1.0.4-py2.py3-none-any.whl", hash = "sha256:233b15a2191c70a0d35a1306d23c45423b2995472c2c1402a60fdf4408caf3dd"},
+    {file = "pydoe3-1.0.4.tar.gz", hash = "sha256:904f52eba87d9a1b9e0c14705cd07ff8fd53af01568c77dca5f4fe7a5ce7fd36"},
 ]
 
 [package.dependencies]
@@ -3301,4 +3302,4 @@ mpi4py = ["mpi4py", "mpi4py", "mpi4py"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8, <3.12"
-content-hash = "db69f3b8b3c71758f0588cc95edf227b6347f2ff10a4b605d2963c6dc71e0f06"
+content-hash = "6355c8db95b3ad96b0d2c97593fad7b0c1b95c86643ebe76e593800f80ca19b0"

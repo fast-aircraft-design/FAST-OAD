@@ -15,7 +15,6 @@ Class for managing an OpenMDAO variable.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from importlib.resources import open_text
 from os import PathLike
 from typing import Dict, Hashable, Iterable, Mapping, Tuple, Union
 
@@ -29,7 +28,7 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 DESCRIPTION_FILENAME = "variable_descriptions.txt"
 
-# Metadata that will be ignore when checking variable equality and when adding variable
+# Metadata that will be ignored when checking variable equality and when adding variable
 # to an OpenMDAO component
 METADATA_TO_IGNORE = [
     "is_input",
@@ -170,8 +169,9 @@ class Variable(Hashable):
                     description_file = open(file_path)
             else:
                 # Then it is a module name
-                if DESCRIPTION_FILENAME in PackageReader(str(file_parent)).contents:
-                    description_file = open_text(str(file_parent), DESCRIPTION_FILENAME)
+                pack_reader = PackageReader(str(file_parent))
+                if DESCRIPTION_FILENAME in pack_reader.contents:
+                    description_file = pack_reader.open_text(DESCRIPTION_FILENAME)
 
         if description_file is not None:
             try:

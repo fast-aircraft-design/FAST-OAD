@@ -15,33 +15,38 @@ Helper module for copying resources
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import shutil
-from importlib.resources import Package, is_resource, path
+from importlib.resources import Resource
 from os import PathLike
+from types import ModuleType
 from typing import Iterable, Union
 
 from .contents import PackageReader
 from ..files import as_path, make_parent_dir
 
 
-def copy_resource(package: Package, resource: str, target_path: Union[str, PathLike]):
+def copy_resource(
+    package: Union[str, ModuleType], resource: Resource, target_path: Union[str, PathLike]
+):
     """
     Copies the indicated resource file to provided target path.
 
     If target_path matches an already existing folder, resource file will be copied in this folder
     with same name. Otherwise, target_path will be the used name of copied resource file
 
-    :param package: package as in importlib.resources.read_binary()
-    :param resource: resource as in importlib.resources.read_binary()
+    :param package: package containing the resource
+    :param resource: resource to be copied
     :param target_path: file system path
     """
     make_parent_dir(target_path)
 
-    with path(package, resource) as source_path:
+    with PackageReader(package).path(resource) as source_path:
         shutil.copy(source_path, target_path)
 
 
 def copy_resource_folder(
-    package: Package, destination_path: Union[str, PathLike], exclude: Iterable[str] = None
+    package: Union[str, ModuleType],
+    destination_path: Union[str, PathLike],
+    exclude: Iterable[str] = None,
 ):
     """
     Copies the full content of provided package in destination folder.
@@ -65,9 +70,10 @@ def copy_resource_folder(
     if exclude:
         exclusion_list |= set(exclude)
 
-    package_contents = set(PackageReader(package).contents) - exclusion_list
+    pack_reader = PackageReader(package)
+    package_contents = set(pack_reader.contents) - exclusion_list
     for resource_name in package_contents:
-        if is_resource(package, resource_name):
+        if pack_reader.is_resource(resource_name):
             destination_file_path = destination_path / resource_name
             copy_resource(package, resource_name, destination_file_path)
         else:

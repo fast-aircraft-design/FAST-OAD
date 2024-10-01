@@ -50,8 +50,15 @@ jobs:
           path: requirements.txt
 
       - name: Unit tests
-        run: pytest --no-cov src
+        run: |
+          pytest --no-cov src | tee pytest.log
+          awk 'BEGIN{pr=0};/warnings summary/{pr=1};pr==1' pytest.log > warnings.log  # The warning summary is put in a dedicated file.
         shell: bash
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Warnings summary from unit test for ${{ matrix.os }}
+          path: warnings.log
 
       - name: Notebook tests
         run: pytest --no-cov --nbval-lax -p no:python src/fastoad/notebooks

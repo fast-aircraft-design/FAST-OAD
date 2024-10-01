@@ -705,7 +705,11 @@ def _run_problem(
         problem.run_model()
         problem.optim_failed = False  # Actually, we don't know
     else:
-        problem.optim_failed = problem.run_driver()
+        result = problem.run_driver()
+        if isinstance(result, bool):
+            problem.optim_failed = problem.run_driver()
+        else:  # Since OpenMDAO 3.33, a DriverResult instance is returned
+            problem.optim_failed = not result.success
     end_time = time()
     computation_time = round(end_time - start_time, 2)
 
@@ -794,7 +798,7 @@ def variable_viewer(
             columns={"name": "Name", "val": "Value", "units": "Unit", "desc": "Description"}
         )
         table["I/O"] = "OUT"
-        table["I/O"].loc[table["is_input"]] = "IN"
+        table.loc[table["is_input"], "I/O"] = "IN"
         del table["is_input"]
         table.set_index("Name", drop=True, inplace=True)
 

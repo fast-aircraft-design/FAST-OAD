@@ -19,6 +19,7 @@ import numpy as np
 from openmdao import api as om
 
 from fastoad._utils.files import make_parent_dir
+from fastoad._utils.pandas import apply_map
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
 from fastoad.module_management.service_registry import RegisterPropulsion
@@ -108,7 +109,7 @@ class MissionComp(om.ExplicitComponent, BaseMissionComp):
                 return value.item()
             return value
 
-        flight_points = flight_points.applymap(as_scalar)
+        flight_points = apply_map(flight_points, as_scalar)
         rename_dict = {
             field_name: f"{field_name}{' ['+unit+']' if unit else ''}"
             for field_name, unit in FlightPoint.get_units().items()

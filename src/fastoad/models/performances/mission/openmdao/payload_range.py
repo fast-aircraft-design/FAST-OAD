@@ -17,7 +17,7 @@ from typing import Dict
 
 import numpy as np
 import openmdao.api as om
-from pyDOE2 import lhs
+from pyDOE3 import lhs
 from scipy.interpolate import interp1d
 
 from fastoad.module_management.constants import ModelDomain
@@ -354,7 +354,7 @@ class PayloadRangeContourInputValues(
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         nb_points = self.options["nb_points"]
 
-        max_payload = inputs["data:weight:aircraft:max_payload"]
+        max_payload = inputs["data:weight:aircraft:max_payload"].item()
         payload_at_max_takeoff_weight_and_max_fuel_weight = (
             self._calculate_payload_at_max_takeoff_weight_and_max_fuel_weight(inputs)
         )
@@ -370,29 +370,32 @@ class PayloadRangeContourInputValues(
 
         block_fuel_values[0] = 0.0
         block_fuel_values[1] = self._calculate_block_fuel_at_max_takeoff_weight(inputs, max_payload)
-        block_fuel_values[2:] = inputs[self.options["MFW_variable"]]
+        block_fuel_values[2:] = inputs[self.options["MFW_variable"]].item()
 
-        tow_values[:2] = inputs[self.options["MTOW_variable"]]
+        tow_values[:2] = inputs[self.options["MTOW_variable"]].item()
         tow_values[2:] = self._calculate_takeoff_weight_at_max_fuel_weight(
             inputs, payload_values[2:]
         )
 
     def _calculate_block_fuel_at_max_takeoff_weight(self, inputs, payload):
         fuel_at_takeoff = (
-            inputs[self.options["MTOW_variable"]] - payload - inputs[self.options["OWE_variable"]]
+            inputs[self.options["MTOW_variable"]].item()
+            - payload
+            - inputs[self.options["OWE_variable"]].item()
         )
         block_fuel_at_max_takeoff_weight = (
-            fuel_at_takeoff + inputs[self.name_provider.CONSUMED_FUEL_BEFORE_INPUT_WEIGHT.value]
+            fuel_at_takeoff
+            + inputs[self.name_provider.CONSUMED_FUEL_BEFORE_INPUT_WEIGHT.value].item()
         )
         return block_fuel_at_max_takeoff_weight
 
     def _calculate_takeoff_weight_at_max_fuel_weight(self, inputs, payload):
         fuel_at_takeoff = (
-            inputs[self.options["MFW_variable"]]
-            - inputs[self.name_provider.CONSUMED_FUEL_BEFORE_INPUT_WEIGHT.value]
+            inputs[self.options["MFW_variable"]].item()
+            - inputs[self.name_provider.CONSUMED_FUEL_BEFORE_INPUT_WEIGHT.value].item()
         )
         takeoff_weight_at_max_fuel_weight = (
-            fuel_at_takeoff + payload + inputs[self.options["OWE_variable"]]
+            fuel_at_takeoff + payload + inputs[self.options["OWE_variable"]].item()
         )
         return takeoff_weight_at_max_fuel_weight
 
@@ -401,11 +404,11 @@ class PayloadRangeContourInputValues(
             self.name_provider.CONSUMED_FUEL_BEFORE_INPUT_WEIGHT.value
         ]
 
-        fuel_at_takeoff = inputs[self.options["MFW_variable"]] - consumed_fuel_before_takeoff
+        fuel_at_takeoff = inputs[self.options["MFW_variable"]].item() - consumed_fuel_before_takeoff
         payload_at_max_takeoff_weight_and_max_fuel_weight = (
-            inputs[self.options["MTOW_variable"]]
+            inputs[self.options["MTOW_variable"]].item()
             - fuel_at_takeoff
-            - inputs[self.options["OWE_variable"]]
+            - inputs[self.options["OWE_variable"]].item()
         )
         return payload_at_max_takeoff_weight_and_max_fuel_weight
 
@@ -522,10 +525,10 @@ class PayloadRangeGridInputValues(om.ExplicitComponent, BaseMissionComp, NeedsOW
 
     def _calculate_takeoff_weight(self, inputs, payload, block_fuel):
         fuel_at_takeoff = (
-            block_fuel - inputs[self.name_provider.CONSUMED_FUEL_BEFORE_INPUT_WEIGHT.value]
+            block_fuel - inputs[self.name_provider.CONSUMED_FUEL_BEFORE_INPUT_WEIGHT.value].item()
         )
         takeoff_weight_at_max_fuel_weight = (
-            fuel_at_takeoff + payload + inputs[self.options["OWE_variable"]]
+            fuel_at_takeoff + payload + inputs[self.options["OWE_variable"]].item()
         )
         return takeoff_weight_at_max_fuel_weight
 

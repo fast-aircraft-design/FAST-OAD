@@ -16,7 +16,6 @@ Schema for mission definition files.
 
 import json
 from collections import OrderedDict
-from importlib.resources import open_text
 from os import PathLike
 from typing import Union
 
@@ -24,6 +23,7 @@ from ensure import Ensure
 from jsonschema import validate
 from ruamel.yaml import YAML
 
+from fastoad._utils.resource_management.contents import PackageReader
 from . import resources
 
 JSON_SCHEMA_NAME = "mission_schema.json"
@@ -71,7 +71,7 @@ class MissionDefinition(OrderedDict):
         with open(file_path) as yaml_file:
             data = yaml.load(yaml_file)
 
-        with open_text(resources, JSON_SCHEMA_NAME) as json_file:
+        with PackageReader(resources).open_text(JSON_SCHEMA_NAME) as json_file:
             json_schema = json.loads(json_file.read())
         validate(data, json_schema)
 

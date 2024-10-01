@@ -19,7 +19,7 @@
         <array2 units="kg">[10.0, 20.0]</array2>
         <geometry>
             <wing>
-                <area>120.0</area>
+                <area units="m**2">120.0</area>
             </wing>
         </geometry>
         <input_mass units="kg">50000.0</input_mass>

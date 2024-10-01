@@ -16,12 +16,12 @@ Base classes for mission-related OpenMDAO components.
 
 from abc import ABCMeta
 from enum import Enum
-from importlib.resources import path
 from os import PathLike
 from typing import Optional, Union
 
 from openmdao.core.system import System
 
+from fastoad._utils.resource_management.contents import PackageReader
 from fastoad.models.performances.mission.mission_definition.exceptions import (
     FastMissionFileMissingMissionNameError,
 )
@@ -167,7 +167,7 @@ class BaseMissionComp(System, metaclass=ABCMeta):
             mission_file_path = str(mission_file_path)
             i = mission_file_path.index("::")
             file_name = mission_file_path[i + 2 :] + ".yml"
-            with path(resources, file_name) as mission_input_file:
+            with PackageReader(resources).path(file_name) as mission_input_file:
                 mission_definition = MissionDefinition(mission_input_file)
         else:
             mission_definition = MissionDefinition(mission_file_path)

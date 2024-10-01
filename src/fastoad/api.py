@@ -17,6 +17,9 @@
 
 # The comment below prevents PyCharm from "optimizing" (i.e. removing) these imports.
 # noinspection PyUnresolvedReferences
+from fastoad import __version__
+
+# noinspection PyUnresolvedReferences
 from fastoad.cmd.api import (
     evaluate_problem,
     generate_configuration_file,

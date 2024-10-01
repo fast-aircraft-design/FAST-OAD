@@ -246,18 +246,21 @@ class AbstractFlightSegment(IFlightPart, ABC):
         :param flight_point:
         :param source:
         """
+        all_field_names = set(flight_point.get_field_names())
+
         speed_fields = {
             "true_airspeed",
             "equivalent_airspeed",
             "calibrated_airspeed",
             "mach",
             "unitary_reynolds",
-        }.intersection(flight_point.get_field_names())
-        other_fields = list(set(flight_point.get_field_names()) - speed_fields)
+        }.intersection(all_field_names)
 
         speeds_are_missing = np.all([getattr(flight_point, name) is None for name in speed_fields])
-
-        for field_name in other_fields + speeds_are_missing * list(speed_fields):
+        fields_to_complete = (
+            all_field_names if speeds_are_missing else all_field_names - speed_fields
+        )
+        for field_name in fields_to_complete:
             if getattr(flight_point, field_name) is None and not source.is_relative(field_name):
                 setattr(flight_point, field_name, getattr(source, field_name))
 
