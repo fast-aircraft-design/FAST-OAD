@@ -12,6 +12,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import shutil
+from filecmp import cmp
 from pathlib import Path
 
 import pytest
@@ -53,10 +54,10 @@ def test_MPI_run_2cpu(cleanup):
     run_case = CalcRunner(configuration_file_path=DATA_FOLDER_PATH / "sellar2.yml")
 
     input_vars = [
-        VariableList([Variable("x", val=0.0), Variable("z", val=0.0)]),
-        VariableList([Variable("x", val=10.0), Variable("z", val=0.0)]),
-        VariableList([Variable("x", val=10.0), Variable("z", val=10.0)]),
-        VariableList([Variable("x", val=0.0), Variable("z", val=10.0)]),
+        VariableList([Variable("x", val=0.0), Variable("z", val=[0.0, 0.0], units="m**2")]),
+        VariableList([Variable("x", val=10.0), Variable("z", val=[0.0, 0.0], units="m**2")]),
+        VariableList([Variable("x", val=0.0), Variable("z", val=[10.0, 10.0], units="m**2")]),
+        VariableList([Variable("x", val=10.0), Variable("z", val=[10.0, 10.0], units="m**2")]),
     ] * 3
 
     run_case.run_cases(
@@ -64,6 +65,82 @@ def test_MPI_run_2cpu(cleanup):
         RESULTS_FOLDER_PATH / "with_MPI_2",
         max_workers=2,
         use_MPI_if_available=True,
+    )
+
+    # 2 calculations with an alternative input file. ---------------------------
+    run_case = CalcRunner(
+        configuration_file_path=DATA_FOLDER_PATH / "sellar2.yml",
+        input_file_path=DATA_FOLDER_PATH / "inputs_alt.xml",
+    )
+    run_case.run_cases(
+        [
+            VariableList([Variable("x", val=0.0)]),
+            VariableList([Variable("x", val=10.0)]),
+        ],
+        RESULTS_FOLDER_PATH / "with_MPI_2_alt",
+        max_workers=2,
+        use_MPI_if_available=True,
+    )
+
+    assert cmp(
+        RESULTS_FOLDER_PATH / "with_MPI_2/calc_02" / "outputs.xml",
+        RESULTS_FOLDER_PATH / "with_MPI_2_alt/calc_0" / "outputs.xml",
+    )
+    assert cmp(
+        RESULTS_FOLDER_PATH / "with_MPI_2/calc_03" / "outputs.xml",
+        RESULTS_FOLDER_PATH / "with_MPI_2_alt/calc_1" / "outputs.xml",
+    )
+
+    assert cmp(
+        RESULTS_FOLDER_PATH / "with_MPI_2/calc_02" / "inputs.xml",
+        RESULTS_FOLDER_PATH / "with_MPI_2_alt/calc_0" / "inputs_alt.xml",
+    )
+    assert cmp(
+        RESULTS_FOLDER_PATH / "with_MPI_2/calc_03" / "inputs.xml",
+        RESULTS_FOLDER_PATH / "with_MPI_2_alt/calc_1" / "inputs_alt.xml",
+    )
+
+    assert not cmp(  # And check all inputs are not the same
+        RESULTS_FOLDER_PATH / "with_MPI_2/calc_03" / "inputs.xml",
+        RESULTS_FOLDER_PATH / "with_MPI_2_alt/calc_0" / "inputs_alt.xml",
+    )
+
+    # Same with relative paths -------------------------------------------------
+    run_case = CalcRunner(
+        configuration_file_path=(DATA_FOLDER_PATH / "sellar2.yml").relative_to(Path.cwd()),
+        input_file_path=(DATA_FOLDER_PATH / "inputs_alt.xml").relative_to(Path.cwd()),
+    )
+    run_case.run_cases(
+        [
+            VariableList([Variable("x", val=0.0)]),
+            VariableList([Variable("x", val=10.0)]),
+        ],
+        RESULTS_FOLDER_PATH / "with_MPI_2_alt_relative",
+        max_workers=2,
+        use_MPI_if_available=True,
+    )
+
+    assert cmp(
+        RESULTS_FOLDER_PATH / "with_MPI_2/calc_02" / "outputs.xml",
+        RESULTS_FOLDER_PATH / "with_MPI_2_alt_relative/calc_0" / "outputs.xml",
+    )
+    assert cmp(
+        RESULTS_FOLDER_PATH / "with_MPI_2/calc_03" / "outputs.xml",
+        RESULTS_FOLDER_PATH / "with_MPI_2_alt_relative/calc_1" / "outputs.xml",
+    )
+
+    assert cmp(
+        RESULTS_FOLDER_PATH / "with_MPI_2/calc_02" / "inputs.xml",
+        RESULTS_FOLDER_PATH / "with_MPI_2_alt_relative/calc_0" / "inputs_alt.xml",
+    )
+    assert cmp(
+        RESULTS_FOLDER_PATH / "with_MPI_2/calc_03" / "inputs.xml",
+        RESULTS_FOLDER_PATH / "with_MPI_2_alt_relative/calc_1" / "inputs_alt.xml",
+    )
+
+    assert not cmp(  # And check all inputs are not the same
+        RESULTS_FOLDER_PATH / "with_MPI_2/calc_03" / "inputs.xml",
+        RESULTS_FOLDER_PATH / "with_MPI_2_alt_relative/calc_0" / "inputs_alt.xml",
     )
 
 
