@@ -164,8 +164,14 @@ norecursedirs = ["dist", "build", ".tox", ".ipynb_checkpoints"]
 branch = true
 source = ["fastoad"]
 omit = ["*/test/*", "*/tests/*"]
+# Lines below according to https://pytest-cov.readthedocs.io/en/latest/subprocess-support.html#if-you-use-multiprocessing
+concurrency = ["multiprocessing"]
+parallel = true
+sigterm = true
+
 [tool.coverage.paths]
 source = ["src/"]
+
 [tool.coverage.report]
 # Regexes for lines to exclude from consideration
 exclude_lines = [
