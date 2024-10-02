@@ -556,22 +556,18 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "fast-oad-cs25"
-version = "0.2.0"
+version = "0.7.1"
 description = "FAST-OAD_CS25 is a FAST-OAD plugin with CS25/FAR25-related models."
 optional = false
-python-versions = ">=3.7,<4.0"
+python-versions = "<3.12,>=3.8"
 files = [
-    {file = "FAST-OAD-CS25-0.2.0.tar.gz", hash = "sha256:ea249f3804194c346afb75caef41694e2a488937bd2b39eaae6f4392ae35f64d"},
-    {file = "FAST_OAD_CS25-0.2.0-py3-none-any.whl", hash = "sha256:9501f01943dda986ca23fe2729323432484f49a329aefe7d5cbfc692380d329a"},
+    {file = "fast_oad_cs25-0.7.1-py3-none-any.whl", hash = "sha256:430120945418a858dffdd88de57d178afc60e50060f4a6f14771ba55aa5d2ea9"},
+    {file = "fast_oad_cs25-0.7.1.tar.gz", hash = "sha256:17566c80819cf36ee572310ae8a98fb9838071d13d9dddc8476899b28798e325"},
 ]
 
 [package.dependencies]
-fast-oad-core = ">=1.4.2,<2.0"
-numpy = ">=1.21.0,<2.0.0"
-openmdao = ">=3.10,<4.0"
-pandas = ">=1.1.0,<2.0.0"
-scipy = ">=1.4.1,<2.0.0"
-stdatm = "<1.0.0"
+fast-oad-core = ">=1.7.3,<2.0.0"
+pyparsing = ">=3.0.0,<4.0.0"
 
 [[package]]
 name = "fastjsonschema"
@@ -2199,14 +2195,17 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pyparsing"
-version = "2.4.7"
-description = "Python parsing module"
+version = "3.1.4"
+description = "pyparsing module - Classes and methods to define and execute parsing grammars"
 optional = false
-python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
+python-versions = ">=3.6.8"
 files = [
-    {file = "pyparsing-2.4.7-py2.py3-none-any.whl", hash = "sha256:ef9d7589ef3c200abe66653d3f1ab1033c3c419ae9b9bdb1240a85b024efc88b"},
-    {file = "pyparsing-2.4.7.tar.gz", hash = "sha256:c203ec8783bf771a155b207279b9bccb8dea02d8f0c9e5f8ead507bc3246ecc1"},
+    {file = "pyparsing-3.1.4-py3-none-any.whl", hash = "sha256:a6a7ee4235a3f944aa1fa2249307708f893fe5717dc603503c6c7969c070fb7c"},
+    {file = "pyparsing-3.1.4.tar.gz", hash = "sha256:f86ec8d1a83f11977c9a6ea7598e8c27fc5cddfa5b07ea2241edbbde1d7bc032"},
 ]
+
+[package.extras]
+diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
 name = "pyrsistent"

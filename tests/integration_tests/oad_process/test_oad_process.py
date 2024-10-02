@@ -168,14 +168,15 @@ def run_non_regression_test(
     row_list = []
     for ref_var in ref_data:
         try:
-            value = problem.get_val(ref_var.name, units=ref_var.units)[0]
-        except KeyError:
+            ref_value = np.asarray(ref_var.value).item()
+            value = problem.get_val(ref_var.name, units=ref_var.units).item()
+        except (KeyError, ValueError):
             continue
         row_list.append(
             {
                 "name": ref_var.name,
                 "units": ref_var.units,
-                "ref_value": ref_var.value[0],
+                "ref_value": ref_value,
                 "value": value,
             }
         )
@@ -217,12 +218,12 @@ def test_api_eval_breguet(cleanup):
     _check_weight_performance_loop(problem)
 
     assert_allclose(problem["data:handling_qualities:static_margin"], 0.05, atol=1e-2)
-    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 17.149, atol=1e-2)
-    assert_allclose(problem["data:weight:aircraft:MTOW"], 74892, atol=1)
-    assert_allclose(problem["data:geometry:wing:area"], 126.732, atol=1e-2)
-    assert_allclose(problem["data:geometry:vertical_tail:area"], 27.565, atol=1e-2)
-    assert_allclose(problem["data:geometry:horizontal_tail:area"], 35.884, atol=1e-2)
-    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 19527, atol=1)
+    assert_allclose(problem["data:geometry:wing:MAC:at25percent:x"], 17.08, atol=1e-2)
+    assert_allclose(problem["data:weight:aircraft:MTOW"], 74863, atol=1)
+    assert_allclose(problem["data:geometry:wing:area"], 126.68, atol=1e-2)
+    assert_allclose(problem["data:geometry:vertical_tail:area"], 27.43, atol=1e-2)
+    assert_allclose(problem["data:geometry:horizontal_tail:area"], 35.63, atol=1e-2)
+    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 19515, atol=1)
 
     _run_plots(problem.output_file_path)
 
@@ -247,13 +248,13 @@ def test_api_optim(cleanup):
     _check_weight_performance_loop(problem)
 
     # Design Variable
-    assert_allclose(problem["data:geometry:wing:aspect_ratio"], 14.53, atol=2e-2)
+    assert_allclose(problem["data:geometry:wing:aspect_ratio"], 14.56, atol=2e-2)
 
     # Constraint
     assert_allclose(problem["data:geometry:wing:span"], 44.9, atol=1e-1)
 
     # Objective
-    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 18900.0, atol=1)
+    assert_allclose(problem["data:mission:sizing:needed_block_fuel"], 18885.0, atol=1)
 
 
 def _check_weight_performance_loop(problem):
