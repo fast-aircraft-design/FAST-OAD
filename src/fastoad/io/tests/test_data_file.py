@@ -129,3 +129,5 @@ def test_datafile_get_variable_value():
     assert_allclose(data, 3.28084, rtol=1e-3, atol=1e-5)
     with pytest.raises(TypeError):
         data = data_file.get_var_value("data:foo", new_units=units)
+    data = data_file.get_var_value("data:baz", new_units=units)
+    assert_allclose(data, [3.28084, 2 * 3.28084], rtol=1e-3, atol=1e-5)

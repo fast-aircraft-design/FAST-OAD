@@ -241,6 +241,9 @@ class DataFile(VariableList):
     def get_var_value(self, key: str, new_units: Union[str, None] = None):
         """Method used to"""
         if new_units:
-            return convert_units(self[key].value[0], self[key].units, new_units)
+            return [
+                convert_units(self[key].value[i], self[key].units, new_units)
+                for i in range(len(self[key].value))
+            ]
         else:
-            return self[key].value[0]
+            return self[key].value
