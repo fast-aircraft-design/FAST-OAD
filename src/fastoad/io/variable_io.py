@@ -15,6 +15,7 @@ from fnmatch import fnmatchcase
 from os import PathLike
 from pathlib import Path
 from typing import IO, List, Optional, Sequence, Union
+from openmdao.utils.units import convert_units
 
 from fastoad.openmdao.variables import VariableList
 from . import IVariableIOFormatter
@@ -236,3 +237,10 @@ class DataFile(VariableList):
         self._variable_io = VariableIO(file_path, formatter)
 
         self.save()
+
+    def get_var_value(self, key: str, new_units: Union[str, None] = None):
+        """Method used to"""
+        if new_units:
+            return convert_units(self[key].value[0], self[key].units, new_units)
+        else:
+            return self[key].value[0]
