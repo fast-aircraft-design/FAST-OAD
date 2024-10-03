@@ -16,7 +16,7 @@ Class for managing an OpenMDAO variable.
 
 import logging
 from os import PathLike
-from typing import Dict, Hashable, Iterable, Mapping, Tuple, Union
+from typing import Dict, Hashable, Iterable, Mapping, Tuple, Union, Optional
 
 import numpy as np
 import openmdao.api as om
@@ -24,6 +24,7 @@ from openmdao.utils.units import convert_units
 
 from fastoad._utils.files import as_path
 from fastoad._utils.resource_management.contents import PackageReader
+from fastoad._utils.arrays import scalarize
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -136,18 +137,11 @@ class Variable(Hashable):
         if not self.description and self.name in self._variable_descriptions:
             self.description = self._variable_descriptions[self.name]
 
-    def get_val(self, new_units: Union[str, None] = None):
-        """Method used to get the variable value converted in the new_units"""
+    def get_val(self, new_units: Optional[str] = None) -> Union[float, np.ndarray]:
+        """Returns the variable value converted in the `new_units`"""
         if new_units:
-            if isinstance(self.value, Iterable):
-                return [
-                    convert_units(self.value[i], self.units, new_units)
-                    for i in range(len(self.value))
-                ]
-            else:
-                return convert_units(self.value, self.units, new_units)
-        else:
-            return self.value
+            return scalarize(convert_units(np.asarray(self.value), self.units, new_units))
+        return self.value
 
     @classmethod
     def read_variable_descriptions(

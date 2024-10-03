@@ -845,14 +845,20 @@ def test_get_val():
     vars["foo"] = {"value": 1.0, "units": "m**2"}
     vars["baz"] = {"value": [1.0, 2.0], "units": "m"}
     vars["bat"] = {"value": (1.0, 2.0), "units": "m"}
+    vars["qux"] = {"value": np.array([1.0, 2.0]), "units": "m"}
+    vars["quux"] = {"value": [[1.0, 2.0], [2.0, 3.0]], "units": "m"}
     data = vars["bar"].get_val()
     assert_allclose(data, 1, rtol=1e-3, atol=1e-5)
-    units = "ft"
+    units = "km"
     data = vars["bar"].get_val(new_units=units)
-    assert_allclose(data, 3.28084, rtol=1e-3, atol=1e-5)
+    assert_allclose(data, 0.001, rtol=1e-3, atol=1e-5)
     with pytest.raises(TypeError):
         data = vars["foo"].get_val(new_units=units)
     data = vars["baz"].get_val(new_units=units)
-    assert_allclose(data, [3.28084, 2 * 3.28084], rtol=1e-3, atol=1e-5)
+    assert_allclose(data, [0.001, 2 * 0.001], rtol=1e-3, atol=1e-5)
     data = vars["bat"].get_val(new_units=units)
-    assert_allclose(data, [3.28084, 2 * 3.28084], rtol=1e-3, atol=1e-5)
+    assert_allclose(data, [0.001, 2 * 0.001], rtol=1e-3, atol=1e-5)
+    data = vars["qux"].get_val(new_units=units)
+    assert_allclose(data, [0.001, 2 * 0.001], rtol=1e-3, atol=1e-5)
+    data = vars["quux"].get_val(new_units=units)
+    assert_allclose(data, [[0.001, 2 * 0.001], [2 * 0.001, 3 * 0.001]], rtol=1e-3, atol=1e-5)

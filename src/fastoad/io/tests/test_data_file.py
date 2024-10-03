@@ -24,7 +24,6 @@ from ..variable_io import DataFile
 from ...openmdao.variables import Variable, VariableList
 
 RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
-DATA_FOLDER_PATH = Path(__file__).parent / "data" / Path(__file__).stem
 
 
 @pytest.fixture(scope="module")
