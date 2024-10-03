@@ -139,9 +139,13 @@ class Variable(Hashable):
     def get_val(self, new_units: Union[str, None] = None):
         """Method used to get the variable value converted in the new_units"""
         if new_units:
-            return [
-                convert_units(self.value[i], self.units, new_units) for i in range(len(self.value))
-            ]
+            if isinstance(self.value, Iterable):
+                return [
+                    convert_units(self.value[i], self.units, new_units)
+                    for i in range(len(self.value))
+                ]
+            else:
+                return convert_units(self.value, self.units, new_units)
         else:
             return self.value
 

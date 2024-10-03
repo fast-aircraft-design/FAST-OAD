@@ -1,7 +1,0 @@
-<FASTOAD_model>
-  <data>
-    <bar units="m">1.0</bar>
-    <foo units="m**2">1.0</foo>
-    <baz units="m">[1.0, 2.0]</baz>
-  </data>
-</FASTOAD_model>
