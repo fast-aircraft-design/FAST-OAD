@@ -20,6 +20,7 @@ from typing import Dict, Hashable, Iterable, Mapping, Tuple, Union
 
 import numpy as np
 import openmdao.api as om
+from openmdao.utils.units import convert_units
 
 from fastoad._utils.files import as_path
 from fastoad._utils.resource_management.contents import PackageReader
@@ -134,6 +135,15 @@ class Variable(Hashable):
         # If no description, use the one from self._variable_descriptions, if available
         if not self.description and self.name in self._variable_descriptions:
             self.description = self._variable_descriptions[self.name]
+
+    def get_val(self, new_units: Union[str, None] = None):
+        """Method used to get the variable value converted in the new_units"""
+        if new_units:
+            return [
+                convert_units(self.value[i], self.units, new_units) for i in range(len(self.value))
+            ]
+        else:
+            return self.value
 
     @classmethod
     def read_variable_descriptions(
