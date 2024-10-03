@@ -21,6 +21,7 @@ import numpy as np
 import openmdao.api as om
 import pandas as pd
 import pytest
+from numpy.testing import assert_allclose
 from openmdao.utils.om_warnings import UnitsWarning
 
 import fastoad.models
@@ -836,3 +837,28 @@ def test_get_variables_from_problem_sellar_with_promotion_and_connect():
     assert "x" in vars.names()
     assert "indep:x" not in vars.names()
     assert "z" not in vars.names()
+
+
+def test_get_val():
+    vars = VariableList()
+    vars["bar"] = {"value": 1.0, "units": "m"}
+    vars["foo"] = {"value": 1.0, "units": "m**2"}
+    vars["baz"] = {"value": [1.0, 2.0], "units": "m"}
+    vars["bat"] = {"value": (1.0, 2.0), "units": "m"}
+    vars["qux"] = {"value": np.array([1.0, 2.0]), "units": "m"}
+    vars["quux"] = {"value": [[1.0, 2.0], [2.0, 3.0]], "units": "m"}
+    data = vars["bar"].get_val()
+    assert_allclose(data, 1, rtol=1e-3, atol=1e-5)
+    units = "km"
+    data = vars["bar"].get_val(new_units=units)
+    assert_allclose(data, 1e-3, rtol=1e-3, atol=1e-5)
+    with pytest.raises(TypeError):
+        data = vars["foo"].get_val(new_units=units)
+    data = vars["baz"].get_val(new_units=units)
+    assert_allclose(data, [1e-3, 2e-3], rtol=1e-3, atol=1e-5)
+    data = vars["bat"].get_val(new_units=units)
+    assert_allclose(data, [1e-3, 2e-3], rtol=1e-3, atol=1e-5)
+    data = vars["qux"].get_val(new_units=units)
+    assert_allclose(data, [1e-3, 2e-3], rtol=1e-3, atol=1e-5)
+    data = vars["quux"].get_val(new_units=units)
+    assert_allclose(data, [[1e-3, 2e-3], [2e-3, 3e-3]], rtol=1e-3, atol=1e-5)
