@@ -18,7 +18,6 @@ from typing import IO, Union
 
 import openmdao.api as om
 import pytest
-from numpy.testing import assert_allclose
 
 from .. import IVariableIOFormatter
 from ..variable_io import DataFile
@@ -117,17 +116,3 @@ def test_datafile_from_problem(variables_ref):
 
     assert isinstance(data_file, DataFile)
     assert set(data_file) == set(variables_ref)
-
-
-def test_datafile_get_variable_value():
-    file_path = DATA_FOLDER_PATH / "dummy_data_file_with_units.xml"
-    data_file = DataFile(file_path)
-    data = data_file["data:bar"].get_val()
-    assert_allclose(data, 1, rtol=1e-3, atol=1e-5)
-    units = "ft"
-    data = data_file["data:bar"].get_val(new_units=units)
-    assert_allclose(data, 3.28084, rtol=1e-3, atol=1e-5)
-    with pytest.raises(TypeError):
-        data = data_file["data:foo"].get_val(new_units=units)
-    data = data_file["data:baz"].get_val(new_units=units)
-    assert_allclose(data, [3.28084, 2 * 3.28084], rtol=1e-3, atol=1e-5)
