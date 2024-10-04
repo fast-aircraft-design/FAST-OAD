@@ -13,7 +13,6 @@ Version 1.8.0
     - In mission computation, added CL as possible target for altitude change. (#563)
     - New method get_val() in Variable class to get values in different units. (#570)
     - Plots now handle horizontal_tail:center new naming. (#546)
-    - More control of fields in FlightPoint class. (#558)
 
 - Fixed:
     - Better NaN detection in inputs. (#532)

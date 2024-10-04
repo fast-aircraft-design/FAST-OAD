@@ -84,7 +84,7 @@ def test_scalarize():
 
 def test_descriptors():
     FlightPoint.add_field(
-        "foo", annotation_type=float, default_value=42.0, unit="m", cumulative=False, output=True
+        "foo", annotation_type=float, default_value=42.0, unit="m", is_cumulative=False
     )
     # Testing redeclaration
     FlightPoint.add_field(
@@ -92,8 +92,7 @@ def test_descriptors():
         annotation_type=float,
         default_value=42.0,
         unit="slug/ft",
-        cumulative=True,
-        output=False,
+        is_cumulative=True,
     )
 
     assert FlightPoint.get_units()["time"] == "s"
@@ -105,10 +104,6 @@ def test_descriptors():
     assert FlightPoint.is_cumulative("time")
     assert not FlightPoint.is_cumulative("altitude")
     assert FlightPoint.is_cumulative("foo")
-
-    assert FlightPoint.is_output("time")
-    assert FlightPoint.is_output("altitude")
-    assert not FlightPoint.is_output("foo")
 
     FlightPoint.remove_field("foo")
 

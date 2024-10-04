@@ -33,7 +33,6 @@ class _FieldDescriptor:
     """
 
     is_cumulative: Optional[bool] = False
-    is_output: Optional[bool] = True
     unit: Optional[str] = None
 
 
@@ -80,7 +79,6 @@ class FlightPoint:
             ...    "ion_drive_power",
             ...    unit="W",
             ...    is_cumulative=False, # Tells if quantity sums up during mission
-            ...    is_output=True, # Tells if quantity is expected as mission output
             ...    )
 
             # Adding a field and defining its type and default value
@@ -295,15 +293,6 @@ class FlightPoint:
         return cls._get_field_descriptor(field_name).is_cumulative
 
     @classmethod
-    def is_output(cls, field_name) -> Optional[bool]:
-        """
-        Tells if asked field should be a mission output.
-
-        Returns None if field not found.
-        """
-        return cls._get_field_descriptor(field_name).is_output
-
-    @classmethod
     def create(cls, data: Mapping) -> "FlightPoint":
         """
         Instantiate FlightPoint from provided data.
@@ -332,8 +321,7 @@ class FlightPoint:
         annotation_type=float,
         default_value: Any = None,
         unit="-",
-        cumulative=False,
-        output=True,
+        is_cumulative=False,
     ):
         """
         Adds the named field to FlightPoint class.
@@ -345,8 +333,7 @@ class FlightPoint:
         :param default_value: field default value
         :param unit: expected unit for the added field. "-" should be provided for a dimensionless
                      physical quantity. Set to None, when unit concept does not apply.
-        :param cumulative: True if field value is summed up during mission
-        :param output: True if field should be written in mission outputs
+        :param is_cumulative: True if field value is summed up during mission
         """
         cls._redeclare_fields()
 
@@ -357,9 +344,7 @@ class FlightPoint:
             field(
                 default=default_value,
                 metadata={
-                    FIELD_DESCRIPTOR: _FieldDescriptor(
-                        unit=unit, is_cumulative=cumulative, is_output=output
-                    )
+                    FIELD_DESCRIPTOR: _FieldDescriptor(unit=unit, is_cumulative=is_cumulative)
                 },
             ),
         )
@@ -401,7 +386,7 @@ class FlightPoint:
         Returns the _FieldDescriptor class for provided field_name.
         Returns _FieldDescriptor(None, None, None) if field_name is not present.
         """
-        return cls._get_field_descriptors().get(field_name, _FieldDescriptor(None, None, None))
+        return cls._get_field_descriptors().get(field_name, _FieldDescriptor(None, None))
 
     @classmethod
     def _redeclare_fields(cls):
