@@ -224,7 +224,7 @@ class MissionWrapper(MissionBuilder):
         else:
             flight_part_desc = f'mission "{mission_name}"'
 
-        # TODO: These 3 values are now duplicated by the detailed output below
+        # TODO: These 3 values are now duplicated by the detailed outputs below
         output_definition[name_root + ":duration"] = ("s", f"duration of {flight_part_desc}")
         output_definition[name_root + ":fuel"] = ("kg", f"burned fuel during {flight_part_desc}")
         output_definition[name_root + ":distance"] = (
@@ -232,6 +232,7 @@ class MissionWrapper(MissionBuilder):
             f"covered ground distance during {flight_part_desc}",
         )
 
+        # detailed outputs
         self._add_vars_for_flight_point_fields(output_definition, name_root, flight_part_desc)
 
         return output_definition
@@ -242,7 +243,7 @@ class MissionWrapper(MissionBuilder):
     ):
         """Handles flight point output variables for the mission part"""
         for name, unit in FlightPoint.get_units().items():
-            if name == "name":
+            if name == "name" or not FlightPoint.is_output(name):
                 continue
             if unit == "-":
                 unit = None
@@ -301,20 +302,19 @@ class MissionWrapper(MissionBuilder):
             if f"{name_root}:_end:{name}" not in outputs:
                 continue
 
-            if FlightPoint.is_output(name):
-                end_value = end[name]
-                if end_value is None:
-                    continue
-                start_value = start[name]
-                if start_value is None:
-                    start_value = 0.0
-                outputs[f"{name_root}:_end:{name}"] = end_value
-                try:
-                    # won't work for booleans, but then, the output is not needed.
-                    outputs[f"{name_root}:_evolution:{name}"] = end_value - start_value
-                except TypeError:
-                    pass
-                if not FlightPoint.is_cumulative(name):
-                    outputs[f"{name_root}:_mean:{name}"] = np.mean(flight_points[name])
-                    outputs[f"{name_root}:_min:{name}"] = np.min(flight_points[name])
-                    outputs[f"{name_root}:_max:{name}"] = np.max(flight_points[name])
+            end_value = end[name]
+            if end_value is None:
+                continue
+            start_value = start[name]
+            if start_value is None:
+                start_value = 0.0
+            outputs[f"{name_root}:_end:{name}"] = end_value
+            try:
+                # won't work for booleans, but then, the output is not needed.
+                outputs[f"{name_root}:_evolution:{name}"] = end_value - start_value
+            except TypeError:
+                pass
+            if not FlightPoint.is_cumulative(name):
+                outputs[f"{name_root}:_mean:{name}"] = np.mean(flight_points[name])
+                outputs[f"{name_root}:_min:{name}"] = np.min(flight_points[name])
+                outputs[f"{name_root}:_max:{name}"] = np.max(flight_points[name])

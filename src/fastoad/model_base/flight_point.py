@@ -33,7 +33,7 @@ class _FieldDescriptor:
     """
 
     is_cumulative: Optional[bool] = False
-    is_output: Optional[bool] = True
+    is_output: Optional[bool] = False
     unit: Optional[str] = None
 
 
@@ -100,7 +100,8 @@ class FlightPoint:
 
     #: Time in seconds.
     time: float = field(
-        default=0.0, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(is_cumulative=True, unit="s")}
+        default=0.0,
+        metadata={FIELD_DESCRIPTOR: _FieldDescriptor(is_cumulative=True, unit="s", is_output=True)},
     )
 
     #: Altitude in meters.
@@ -111,7 +112,8 @@ class FlightPoint:
 
     #: Covered ground distance in meters.
     ground_distance: float = field(
-        default=0.0, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(is_cumulative=True, unit="m")}
+        default=0.0,
+        metadata={FIELD_DESCRIPTOR: _FieldDescriptor(is_cumulative=True, unit="m", is_output=True)},
     )
 
     #: Mass in kg.
@@ -119,7 +121,10 @@ class FlightPoint:
 
     #: Consumed fuel since mission start, in kg.
     consumed_fuel: float = field(
-        default=0.0, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(is_cumulative=True, unit="kg")}
+        default=0.0,
+        metadata={
+            FIELD_DESCRIPTOR: _FieldDescriptor(is_cumulative=True, unit="kg", is_output=True)
+        },
     )
 
     #: True airspeed (TAS) in m/s.
