@@ -16,7 +16,7 @@ Mission wrapper.
 
 from collections.abc import MutableMapping
 from os import PathLike
-from typing import Dict, Optional, Tuple, Union
+from typing import Dict, Optional, Tuple, Union, Iterable
 
 import numpy as np
 import openmdao.api as om
@@ -57,6 +57,7 @@ class MissionWrapper(MissionBuilder):
         mission_name: Optional[str] = None,
         variable_prefix: str = "data:mission",
         force_all_block_fuel_usage: bool = False,
+        additional_output_fields: Optional[Iterable[str]] = None,
     ):
         """
         :param mission_definition: a file path or MissionDefinition instance
@@ -81,6 +82,8 @@ class MissionWrapper(MissionBuilder):
         self.consumed_fuel_before_input_weight = 0.0
         if force_all_block_fuel_usage:
             self.force_all_block_fuel_usage()
+
+        self._output_fields = {"time", "ground_distance", "consumed_fuel"}
 
     def force_all_block_fuel_usage(self):
         """Modifies mission definition to set block fuel as target fuel consumption."""
