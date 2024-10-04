@@ -78,7 +78,7 @@ class IPropulsion(ABC):
               will be used according to :code:`thrust_is_regulated`.
 
 
-        :param flight_points: FlightPoint or DataFram instance
+        :param flight_points: FlightPoint or DataFrame instance
         :return: None (inputs are updated in-place)
         """
 
