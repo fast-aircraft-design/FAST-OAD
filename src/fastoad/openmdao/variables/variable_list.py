@@ -15,7 +15,7 @@ Class for managing a list of OpenMDAO variables.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from copy import deepcopy
-from typing import Iterable, List, Mapping, Tuple, Union
+from typing import Iterable, List, Mapping, Tuple, Union, Iterator
 
 import numpy as np
 import openmdao.api as om
@@ -72,11 +72,15 @@ class VariableList(list):
         print( 'var/2' in vars_A.names() )
     """
 
-    def names(self) -> List[str]:
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._dict = {var.name: var for var in self}
+
+    def names(self) -> Iterator[str]:
         """
         :return: names of variables
         """
-        return [var.name for var in self]
+        return self._dict.keys()
 
     def metadata_keys(self) -> List[str]:
         """
@@ -95,9 +99,10 @@ class VariableList(list):
         if not isinstance(var, Variable):
             raise TypeError("VariableList items should be Variable instances")
 
-        if var.name in self.names():
-            self[self.names().index(var.name)] = var
+        if var.name in self._dict:
+            self._dict[var.name].metadata = var.metadata
         else:
+            self._dict[var.name] = var
             super().append(var)
 
     def add_var(self, name, **kwargs):
@@ -124,13 +129,21 @@ class VariableList(list):
         :param add_variables: if True, unknown variables are also added
         """
 
-        for var in other_var_list:
-            if add_variables or var.name in self.names():
-                # To avoid to lose variables description when the variable list is updated with a
-                # list without descriptions (issue # 319)
-                if var.name in self.names() and self[var.name].description and not var.description:
-                    var.description = self[var.name].description
-                self.append(deepcopy(var))
+        other_var_dict = {
+            var.name: deepcopy(var)
+            for var in other_var_list
+            if var.name in self._dict or add_variables
+        }
+
+        for var in other_var_dict.values():
+            # To avoid to lose variables description when the variable list is updated with a
+            # list without descriptions (issue # 319)
+            if var.name in self._dict and self[var.name].description and not var.description:
+                var.description = self[var.name].description
+
+        self._dict.update(other_var_dict)
+        self.clear()
+        self.extend(self._dict.values())
 
     def to_ivc(self) -> om.IndepVarComp:
         """
@@ -386,19 +399,16 @@ class VariableList(list):
         return variables
 
     def __getitem__(self, key) -> Variable:
-        if isinstance(key, str):
-            return self[self.names().index(key)]
-        else:
+        try:
+            return self._dict[key]
+        except KeyError:
             return super().__getitem__(key)
 
     def __setitem__(self, key, value):
         if isinstance(key, str):
             if isinstance(value, dict):
                 variable = Variable(key, **value)
-                if key in self.names():
-                    self[key].metadata = variable.metadata
-                else:
-                    self.append(variable)
+                self.append(variable)
             else:
                 raise TypeError(
                     'VariableList can be set with "vars[key] = value" only if value is a '
@@ -411,8 +421,11 @@ class VariableList(list):
 
     def __delitem__(self, key):
         if isinstance(key, str):
-            del self[self.names().index(key)]
+            del self._dict[key]
+            self.clear()
+            self.extend(self._dict.values())
         else:
+            del self._dict[super().__getitem__(key).name]
             super().__delitem__(key)
 
     def __add__(self, other) -> Union[List, "VariableList"]:
