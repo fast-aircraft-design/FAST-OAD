@@ -284,11 +284,11 @@ def test_problem_with_dynamically_shaped_inputs(cleanup):
     fastoad_problem.setup()
 
     inputs = VariableList.from_problem(fastoad_problem, io_status="inputs")
-    assert inputs.names() == ["x"]
+    assert list(inputs.names()) == ["x"]
     outputs = VariableList.from_problem(fastoad_problem, io_status="outputs")
-    assert outputs.names() == ["y", "z"]
+    assert list(outputs.names()) == ["y", "z"]
     variables = VariableList.from_problem(fastoad_problem)
-    assert variables.names() == ["x", "y", "z"]
+    assert list(variables.names()) == ["x", "y", "z"]
 
     fastoad_problem.run_model()
 
@@ -312,11 +312,11 @@ def test_problem_with_dynamically_shaped_inputs(cleanup):
     fastoad_problem.model.add_subsystem("comp3", MyComp3(), promotes=["*"])
 
     inputs = VariableList.from_problem(fastoad_problem, io_status="inputs")
-    assert inputs.names() == ["x"]
+    assert list(inputs.names()) == ["x"]
     outputs = VariableList.from_problem(fastoad_problem, io_status="outputs")
-    assert outputs.names() == ["y", "z", "a"]
+    assert list(outputs.names()) == ["y", "z", "a"]
     variables = VariableList.from_problem(fastoad_problem)
-    assert variables.names() == ["x", "y", "z", "a"]
+    assert list(variables.names()) == ["x", "y", "z", "a"]
 
     fastoad_problem.setup()
     fastoad_problem.run_model()
