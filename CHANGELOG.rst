@@ -3,6 +3,22 @@ Changelog
 =========
 
 
+Version 1.8.0
+=============
+- Added:
+    - Custom imports handling in configuration file. (#559)
+    - Initializing output values from input file. (#551)
+    - Layout of mission viewer can now be controlled by user. (#549 by @Mokyoslurp)
+    - Added sunburst mass breakdown for missions other than the sizing one. (#547)
+    - In mission computation, added CL as possible target for altitude change. (#563)
+    - New method get_val() in Variable class to get values in different units. (#570)
+    - Plots now handle horizontal_tail:center new naming. (#546)
+
+- Fixed:
+    - Better NaN detection in inputs. (#532)
+    - Deactivation of dataset is now effective for both plots in mass breakdown bar plot. (#545 by @aeomath)
+    - Payload range module can now handle mission files with several missions. (#562)
+
 Version 1.7.4
 =============
 - Fixed:
