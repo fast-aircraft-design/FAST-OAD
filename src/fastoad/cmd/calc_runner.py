@@ -37,7 +37,6 @@ except ImportError:
 else:
     HAVE_MPI = True
 
-
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
@@ -167,6 +166,9 @@ class CalcRunner:
             pool.starmap(
                 CalcRunner.run,
                 self._calculation_inputs(input_list, destination_folder, overwrite_subfolders),
+                # If a computation crashes, the whole chunk stops.
+                # chunksize=1 ensures all computations will be launched.
+                chunksize=1,
             )
 
     def _calculation_inputs(
