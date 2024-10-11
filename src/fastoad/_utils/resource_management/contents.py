@@ -13,14 +13,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import sys
+from importlib.resources import files, Resource, as_file
 from types import ModuleType
 from typing import List, TextIO, Union
-
-if sys.version_info < (3, 9):
-    from importlib_resources import files, Resource, as_file
-else:
-    from importlib.resources import files, Resource, as_file
 
 
 class PackageReader:
