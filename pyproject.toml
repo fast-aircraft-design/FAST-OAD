@@ -1,3 +1,4 @@
+# Poetry settings ==============================================================
 [tool.poetry]
 name = "FAST-OAD-core"
 version = "1.7.3" # This version number is overwritten by GitHub packaging workflow but setting this version here will allow installation of CS25 models in development mode
@@ -36,6 +37,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Physics"
 ]
 
+# User dependencies ------------------------------------------------------------
 [tool.poetry.dependencies]
 # IMPORTANT: when modifying this list, docs/requirements.txt must be updated for
 # ReadTheDocs to be able to compile the documentation.
@@ -80,19 +82,26 @@ stdatm = ">=0.4.2"
 Deprecated = "^1.2.13"
 click = "^8.0.3"
 pyDOE3 = "^1.0.0"
+importlib-metadata = { version = "^4.2", python = "<3.10" }
+importlib_resources = { version = "^5.12", python = "<3.9" }
+
 mpi4py = [
     { version = "^3.1.3", python = ">=3.8, <3.11", optional = true },
     { version = "^3.1.4", python = "~3.11", optional = true },
     { version = "^3.1.5", python = "~3.12", optional = true },
 ]
-importlib-metadata = { version = "^4.2", python = "<3.10" }
-importlib_resources = {version = "^5.12", python = "<3.9"}
 
 [tool.poetry.extras]
-mpi4py = ["mpi4py"]
+# Activated with:
+#    poetry install -E mpi
+# or, as a user:
+#    pip install fast-oad-core[mpi]
+mpi = ["mpi4py"]
+mpi4py = ["mpi4py"] # Old way, kept for backward compatibility
 
+# Development dependencies -----------------------------------------------------
 [tool.poetry.group.dev.dependencies]
-fast-oad-cs25 = ">=0.2"
+fast-oad-cs25 = ">=0.7.1"
 matplotlib = [
     { version = "^3.5.0", python = "~3.8" },
     { version = "^3.9.0", python = "^3.9" },
@@ -117,22 +126,33 @@ pre-commit = "^3.5.0"
 nbstripout = "^0.6.0"
 ruff = "0.5.4"
 
+# Entry points -----------------------------------------------------------------
 [tool.poetry.scripts]
 fastoad = "fastoad.cmd.cli:fast_oad"
 fast-oad = "fastoad.cmd.cli:fast_oad"
 
+# Plugins ----------------------------------------------------------------------
 [tool.poetry.plugins."fastoad.plugins"]
 "bundled" = "fastoad"
 
+
+# Dynamic versioning settings ==================================================
+# poetry-dynamic-versioning has to be installed in the same environment as
+# Poetry (normally outside your project environment).
+# see https://github.com/mtkennerly/poetry-dynamic-versioning#installation
 [tool.poetry-dynamic-versioning]
 enable = true
 vcs = "git"
 style = "semver"
 
+
+# Packaging system =============================================================
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
 build-backend = "poetry_dynamic_versioning.backend"
 
+
+# Ruff settings ================================================================
 [tool.ruff]
 line-length = 100
 target-version = "py39"
@@ -153,6 +173,8 @@ unfixable = []
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
+
+# Pytest settings ==============================================================
 [tool.pytest.ini_options]
 minversion = "8.0"
 addopts = "--cov-report term-missing --cov-report html --verbose"
@@ -160,10 +182,12 @@ testpaths = ["src"]
 norecursedirs = ["dist", "build", ".tox", ".ipynb_checkpoints"]
 
 
+# Coverage settings ============================================================
 [tool.coverage.run]
 branch = true
 source = ["fastoad"]
 omit = ["*/test/*", "*/tests/*"]
+
 # Lines below according to https://pytest-cov.readthedocs.io/en/latest/subprocess-support.html#if-you-use-multiprocessing
 concurrency = ["multiprocessing"]
 parallel = true
