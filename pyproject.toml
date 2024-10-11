@@ -1,7 +1,7 @@
 # Poetry settings ==============================================================
 [tool.poetry]
 name = "FAST-OAD-core"
-version = "1.7.3" # This version number is overwritten by GitHub packaging workflow but setting this version here will allow installation of CS25 models in development mode
+version = "1.8.0" # This version number is overwritten by GitHub packaging workflow but setting this version here will allow installation of CS25 models in development mode
 description = "FAST-OAD is a framework for performing rapid Overall Aircraft Design"
 readme = "README.md"
 authors = [
@@ -67,7 +67,10 @@ ipopo = [
 ]
 ipywidgets = ">=7.7.0, <9"
 ipysheet = ">=0.5.0, <1"
-plotly = "^5.0.0"
+plotly = [
+    { version = "^5", python = "<3.12" },
+    { version = "^5.19", python = "^3.12" }
+]
 wop = "^2.2.0"
 lxml = [
     { version = ">=4.6.5, <6", python = ">=3.8, <3.11" },
@@ -82,7 +85,10 @@ ensure = [
 ]
 tabulate = ">=0.8.9, <1"
 aenum = "^3.1.0"
-jupyterlab = ">=3.3.0, <5"
+jupyterlab = [
+    { version = "^3.4.7", python = "<3.12" },
+    { version = "^4.2", python = "^3.12" }
+]
 stdatm = ">=0.4.2"
 Deprecated = "^1.2.13"
 click = "^8.0.3"
@@ -96,6 +102,7 @@ mpi4py = [
     { version = "^3.1.5", python = "~3.12", optional = true },
 ]
 
+# Extras ---------------------------------------------------------------
 [tool.poetry.extras]
 # Activated with:
 #    poetry install -E mpi
