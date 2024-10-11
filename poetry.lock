@@ -539,20 +539,6 @@ files = [
 
 [[package]]
 name = "ensure"
-version = "1.0.0"
-description = "Literate BDD assertions in Python with no magic"
-optional = false
-python-versions = "*"
-files = [
-    {file = "ensure-1.0.0-py2.py3-none-any.whl", hash = "sha256:e8ee163a949a7b5ba3f0e2c6b1d20fe603864bb4ae034a219047547989c59ea3"},
-    {file = "ensure-1.0.0.tar.gz", hash = "sha256:61ef7a640914c317ab18026f05618d84004465614c1854264b3c63b2c81a64e7"},
-]
-
-[package.dependencies]
-six = ">=1.9.0"
-
-[[package]]
-name = "ensure"
 version = "1.0.4"
 description = "Literate BDD assertions in Python with no magic"
 optional = false
@@ -1962,7 +1948,6 @@ files = [
 numpy = [
     {version = ">=1.20.3", markers = "python_version < \"3.10\""},
     {version = ">=1.21.0", markers = "python_version >= \"3.10\" and python_version < \"3.11\""},
-    {version = ">=1.23.2", markers = "python_version >= \"3.11\""},
 ]
 python-dateutil = ">=2.8.1"
 pytz = ">=2020.1"
@@ -2022,7 +2007,10 @@ files = [
 ]
 
 [package.dependencies]
-numpy = {version = ">=1.26.0", markers = "python_version >= \"3.12\""}
+numpy = [
+    {version = ">=1.23.2", markers = "python_version == \"3.11\""},
+    {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
+]
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
 tzdata = ">=2022.7"
@@ -3535,4 +3523,4 @@ mpi4py = ["mpi4py", "mpi4py", "mpi4py"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8, <3.13"
-content-hash = "1093f399dcd0e625cb9eebc138a3a477a50e03fe29d4d5b16fe15dc9cd224c54"
+content-hash = "ab57e18b604e41ff77fcac1154e3f61539e31a284986de8e64f44b730226671e"

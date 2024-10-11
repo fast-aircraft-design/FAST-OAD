@@ -104,14 +104,6 @@ mpi4py = [
 mpi = ["mpi4py"]
 mpi4py = ["mpi4py"] # Old way, kept for backward compatibility
 
-[tool.poetry.group.secondary.dependencies]
-pyzmq = "25.1.1"
-pyyaml = "6.0.1"
-tabulate = "0.9.0"
-traitlets = "5.4.0"
-setuptools = "65.3.0"
-ipykernel = "6.28.0"
-
 # Development dependencies -----------------------------------------------------
 [tool.poetry.group.dev.dependencies]
 fast-oad-cs25 = { git = "https://github.com/fast-aircraft-design/FAST-OAD_CS25.git", branch = "py3.12-compatibility" }
