@@ -15,7 +15,6 @@ Helper module for copying resources
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import shutil
-from importlib.resources import Resource
 from os import PathLike
 from types import ModuleType
 from typing import Iterable, Union
@@ -25,7 +24,9 @@ from ..files import as_path, make_parent_dir
 
 
 def copy_resource(
-    package: Union[str, ModuleType], resource: Resource, target_path: Union[str, PathLike]
+    package: Union[str, ModuleType],
+    resource: Union[str, PathLike],
+    target_path: Union[str, PathLike],
 ):
     """
     Copies the indicated resource file to provided target path.

@@ -13,7 +13,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from importlib.resources import files, Resource, as_file
+from importlib.resources import files, as_file
+from os import PathLike
 from types import ModuleType
 from typing import List, TextIO, Union
 
@@ -86,7 +87,7 @@ class PackageReader:
 
     def open_text(
         self,
-        resource: Resource,
+        resource: Union[str, PathLike],
         encoding: str = "utf-8",
         errors: str = "strict",
     ) -> TextIO:
@@ -101,7 +102,7 @@ class PackageReader:
             errors=errors,
         )
 
-    def path(self, resource: Resource):
+    def path(self, resource: Union[str, PathLike]):
         """
         Replaces legacy importlib.resources.path().
 
