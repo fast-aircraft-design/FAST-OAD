@@ -126,7 +126,7 @@ sphinxcontrib-bibtex = "^2.3.0"
 [tool.poetry.group.lint.dependencies]
 pre-commit = "^3.5.0"
 nbstripout = "^0.6.0"
-ruff = "0.5.4"
+ruff = "0.5.7"
 
 # Entry points -----------------------------------------------------------------
 [tool.poetry.scripts]
