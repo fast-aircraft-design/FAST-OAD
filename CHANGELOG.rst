@@ -3,6 +3,12 @@ Changelog
 =========
 
 
+Version 1.8.1
+=============
+- Modified:
+    - Python 3.12 is now supported. (#555)
+    - Python 3.8, that reached end of life, is no longer supported. (#555)
+
 Version 1.8.0
 =============
 - Added:
