@@ -631,10 +631,10 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "fast-oad-cs25"
-version = "0.7.1-post.2+0760c60"
+version = "0.7.1-post.2+0172b94"
 description = "FAST-OAD_CS25 is a FAST-OAD plugin with CS25/FAR25-related models."
 optional = false
-python-versions = "^3.8"
+python-versions = "^3.9"
 files = []
 develop = false
 
@@ -646,7 +646,7 @@ pyparsing = "^3.0.0"
 type = "git"
 url = "https://github.com/fast-aircraft-design/FAST-OAD_CS25.git"
 reference = "py3.12-compatibility"
-resolved_reference = "0760c6092d737101404e6df7cf5208ee3759d2bc"
+resolved_reference = "0172b9494e54b2cea25233d3ad7fa196e28c00f2"
 
 [[package]]
 name = "fastjsonschema"
