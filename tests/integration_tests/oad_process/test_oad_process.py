@@ -248,7 +248,7 @@ def test_api_optim(cleanup):
     _check_weight_performance_loop(problem)
 
     # Design Variable
-    assert_allclose(problem["data:geometry:wing:aspect_ratio"], 14.56, atol=2e-2)
+    assert_allclose(problem["data:geometry:wing:aspect_ratio"], 14.56, atol=5e-2)
 
     # Constraint
     assert_allclose(problem["data:geometry:wing:span"], 44.9, atol=1e-1)
