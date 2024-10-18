@@ -631,22 +631,18 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "fast-oad-cs25"
-version = "0.7.1-post.2+0172b94"
+version = "0.7.2"
 description = "FAST-OAD_CS25 is a FAST-OAD plugin with CS25/FAR25-related models."
 optional = false
-python-versions = "^3.9"
-files = []
-develop = false
+python-versions = "<4.0,>=3.9"
+files = [
+    {file = "fast_oad_cs25-0.7.2-py3-none-any.whl", hash = "sha256:c8adae643e735a603ae6afa248524b1910024f467c9613363202a9b58612ed56"},
+    {file = "fast_oad_cs25-0.7.2.tar.gz", hash = "sha256:0cd52a73de6f12dbf863327af5271ca9e329820afe74d4fcbcc23fbd7a336b6e"},
+]
 
 [package.dependencies]
-fast-oad-core = {version = "^1.7.3", markers = "python_version < \"3.12\""}
-pyparsing = "^3.0.0"
-
-[package.source]
-type = "git"
-url = "https://github.com/fast-aircraft-design/FAST-OAD_CS25.git"
-reference = "py3.12-compatibility"
-resolved_reference = "0172b9494e54b2cea25233d3ad7fa196e28c00f2"
+fast-oad-core = {version = ">=1.7.3,<2.0.0", markers = "python_version < \"3.13\""}
+pyparsing = ">=3.0.0,<4.0.0"
 
 [[package]]
 name = "fastjsonschema"
@@ -3916,4 +3912,4 @@ mpi4py = ["mpi4py", "mpi4py", "mpi4py"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9, <3.13"
-content-hash = "51b4cd1165760f6d1a9f481dab93de08dc922528b5234d3ae942ae0416cbf2f5"
+content-hash = "578e3c3406c9f71835ec21d62afe6c5653e9500f086700953addd47ba0ade1d1"

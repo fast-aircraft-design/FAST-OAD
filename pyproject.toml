@@ -106,7 +106,8 @@ mpi4py = ["mpi4py"] # Old way, kept for backward compatibility
 
 # Development dependencies -----------------------------------------------------
 [tool.poetry.group.dev.dependencies]
-fast-oad-cs25 = { git = "https://github.com/fast-aircraft-design/FAST-OAD_CS25.git", branch = "py3.12-compatibility" }
+fast-oad-cs25 = ">=0.7.1"
+
 matplotlib = "^3.9.0"
 
 [tool.poetry.group.test.dependencies]
