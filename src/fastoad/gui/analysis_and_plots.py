@@ -277,8 +277,8 @@ def drag_polar_plot(
         # Extract mean cruise data from mission file
         cruise_data = mission_data[mission_data["name"].str.endswith(":cruise", na=False)]
 
-        cl_min_highlight = np.mean(cruise_data["CL [-]"].to_numpy())
-        cl_max_highlight = np.mean(cruise_data["CL [-]"].to_numpy())
+        cl_min_highlight = np.min(cruise_data["CL [-]"].to_numpy())
+        cl_max_highlight = np.max(cruise_data["CL [-]"].to_numpy())
         # First subplot: cl vs cd
         trace1 = go.Scatter(
             x=cd_short,
@@ -294,7 +294,7 @@ def drag_polar_plot(
             y=cl_short[highlight_mask1],
             fill="tozeroy",
             mode="none",
-            fillcolor="rgba(20, 20, 20, 0.3)",  # Yellow highlight with transparency
+            fillcolor="rgba(20, 20, 20, 0.8)",
             showlegend=False,
         )
 
@@ -302,27 +302,21 @@ def drag_polar_plot(
         fig.add_trace(trace1_fill, row=1, col=1)
 
         # Second subplot: cl/cd vs cl
-        trace2 = go.Scatter(x=cl, y=cl_cd_ratio, mode="lines", name=name)
+        trace2 = go.Scatter(x=cl_short, y=cl_cd_ratio, mode="lines", name=name)
 
         # Highlight the area between Cl_min and Cl_max for cl/cd vs cl
-        highlight_mask2 = (cl >= cl_min_highlight) & (cl <= cl_max_highlight)
+        highlight_mask2 = (cl_short >= cl_min_highlight) & (cl_short <= cl_max_highlight)
         trace2_fill = go.Scatter(
-            x=cl[highlight_mask2],
+            x=cl_short[highlight_mask2],
             y=cl_cd_ratio[highlight_mask2],
             fill="tozeroy",
             mode="none",
-            fillcolor="rgba(20, 20, 20, 0.3)",  # Yellow highlight with transparency
+            fillcolor="rgba(20, 20, 20, 0.8)",
             showlegend=False,
         )
 
         fig.add_trace(trace2, row=1, col=2)
         fig.add_trace(trace2_fill, row=1, col=2)
-
-        # Update layout for subplots
-        fig.update_layout(
-            showlegend=True,
-            height=800,  # Adjust height for both plots
-        )
 
         fig.update_xaxes(
             title_text="Cd", showgrid=True, gridwidth=1, gridcolor="LightGray", row=1, col=1
