@@ -18,6 +18,7 @@ from os import PathLike
 from typing import Dict, Union
 
 import numpy as np
+import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from openmdao.utils.units import convert_units
@@ -232,7 +233,13 @@ def aircraft_geometry_plot(
 
 
 def drag_polar_plot(
-    aircraft_file_path: Union[str, PathLike], name=None, fig=None, *, file_formatter=None
+    aircraft_file_path: Union[str, PathLike],
+    name=None,
+    fig=None,
+    plot_LoD: Union[bool, None] = False,
+    mission_file_path: Union[str, PathLike] = None,
+    *,
+    file_formatter=None,
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the aircraft drag polar.
@@ -260,13 +267,82 @@ def drag_polar_plot(
     if fig is None:
         fig = go.Figure()
 
-    scatter = go.Scatter(x=cd_short, y=cl_short, mode="lines+markers", name=name)
+    if plot_LoD:
+        cl_cd_ratio = cl_short / cd_short
+        mission_data = pd.read_csv(mission_file_path)
 
-    fig.add_trace(scatter)
+        # Extract mean cruise data from mission file
+        cruise_data = mission_data[mission_data["name"].str.endswith(":cruise", na=False)]
+
+        cl_min_highlight = np.mean(cruise_data["CL [-]"].to_numpy())
+        cl_max_highlight = np.mean(cruise_data["CL [-]"].to_numpy())
+        # First subplot: cl vs cd
+        trace1 = go.Scatter(
+            x=cd_short,
+            y=cl_short,
+            mode="lines",
+            name=name,
+        )
+
+        # Highlight the area between Cl_min and Cl_max for cl vs cd
+        highlight_mask1 = (cl_short >= cl_min_highlight) & (cl_short <= cl_max_highlight)
+        trace1_fill = go.Scatter(
+            x=cd_short[highlight_mask1],
+            y=cl_short[highlight_mask1],
+            fill="tozeroy",
+            mode="none",
+            fillcolor="rgba(20, 20, 20, 0.3)",  # Yellow highlight with transparency
+            showlegend=False,
+        )
+
+        # Second subplot: cl/cd vs cl
+        trace2 = go.Scatter(x=cl, y=cl_cd_ratio, mode="lines", name=name)
+
+        # Highlight the area between Cl_min and Cl_max for cl/cd vs cl
+        highlight_mask2 = (cl >= cl_min_highlight) & (cl <= cl_max_highlight)
+        trace2_fill = go.Scatter(
+            x=cl[highlight_mask2],
+            y=cl_cd_ratio[highlight_mask2],
+            fill="tozeroy",
+            mode="none",
+            fillcolor="rgba(20, 20, 20, 0.3)",  # Yellow highlight with transparency
+            showlegend=False,
+        )
+
+        # Create subplots in plotly
+        fig = go.Figure()
+
+        # Add first subplot (cl vs cd)
+        fig.add_trace(trace1)
+        fig.add_trace(trace1_fill)
+
+        # Add second subplot (cl/cd vs cl)
+        fig.add_trace(trace2)
+        fig.add_trace(trace2_fill)
+
+        # Update layout for subplots
+        fig.update_layout(
+            grid=dict(rows=2, columns=1, pattern="independent"),
+            title="cl vs cd and cl/cd vs cl",
+            xaxis_title="Coefficient of Drag (cd)",
+            yaxis_title="Coefficient of Lift (cl)",
+            xaxis2_title="Coefficient of Lift (cl)",
+            yaxis2_title="cl/cd",
+            showlegend=True,
+            height=800,  # Adjust height for both plots
+        )
+
+        # Customize finer grid lines
+        fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor="LightGray")
+        fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor="LightGray")
+
+    else:
+        scatter = go.Scatter(x=cd_short, y=cl_short, mode="lines+markers", name=name)
+
+        fig.add_trace(scatter)
+        fig.update_layout(title_text="Drag Polar", title_x=0.5, xaxis_title="Cd", yaxis_title="Cl")
 
     fig = go.FigureWidget(fig)
-
-    fig.update_layout(title_text="Drag Polar", title_x=0.5, xaxis_title="Cd", yaxis_title="Cl")
 
     return fig
 
