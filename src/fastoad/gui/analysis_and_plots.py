@@ -264,10 +264,13 @@ def drag_polar_plot(
     cd_short = cd[cd <= 2.0]
     cl_short = cl[cd <= 2.0]
 
-    if fig is None:
-        fig = go.Figure()
-
     if plot_LoD:
+        if fig is None:
+            fig = make_subplots(
+                rows=1,
+                cols=2,
+                subplot_titles=("Drag Polar", "Lift over Drag"),
+            )
         cl_cd_ratio = cl_short / cd_short
         mission_data = pd.read_csv(mission_file_path)
 
@@ -295,6 +298,8 @@ def drag_polar_plot(
             showlegend=False,
         )
 
+        fig.add_trace([trace1, trace1_fill], row=1, col=1)
+
         # Second subplot: cl/cd vs cl
         trace2 = go.Scatter(x=cl, y=cl_cd_ratio, mode="lines", name=name)
 
@@ -309,36 +314,31 @@ def drag_polar_plot(
             showlegend=False,
         )
 
-        # Create subplots in plotly
-        fig = go.Figure()
-
-        # Add first subplot (cl vs cd)
-        fig.add_trace(trace1)
-        fig.add_trace(trace1_fill)
-
-        # Add second subplot (cl/cd vs cl)
-        fig.add_trace(trace2)
-        fig.add_trace(trace2_fill)
+        fig.add_trace([trace2, trace2_fill], row=1, col=2)
 
         # Update layout for subplots
         fig.update_layout(
-            grid=dict(rows=2, columns=1, pattern="independent"),
-            title="Drag Polar",
             showlegend=True,
             height=800,  # Adjust height for both plots
         )
 
-        fig["layout"]["xaxis"]["title"] = "Cd"
-        fig["layout"]["xaxis2"]["title"] = "Cl"
-        fig["layout"]["yaxis"]["title"] = "Cl"
-        fig["layout"]["yaxis2"]["title"] = "L/D"
-
-        # Customize finer grid lines
-        fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor="LightGray")
-        fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor="LightGray")
+        fig.update_xaxes(
+            title_text="Cd", showgrid=True, gridwidth=1, gridcolor="LightGray", row=1, col=1
+        )
+        fig.update_xaxes(
+            title_text="Cl", showgrid=True, gridwidth=1, gridcolor="LightGray", row=1, col=2
+        )
+        fig.update_yaxes(
+            title_text="Cl", showgrid=True, gridwidth=1, gridcolor="LightGray", row=1, col=1
+        )
+        fig.update_yaxes(
+            title_text="L/D", showgrid=True, gridwidth=1, gridcolor="LightGray", row=1, col=2
+        )
 
     else:
-        scatter = go.Scatter(x=cd_short, y=cl_short, mode="lines+markers", name=name)
+        if fig is None:
+            fig = go.Figure()
+            scatter = go.Scatter(x=cd_short, y=cl_short, mode="lines+markers", name=name)
 
         fig.add_trace(scatter)
         fig.update_layout(title_text="Drag Polar", title_x=0.5, xaxis_title="Cd", yaxis_title="Cl")
