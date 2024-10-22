@@ -323,14 +323,15 @@ def drag_polar_plot(
         # Update layout for subplots
         fig.update_layout(
             grid=dict(rows=2, columns=1, pattern="independent"),
-            title="cl vs cd and cl/cd vs cl",
-            xaxis_title="Coefficient of Drag (cd)",
-            yaxis_title="Coefficient of Lift (cl)",
-            xaxis2_title="Coefficient of Lift (cl)",
-            yaxis2_title="cl/cd",
+            title="Drag Polar",
             showlegend=True,
             height=800,  # Adjust height for both plots
         )
+
+        fig["layout"]["xaxis"]["title"] = "Cd"
+        fig["layout"]["xaxis2"]["title"] = "Cl"
+        fig["layout"]["yaxis"]["title"] = "Cl"
+        fig["layout"]["yaxis2"]["title"] = "L/D"
 
         # Customize finer grid lines
         fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor="LightGray")
