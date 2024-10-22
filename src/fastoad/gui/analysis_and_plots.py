@@ -298,7 +298,8 @@ def drag_polar_plot(
             showlegend=False,
         )
 
-        fig.add_trace([trace1, trace1_fill], row=1, col=1)
+        fig.add_trace(trace1, row=1, col=1)
+        fig.add_trace(trace1_fill, row=1, col=1)
 
         # Second subplot: cl/cd vs cl
         trace2 = go.Scatter(x=cl, y=cl_cd_ratio, mode="lines", name=name)
@@ -314,7 +315,8 @@ def drag_polar_plot(
             showlegend=False,
         )
 
-        fig.add_trace([trace2, trace2_fill], row=1, col=2)
+        fig.add_trace(trace2, row=1, col=2)
+        fig.add_trace(trace2_fill, row=1, col=2)
 
         # Update layout for subplots
         fig.update_layout(
