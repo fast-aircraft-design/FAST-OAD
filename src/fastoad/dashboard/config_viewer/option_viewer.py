@@ -52,7 +52,6 @@ class OptionWidgetFactory:
 
     @classmethod
     def get_widget(cls, name, option_definition, widget_class):
-
         widget_kwargs = {"name": name}
 
         matching = {

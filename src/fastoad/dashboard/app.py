@@ -14,8 +14,7 @@
 import panel as pn
 from panel.viewable import Viewable
 
-# Initialize the Panel extension
-pn.extension()
+from .base import BaseTab
 
 
 class Header(pn.viewable.Viewer):
@@ -73,16 +72,7 @@ class MainArea(pn.viewable.Viewer):
         return self.tabs
 
 
-class BaseTab(pn.viewable.Viewer):
-    data_tab = pn.param.Column(name="Data")
-    visu_tab = pn.param.Column(name="Visualisation")
-    tabs = pn.param.Tabs(data_tab, visu_tab)
-
-    def __panel__(self) -> Viewable:
-        return self.tabs
-
-
-class Controller:
+class FastoadApp:
     def __init__(self):
         super().__init__()
         self.header = Header()
@@ -108,9 +98,3 @@ class Controller:
             self.main_area.tabs.append(("Problem", BaseTab()))
         else:
             self.main_area.tabs.append(("Not a Problem", BaseTab()))
-
-
-# Assemble the layout
-
-# Serve the app
-c = Controller()
