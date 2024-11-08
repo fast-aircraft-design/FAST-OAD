@@ -59,6 +59,10 @@ ipopo = [
     { version = "^1.0.0", python = "<3.10" },
     { version = "^3.0.0", python = "^3.10" }
 ]
+panel = [
+    { version = "~1.4", python = "<3.10" },
+    { version = "^1.5", python = "^3.10" }
+]
 ipywidgets = ">=7.7.0, <9"
 ipysheet = ">=0.5.0, <1"
 plotly = [
