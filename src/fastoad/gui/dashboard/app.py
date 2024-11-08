@@ -1,16 +1,29 @@
-from typing import Any
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
+#  FAST is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import panel as pn
-from panel import param
 from panel.viewable import Viewable
-from param import ClassSelector
 
 # Initialize the Panel extension
 pn.extension()
 
 
 class Header(pn.viewable.Viewer):
-    conf_file_path = param.FileInput(accept=".yml, .yaml")
+    # conf_file_path = pn.param.FileInput(accept=".yml, .yaml")
+
+    def __init__(self, **params):
+        super().__init__(**params)
+        self.conf_file_path = pn.widgets.FileInput(accept=".yml, .yaml")
 
     def __panel__(self) -> Viewable:
         return pn.Row(
@@ -21,7 +34,7 @@ class Header(pn.viewable.Viewer):
 
 
 class ModelDefinition(pn.viewable.Viewer):
-    models = param.Column()
+    models = pn.param.Column()
 
     def _add_model(self, event):
         self.models.append(pn.layout.Card())
@@ -37,81 +50,67 @@ class ModelDefinition(pn.viewable.Viewer):
 
 
 class SideBar(pn.viewable.Viewer):
-    input_file_path = param.FileInput(accept=".xml")
-    output_file_path = param.FileInput(accept=".xml")
-    model_definition = ClassSelector(class_=ModelDefinition)
+    eval_button = pn.param.Button(name="Evaluate")
+    optim_button = pn.param.Button(name="Optimize")
 
     def __init__(self, **params):
         super().__init__(**params)
         self.model_definition = ModelDefinition()
 
     def __panel__(self) -> Viewable:
-        input_file_widget = pn.Row(
-            "Input Data file", self.input_file_path, sizing_mode="stretch_width"
-        )
-        output_file_widget = pn.Row(
-            "Output Data file", self.input_file_path, sizing_mode="stretch_width"
-        )
         return pn.Column(
-            input_file_widget,
-            output_file_widget,
+            self.eval_button,
             pn.layout.Divider(),
-            self.model_definition,
-            pn.layout.Divider(),
+            self.optim_button,
             sizing_mode="stretch_width",
         )
 
 
 class MainArea(pn.viewable.Viewer):
+    tabs = pn.param.Tabs()
+
     def __panel__(self) -> Viewable:
-        pass
+        return self.tabs
 
 
-class BaseTab(pn.Column):
-    data_tab = param.Column(name="Data")
-    visu_tab = param.Column(name="Visualisation")
-    tabs = param.Tabs(data_tab, visu_tab)
+class BaseTab(pn.viewable.Viewer):
+    data_tab = pn.param.Column(name="Data")
+    visu_tab = pn.param.Column(name="Visualisation")
+    tabs = pn.param.Tabs(data_tab, visu_tab)
+
+    def __panel__(self) -> Viewable:
+        return self.tabs
 
 
-class MainTab(BaseTab):
-    def __init__(self, *objects: Any, **params: Any):
-        super().__init__(*objects, **params)
+class Controller:
+    def __init__(self):
+        super().__init__()
+        self.header = Header()
+        self.sidebar = SideBar()
+        self.main_area = MainArea()
 
-        tab_name_input = pn.widgets.TextInput(name="Tab Name")
-        add_tab_button = pn.widgets.Button(name="Add Tab", button_type="success")
-        add_tab_button.on_click(self.add_tab)
+        self.layout = pn.template.MaterialTemplate(
+            title="Panel Web App",
+            header=self.header,
+            sidebar=self.sidebar,
+            main=self.main_area,
+        )
 
-        self.data_tab.append()
+        self.header.conf_file_path.param.watch(self.load_configuration, "value")
 
-    def add_tab(self, event):
-        tab_name = tab_name_input.value
-        if tab_name:
-            new_tab = pn.Column(f"Content of {tab_name}")
-            tabs.append((tab_name, new_tab))
-            tab_name_input.value = ""  # Clear the input field
+        # pn.bind(self.load_configuration, self.header.conf_file_path, watch=True)
 
+        self.layout.servable()
 
-# # Create header with "Run" button
-# run_button = pn.widgets.Button(name="Run", button_type="primary")
-# header = pn.Row(run_button)
-#
-# # Create main area with tabs
-# tab_name_input = pn.widgets.TextInput(name="Tab Name")
-# add_tab_button = pn.widgets.Button(name="Add Tab", button_type="success")
-# add_tab_button.on_click(add_tab)
-# initial_tab = pn.Column(tab_name_input, add_tab_button)
-# tabs = pn.Tabs(("Tab 1", initial_tab), sizing_mode="stretch_both")
-#
-# # Create sidebar for navigation
-# sidebar = pn.Column(pn.pane.Markdown("## Sidebar\n- [Tab 1](#)"))
+    def load_configuration(self, file_path):
+        self.main_area.tabs.clear()
+        if file_path:
+            self.main_area.tabs.append(("Problem", BaseTab()))
+        else:
+            self.main_area.tabs.append(("Not a Problem", BaseTab()))
+
 
 # Assemble the layout
-layout = pn.template.MaterialTemplate(
-    title="Panel Web App",
-    header=Header(),
-    sidebar=SideBar(),
-    main=MainArea(),
-)
 
 # Serve the app
-layout.servable()
+c = Controller()
