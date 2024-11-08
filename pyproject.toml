@@ -111,6 +111,7 @@ mpi4py = ["mpi4py"] # Old way, kept for backward compatibility
 # Development dependencies -----------------------------------------------------
 [tool.poetry.group.dev.dependencies]
 fast-oad-cs25 = ">=0.7.1"
+watchfiles = ">=0.24, <1" # will be needed for autoreload of Panel
 
 matplotlib = "^3.9.0"
 
