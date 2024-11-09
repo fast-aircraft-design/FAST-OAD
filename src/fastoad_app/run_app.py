@@ -13,7 +13,7 @@
 
 import panel as pn
 
-from fastoad.dashboard.app import FastoadApp
+from fastoad_app.dashboard.app import FastoadApp
 
 pn.extension()
 

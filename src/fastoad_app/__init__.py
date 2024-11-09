@@ -11,14 +11,3 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import panel as pn
-from panel.viewable import Viewable
-
-
-class BaseTab(pn.viewable.Viewer):
-    data_tab = pn.param.Column(name="Data")
-    visu_tab = pn.param.Column(name="Visualisation")
-    tabs = pn.param.Tabs(data_tab, visu_tab)
-
-    def __panel__(self) -> Viewable:
-        return self.tabs
