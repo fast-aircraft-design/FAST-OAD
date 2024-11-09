@@ -25,7 +25,7 @@ import numpy as np
 import openmdao.api as om
 from openmdao.utils.units import convert_units
 
-from fastoad.openmdao.variables import VariableList
+from fastoad.mdao.variables import VariableList
 
 CheckRecord = namedtuple(
     "CheckRecord",

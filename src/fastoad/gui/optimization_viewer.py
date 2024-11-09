@@ -31,7 +31,7 @@ from fastoad.io.configuration.configuration import (
     KEY_DESIGN_VARIABLES,
     KEY_OBJECTIVE,
 )
-from fastoad.openmdao.variables import Variable, VariableList
+from fastoad.mdao.variables import Variable, VariableList
 from .exceptions import FastMissingFile
 
 pd.set_option("display.max_rows", None)

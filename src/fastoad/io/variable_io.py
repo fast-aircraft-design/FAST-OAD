@@ -16,7 +16,7 @@ from os import PathLike
 from pathlib import Path
 from typing import IO, List, Optional, Sequence, Union
 
-from fastoad.openmdao.variables import VariableList
+from fastoad.mdao.variables import VariableList
 from . import IVariableIOFormatter
 from .xml import VariableXmlStandardFormatter
 from .._utils.files import as_path

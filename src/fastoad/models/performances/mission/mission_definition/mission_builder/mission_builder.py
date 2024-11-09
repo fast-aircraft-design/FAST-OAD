@@ -22,9 +22,9 @@ import pandas as pd
 
 from fastoad._utils.arrays import scalarize
 from fastoad.constants import EngineSetting
+from fastoad.mdao.variables import VariableList
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IPropulsion
-from fastoad.openmdao.variables import VariableList
 from .constants import NAME_TAG, SEGMENT_TYPE_TAG, TYPE_TAG
 from .input_definition import InputDefinition
 from .structure_builders import (

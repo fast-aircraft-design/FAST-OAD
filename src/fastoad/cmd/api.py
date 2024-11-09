@@ -34,7 +34,7 @@ from IPython.display import HTML, clear_output, display
 from packaging.version import Version
 from tabulate import tabulate
 
-import fastoad.openmdao.whatsopt
+import fastoad.mdao.whatsopt
 from fastoad._utils.files import as_path, make_parent_dir
 from fastoad._utils.resource_management.copy import copy_resource, copy_resource_folder
 from fastoad.cmd.exceptions import (
@@ -46,11 +46,11 @@ from fastoad.io import IVariableIOFormatter
 from fastoad.io.configuration import FASTOADProblemConfigurator
 from fastoad.io.variable_io import DataFile
 from fastoad.io.xml import VariableLegacy1XmlFormatter
+from fastoad.mdao.problem import FASTOADProblem
+from fastoad.mdao.variables import VariableList
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.module_management._plugins import DistributionPluginDefinition, FastoadLoader
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterPropulsion
-from fastoad.openmdao.problem import FASTOADProblem
-from fastoad.openmdao.variables import VariableList
 
 DEFAULT_WOP_URL = "https://ether.onera.fr/whatsopt"
 _LOGGER = logging.getLogger(__name__)

@@ -24,7 +24,7 @@ from openmdao.utils.units import convert_units
 from plotly.subplots import make_subplots
 
 from fastoad.io import DataFile, VariableIO
-from fastoad.openmdao.variables import Variable, VariableList
+from fastoad.mdao.variables import Variable, VariableList
 
 COLS = px.colors.qualitative.Plotly
 

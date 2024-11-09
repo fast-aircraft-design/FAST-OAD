@@ -24,7 +24,7 @@ from IPython.display import display
 
 from fastoad._utils.pandas import apply_map
 from fastoad.io import IVariableIOFormatter, VariableIO
-from fastoad.openmdao.variables import VariableList
+from fastoad.mdao.variables import VariableList
 
 pd.set_option("display.max_rows", None)
 INPUT = "IN"

@@ -32,8 +32,8 @@ from ruamel.yaml import YAML
 from fastoad._utils.files import as_path, make_parent_dir
 from fastoad._utils.resource_management.contents import PackageReader
 from fastoad.io import IVariableIOFormatter
+from fastoad.mdao.problem import FASTOADProblem
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
-from fastoad.openmdao.problem import FASTOADProblem
 from . import resources
 from .exceptions import (
     FASTConfigurationBadOpenMDAOInstructionError,

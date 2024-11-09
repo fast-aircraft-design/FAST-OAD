@@ -20,8 +20,8 @@ import numpy as np
 from openmdao import api as om
 
 from fastoad._utils.arrays import scalarize
+from fastoad.mdao.variables import Variable
 from fastoad.model_base import FlightPoint
-from fastoad.openmdao.variables import Variable
 from .constants import BASE_UNITS
 
 

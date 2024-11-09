@@ -21,7 +21,7 @@ import pytest
 
 from .. import IVariableIOFormatter
 from ..variable_io import DataFile
-from ...openmdao.variables import Variable, VariableList
+from ...mdao.variables import Variable, VariableList
 
 RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
 
