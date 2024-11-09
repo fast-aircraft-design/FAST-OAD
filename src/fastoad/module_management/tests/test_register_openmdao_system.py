@@ -25,7 +25,7 @@ from ..constants import ModelDomain, SERVICE_OPENMDAO_SYSTEM
 from ..exceptions import FastBadSystemOptionError, FastBundleLoaderUnknownFactoryNameError
 from ..service_registry import RegisterOpenMDAOSystem
 from ..._utils.sellar.sellar_base import BasicSellarModel, BasicSellarProblem, ISellarFactory
-from ...openmdao.variables import Variable
+from ...mdao.variables import Variable
 
 DATA_FOLDER_PATH = Path(__file__).parent / "data"
 

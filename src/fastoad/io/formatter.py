@@ -18,7 +18,7 @@ from abc import ABC, abstractmethod
 from os import PathLike
 from typing import IO, Union
 
-from fastoad.openmdao.variables import VariableList
+from fastoad.mdao.variables import VariableList
 
 
 class IVariableIOFormatter(ABC):

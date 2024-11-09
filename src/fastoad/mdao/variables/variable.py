@@ -22,9 +22,9 @@ import numpy as np
 import openmdao.api as om
 from openmdao.utils.units import convert_units
 
+from fastoad._utils.arrays import scalarize
 from fastoad._utils.files import as_path
 from fastoad._utils.resource_management.contents import PackageReader
-from fastoad._utils.arrays import scalarize
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 

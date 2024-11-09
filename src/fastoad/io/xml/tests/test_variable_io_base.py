@@ -20,7 +20,7 @@ from pathlib import Path
 import pytest
 from pytest import approx
 
-from fastoad.openmdao.variables import VariableList
+from fastoad.mdao.variables import VariableList
 from .. import VariableXmlBaseFormatter
 from ..translator import VarXpathTranslator
 from ...variable_io import VariableIO

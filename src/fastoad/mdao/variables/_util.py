@@ -18,7 +18,7 @@ from typing import Tuple
 import numpy as np
 from openmdao.core.constants import _SetupStatus
 
-from fastoad.openmdao._utils import get_mpi_safe_problem_copy
+from fastoad.mdao._utils import get_mpi_safe_problem_copy
 
 
 def get_problem_variables(

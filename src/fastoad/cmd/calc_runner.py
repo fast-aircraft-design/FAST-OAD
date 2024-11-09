@@ -26,7 +26,7 @@ from openmdao.utils.mpi import FakeComm
 from fastoad._utils.files import as_path, make_parent_dir
 from fastoad.io import DataFile
 from fastoad.io.configuration import FASTOADProblemConfigurator
-from fastoad.openmdao.variables import VariableList
+from fastoad.mdao.variables import VariableList
 
 # Import MPI4Py at the module level to avoid repeated imports
 try:

@@ -18,9 +18,9 @@ import numpy as np
 from openmdao import api as om
 from openmdao.core.system import System
 
+from fastoad.mdao.problem import FASTOADProblem
+from fastoad.mdao.variables import VariableList
 from fastoad.model_base.openmdao.group import BaseCycleGroup
-from fastoad.openmdao.problem import FASTOADProblem
-from fastoad.openmdao.variables import VariableList
 
 
 def run_system(

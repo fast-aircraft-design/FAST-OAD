@@ -35,8 +35,8 @@ from .exceptions import (
     FastTooManySubmodelsError,
     FastUnknownSubmodelError,
 )
+from ..mdao.variables import Variable
 from ..model_base.propulsion import IOMPropulsionWrapper
-from ..openmdao.variables import Variable
 
 T = TypeVar("T")
 

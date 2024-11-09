@@ -65,6 +65,15 @@ from fastoad.io import DataFile
 from fastoad.io.configuration import FASTOADProblemConfigurator
 
 # noinspection PyUnresolvedReferences
+from fastoad.mdao.problem import FASTOADProblem
+
+# noinspection PyUnresolvedReferences
+from fastoad.mdao.validity_checker import ValidityDomainChecker
+
+# noinspection PyUnresolvedReferences
+from fastoad.mdao.variables import Variable, VariableList
+
+# noinspection PyUnresolvedReferences
 from fastoad.model_base import Atmosphere, AtmosphereSI, FlightPoint
 
 # noinspection PyUnresolvedReferences
@@ -102,12 +111,3 @@ from fastoad.module_management.service_registry import (
     RegisterSpecializedService,
     RegisterSubmodel,
 )
-
-# noinspection PyUnresolvedReferences
-from fastoad.openmdao.problem import FASTOADProblem
-
-# noinspection PyUnresolvedReferences
-from fastoad.openmdao.validity_checker import ValidityDomainChecker
-
-# noinspection PyUnresolvedReferences
-from fastoad.openmdao.variables import Variable, VariableList
