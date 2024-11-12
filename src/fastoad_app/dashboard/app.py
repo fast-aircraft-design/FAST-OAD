@@ -12,9 +12,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import panel as pn
+import param
 from panel.viewable import Viewable
-
-from .base import BaseTab
 
 
 class Header(pn.viewable.Viewer):
@@ -22,13 +21,15 @@ class Header(pn.viewable.Viewer):
 
     def __init__(self, **params):
         super().__init__(**params)
-        self.conf_file_path = pn.widgets.FileInput(accept=".yml, .yaml")
+        # self.conf_file_path = pn.widgets.FileInput(
+        #     accept=".yml, .yaml",
+        # )
 
     def __panel__(self) -> Viewable:
         return pn.Row(
             pn.layout.Spacer(width=200),
             "Configuration File",
-            self.conf_file_path,
+            # self.conf_file_path,
         )
 
 
@@ -66,15 +67,54 @@ class SideBar(pn.viewable.Viewer):
 
 
 class MainArea(pn.viewable.Viewer):
-    tabs = pn.param.Tabs()
+    file_input = pn.param.FileInput(accept=".yml,.yaml")
+    editor = param.String("toto")
 
-    def __panel__(self) -> Viewable:
-        return self.tabs
+    def __init__(self, **kwargs):
+        super().__init__()
+        # pn.bind(self.update, self.file_input)
+        self.file_input.param.watch(self.update, "value")
+
+    def __panel__(self):
+        """Map the string to appear as an Ace editor."""
+        return pn.Column(
+            self.file_input,
+            pn.Param(
+                self.param,
+                widgets=dict(
+                    editor=dict(
+                        type=pn.widgets.CodeEditor, language="yaml", sizing_mode="stretch_both"
+                    )
+                ),
+            ),
+        )
+
+    def update(self, event):
+        self.editor = self.file_input.value.decode("utf-8")
+
+
+#
+# class MainArea(pn.viewable.Viewer):
+#     tabs = pn.param.Tabs()
+#     editor = param.ClassSelector(
+#         class_=pn.widgets.CodeEditor,
+#         default=pn.widgets.CodeEditor(
+#             sizing_mode="stretch_width", language="yaml", value="load conf here"
+#         ),
+#         instantiate=True,
+#     )
+#
+#     def __panel__(self) -> Viewable:
+#         return pn.Column("Main Area", self.editor, self.tabs)
+#
+#     def load_configuration_file(self, file_path):
+#         yaml = YAML(typ="safe")
+#         with open(file_path) as yaml_file:
+#             self.editor.value = yaml.load(yaml_file)
 
 
 class FastoadApp:
     def __init__(self):
-        super().__init__()
         self.header = Header()
         self.sidebar = SideBar()
         self.main_area = MainArea()
@@ -86,15 +126,12 @@ class FastoadApp:
             main=self.main_area,
         )
 
-        self.header.conf_file_path.param.watch(self.load_configuration, "value")
+        # self.header.conf_file_path.param.watch(self.load_configuration_file, "value")
 
-        # pn.bind(self.load_configuration, self.header.conf_file_path, watch=True)
+        # pn.bind(self.load_configuration_file, self.header.conf_file_path, watch=True)
 
         self.layout.servable()
 
-    def load_configuration(self, file_path):
-        self.main_area.tabs.clear()
-        if file_path:
-            self.main_area.tabs.append(("Problem", BaseTab()))
-        else:
-            self.main_area.tabs.append(("Not a Problem", BaseTab()))
+    # def load_configuration_file(self, file_path):
+    #     self.main_area.tabs.append(pn.Column(str(file_path.new)))
+    #     self.main_area.editor.value = file_path.new
