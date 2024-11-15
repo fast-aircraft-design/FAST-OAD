@@ -2,7 +2,7 @@
 Exceptions for package configuration
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -19,7 +19,7 @@ from fastoad.exceptions import FastError
 
 class FASTConfigurationBaseKeyBuildingError(FastError):
     """
-    Class for being raised from bottom to top of TOML dict so that in the end, the message
+    Class for being raised from bottom to top of conf dict so that in the end, the message
     provides the full qualified name of the problematic key.
 
     using `new_err = FASTConfigurationBaseKeyBuildingError(err, 'new_err_key', <value>)`:
