@@ -53,7 +53,7 @@ class ModelDefinition(pn.viewable.Viewer):
 
 
 class SideBar(pn.viewable.Viewer):
-    configuration_file = pn.param.FileInput(accept=".yml,.yaml")
+    configuration_file_path = param.Path()
     eval_button = pn.param.Button(name="Evaluate")
     optim_button = pn.param.Button(name="Optimize")
 
@@ -67,18 +67,38 @@ class SideBar(pn.viewable.Viewer):
                 Model(name="aerodynamics", id="toto.aero"),
             ]
         )
+        self.file_loader = pn.widgets.FileSelector()
+        self.file_dialog = pn.Column(height=0, width=0)
 
     def load_configuration(self):
         self.configuration.load()
 
+    def pick_file(self, event):
+        self.file_dialog[:] = [
+            pn.layout.FloatPanel(
+                self.file_loader,
+                name="Choose configuration file",
+                contained=False,
+                position="center",
+            )
+        ]
+
     def __panel__(self) -> Viewable:
-        return pn.Column(
-            self.configuration_file,
+        configuration_loader = pn.layout.WidgetBox(
+            "Configuration file",
+            pn.layout.Row(
+                pn.widgets.TextInput(value=self.configuration_file_path),
+                pn.widgets.Button(name="Choose", on_click=self.pick_file),
+            ),
+        )
+        return pn.layout.Column(
+            configuration_loader,
             pn.layout.Divider(),
             self.eval_button,
             self.optim_button,
             pn.layout.Divider(),
             self.model_definition,
+            self.file_dialog,
             sizing_mode="stretch_width",
         )
 

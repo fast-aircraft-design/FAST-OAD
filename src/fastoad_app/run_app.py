@@ -15,6 +15,6 @@ import panel as pn
 
 from fastoad_app.dashboard.app import FastoadApp
 
-pn.extension("codeeditor")
+pn.extension("codeeditor", "floatpanel")
 
 app = FastoadApp()
