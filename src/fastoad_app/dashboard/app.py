@@ -15,6 +15,9 @@ import panel as pn
 import param
 from panel.viewable import Viewable
 
+from fastoad.io.configuration import FASTOADProblemConfigurator
+from fastoad_app.dashboard.model_viewer import Group, Model
+
 
 class Header(pn.viewable.Viewer):
     # conf_file_path = pn.param.FileInput(accept=".yml, .yaml")
@@ -50,18 +53,32 @@ class ModelDefinition(pn.viewable.Viewer):
 
 
 class SideBar(pn.viewable.Viewer):
+    configuration_file = pn.param.FileInput(accept=".yml,.yaml")
     eval_button = pn.param.Button(name="Evaluate")
     optim_button = pn.param.Button(name="Optimize")
 
     def __init__(self, **params):
         super().__init__(**params)
-        self.model_definition = ModelDefinition()
+        self.configuration = FASTOADProblemConfigurator()
+        self.model_definition = Group(name="model")
+        self.model_definition.components.extend(
+            [
+                Model(name="geometry", id="toto.geom"),
+                Model(name="aerodynamics", id="toto.aero"),
+            ]
+        )
+
+    def load_configuration(self):
+        self.configuration.load()
 
     def __panel__(self) -> Viewable:
         return pn.Column(
-            self.eval_button,
+            self.configuration_file,
             pn.layout.Divider(),
+            self.eval_button,
             self.optim_button,
+            pn.layout.Divider(),
+            self.model_definition,
             sizing_mode="stretch_width",
         )
 
