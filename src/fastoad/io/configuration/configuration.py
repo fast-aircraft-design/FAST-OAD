@@ -25,7 +25,6 @@ from pathlib import Path
 from typing import Dict, List, Optional, Union
 
 import openmdao.api as om
-import tomlkit
 from jsonschema import validate
 from ruamel.yaml import YAML
 
@@ -157,13 +156,7 @@ class FASTOADProblemConfigurator:
 
         self._conf_file_path = as_path(conf_file).resolve()  # for resolving relative paths
 
-        if self._conf_file_path.suffix == ".toml":
-            self._serializer = _TOMLSerializer()
-            _LOGGER.warning(
-                "TOML-formatted configuration files are deprecated. Please use YAML format."
-            )
-        else:
-            self._serializer = _YAMLSerializer()
+        self._serializer = _YAMLSerializer()
         self._serializer.read(self._conf_file_path)
 
         # Syntax validation
@@ -462,7 +455,7 @@ class FASTOADProblemConfigurator:
 
     def _parse_problem_table(self, group: om.Group, table: dict):
         """
-        Feeds provided *group*, using definition in provided TOML *table*.
+        Feeds provided *group*, using definition in provided *table*.
 
         :param group:
         :param table:
@@ -623,25 +616,6 @@ class _IDictSerializer(ABC):
         Writes data to provided file.
         :param file_path:
         """
-
-
-class _TOMLSerializer(_IDictSerializer):
-    """TOML-format serializer."""
-
-    def __init__(self):
-        self._data = None
-
-    @property
-    def data(self):
-        return self._data
-
-    def read(self, file_path: Union[str, PathLike]):
-        with open(file_path, "r") as toml_file:
-            self._data = tomlkit.loads(toml_file.read()).value
-
-    def write(self, file_path: Union[str, PathLike]):
-        with open(file_path, "w") as file:
-            file.write(tomlkit.dumps(self._data))
 
 
 class _YAMLSerializer(_IDictSerializer):
