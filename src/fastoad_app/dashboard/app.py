@@ -53,7 +53,6 @@ class ModelDefinition(pn.viewable.Viewer):
 
 
 class SideBar(pn.viewable.Viewer):
-    configuration_file_path = param.Path()
     eval_button = pn.param.Button(name="Evaluate")
     optim_button = pn.param.Button(name="Optimize")
 
@@ -67,11 +66,14 @@ class SideBar(pn.viewable.Viewer):
                 Model(name="aerodynamics", id="toto.aero"),
             ]
         )
-        self.file_loader = pn.widgets.FileSelector()
+        self.file_loader = pn.widgets.FileSelector(file_pattern="*.y*ml")
         self.file_dialog = pn.Column(height=0, width=0)
+        self.configuration_file_path = pn.bind(self.load_configuration, file_paths=self.file_loader)
 
-    def load_configuration(self):
-        self.configuration.load()
+    def load_configuration(self, file_paths):
+        if len(file_paths) > 0:
+            self.configuration.load(file_paths[0])
+            return file_paths[0]
 
     def pick_file(self, event):
         self.file_dialog[:] = [
@@ -87,9 +89,12 @@ class SideBar(pn.viewable.Viewer):
         configuration_loader = pn.layout.WidgetBox(
             "Configuration file",
             pn.layout.Row(
-                pn.widgets.TextInput(value=self.configuration_file_path),
                 pn.widgets.Button(name="Choose", on_click=self.pick_file),
+                pn.widgets.TextInput(
+                    value=self.configuration_file_path, sizing_mode="stretch_width"
+                ),
             ),
+            sizing_mode="stretch_width",
         )
         return pn.layout.Column(
             configuration_loader,
