@@ -17,7 +17,7 @@ import param
 from panel.viewable import Viewable
 
 from fastoad.io.configuration import FASTOADProblemConfigurator
-from fastoad_app.dashboard.model_viewer import Group, Model
+from fastoad_app.dashboard.hierarchy_viewer import HierarchyViewer, Model
 
 
 class Header(pn.viewable.Viewer):
@@ -61,8 +61,8 @@ class SideBar(pn.viewable.Viewer):
     def __init__(self, **params):
         super().__init__(**params)
         self.configuration = FASTOADProblemConfigurator()
-        self.model_definition = Group(name="model")
-        self.model_definition.components.extend(
+        self.problem_definition = HierarchyViewer()
+        self.problem_definition.model.components.extend(
             [
                 Model(name="geometry", id="toto.geom"),
                 Model(name="aerodynamics", id="toto.aero"),
@@ -113,7 +113,7 @@ class SideBar(pn.viewable.Viewer):
             self.eval_button,
             self.optim_button,
             pn.layout.Divider(),
-            self.model_definition,
+            self.problem_definition,
             self.file_dialog,
             sizing_mode="stretch_width",
         )

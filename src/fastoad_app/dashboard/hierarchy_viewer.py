@@ -13,15 +13,44 @@
 
 import panel as pn
 import param
+from panel.custom import PyComponent
 from panel.viewable import Viewable
 
 
-class Group(pn.viewable.Viewer):
-    name = param.String()
-    components = param.List()
+class HierarchyViewer(pn.viewable.Viewer):
+    debug = pn.param.StaticText()
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.model = Group(name="Root Model")
+        self.problem = Group(name="Problem", components=[self.model])
+
+        pn.bind(self.update, self.problem.title, watch=True)
+
+    def update(self, event):
+        self.debug.value = str(event)
 
     def __panel__(self) -> Viewable:
-        return pn.layout.Card(*self.components, title=self.name)
+        return pn.Column(self.debug, self.problem)
+
+
+class Group(pn.viewable.Viewer):
+    name = param.String("group")
+    components = param.List()
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.title = Header(name="group")
+
+    def __panel__(self) -> Viewable:
+        return pn.layout.Card(*self.components, name=self.name, header=self.title)
+
+
+class Header(PyComponent):
+    name = param.String("group")
+
+    def __panel__(self) -> Viewable:
+        return pn.widgets.Toggle(name=self.name)
 
 
 class Model(pn.viewable.Viewer):
