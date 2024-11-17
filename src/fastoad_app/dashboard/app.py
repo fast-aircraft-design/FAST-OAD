@@ -10,6 +10,7 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from pathlib import Path
 
 import panel as pn
 import param
@@ -55,6 +56,7 @@ class ModelDefinition(pn.viewable.Viewer):
 class SideBar(pn.viewable.Viewer):
     eval_button = pn.param.Button(name="Evaluate")
     optim_button = pn.param.Button(name="Optimize")
+    conf_file_path_input = pn.param.TextInput(sizing_mode="stretch_width")
 
     def __init__(self, **params):
         super().__init__(**params)
@@ -66,14 +68,25 @@ class SideBar(pn.viewable.Viewer):
                 Model(name="aerodynamics", id="toto.aero"),
             ]
         )
-        self.file_loader = pn.widgets.FileSelector(file_pattern="*.y*ml")
+        self.file_loader = pn.widgets.FileSelector(file_pattern="*.y*ml", only_files=True)
         self.file_dialog = pn.Column(height=0, width=0)
-        self.configuration_file_path = pn.bind(self.load_configuration, file_paths=self.file_loader)
+        self.conf_file_path_input.value = pn.bind(
+            self.choose_configuration_file, file_paths=self.file_loader
+        )
 
-    def load_configuration(self, file_paths):
-        if len(file_paths) > 0:
-            self.configuration.load(file_paths[0])
-            return file_paths[0]
+        pn.bind(self.load_configuration, file_path=self.conf_file_path_input, watch=True)
+
+    def choose_configuration_file(self, file_paths):
+        if len(file_paths) == 0:
+            return ""
+        if len(file_paths) > 1:
+            self.file_loader.value[:] = [file_paths[-1]]
+
+        return file_paths[-1]
+
+    def load_configuration(self, file_path):
+        if Path(file_path).is_absolute() and Path(file_path).is_file():
+            self.configuration.load(file_path)
 
     def pick_file(self, event):
         self.file_dialog[:] = [
@@ -90,9 +103,7 @@ class SideBar(pn.viewable.Viewer):
             "Configuration file",
             pn.layout.Row(
                 pn.widgets.Button(name="Choose", on_click=self.pick_file),
-                pn.widgets.TextInput(
-                    value=self.configuration_file_path, sizing_mode="stretch_width"
-                ),
+                self.conf_file_path_input,
             ),
             sizing_mode="stretch_width",
         )
