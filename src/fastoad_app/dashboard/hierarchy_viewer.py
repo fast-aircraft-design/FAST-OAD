@@ -25,6 +25,7 @@ class ButtonHub(Observed):
 
     def signal(self, element: IObserver):
         self.active_element = element
+        print(element.id)
         self.notify()
 
     def notify(self) -> None:
@@ -60,9 +61,12 @@ class HierarchyViewer(pn.viewable.Viewer):
 class Element(pn.viewable.Viewer, IObserver):
     name = param.String()
     components = param.List()
+    id = param.String()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        if not self.id:
+            self.id = self.name
         self.button = pn.widgets.Button(name=self.name, on_click=self.update)
         self.card = pn.layout.Card(name=self.name, header=pn.layout.Row(self.button))
 
@@ -85,8 +89,6 @@ class Group(Element):
 
 
 class Model(Element):
-    id = param.String()
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.components[:] = [pn.widgets.TextInput(name="id", value=self.id)]
