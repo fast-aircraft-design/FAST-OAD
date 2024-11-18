@@ -10,11 +10,30 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from dataclasses import dataclass
 
 import panel as pn
 import param
-from panel.custom import PyComponent
 from panel.viewable import Viewable
+
+from fastoad_app.dashboard.observer_base import IObserver, Observed
+
+
+@dataclass
+class ButtonHub(Observed):
+    active_element: IObserver = None
+
+    def signal(self, element: IObserver):
+        self.active_element = element
+        self.notify()
+
+    def notify(self) -> None:
+        for observer in self._observers:
+            if observer is not self.active_element:
+                observer.update(self)
+
+
+BUTTON_HUB = ButtonHub()
 
 
 class HierarchyViewer(pn.viewable.Viewer):
@@ -22,10 +41,14 @@ class HierarchyViewer(pn.viewable.Viewer):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.model = Group(name="Root Model")
-        self.problem = Group(name="Problem", components=[self.model])
 
-        pn.bind(self.update, self.problem.title, watch=True)
+        self.problem = Group(name="Problem")
+        BUTTON_HUB.attach(self.problem)
+
+        self.model = Group(name="Root Model")
+        self.problem.add_element(self.model)
+
+        pn.bind(self.update, self.problem.button, watch=True)
 
     def update(self, event):
         self.debug.value = str(event)
@@ -34,28 +57,36 @@ class HierarchyViewer(pn.viewable.Viewer):
         return pn.Column(self.debug, self.problem)
 
 
-class Group(pn.viewable.Viewer):
-    name = param.String("group")
+class Element(pn.viewable.Viewer, IObserver):
+    name = param.String()
     components = param.List()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.title = Header(name="group")
+        self.button = pn.widgets.Button(name=self.name, on_click=self.update)
+        self.card = pn.layout.Card(name=self.name, header=pn.layout.Row(self.button))
 
     def __panel__(self) -> Viewable:
-        return pn.layout.Card(*self.components, name=self.name, header=self.title)
+        self.card[:] = [*self.components]
+        return self.card
+
+    def update(self, event=None):
+        if event is BUTTON_HUB:
+            self.button.button_type = "default"
+        else:
+            BUTTON_HUB.signal(self)
+            self.button.button_type = "primary"
 
 
-class Header(PyComponent):
-    name = param.String("group")
+class Group(Element):
+    def add_element(self, element: Element):
+        self.components.append(element)
+        BUTTON_HUB.attach(element)
 
-    def __panel__(self) -> Viewable:
-        return pn.widgets.Toggle(name=self.name)
 
-
-class Model(pn.viewable.Viewer):
-    name = param.String()
+class Model(Element):
     id = param.String()
 
-    def __panel__(self) -> Viewable:
-        return pn.layout.Card(pn.widgets.TextInput(name="id", value=self.id), title=self.name)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.components[:] = [pn.widgets.TextInput(name="id", value=self.id)]

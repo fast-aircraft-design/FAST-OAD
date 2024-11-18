@@ -62,12 +62,9 @@ class SideBar(pn.viewable.Viewer):
         super().__init__(**params)
         self.configuration = FASTOADProblemConfigurator()
         self.problem_definition = HierarchyViewer()
-        self.problem_definition.model.components.extend(
-            [
-                Model(name="geometry", id="toto.geom"),
-                Model(name="aerodynamics", id="toto.aero"),
-            ]
-        )
+        self.problem_definition.model.add_element(Model(name="geometry", id="toto.geom"))
+        self.problem_definition.model.add_element(Model(name="aerodynamics", id="toto.aero"))
+
         self.file_loader = pn.widgets.FileSelector(file_pattern="*.y*ml", only_files=True)
         self.file_dialog = pn.Column(height=0, width=0)
         self.conf_file_path_input.value = pn.bind(
