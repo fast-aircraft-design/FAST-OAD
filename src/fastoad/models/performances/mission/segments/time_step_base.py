@@ -1,6 +1,6 @@
 """Base classes for time-step segments"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -156,6 +156,7 @@ class AbstractTimeStepFlightSegment(
                 flight_point.CD = modified_polar.cd(flight_point.CL)
             else:
                 flight_point.CL = flight_point.CD = 0.0
+            flight_point.lift = flight_point.CL * reference_force
             flight_point.drag = flight_point.CD * reference_force
         flight_point.engine_setting = self.engine_setting
         self.compute_propulsion(flight_point)
