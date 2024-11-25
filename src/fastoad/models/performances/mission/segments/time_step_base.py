@@ -20,6 +20,7 @@ from typing import List, Optional, Tuple
 import numpy as np
 import pandas as pd
 from deprecated import deprecated
+from numpy import sin, cos
 from scipy.constants import g
 from scipy.optimize import root_scalar
 
@@ -68,6 +69,10 @@ class AbstractTimeStepFlightSegment(
     #: Used time step for computation (actual time step can be lower at some particular times of
     #: the flight path).
     time_step: float = DEFAULT_TIME_STEP
+
+    #: If True, the segment computes lift as equal to weight. If False, alpha is used
+    #: to get CL from polar.
+    lift_equals_weight: bool = True
 
     # The maximum lift coefficient for optimal climb and cruise segments
     maximum_CL: float = None
@@ -144,6 +149,8 @@ class AbstractTimeStepFlightSegment(
 
     def complete_flight_point(self, flight_point: FlightPoint):
         super().complete_flight_point(flight_point)
+        flight_point.engine_setting = self.engine_setting
+
         if flight_point.altitude is not None:
             atm = self._get_atmosphere_point(flight_point.altitude)
             reference_force = (
@@ -152,13 +159,15 @@ class AbstractTimeStepFlightSegment(
 
             if self.polar and reference_force:
                 modified_polar = self.polar_modifier.modify_polar(self.polar, flight_point)
-                flight_point.CL = flight_point.mass * g / reference_force
+                if self.lift_equals_weight:
+                    flight_point.CL = flight_point.mass * g / reference_force
+                else:
+                    flight_point.CL = modified_polar.cl(flight_point.alpha)
                 flight_point.CD = modified_polar.cd(flight_point.CL)
             else:
                 flight_point.CL = flight_point.CD = 0.0
             flight_point.lift = flight_point.CL * reference_force
             flight_point.drag = flight_point.CD * reference_force
-        flight_point.engine_setting = self.engine_setting
         self.compute_propulsion(flight_point)
         flight_point.slope_angle, flight_point.acceleration = self.get_gamma_and_acceleration(
             flight_point
@@ -401,9 +410,35 @@ class AbstractTakeOffSegment(AbstractManualThrustSegment, ABC):
     # Default time step for this dynamic segment
     time_step: float = 0.1
 
+    # Here, AoA drives CL
+    lift_equals_weight: bool = False
+
     def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
         self.polar_modifier.ground_altitude = start.altitude
         return super().compute_from_start_to_target(start, target)
+
+    def get_gamma_and_acceleration(self, flight_point: FlightPoint):
+        """
+        Redefinition : computes slope angle derivative (gamma_dot) and x-acceleration.
+        Replaces CL, CD, lift dan drag values (for ground effect and accelerated flight)
+
+        :param flight_point: parameters after propulsion model has been called
+                             (i.e. mass, thrust and drag are available)
+        """
+        thrust = flight_point.thrust
+        mass = flight_point.mass
+        airspeed = flight_point.true_airspeed
+        alpha = flight_point.alpha
+        gamma = flight_point.slope_angle
+        drag = flight_point.drag
+        lift = flight_point.lift
+
+        gamma_dot = (thrust * sin(alpha) + lift - mass * g * cos(gamma)) / mass / airspeed
+        acceleration = (thrust * cos(alpha) - drag - mass * g * sin(gamma)) / mass
+
+        flight_point.slope_angle_derivative = gamma_dot
+
+        return gamma, acceleration
 
 
 @dataclass
@@ -434,36 +469,6 @@ class AbstractGroundSegment(AbstractTakeOffSegment, ABC):
         acceleration = (thrust - drag) / mass
 
         return 0.0, acceleration
-
-    def complete_flight_point(self, flight_point: FlightPoint):
-        """
-        Computes data for provided flight point using AoA and apply polar modification if any
-
-        :param flight_point: the flight point that will be completed in-place
-        """
-        self._complete_speed_values(flight_point)
-
-        # Ground segment may force engine setting like reverse or idle
-        flight_point.engine_setting = self.engine_setting
-
-        atm = self._get_atmosphere_point(flight_point.altitude)
-        reference_force = 0.5 * atm.density * flight_point.true_airspeed**2 * self.reference_area
-
-        if self.polar:
-            alpha = flight_point.alpha
-            modified_polar = self.polar_modifier.modify_polar(self.polar, flight_point)
-            flight_point.CL = modified_polar.cl(alpha)
-            flight_point.CD = modified_polar.cd(flight_point.CL)
-        else:
-            flight_point.CL = flight_point.CD = 0.0
-
-        flight_point.drag = flight_point.CD * reference_force
-        flight_point.lift = flight_point.CL * reference_force
-
-        self.compute_propulsion(flight_point)
-        flight_point.slope_angle, flight_point.acceleration = self.get_gamma_and_acceleration(
-            flight_point
-        )
 
 
 @deprecated(
