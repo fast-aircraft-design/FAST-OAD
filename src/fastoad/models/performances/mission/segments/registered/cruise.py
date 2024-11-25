@@ -1,6 +1,6 @@
 """Classes for simulating cruise segments."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -116,7 +116,8 @@ class ClimbAndCruiseSegment(CruiseSegment):
 
     def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
         climb_segment = deepcopy(self.climb_segment)
-        climb_segment.target = target
+        if climb_segment is not None:
+            climb_segment.target = target
 
         cruise_segment = CruiseSegment(
             target=deepcopy(target),  # deepcopy needed because altitude will be modified.
