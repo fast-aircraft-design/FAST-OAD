@@ -411,8 +411,11 @@ class AbstractLiftFromWeightSegment(AbstractTimeStepFlightSegment, ABC):
     Class for computing segments where lift is computed from aircraft weight.
     """
 
+    #: Lift is computed so it is equal to load_factor * weight
+    load_factor: float = 1.0
+
     def compute_lift(self, flight_point: FlightPoint, reference_force: float, polar: Polar):
-        flight_point.lift = flight_point.mass * g
+        flight_point.lift = flight_point.mass * g * self.load_factor
         flight_point.CL = flight_point.lift / reference_force
 
 
