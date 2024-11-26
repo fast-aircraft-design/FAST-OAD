@@ -70,10 +70,6 @@ class AbstractTimeStepFlightSegment(
     #: the flight path).
     time_step: float = DEFAULT_TIME_STEP
 
-    #: If True, the segment computes lift as equal to weight. If False, alpha is used
-    #: to get CL from polar.
-    lift_equals_weight: bool = True
-
     # The maximum lift coefficient for optimal climb and cruise segments
     maximum_CL: float = None
 
@@ -108,6 +104,16 @@ class AbstractTimeStepFlightSegment(
         :param flight_points: list of all currently computed flight_points
         :param target: segment target (will not contain relative values)
         :return: O. if target is attained, a non-null value otherwise
+        """
+
+    @abstractmethod
+    def compute_lift(self, flight_point: FlightPoint, reference_force: float, polar: Polar):
+        """
+        Fills values for `CL`, and `lift` in provided `flight_point`.
+
+        :param flight_point:
+        :param reference_force: CL = lift / reference_force
+        :param polar: unused here, but can be used when overloading this method
         """
 
     @abstractmethod
@@ -151,23 +157,7 @@ class AbstractTimeStepFlightSegment(
         super().complete_flight_point(flight_point)
         flight_point.engine_setting = self.engine_setting
 
-        if flight_point.altitude is not None:
-            atm = self._get_atmosphere_point(flight_point.altitude)
-            reference_force = (
-                0.5 * atm.density * flight_point.true_airspeed**2 * self.reference_area
-            )
-
-            if self.polar and reference_force:
-                modified_polar = self.polar_modifier.modify_polar(self.polar, flight_point)
-                if self.lift_equals_weight:
-                    flight_point.CL = flight_point.mass * g / reference_force
-                else:
-                    flight_point.CL = modified_polar.cl(flight_point.alpha)
-                flight_point.CD = modified_polar.cd(flight_point.CL)
-            else:
-                flight_point.CL = flight_point.CD = 0.0
-            flight_point.lift = flight_point.CL * reference_force
-            flight_point.drag = flight_point.CD * reference_force
+        self._compute_lift_and_drag(flight_point)
         self.compute_propulsion(flight_point)
         flight_point.slope_angle, flight_point.acceleration = self.get_gamma_and_acceleration(
             flight_point
@@ -278,6 +268,20 @@ class AbstractTimeStepFlightSegment(
         # The naming is not done in complete_flight_point for not naming the start point
         next_point.name = self.name
         return next_point
+
+    def _compute_lift_and_drag(self, flight_point: FlightPoint):
+        """
+        Fills values for `CL`, `CD`, `lift` and `drag` in provided `flight_point`.
+        """
+        atm = self._get_atmosphere_point(flight_point.altitude)
+        reference_force = 0.5 * atm.density * flight_point.true_airspeed**2 * self.reference_area
+        if self.polar and reference_force:
+            modified_polar = self.polar_modifier.modify_polar(self.polar, flight_point)
+            self.compute_lift(flight_point, reference_force, modified_polar)
+            flight_point.CD = modified_polar.cd(flight_point.CL)
+            flight_point.drag = flight_point.CD * reference_force
+        else:
+            flight_point.CL = flight_point.CD = flight_point.lift = flight_point.drag = 0.0
 
     def _check_values(self, flight_point: FlightPoint) -> Optional[str]:
         """
@@ -402,16 +406,35 @@ class AbstractFixedDurationSegment(AbstractTimeStepFlightSegment, ABC):
 
 
 @dataclass
-class AbstractTakeOffSegment(AbstractManualThrustSegment, ABC):
+class AbstractLiftFromWeightSegment(AbstractTimeStepFlightSegment, ABC):
+    """
+    Class for computing segments where lift is computed from aircraft weight.
+    """
+
+    def compute_lift(self, flight_point: FlightPoint, reference_force: float, polar: Polar):
+        flight_point.lift = flight_point.mass * g
+        flight_point.CL = flight_point.lift / reference_force
+
+
+@dataclass
+class AbstractLiftFromAoASegment(AbstractTimeStepFlightSegment, ABC):
+    """
+    Class for computing segments where lift is computed from aircraft angle of attack.
+    """
+
+    def compute_lift(self, flight_point: FlightPoint, reference_force: float, polar: Polar):
+        flight_point.CL = polar.cl(flight_point.alpha)
+        flight_point.lift = flight_point.CL * reference_force
+
+
+@dataclass
+class AbstractTakeOffSegment(AbstractManualThrustSegment, AbstractLiftFromAoASegment, ABC):
     """
     Class for computing takeoff segment.
     """
 
     # Default time step for this dynamic segment
     time_step: float = 0.1
-
-    # Here, AoA drives CL
-    lift_equals_weight: bool = False
 
     def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
         self.polar_modifier.ground_altitude = start.altitude

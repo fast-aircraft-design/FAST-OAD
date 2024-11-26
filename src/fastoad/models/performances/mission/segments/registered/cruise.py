@@ -26,11 +26,15 @@ from fastoad.models.performances.mission.segments.base import (
 )
 from fastoad.models.performances.mission.util import get_closest_flight_level
 from .altitude_change import AltitudeChangeSegment
-from ..time_step_base import AbstractRegulatedThrustSegment, AbstractTimeStepFlightSegment
+from ..time_step_base import (
+    AbstractRegulatedThrustSegment,
+    AbstractTimeStepFlightSegment,
+    AbstractLiftFromWeightSegment,
+)
 
 
 @dataclass
-class CruiseSegment(AbstractRegulatedThrustSegment):
+class CruiseSegment(AbstractRegulatedThrustSegment, AbstractLiftFromWeightSegment):
     """
     Class for computing cruise flight segment at constant altitude and speed.
 

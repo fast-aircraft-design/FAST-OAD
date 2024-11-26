@@ -1,6 +1,6 @@
 """Class for simulating hold segment."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -20,12 +20,15 @@ from fastoad.models.performances.mission.segments.base import (
 from fastoad.models.performances.mission.segments.time_step_base import (
     AbstractFixedDurationSegment,
     AbstractRegulatedThrustSegment,
+    AbstractLiftFromWeightSegment,
 )
 
 
 @RegisterSegment("holding")
 @dataclass
-class HoldSegment(AbstractRegulatedThrustSegment, AbstractFixedDurationSegment):
+class HoldSegment(
+    AbstractRegulatedThrustSegment, AbstractFixedDurationSegment, AbstractLiftFromWeightSegment
+):
     """
     Class for computing hold flight segment.
 
