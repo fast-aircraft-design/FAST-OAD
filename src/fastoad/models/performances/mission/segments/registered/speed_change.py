@@ -20,12 +20,15 @@ from fastoad.models.performances.mission.exceptions import FastFlightSegmentInco
 from fastoad.models.performances.mission.segments.base import (
     RegisterSegment,
 )
-from fastoad.models.performances.mission.segments.time_step_base import AbstractManualThrustSegment
+from fastoad.models.performances.mission.segments.time_step_base import (
+    AbstractManualThrustSegment,
+    AbstractLiftFromWeightSegment,
+)
 
 
 @RegisterSegment("speed_change")
 @dataclass
-class SpeedChangeSegment(AbstractManualThrustSegment):
+class SpeedChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightSegment):
     """
     Computes a flight path segment where speed is modified with no change in altitude.
 

@@ -1,6 +1,6 @@
 """Base classes for time-step segments"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -20,6 +20,7 @@ from typing import List, Optional, Tuple
 import numpy as np
 import pandas as pd
 from deprecated import deprecated
+from numpy import sin, cos
 from scipy.constants import g
 from scipy.optimize import root_scalar
 
@@ -106,6 +107,16 @@ class AbstractTimeStepFlightSegment(
         """
 
     @abstractmethod
+    def compute_lift(self, flight_point: FlightPoint, reference_force: float, polar: Polar):
+        """
+        Fills values for `CL`, and `lift` in provided `flight_point`.
+
+        :param flight_point:
+        :param reference_force: CL = lift / reference_force
+        :param polar: unused here, but can be used when overloading this method
+        """
+
+    @abstractmethod
     def compute_propulsion(self, flight_point: FlightPoint):
         """
         Computes propulsion data.
@@ -144,20 +155,9 @@ class AbstractTimeStepFlightSegment(
 
     def complete_flight_point(self, flight_point: FlightPoint):
         super().complete_flight_point(flight_point)
-        if flight_point.altitude is not None:
-            atm = self._get_atmosphere_point(flight_point.altitude)
-            reference_force = (
-                0.5 * atm.density * flight_point.true_airspeed**2 * self.reference_area
-            )
-
-            if self.polar and reference_force:
-                modified_polar = self.polar_modifier.modify_polar(self.polar, flight_point)
-                flight_point.CL = flight_point.mass * g / reference_force
-                flight_point.CD = modified_polar.cd(flight_point.CL)
-            else:
-                flight_point.CL = flight_point.CD = 0.0
-            flight_point.drag = flight_point.CD * reference_force
         flight_point.engine_setting = self.engine_setting
+
+        self._compute_lift_and_drag(flight_point)
         self.compute_propulsion(flight_point)
         flight_point.slope_angle, flight_point.acceleration = self.get_gamma_and_acceleration(
             flight_point
@@ -268,6 +268,20 @@ class AbstractTimeStepFlightSegment(
         # The naming is not done in complete_flight_point for not naming the start point
         next_point.name = self.name
         return next_point
+
+    def _compute_lift_and_drag(self, flight_point: FlightPoint):
+        """
+        Fills values for `CL`, `CD`, `lift` and `drag` in provided `flight_point`.
+        """
+        atm = self._get_atmosphere_point(flight_point.altitude)
+        reference_force = 0.5 * atm.density * flight_point.true_airspeed**2 * self.reference_area
+        if self.polar and reference_force:
+            modified_polar = self.polar_modifier.modify_polar(self.polar, flight_point)
+            self.compute_lift(flight_point, reference_force, modified_polar)
+            flight_point.CD = modified_polar.cd(flight_point.CL)
+            flight_point.drag = flight_point.CD * reference_force
+        else:
+            flight_point.CL = flight_point.CD = flight_point.lift = flight_point.drag = 0.0
 
     def _check_values(self, flight_point: FlightPoint) -> Optional[str]:
         """
@@ -392,7 +406,32 @@ class AbstractFixedDurationSegment(AbstractTimeStepFlightSegment, ABC):
 
 
 @dataclass
-class AbstractTakeOffSegment(AbstractManualThrustSegment, ABC):
+class AbstractLiftFromWeightSegment(AbstractTimeStepFlightSegment, ABC):
+    """
+    Class for computing segments where lift is computed from aircraft weight.
+    """
+
+    #: Lift is computed so it is equal to load_factor * weight
+    load_factor: float = 1.0
+
+    def compute_lift(self, flight_point: FlightPoint, reference_force: float, polar: Polar):
+        flight_point.lift = flight_point.mass * g * self.load_factor
+        flight_point.CL = flight_point.lift / reference_force
+
+
+@dataclass
+class AbstractLiftFromAoASegment(AbstractTimeStepFlightSegment, ABC):
+    """
+    Class for computing segments where lift is computed from aircraft angle of attack.
+    """
+
+    def compute_lift(self, flight_point: FlightPoint, reference_force: float, polar: Polar):
+        flight_point.CL = polar.cl(flight_point.alpha)
+        flight_point.lift = flight_point.CL * reference_force
+
+
+@dataclass
+class AbstractTakeOffSegment(AbstractManualThrustSegment, AbstractLiftFromAoASegment, ABC):
     """
     Class for computing takeoff segment.
     """
@@ -403,6 +442,29 @@ class AbstractTakeOffSegment(AbstractManualThrustSegment, ABC):
     def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
         self.polar_modifier.ground_altitude = start.altitude
         return super().compute_from_start_to_target(start, target)
+
+    def get_gamma_and_acceleration(self, flight_point: FlightPoint):
+        """
+        Redefinition : computes slope angle derivative (gamma_dot) and x-acceleration.
+        Replaces CL, CD, lift dan drag values (for ground effect and accelerated flight)
+
+        :param flight_point: parameters after propulsion model has been called
+                             (i.e. mass, thrust and drag are available)
+        """
+        thrust = flight_point.thrust
+        mass = flight_point.mass
+        airspeed = flight_point.true_airspeed
+        alpha = flight_point.alpha
+        gamma = flight_point.slope_angle
+        drag = flight_point.drag
+        lift = flight_point.lift
+
+        gamma_dot = (thrust * sin(alpha) + lift - mass * g * cos(gamma)) / mass / airspeed
+        acceleration = (thrust * cos(alpha) - drag - mass * g * sin(gamma)) / mass
+
+        flight_point.slope_angle_derivative = gamma_dot
+
+        return gamma, acceleration
 
 
 @dataclass
@@ -433,36 +495,6 @@ class AbstractGroundSegment(AbstractTakeOffSegment, ABC):
         acceleration = (thrust - drag) / mass
 
         return 0.0, acceleration
-
-    def complete_flight_point(self, flight_point: FlightPoint):
-        """
-        Computes data for provided flight point using AoA and apply polar modification if any
-
-        :param flight_point: the flight point that will be completed in-place
-        """
-        self._complete_speed_values(flight_point)
-
-        # Ground segment may force engine setting like reverse or idle
-        flight_point.engine_setting = self.engine_setting
-
-        atm = self._get_atmosphere_point(flight_point.altitude)
-        reference_force = 0.5 * atm.density * flight_point.true_airspeed**2 * self.reference_area
-
-        if self.polar:
-            alpha = flight_point.alpha
-            modified_polar = self.polar_modifier.modify_polar(self.polar, flight_point)
-            flight_point.CL = modified_polar.cl(alpha)
-            flight_point.CD = modified_polar.cd(flight_point.CL)
-        else:
-            flight_point.CL = flight_point.CD = 0.0
-
-        flight_point.drag = flight_point.CD * reference_force
-        flight_point.lift = flight_point.CL * reference_force
-
-        self.compute_propulsion(flight_point)
-        flight_point.slope_angle, flight_point.acceleration = self.get_gamma_and_acceleration(
-            flight_point
-        )
 
 
 @deprecated(

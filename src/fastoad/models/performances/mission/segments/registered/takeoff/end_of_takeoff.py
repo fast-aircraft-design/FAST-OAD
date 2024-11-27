@@ -15,9 +15,6 @@
 from dataclasses import dataclass
 from typing import List
 
-from numpy import cos, sin
-from scipy.constants import g
-
 from fastoad.model_base import FlightPoint
 from fastoad.models.performances.mission.exceptions import FastFlightSegmentIncompleteFlightPoint
 from fastoad.models.performances.mission.segments.base import RegisterSegment
@@ -60,24 +57,6 @@ class EndOfTakeoffSegment(AbstractTakeOffSegment):
         self.compute_next_gamma(next_point, previous)
         return next_point
 
-    def complete_flight_point(self, flight_point: FlightPoint):
-        """
-        Redefinition, computes data for provided flight point.
-
-        Assumes that it is already defined for time, altitude, mass,
-        ground distance and speed (TAS, EAS, or Mach).
-
-        :param flight_point: the flight point that will be completed in-place
-        """
-        flight_point.engine_setting = self.engine_setting
-
-        self._complete_speed_values(flight_point)
-
-        self.compute_propulsion(flight_point)
-
-        # Calls modified method to add gamma_dot to flight points.
-        self.get_gamma_and_acceleration(flight_point)
-
     def get_distance_to_target(
         self, flight_points: List[FlightPoint], target: FlightPoint
     ) -> float:
@@ -112,36 +91,3 @@ class EndOfTakeoffSegment(AbstractTakeOffSegment):
         next_point.slope_angle = (
             previous_point.slope_angle + time_step * previous_point.slope_angle_derivative
         )
-
-    def get_gamma_and_acceleration(self, flight_point: FlightPoint):
-        """
-        Redefinition : computes slope angle derivative (gamma_dot) and x-acceleration.
-        Replaces CL, CD, lift dan drag values (for ground effect and accelerated flight)
-
-        :param flight_point: parameters after propulsion model has been called
-                             (i.e. mass, thrust and drag are available)
-        """
-        thrust = flight_point.thrust
-        mass = flight_point.mass
-        airspeed = flight_point.true_airspeed
-        alpha = flight_point.alpha
-        gamma = flight_point.slope_angle
-
-        atm = self._get_atmosphere_point(flight_point.altitude)
-
-        modified_polar = self.polar_modifier.modify_polar(self.polar, flight_point)
-        CL = modified_polar.cl(alpha)
-        CD = modified_polar.cd(CL)
-
-        drag_aero = 0.5 * atm.density * self.reference_area * airspeed**2 * CD
-        lift = 0.5 * atm.density * self.reference_area * airspeed**2 * CL
-
-        gamma_dot = (thrust * sin(alpha) + lift - mass * g * cos(gamma)) / mass / airspeed
-        acceleration = (thrust * cos(alpha) - drag_aero - mass * g * sin(gamma)) / mass
-
-        flight_point.acceleration = acceleration
-        flight_point.slope_angle_derivative = gamma_dot
-        flight_point.drag = drag_aero
-        flight_point.lift = lift
-        flight_point.CL = CL
-        flight_point.CD = CD
