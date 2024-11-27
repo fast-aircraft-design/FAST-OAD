@@ -19,6 +19,7 @@ from os import PathLike
 from typing import Dict, List, Mapping, Optional, Union
 
 import pandas as pd
+from deprecated import deprecated
 
 from fastoad._utils.arrays import scalarize
 from fastoad.constants import EngineSetting
@@ -518,6 +519,12 @@ class MissionBuilder:
 
         return None
 
+    @deprecated(
+        version="1.8.2",
+        reason="Automated addition of taxi-out and takeoff phases will be removed in version 2.0. "
+        "Please ensure your mission definition contains a part with a target mass "
+        "(generally the takeoff mass variable).",
+    )
     def _add_default_taxi_takeoff(self, mission_name):
         definition = {
             "phases": {

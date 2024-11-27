@@ -40,7 +40,7 @@ phases:
           true_airspeed: ~V2
       - segment: mass_input
         target:
-          mass: data:mission:sizing:TOW
+          mass: ~~TOW
 
   initial_climb:
     engine_setting: takeoff
