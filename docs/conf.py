@@ -25,14 +25,16 @@
 
 import os
 import sys
+from os import environ
 
 sys.path.insert(0, os.path.abspath("../src"))
 
+# Overload apidoc options, to add "inherited-members" (which was deactivated because of a bug
+# in earlier sphinx releases)
+environ["SPHINX_APIDOC_OPTIONS"] = "members,undoc-members,inherited-members,show-inheritance"
+
 # -- Run sphinx-apidoc ------------------------------------------------------
-try:  # for Sphinx >= 1.7
-    from sphinx.ext import apidoc
-except ImportError:
-    from sphinx import apidoc
+from sphinx.ext import apidoc
 
 
 def run_apidoc(_):
