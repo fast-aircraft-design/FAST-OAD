@@ -2,6 +2,17 @@
 Changelog
 =========
 
+Version 1.8.2
+=============
+- Modified:
+    - Mission module:
+        - Automated addition of taxi-out and takeoff phases is now deprecated. (https://github.com/fast-aircraft-design/FAST-OAD/pull/574)
+        - `load_factor` parameter has been added to mission segments with weight-driven lift (https://github.com/fast-aircraft-design/FAST-OAD/pull/579).
+        - transition segment can now handle a payload change (https://github.com/fast-aircraft-design/FAST-OAD/pull/580).
+- Fixed:
+    - Minor fixes in mission module (https://github.com/fast-aircraft-design/FAST-OAD/pull/579):
+        - Lift value was generally not computed (knowing CL can be enough), though the column is always in csv files.
+        - In ClimbAndCruise segment, the target of inner climb segment could be set without guarantee the climb segment was not None.
 
 Version 1.8.1
 =============
