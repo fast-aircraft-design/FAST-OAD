@@ -389,7 +389,7 @@ last point of the flight segment will simply uses these values.
       delta_altitude:           # 35 ft above start point
         value: 35
         unit: ft
-      delta_mass: -80.0         # 80kg lost from start point
+      delta_mass: -80.0         # 80kg lost from start point (implicitly 80kg consumed fuel)
       true_airspeed: 85         # 85m/s at end of segment.
 
 Usage of a mass ratio
@@ -433,9 +433,29 @@ Typically, it will be used as last segment to compute a reserve based on the Zer
       altitude: 0.
       mach: 0.
 
+Mass loss without fuel consumption
+----------------------------------
+
+.. versionadded:: 1.8.2
+
+Using :code:`delta_mass` allows to simulate a fuel consumption equivalent to the mass loss.
+
+For cases where mass loss should be simulated without fuel consumption, it is possible to set to
+:code:`False` the parameter :code:`fuel_is_consumed`.
+
+**Example:**
+
+.. code-block:: yaml
+
+    segment: transition
+    target:
+      delta_mass: 100.
+      fuel_is_consumed: False
+
 .. seealso::
 
     Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.transition.DummyTransitionSegment`
+
 
 .. _segment-ground_speed_change:
 

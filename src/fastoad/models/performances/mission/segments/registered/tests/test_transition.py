@@ -30,11 +30,19 @@ def test_dummy_takeoff():
 
     def run():
         flight_points = dummy_takeoff.compute_from(
-            FlightPoint(time=500, altitude=0.0, mass=50000, mach=0.0, ground_distance=100.0e3)
+            FlightPoint(
+                time=500,
+                altitude=0.0,
+                mass=50000,
+                mach=0.0,
+                ground_distance=100.0e3,
+                consumed_fuel=300.0,
+            )
         )
 
         assert_allclose(flight_points.time, [500, 545])
         assert_allclose(flight_points.mass, [50000, 49900])
+        assert_allclose(flight_points.consumed_fuel, [300.0, 400.0])
         assert_allclose(flight_points.altitude, [0.0, 10.0])
         assert_allclose(flight_points.ground_distance, [100.0e3, 100.0e3])
         assert_allclose(flight_points.true_airspeed, [0.0, 50.0])
@@ -103,6 +111,32 @@ def test_dummy_reserve():
         assert_allclose(flight_points.ground_distance, [0.0, 0.0, 0.0])
         assert_allclose(flight_points.mach, [0.0, 0.0, 0.0])
         assert_allclose(flight_points.true_airspeed, [0.0, 0.0, 0.0], rtol=1.0e-4)
+
+    run()
+
+    # A second call is done to ensure first run did not modify anything (like target definition)
+    run()
+
+
+def test_payload_drop_off():
+    target = FlightPoint(
+        time=0.0,
+        mass=-3000,
+        altitude=1,
+    )
+    target.set_as_relative(["mass", "altitude"])
+
+    segment = DummyTransitionSegment(target=target, fuel_is_consumed=False)
+
+    def run():
+        flight_points = segment.compute_from(
+            FlightPoint(time=3000.0, altitude=200.0, mach=0.3, mass=55.0e3, consumed_fuel=2500.0)
+        )
+        assert_allclose(flight_points.time, [3000.0, 3000.0])
+        assert_allclose(flight_points.mass, [55000, 52000])
+        assert_allclose(flight_points.consumed_fuel, [2500, 2500])
+        assert_allclose(flight_points.altitude, [200.0, 201.0])
+        assert_allclose(flight_points.mach, [0.3, 0.3], rtol=1e-4)
 
     run()
 
