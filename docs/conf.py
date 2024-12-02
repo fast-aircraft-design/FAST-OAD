@@ -28,6 +28,7 @@ import sys
 from os import environ
 
 sys.path.insert(0, os.path.abspath("../src"))
+sys.path.insert(0, os.path.abspath("./directives"))
 
 # Overload apidoc options, to add "inherited-members" (which was deactivated because of a bug
 # in earlier sphinx releases)
@@ -73,6 +74,7 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
     "sphinxcontrib.bibtex",
+    "segment_attributes",
 ]
 bibtex_bibfiles = ["refs.bib"]
 
