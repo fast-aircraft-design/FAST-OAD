@@ -7,13 +7,39 @@ from fastoad.models.performances.mission.segments.base import RegisterSegment
 from sphinx.util.docutils import SphinxDirective
 
 
-def target_exists(document, target_name):
-    # Check if the target already exists in the document
-    for node in document.findall(nodes.target):
-        if target_name in node["ids"]:
-            return True
+# def target_exists(document, target_name):
+#     # Check if the target already exists in the document
+#     for node in document.findall(nodes.target):
+#         if target_name in node["ids"]:
+#             return True
+#
+#     return False
+#
+#
 
-    return False
+
+def check_targets(app, doctree):
+    target_data = app.env.target_data
+
+    if target_data:
+        for target_list, directive_location in target_data:
+            child_nodes = []
+            for text, target_name in target_list:
+                target_exists = app.env.ref_context.get(target_name) is not None
+                if target_exists:
+                    reference_node = nodes.reference(
+                        refuri=f"#{target_name}",
+                        text=text,
+                        internal=True,
+                    )
+                    child_nodes.append(reference_node)
+                else:
+                    # msg = f'list-segments-for: Target "{target_id}" not found.'
+                    # self.state.document.reporter.warning(msg)
+                    child_nodes.append(nodes.Text(text))
+                child_nodes.append(nodes.Text("/"))
+            child_nodes.pop()
+            directive_location += child_nodes
 
 
 class AbstractLinkList(SphinxDirective, ABC):
@@ -27,18 +53,33 @@ class AbstractLinkList(SphinxDirective, ABC):
 
     def run(self):
         child_nodes = []
-        for text, target_id in self.get_text_and_targets():
-            if target_exists(self.state.document, target_id):
-                reference_node = nodes.reference(
-                    refuri=f"#{target_id}",
-                    text=text,
-                    internal=True,
-                )
-                child_nodes.append(reference_node)
-            else:
-                msg = f'list-segments-for: Target "{target_id}" not found.'
-                self.state.document.reporter.warning(msg)
-                child_nodes.append(nodes.Text(text))
+
+        # Store the target names and their locations in the environment
+        env = self.state.document.settings.env
+        if "target_data" not in env.app:
+            env.app.target_data = []  # Initialize if not present
+
+        env.app.target_data.append((self.get_text_and_targets(), self.state_machine.node))
+
+        # Create a placeholder paragraph node
+        paragraph_node = nodes.paragraph()
+        paragraph_node += nodes.Text("Checking targets...")
+
+        return [paragraph_node]
+
+        # for text, target_id in self.get_text_and_targets():
+        #
+        #     if target_exists(self.state.document, target_id):
+        #         reference_node = nodes.reference(
+        #             refuri=f"#{target_id}",
+        #             text=text,
+        #             internal=True,
+        #         )
+        #         child_nodes.append(reference_node)
+        #     else:
+        #         msg = f'list-segments-for: Target "{target_id}" not found.'
+        #         self.state.document.reporter.warning(msg)
+        #         child_nodes.append(nodes.Text(text))
 
         return self.get_list_admonition(child_nodes)
 
@@ -123,3 +164,4 @@ class ListSegmentAttributes(AbstractLinkList):
 def setup(app):
     app.add_directive("list-segments-for", ListSegmentsForAttribute)
     app.add_directive("list-attributes-for", ListSegmentAttributes)
+    app.connect("doctree-read", check_targets)
