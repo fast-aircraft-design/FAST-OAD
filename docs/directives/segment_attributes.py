@@ -16,26 +16,6 @@ def target_exists(document, target_name):
     return False
 
 
-def get_list_admonition(header_text, content_nodes):
-    child_nodes = []
-    for node in content_nodes:
-        child_nodes.append(node)
-        child_nodes.append(nodes.Text(" / "))
-    child_nodes.pop()  # Removing the last "/"
-
-    node = nodes.admonition(
-        "",
-        nodes.title("", header_text),
-        nodes.paragraph(
-            "",
-            "",
-            *child_nodes,
-        ),
-    )
-
-    return [node]
-
-
 class AbstractLinkList(SphinxDirective, ABC):
     has_content = True
 
@@ -60,7 +40,29 @@ class AbstractLinkList(SphinxDirective, ABC):
                 self.state.document.reporter.warning(msg)
                 child_nodes.append(nodes.Text(text))
 
-        return get_list_admonition(self.header_text, child_nodes)
+        return self.get_list_admonition(child_nodes)
+
+    def _get_list_admonition(self, content_nodes):
+        child_nodes = []
+        for node in content_nodes:
+            child_nodes.append(node)
+            child_nodes.append(nodes.Text(" / "))
+        child_nodes.pop()  # Removing the last "/"
+
+        node = nodes.admonition(
+            "",
+            nodes.title(
+                "",
+                self.header_text,
+            ),
+            nodes.paragraph(
+                "",
+                "",
+                *child_nodes,
+            ),
+        )
+
+        return [node]
 
 
 class ListSegmentsForAttribute(AbstractLinkList):
