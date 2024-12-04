@@ -74,7 +74,7 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
     "sphinxcontrib.bibtex",
-    "list_segments",
+    "segment_attributes",
 ]
 bibtex_bibfiles = ["refs.bib"]
 

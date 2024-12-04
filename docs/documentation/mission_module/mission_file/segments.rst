@@ -47,6 +47,8 @@ Available segments are:
 
 .. versionadded:: 1.4.0
 
+.. list-attributes-for:: start
+
 :code:`start` is a special segment to be used at the beginning of the mission definition to
 specify the starting point of the mission, preferably by defining variables so it can be
 controlled from FAST-OAD input file.
@@ -105,6 +107,8 @@ With no :code:`start` specified, the mission is assumed to start at altitude 0.0
 
 .. versionadded:: 1.4.0
 
+.. list-attributes-for:: mass_input
+
 The `start segment`_ allows to define aircraft mass at the beginning of the mission, but it
 is sometimes needed to define the aircraft mass at some point in the mission. The typical
 example would be the need to specify a takeoff weight that is expected to be achieved after the
@@ -148,6 +152,8 @@ achieved at the specify instant in the mission by setting the start mass input a
 :code:`speed_change` segment
 ============================
 
+.. list-attributes-for:: speed_change
+
 A :code:`speed_change` segment simulates an acceleration or deceleration flight part, at constant
 altitude and thrust rate. It ends when the target speed (mach, true_airspeed or
 equivalent_airspeed) is reached.
@@ -175,6 +181,8 @@ equivalent_airspeed) is reached.
 
 :code:`altitude_change` segment
 ===============================
+
+.. list-attributes-for:: altitude_change
 
 An :code:`altitude_change` segment simulates a climb or descent flight part at constant thrust rate.
 Typically, it ends when the target altitude is reached.
@@ -241,6 +249,8 @@ Mach 0.8 while keeping equivalent_airspeed constant).
 :code:`cruise` segment
 ======================
 
+.. list-attributes-for:: cruise
+
 A :code:`cruise` segment simulates a flight part at constant speed and altitude, and regulated
 thrust rate (drag is compensated).
 
@@ -288,6 +298,8 @@ prepending climb, if any).
 :code:`optimal_cruise` segment
 ==============================
 
+.. list-attributes-for:: optimal_cruise
+
 An :code:`optimal_cruise` segment simulates a cruise climb, i.e. a cruise where the aircraft
 climbs gradually to keep being at altitude of maximum lift/drag ratio.
 
@@ -323,6 +335,8 @@ Such segment will be implemented in the future.*
 :code:`holding` segment
 =======================
 
+.. list-attributes-for:: holding
+
 A :code:`holding` segment simulates a flight part at constant speed and altitude, and regulated
 thrust rate (drag is compensated). It ends when the target time is covered.
 
@@ -348,6 +362,8 @@ thrust rate (drag is compensated). It ends when the target time is covered.
 :code:`taxi` segment
 ====================
 
+.. list-attributes-for:: taxi
+
 A :code:`taxi` segment simulates the mission parts between gate and takeoff or landing, at constant
 thrust rate. It ends when the target time is covered.
 
@@ -370,6 +386,8 @@ thrust rate. It ends when the target time is covered.
 
 :code:`transition` segment
 ==========================
+
+.. list-attributes-for:: taxi
 
 A :code:`transition` segment is intended to "fill the gaps" when some flight part is not available
 for computation or is needed to be assessed without spending CPU time.
