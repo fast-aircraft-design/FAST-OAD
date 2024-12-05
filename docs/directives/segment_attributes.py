@@ -7,17 +7,6 @@ from fastoad.models.performances.mission.segments.base import RegisterSegment
 from sphinx.util.docutils import SphinxDirective
 
 
-# def target_exists(document, target_name):
-#     # Check if the target already exists in the document
-#     for node in document.findall(nodes.target):
-#         if target_name in node["ids"]:
-#             return True
-#
-#     return False
-#
-#
-
-
 def check_targets(app, doctree):
     if not hasattr(app.env, "target_data"):
         return
@@ -28,20 +17,7 @@ def check_targets(app, doctree):
             if len(directive_location.children) > 0:
                 continue
             child_nodes = []
-            print("AAAA", target_list, directive_location, "BBBBB")
             for text, target_name in target_list:
-                # def myprint(d, path=""):
-                #     for k, v in d.items():
-                #         if isinstance(k, str) and k.startswith("segment-parameter"):
-                #             print(f"key {k} in {path}")
-                #         new_path = f"{path}.{k}"
-                #         if isinstance(v, dict):
-                #             myprint(v, new_path)
-                #         elif isinstance(v, str) and v.startswith("segment-parameter"):
-                #             print(f"value {v} in {path}")
-                #
-                # myprint(app.env.domaindata)
-
                 target_exists = target_name in app.env.domaindata["std"]["labels"]
                 if target_exists:
                     reference_node = nodes.reference(
@@ -51,12 +27,11 @@ def check_targets(app, doctree):
                     )
                     child_nodes.append(reference_node)
                 else:
-                    # msg = f'list-segments-for: Target "{target_id}" not found.'
-                    # self.state.document.reporter.warning(msg)
+                    msg = f'Target "{target_name}" not found. Using simple text.'
+                    doctree.reporter.warning(msg)
                     child_nodes.append(nodes.Text(text))
                 child_nodes.append(nodes.Text(" / "))
             child_nodes.pop()
-            print("ZZZZZ", child_nodes)
             directive_location += child_nodes
 
 
@@ -70,8 +45,6 @@ class AbstractLinkList(SphinxDirective, ABC):
         pass
 
     def run(self):
-        child_nodes = []
-
         # Store the target names and their locations in the environment
         env = self.state.document.settings.env
         if not hasattr(env, "target_data"):
@@ -79,53 +52,15 @@ class AbstractLinkList(SphinxDirective, ABC):
 
         # Create a placeholder paragraph node
         place_holder = nodes.paragraph()
-        paragraph_node = nodes.admonition(
+
+        admonition_node = nodes.admonition(
             "",
             nodes.title("", self.header_text),
             place_holder,
         )
-        # paragraph_node += nodes.Text("Checking targets...")
         env.app.env.target_data.append((self.get_text_and_targets(), place_holder))
 
-        return [paragraph_node]
-
-        # for text, target_id in self.get_text_and_targets():
-        #
-        #     if target_exists(self.state.document, target_id):
-        #         reference_node = nodes.reference(
-        #             refuri=f"#{target_id}",
-        #             text=text,
-        #             internal=True,
-        #         )
-        #         child_nodes.append(reference_node)
-        #     else:
-        #         msg = f'list-segments-for: Target "{target_id}" not found.'
-        #         self.state.document.reporter.warning(msg)
-        #         child_nodes.append(nodes.Text(text))
-
-        return self.get_list_admonition(child_nodes)
-
-    def _get_list_admonition(self, content_nodes):
-        child_nodes = []
-        for node in content_nodes:
-            child_nodes.append(node)
-            child_nodes.append(nodes.Text(" / "))
-        child_nodes.pop()  # Removing the last "/"
-
-        node = nodes.admonition(
-            "",
-            nodes.title(
-                "",
-                self.header_text,
-            ),
-            nodes.paragraph(
-                "",
-                "",
-                *child_nodes,
-            ),
-        )
-
-        return [node]
+        return [admonition_node]
 
 
 class ListSegmentsForAttribute(AbstractLinkList):
