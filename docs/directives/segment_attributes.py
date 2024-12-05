@@ -19,13 +19,30 @@ from sphinx.util.docutils import SphinxDirective
 
 
 def check_targets(app, doctree):
+    if not hasattr(app.env, "target_data"):
+        return
     target_data = app.env.target_data
 
     if target_data:
         for target_list, directive_location in target_data:
+            if len(directive_location.children) > 0:
+                continue
             child_nodes = []
+            print("AAAA", target_list, directive_location, "BBBBB")
             for text, target_name in target_list:
-                target_exists = app.env.ref_context.get(target_name) is not None
+                # def myprint(d, path=""):
+                #     for k, v in d.items():
+                #         if isinstance(k, str) and k.startswith("segment-parameter"):
+                #             print(f"key {k} in {path}")
+                #         new_path = f"{path}.{k}"
+                #         if isinstance(v, dict):
+                #             myprint(v, new_path)
+                #         elif isinstance(v, str) and v.startswith("segment-parameter"):
+                #             print(f"value {v} in {path}")
+                #
+                # myprint(app.env.domaindata)
+
+                target_exists = target_name in app.env.domaindata["std"]["labels"]
                 if target_exists:
                     reference_node = nodes.reference(
                         refuri=f"#{target_name}",
@@ -37,8 +54,9 @@ def check_targets(app, doctree):
                     # msg = f'list-segments-for: Target "{target_id}" not found.'
                     # self.state.document.reporter.warning(msg)
                     child_nodes.append(nodes.Text(text))
-                child_nodes.append(nodes.Text("/"))
+                child_nodes.append(nodes.Text(" / "))
             child_nodes.pop()
+            print("ZZZZZ", child_nodes)
             directive_location += child_nodes
 
 
@@ -56,14 +74,18 @@ class AbstractLinkList(SphinxDirective, ABC):
 
         # Store the target names and their locations in the environment
         env = self.state.document.settings.env
-        if "target_data" not in env.app:
-            env.app.target_data = []  # Initialize if not present
-
-        env.app.target_data.append((self.get_text_and_targets(), self.state_machine.node))
+        if not hasattr(env, "target_data"):
+            env.target_data = []  # Initialize if not present
 
         # Create a placeholder paragraph node
-        paragraph_node = nodes.paragraph()
-        paragraph_node += nodes.Text("Checking targets...")
+        place_holder = nodes.paragraph()
+        paragraph_node = nodes.admonition(
+            "",
+            nodes.title("", self.header_text),
+            place_holder,
+        )
+        # paragraph_node += nodes.Text("Checking targets...")
+        env.app.env.target_data.append((self.get_text_and_targets(), place_holder))
 
         return [paragraph_node]
 
