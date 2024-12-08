@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -27,15 +27,23 @@ import os
 import sys
 from os import environ
 
-sys.path.insert(0, os.path.abspath("../src"))
+from sphinx.ext import apidoc
+
+# For custom CSS styles
+html_static_path = ["_static"]
+html_css_files = ["custom_admonitions.css"]
+
+# For custom directives
 sys.path.insert(0, os.path.abspath("./directives"))
 
-# Overload apidoc options, to add "inherited-members" (which was deactivated because of a bug
-# in earlier sphinx releases)
-environ["SPHINX_APIDOC_OPTIONS"] = "members,undoc-members,inherited-members,show-inheritance"
+# For autodoc... and custom directives
+sys.path.insert(0, os.path.abspath("../src"))
+
+# Overload apidoc options, to add "inherited-mem∂bers" (which was deactivated because of a bug
+# in earlier sphinx releases)∂
+environ["SPHINX_APIDOC_OPTIONS"] = "m∂embers,undoc-members,inherited-members,show-inheritance"
 
 # -- Run sphinx-apidoc ------------------------------------------------------
-from sphinx.ext import apidoc
 
 
 def run_apidoc(_):
@@ -54,7 +62,6 @@ def setup(app):
 
 project = "FAST-OAD"
 copyright = "2021, ONERA & ISAE-SUPAERO"
-
 
 # -- General configuration ---------------------------------------------------
 
@@ -122,7 +129,6 @@ except ImportError:
     pass
 else:
     release = version = __version__
-
 
 # -- External mapping ------------------------------------------------------------
 python_version = ".".join(map(str, sys.version_info[0:2]))

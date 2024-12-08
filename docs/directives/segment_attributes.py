@@ -1,38 +1,24 @@
+#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
+#  FAST is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 from abc import ABC, abstractmethod
 from dataclasses import fields
 from typing import List, Tuple
 
 from docutils import nodes
-from fastoad.models.performances.mission.segments.base import RegisterSegment
 from sphinx.util.docutils import SphinxDirective
 
-
-def check_targets(app, doctree):
-    if not hasattr(app.env, "target_data"):
-        return
-    target_data = app.env.target_data
-
-    if target_data:
-        for target_list, directive_location in target_data:
-            if len(directive_location.children) > 0:
-                continue
-            child_nodes = []
-            for text, target_name in target_list:
-                target_exists = target_name in app.env.domaindata["std"]["labels"]
-                if target_exists:
-                    reference_node = nodes.reference(
-                        refuri=f"#{target_name}",
-                        text=text,
-                        internal=True,
-                    )
-                    child_nodes.append(reference_node)
-                else:
-                    msg = f'Target "{target_name}" not found. Using simple text.'
-                    doctree.reporter.warning(msg)
-                    child_nodes.append(nodes.Text(text))
-                child_nodes.append(nodes.Text(" / "))
-            child_nodes.pop()
-            directive_location += child_nodes
+from fastoad.models.performances.mission.segments.base import RegisterSegment
 
 
 class AbstractLinkList(SphinxDirective, ABC):
@@ -42,9 +28,21 @@ class AbstractLinkList(SphinxDirective, ABC):
 
     @abstractmethod
     def get_text_and_targets(self) -> List[Tuple[str, str]]:
+        """
+        :return: a list of tuples for future hyperlinks (displayed text, rst target)
+        """
         pass
 
     def run(self):
+        # Rationale: we want the admonition content to be an enumeration
+        # of "keywords" that will link to their definition... if the target existes in the rst file.
+        # But at this point in the process, the check can be done only on rst content parsed before
+        # the point of the directive.
+        # Then we need to put a placeholder (an empty paragraph node) that will be filled later, once all rst
+        # content has been processed.
+        # For this, we populate the custom field env.target_data with the needed information, the result of
+        # self.get_text_and_targets(), associated with the created placeholder.
+
         # Store the target names and their locations in the environment
         env = self.state.document.settings.env
         if not hasattr(env, "target_data"):
@@ -58,6 +56,12 @@ class AbstractLinkList(SphinxDirective, ABC):
             nodes.title("", self.header_text),
             place_holder,
         )
+
+        # HTML class name for CSS styling
+        admonition_node["classes"].append("admonition")
+        admonition_node["classes"].append(self.header_text.lower().replace(" ", "-"))
+
+        # Registering data for later processing
         env.app.env.target_data.append((self.get_text_and_targets(), place_holder))
 
         return [admonition_node]
@@ -75,7 +79,7 @@ class ListSegmentsForAttribute(AbstractLinkList):
         .. _segment-ground-speed-change:
     """
 
-    header_text = "Applies_to"
+    header_text = "Applies to"
 
     def get_text_and_targets(self):
         attribute_name = self.content[0].strip()
@@ -118,7 +122,45 @@ class ListSegmentAttributes(AbstractLinkList):
         ]
 
 
+def check_targets(app, doctree):
+    """
+    Executed after all rst files have been parsed.
+
+    Populates all created placeholders with list of proper text/hyperlinks
+    """
+
+    # Retrieving the ènv.target_data populated in the directives.
+    if not hasattr(app.env, "target_data"):
+        return
+    target_data = app.env.target_data
+
+    if target_data:
+        for target_list, directive_location in target_data:
+            if len(directive_location.children) > 0:
+                continue
+            child_nodes = []
+            for text, target_name in target_list:
+                target_exists = target_name in app.env.domaindata["std"]["labels"]
+                if target_exists:
+                    reference_node = nodes.reference(
+                        refuri=f"#{target_name}",
+                        text=text,
+                        internal=True,
+                    )
+                    child_nodes.append(reference_node)
+                else:
+                    msg = f'Target "{target_name}" not found. Using simple text.'
+                    doctree.reporter.warning(msg)
+                    child_nodes.append(nodes.Text(text))
+                child_nodes.append(nodes.Text(" / "))
+            child_nodes.pop()  # Removing the trailing "/" (was the easiest way I found)
+
+            directive_location += child_nodes
+
+
 def setup(app):
     app.add_directive("list-segments-for", ListSegmentsForAttribute)
     app.add_directive("list-attributes-for", ListSegmentAttributes)
+
+    # Here we connect the method that will run after first parsing
     app.connect("doctree-read", check_targets)
