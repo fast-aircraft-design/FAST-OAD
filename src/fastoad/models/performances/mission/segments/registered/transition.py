@@ -49,14 +49,18 @@ class DummyTransitionSegment(AbstractFlightSegment):
     #: of segment.
     reserve_mass_ratio: float = 0.0
 
+    #: If False, the mass variation during the segment is not considered as a fuel consumption.
+    #:  (True by default
+    fuel_is_consumed: bool = True
+
     def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
         end = deepcopy(target)
         end.name = self.name
-
+        end.consumed_fuel = start.consumed_fuel
         if end.mass is None:
             self.consume_fuel(end, previous=start, mass_ratio=self.mass_ratio)
-        else:
-            end.consumed_fuel = start.consumed_fuel + start.mass - end.mass
+        elif self.fuel_is_consumed:
+            end.consumed_fuel += start.mass - end.mass
 
         self.complete_flight_point_from(end, start)
         self.complete_flight_point(end)
