@@ -433,15 +433,15 @@ Typically, it will be used as last segment to compute a reserve based on the Zer
       altitude: 0.
       mach: 0.
 
-Mass loss without fuel consumption
+Mass change without fuel consumption
 ----------------------------------
 
 .. versionadded:: 1.8.2
 
 Using :code:`delta_mass` allows to simulate a fuel consumption equivalent to the mass loss.
 
-For cases where mass loss should be simulated without fuel consumption, it is possible to set to
-:code:`False` the parameter :code:`fuel_is_consumed`.
+For cases where mass variation should be simulated without fuel consumption, it is possible to set
+to :code:`False` the parameter :code:`fuel_is_consumed`.
 
 **Example:**
 
@@ -449,7 +449,7 @@ For cases where mass loss should be simulated without fuel consumption, it is po
 
     segment: transition
     target:
-      delta_mass: 100.
+      delta_mass: -100.
       fuel_is_consumed: False
 
 .. seealso::
