@@ -17,21 +17,16 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-# -- Path setup --------------------------------------------------------------
-
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-
 import os
 import sys
 from os import environ
 
 from sphinx.ext import apidoc
 
-# For custom CSS styles
-html_static_path = ["_static"]
-html_css_files = ["custom_admonitions.css"]
+# -- Path setup --------------------------------------------------------------
+# If extensions (or modules to document with autodoc) are in another directory,
+# add these directories to sys.path here. If the directory is relative to the
+# documentation root, use os.path.abspath to make it absolute, like shown here.
 
 # For custom directives
 sys.path.insert(0, os.path.abspath("./directives"))
@@ -39,13 +34,12 @@ sys.path.insert(0, os.path.abspath("./directives"))
 # For autodoc... and custom directives
 sys.path.insert(0, os.path.abspath("../src"))
 
-# Overload apidoc options, to add "inherited-mem∂bers" (which was deactivated because of a bug
-# in earlier sphinx releases)∂
+# Overload apidoc options, to add "inherited-members" (which was deactivated because of a bug
+# in earlier sphinx releases)
 environ["SPHINX_APIDOC_OPTIONS"] = "m∂embers,undoc-members,inherited-members,show-inheritance"
 
+
 # -- Run sphinx-apidoc ------------------------------------------------------
-
-
 def run_apidoc(_):
     sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
     cur_dir = os.path.abspath(os.path.dirname(__file__))
@@ -59,7 +53,6 @@ def setup(app):
 
 
 # -- Project information -----------------------------------------------------
-
 project = "FAST-OAD"
 copyright = "2021, ONERA & ISAE-SUPAERO"
 
@@ -123,6 +116,10 @@ html_theme = "sphinx_rtd_theme"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
+# For custom CSS styles (expected in _static/ folder )
+html_css_files = ["custom_admonitions.css"]
+
+# To be noted: this import has to take place after the modification of sys.path
 try:
     from fastoad import __version__
 except ImportError:
