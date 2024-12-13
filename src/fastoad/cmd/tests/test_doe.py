@@ -14,6 +14,8 @@
 import shutil
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
 import pytest
 
 from fastoad.openmdao.variables import VariableList
@@ -131,7 +133,7 @@ def test_generate_doe_full_factorial(cleanup_DOEVariable, cleanup, sample_variab
         destination_folder=RESULTS_FOLDER_PATH,
     )
 
-    doe_points = config.generate_doe(sample_count=5)
+    doe_points = config.sampling_doe(sample_count=5)
 
     # Test that the return type is a list of VariableList instances
     assert isinstance(doe_points, list)
@@ -147,8 +149,92 @@ def test_generate_doe_lhs_level_count(cleanup_DOEVariable, cleanup, sample_varia
         sampling_options={"level_count": 3, "use_level": 2},
     )
 
-    doe_points = config.generate_doe(sample_count=5)
+    doe_points = config.sampling_doe(sample_count=5)
 
     # Test that the return type is a list of VariableList instances
     assert isinstance(doe_points, list)
     assert all(isinstance(item, VariableList) for item in doe_points)
+
+
+def test_write_doe_inputs_single_level(cleanup_DOEVariable, cleanup, sample_variables):
+    """Test _write_doe_inputs for single-level DOE points using sample variables."""
+    destination_folder = RESULTS_FOLDER_PATH / "write_doe_inputs_single_level"
+    destination_folder.mkdir(parents=True, exist_ok=True)
+
+    # Create DOEConfig instance with sample_variables and start the sampling
+    doe_config = DOEConfig(
+        sampling_method="LHS",
+        variables=sample_variables,
+        destination_folder=destination_folder,
+        seed_value=12,
+    )
+    _ = doe_config.sampling_doe(sample_count=5)
+
+    # Act
+    doe_config._write_doe_inputs()
+
+    # Assert
+    output_file = destination_folder / "DOE_inputs.csv"
+    assert output_file.exists(), "The output CSV file was not created."
+    written_data = pd.read_csv(output_file, sep=";", quotechar="|")
+    expected_data = pd.DataFrame(
+        {
+            "ID": [0, 1, 2, 3, 4],
+            "Var1": [
+                19.913898672550232,
+                12.526630030370269,
+                17.801429708234025,
+                14.02914992497084,
+                10.308325684759344,
+            ],
+            "Var2_pseudo": [
+                55.77441864271215,
+                48.98009939303081,
+                50.567478786760596,
+                53.56684285525269,
+                53.33749401619977,
+            ],
+            "Var3": [
+                19.913898672550232,
+                12.526630030370269,
+                17.801429708234025,
+                14.02914992497084,
+                10.308325684759344,
+            ],
+        }
+    ).set_index("ID")
+    pd.testing.assert_frame_equal(written_data.set_index("ID"), expected_data)
+
+
+def test_write_doe_inputs_multilevel(cleanup_DOEVariable, cleanup, sample_variables):
+    """Test _write_doe_inputs for multi-level DOE points using sample variables."""
+    destination_folder = RESULTS_FOLDER_PATH / "write_doe_inputs_multilevel"
+    destination_folder.mkdir(parents=True, exist_ok=True)
+
+    test_level = 1
+
+    # Create DOEConfig instance with sample_variables and start the sampling
+    doe_config = DOEConfig(
+        sampling_method="LHS",
+        variables=sample_variables,
+        destination_folder=destination_folder,
+        seed_value=12,
+        sampling_options={"level_count": 3, "use_level": test_level},
+    )
+    _ = doe_config.sampling_doe(sample_count=5)
+
+    # Act
+    doe_config._write_doe_inputs()
+
+    # Assert
+    output_file = destination_folder / f"DOE_inputs_3D_level{test_level}.csv"
+
+    assert output_file.exists()
+
+    written_data = pd.read_csv(output_file, sep=";", quotechar="|").drop("ID", axis=1)
+
+    expected_data = doe_config.doe_points_df
+
+    assert np.allclose(
+        written_data.to_numpy(), expected_data.to_numpy(), atol=1e-4, rtol=1e-4
+    )  # We are not checking using assert_frame_equal because the column name of the output file uses pseudo, while the VariableList returned by sampling_doe no
