@@ -1,3 +1,7 @@
+"""
+Sphinx directives for listing the paramaters of a segment, and the segments that use a
+parameter.
+"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -22,6 +26,14 @@ from fastoad.models.performances.mission.segments.base import RegisterSegment
 
 
 class AbstractLinkList(SphinxDirective, ABC):
+    """
+    Abstract class for producing an admonition that contains a list of keywords and
+    these keywords will be hyperlinks if the associated target exists.
+
+    Method .get_text_and_targets() must be implemented to provide the list
+    of tuples (keyword, target).
+    """
+
     has_content = True
 
     header_text = None
@@ -31,17 +43,16 @@ class AbstractLinkList(SphinxDirective, ABC):
         """
         :return: a list of tuples for future hyperlinks (displayed text, rst target)
         """
-        pass
 
     def run(self):
-        # Rationale: we want the admonition content to be an enumeration
-        # of "keywords" that will link to their definition... if the target existes in the rst file.
-        # But at this point in the process, the check can be done only on rst content parsed before
-        # the point of the directive.
-        # Then we need to put a placeholder (an empty paragraph node) that will be filled later, once all rst
-        # content has been processed.
-        # For this, we populate the custom field env.target_data with the needed information, the result of
-        # self.get_text_and_targets(), associated with the created placeholder.
+        # Rationale: we want the admonition content to be an enumeration of "keywords" that will
+        # link to their definition... if the target existes in the rst file.
+        # But at this point in the process, the check can be done only on rst content parsed
+        # before the point of the directive.
+        # Then we need to put a placeholder (an empty paragraph node) that will be filled later,
+        # once all rst content has been processed.
+        # For this, we populate the custom field env.target_data with the needed information,
+        # the result of self.get_text_and_targets(), associated with the created placeholder.
 
         # Store the target names and their locations in the environment
         env = self.state.document.settings.env
@@ -134,31 +145,41 @@ def check_targets(app, doctree):
         return
     target_data = app.env.target_data
 
-    if target_data:
-        for target_list, directive_location in target_data:
-            if len(directive_location.children) > 0:
-                continue
-            child_nodes = []
-            for text, target_name in target_list:
-                target_exists = target_name in app.env.domaindata["std"]["labels"]
-                if target_exists:
-                    reference_node = nodes.reference(
-                        refuri=f"#{target_name}",
-                        text=text,
-                        internal=True,
-                    )
-                    child_nodes.append(reference_node)
-                else:
-                    msg = f'Target "{target_name}" not found. Using simple text.'
-                    doctree.reporter.warning(msg)
-                    child_nodes.append(nodes.Text(text))
-                child_nodes.append(nodes.Text(" / "))
-            child_nodes.pop()  # Removing the trailing "/" (was the easiest way I found)
+    for target_list, directive_location in target_data:
+        if len(directive_location.children) > 0:
+            # If directive_location already has children, it has already been processed,
+            # there is nothing to do.
+            continue
 
-            directive_location += child_nodes
+        child_nodes = _generate_hyperlink_list(app, doctree, target_list)
+
+        directive_location += child_nodes
+
+
+def _generate_hyperlink_list(app, doctree, target_list):
+    child_nodes = []
+    for text, target_name in target_list:
+        target_exists = target_name in app.env.domaindata["std"]["labels"]
+        if target_exists:
+            reference_node = nodes.reference(
+                refuri=f"#{target_name}",
+                text=text,
+                internal=True,
+            )
+            child_nodes.append(reference_node)
+        else:
+            msg = f'Target "{target_name}" not found. Using simple text.'
+            doctree.reporter.warning(msg)
+            child_nodes.append(nodes.Text(text))
+        child_nodes.append(nodes.Text(" / "))
+    child_nodes.pop()  # Removing the trailing "/" (was the easiest way I found)
+    return child_nodes
 
 
 def setup(app):
+    """
+    Sphinx registering.
+    """
     app.add_directive("list-segments-for", ListSegmentsForAttribute)
     app.add_directive("list-attributes-for", ListSegmentAttributes)
 
