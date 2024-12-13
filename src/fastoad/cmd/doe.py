@@ -155,7 +155,8 @@ class DOEConfig:
                     doe_points_upd = point_list[:, self.variables_binding]
                     doe_points_df_nest = pd.DataFrame(doe_points_upd, columns=self.var_names_pseudo)
                     doe_points_df_nest.to_csv(
-                        self.destination_folder / file_name + f"_{level_count}D_level{i}" + ".csv",
+                        self.destination_folder
+                        / (file_name + f"_{level_count}D_level{i}" + ".csv"),
                         index_label="ID",
                         sep=";",
                         quotechar="|",
@@ -165,7 +166,7 @@ class DOEConfig:
                     columns=self.var_names_pseudo_mapping
                 )  # Use pseudos for outputs
                 doe_points.to_csv(
-                    self.destination_folder / file_name + ".csv",
+                    self.destination_folder / (file_name + ".csv"),
                     index_label="ID",
                     sep=";",
                     quotechar="|",
