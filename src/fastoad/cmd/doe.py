@@ -106,9 +106,6 @@ class DOEConfig:
     def _handle_full_factorial(self):
         return samp.FullFactorial(xlimits=self.bounds)
 
-    def _handle_random(self):
-        return samp.Random(xlimits=self.bounds, random_state=self.seed_value)
-
     def _print_sampling_info(self):
         pass
 

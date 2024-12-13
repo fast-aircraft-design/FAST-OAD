@@ -138,21 +138,6 @@ def test_generate_doe_full_factorial(cleanup_DOEVariable, cleanup, sample_variab
     assert all(isinstance(item, VariableList) for item in doe_points)
 
 
-def test_generate_doe_random(cleanup_DOEVariable, cleanup, sample_variables):
-    """Test DOEConfig generate_doe for Random method."""
-    config = DOEConfig(
-        sampling_method="Random",
-        variables=sample_variables,
-        destination_folder=RESULTS_FOLDER_PATH,
-    )
-
-    doe_points = config.generate_doe(sample_count=5)
-
-    # Test that the return type is a list of VariableList instances
-    assert isinstance(doe_points, list)
-    assert all(isinstance(item, VariableList) for item in doe_points)
-
-
 def test_generate_doe_lhs_level_count(cleanup_DOEVariable, cleanup, sample_variables):
     """Test DOEConfig generate_doe for LHS method missing level_count."""
     config = DOEConfig(
