@@ -260,6 +260,9 @@
               "items": {
                 "oneOf": [
                   {
+                    "$ref": "#/definitions/mission_route"
+                  },
+                  {
                     "$ref": "#/definitions/mission_phase"
                   },
                   {

@@ -237,8 +237,42 @@ def test_mission_group_without_fuel_adjustment(cleanup, with_dummy_plugin_2):
         problem["data:mission:operational:consumed_fuel_before_input_weight"], 195.4, atol=0.1
     )
     assert_allclose(problem["data:mission:operational:ZFW"], 55000.0, atol=1.0)
+    assert_allclose(problem["data:mission:operational:fuel"], 6403.0, atol=1.0)
     assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6590.0, atol=1.0)
     assert_allclose(problem["data:mission:operational:block_fuel"], 15195.0, atol=1.0)
+
+
+def test_mission_groupe_with_route_in_phase(cleanup, with_dummy_plugin_2):
+    input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
+    ivc = DataFile(input_file_path).to_ivc()
+
+    problem = run_system(
+        OMMission(
+            propulsion_id="test.wrapper.propulsion.dummy_engine",
+            out_file=RESULTS_FOLDER_PATH / "with_a_route_in_a_phase.csv",
+            use_initializer_iteration=False,
+            mission_file_path=DATA_FOLDER_PATH / "test_mission.yml",
+            mission_name="with_a_route_in_a_phase",
+            adjust_fuel=False,
+            reference_area_variable="data:geometry:aircraft:reference_area",
+            use_inner_solvers=True,
+        ),
+        ivc,
+    )
+    assert_allclose(
+        problem["data:mission:with_a_route_in_a_phase:consumed_fuel_before_input_weight"],
+        195.4,
+        atol=0.1,
+    )
+
+    assert_allclose(problem["data:mission:with_a_route_in_a_phase:ZFW"], 55000.0, atol=1.0)
+    assert_allclose(
+        problem["data:mission:with_a_route_in_a_phase:all_flight:fuel"], 6403.0, atol=1.0
+    )
+    assert_allclose(
+        problem["data:mission:with_a_route_in_a_phase:needed_block_fuel"], 6595.0, atol=1.0
+    )
+    assert_allclose(problem["data:mission:with_a_route_in_a_phase:block_fuel"], 15195.0, atol=1.0)
 
 
 def test_mission_group_breguet_without_fuel_adjustment(cleanup, with_dummy_plugin_2):

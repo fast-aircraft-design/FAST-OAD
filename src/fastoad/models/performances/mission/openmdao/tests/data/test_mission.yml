@@ -166,6 +166,12 @@ phases:
             value: 22000.
             unit: ft
           equivalent_airspeed: constant
+  all_flight:
+    parts:
+      - phase: start
+      - phase: taxi_out
+      - phase: takeoff
+      - route: main_route
 
 routes:
   main_route:
@@ -262,3 +268,9 @@ missions:
       - phase: initial_climb
       - phase: climb
       - phase: descent
+  with_a_route_in_a_phase:
+    parts:
+      - phase: all_flight
+      - reserve:
+          ref: all_flight
+          multiplier: 0.03

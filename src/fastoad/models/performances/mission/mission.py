@@ -91,8 +91,8 @@ class Mission(FlightSequence):
 
         return reserve_points.iloc[0].mass - reserve_points.iloc[-1].mass
 
-    def _get_consumed_mass_in_route(self, route_name: str) -> float:
-        route = [part for part in self if part.name == route_name][0]
+    def _get_consumed_mass_in_mission_part(self, part_name: str) -> float:
+        route = [part for part in self if part.name == part_name][0]
         route_idx = self.index(route)
         route_points = self.part_flight_points[route_idx]
         return route_points.mass.iloc[0] - route_points.mass.iloc[-1]
@@ -105,7 +105,9 @@ class Mission(FlightSequence):
             else:
                 base_route_name = self.reserve_base_route_name
 
-            reserve_fuel = self.reserve_ratio * self._get_consumed_mass_in_route(base_route_name)
+            reserve_fuel = self.reserve_ratio * self._get_consumed_mass_in_mission_part(
+                base_route_name
+            )
             last_flight_point = flight_points.iloc[-1]
 
             after_reserve_point = deepcopy(last_flight_point)

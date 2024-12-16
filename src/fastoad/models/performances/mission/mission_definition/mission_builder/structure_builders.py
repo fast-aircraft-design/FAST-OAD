@@ -324,6 +324,10 @@ class PhaseStructureBuilder(AbstractStructureBuilder, structure_type=PHASE_TAG):
                 builder = PhaseStructureBuilder(
                     definition, part[PHASE_TAG], self.qualified_name, self.variable_prefix
                 )
+            elif ROUTE_TAG in part:
+                builder = RouteStructureBuilder(
+                    definition, part[ROUTE_TAG], self.qualified_name, self.variable_prefix
+                )
             elif SEGMENT_TAG in part:
                 builder = SegmentStructureBuilder(
                     part, "", self.qualified_name, self.variable_prefix

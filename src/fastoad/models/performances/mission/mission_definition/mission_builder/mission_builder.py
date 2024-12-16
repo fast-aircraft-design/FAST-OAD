@@ -414,6 +414,8 @@ class MissionBuilder:
         for part_structure in phase_structure[PARTS_TAG]:
             if part_structure[TYPE_TAG] == PHASE_TAG:
                 flight_part = self._build_phase(part_structure, part_kwargs)
+            elif part_structure[TYPE_TAG] == ROUTE_TAG:
+                flight_part = self._build_route(part_structure, part_kwargs)
             else:
                 flight_part = self._build_segment(part_structure, part_kwargs)
             phase.append(flight_part)

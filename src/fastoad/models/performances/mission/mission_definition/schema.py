@@ -116,12 +116,14 @@ class MissionDefinition(OrderedDict):
             for part in mission_definition[PARTS_TAG]:
                 part_type, value = tuple(*part.items())
                 if part_type == PHASE_TAG:
-                    Ensure(value).is_in(content[PHASE_DEFINITIONS_TAG].keys())
+                    Ensure(value).is_in(content[PHASE_DEFINITIONS_TAG])
                 elif part_type == ROUTE_TAG:
-                    Ensure(value).is_in(content[ROUTE_DEFINITIONS_TAG].keys())
+                    Ensure(value).is_in(content[ROUTE_DEFINITIONS_TAG])
                 elif part_type == RESERVE_TAG:
                     reserve_count += 1
-                    Ensure(value["ref"]).is_in(content[ROUTE_DEFINITIONS_TAG].keys())
+                    Ensure(value["ref"]).is_in(
+                        list(content[ROUTE_DEFINITIONS_TAG]) + list(content[PHASE_DEFINITIONS_TAG])
+                    )
             Ensure(reserve_count).is_less_than_or_equal_to(1)
             if reserve_count == 1:
                 # reserve definition should be the last part

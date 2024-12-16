@@ -167,6 +167,30 @@
                     <duration units="s">143.</duration>
                 </taxi_out>
             </operational>
+            <with_a_route_in_a_phase>
+                <TOW units="kg">70000.0</TOW>
+                <payload units="kg">15000.0</payload>
+                <ISA_offset>10.0</ISA_offset>
+
+                <max_CL>0.65</max_CL>
+                <all_flight>
+                    <takeoff>
+                        <V1 units="m/s" is_input="True">70<!--decision speed at which the takeoff cannot be rejected--></V1>
+                        <V2 units="m/s" is_input="True">
+                            80.0<!--safety speed before reaching 35 feet height in sizing mission--></V2>
+                        <Vr units="m/s" is_input="True">75.0<!--speed at which rotation starts in sizing mission--></Vr>
+                        <VEF units="m/s" is_input="True">65.0<!--speed at which one engine if failing--></VEF>
+                        <altitude units="m" is_input="True">
+                            0.0<!--altitude at takeoff in sizing mission--></altitude>
+                        <fuel units="kg">
+                            95.0<!--mass of consumed fuel during takeoff phase in sizing mission--></fuel>
+                    </takeoff>
+                    <taxi_out>
+                        <thrust_rate>0.3</thrust_rate>
+                        <duration units="s">143.</duration>
+                    </taxi_out>
+                </all_flight>
+            </with_a_route_in_a_phase>
             <fuel_as_objective>
                 <block_fuel units="kg">10000.0</block_fuel>
                 <OWE units="kg">40000.0</OWE>
