@@ -326,8 +326,14 @@
       "properties": {
         "phase": {
           "type": "string"
+        },
+        "count": {
+          "type": "integer"
         }
-      }
+      },
+      "required": [
+        "phase"
+      ]
     },
     "mission_route": {
       "type": "object",
@@ -335,8 +341,14 @@
       "properties": {
         "route": {
           "type": "string"
+        },
+        "count": {
+          "type": "integer"
         }
-      }
+      },
+      "required": [
+        "route"
+      ]
     },
     "mission_reserve": {
       "type": "object",

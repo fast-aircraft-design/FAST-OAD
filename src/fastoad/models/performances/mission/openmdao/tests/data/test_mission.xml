@@ -224,6 +224,17 @@
                     <duration units="s">143.</duration>
                 </taxi_out>
             </without_route>
+            <repetition>
+                <taxi_out>
+                    <duration>100.0</duration>
+                </taxi_out>
+                <taxi_out_0>
+                    <duration>100.0</duration>
+                </taxi_out_0>
+                <taxi_out_1>
+                    <duration>200.0</duration>
+                </taxi_out_1>
+            </repetition>
         </mission>
         <weight>
             <aircraft>

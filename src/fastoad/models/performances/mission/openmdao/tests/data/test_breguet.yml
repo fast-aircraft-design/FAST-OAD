@@ -14,6 +14,14 @@ phases:
           mass:
             value: data:mission:operational:ramp_weight
             unit: kg
+  taxi_out:
+    parts:
+      - segment: taxi
+        isa_offset: 0.0
+        thrust_rate: 0.3
+        true_airspeed: 0.0
+        target:
+          time: ~duration
   takeoff:
     parts:
       - segment: transition
@@ -67,3 +75,8 @@ missions:
       - phase: start
       - phase: takeoff
       - route: main_route
+  repetition:
+    parts:
+      - phase: start
+      - phase: taxi_out
+        count: 2

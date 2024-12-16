@@ -285,6 +285,7 @@ def test_mission_group_breguet_without_fuel_adjustment(cleanup, with_dummy_plugi
             out_file=RESULTS_FOLDER_PATH / "unlooped_breguet_mission_group.csv",
             use_initializer_iteration=False,
             mission_file_path=DATA_FOLDER_PATH / "test_breguet.yml",
+            mission_name="operational",
             adjust_fuel=False,
             reference_area_variable="data:geometry:aircraft:reference_area",
         ),
@@ -355,6 +356,7 @@ def test_mission_group_breguet_with_fuel_adjustment(cleanup, with_dummy_plugin_2
             out_file=RESULTS_FOLDER_PATH / "looped_breguet_mission_group.csv",
             use_initializer_iteration=True,
             mission_file_path=DATA_FOLDER_PATH / "test_breguet.yml",
+            mission_name="operational",
             use_inner_solvers=True,
             reference_area_variable="data:geometry:aircraft:reference_area",
             is_sizing=True,
@@ -520,3 +522,23 @@ def test_mission_group_without_route(cleanup, with_dummy_plugin_2):
     assert_allclose(problem["data:mission:without_route:ZFW"], 55000.0, atol=1.0)
     assert_allclose(problem["data:mission:without_route:needed_block_fuel"], 1136.8, atol=1.0)
     assert_allclose(problem["data:mission:without_route:block_fuel"], 1136.8, atol=1.0)
+
+
+def test_mission_with_repeated_phase(cleanup, with_dummy_plugin_2):
+    input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
+    ivc = DataFile(input_file_path).to_ivc()
+
+    problem = run_system(
+        OMMission(
+            propulsion_id="test.wrapper.propulsion.dummy_engine",
+            out_file=RESULTS_FOLDER_PATH / "repetition.csv",
+            use_initializer_iteration=False,
+            mission_file_path=DATA_FOLDER_PATH / "test_breguet.yml",
+            mission_name="repetition",
+        ),
+        ivc,
+    )
+    assert_allclose(problem["data:mission:repetition:taxi_out_0:duration"], 100.0, atol=1.0)
+    assert_allclose(problem["data:mission:repetition:taxi_out_1:duration"], 200.0, atol=1.0)
+    assert_allclose(problem["data:mission:repetition:taxi_out_0:fuel"], 70.2, atol=1.0)
+    assert_allclose(problem["data:mission:repetition:taxi_out_1:fuel"], 140.4, atol=1.0)

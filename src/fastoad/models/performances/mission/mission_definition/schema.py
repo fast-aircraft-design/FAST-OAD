@@ -34,6 +34,7 @@ ROUTE_TAG = "route"
 PHASE_TAG = "phase"
 RESERVE_TAG = "reserve"
 PARTS_TAG = "parts"
+COUNT_TAG = "count"
 CLIMB_PARTS_TAG = "climb_parts"
 CRUISE_PART_TAG = "cruise_part"
 DESCENT_PARTS_TAG = "descent_parts"
@@ -114,20 +115,19 @@ class MissionDefinition(OrderedDict):
         for mission_definition in content[MISSION_DEFINITION_TAG].values():
             reserve_count = 0
             for part in mission_definition[PARTS_TAG]:
-                part_type, value = tuple(*part.items())
-                if part_type == PHASE_TAG:
-                    Ensure(value).is_in(content[PHASE_DEFINITIONS_TAG])
-                elif part_type == ROUTE_TAG:
-                    Ensure(value).is_in(content[ROUTE_DEFINITIONS_TAG])
-                elif part_type == RESERVE_TAG:
+                if PHASE_TAG in part:
+                    Ensure(part[PHASE_TAG]).is_in(content[PHASE_DEFINITIONS_TAG])
+                elif ROUTE_TAG in part:
+                    Ensure(part[ROUTE_TAG]).is_in(content[ROUTE_DEFINITIONS_TAG])
+                elif RESERVE_TAG in part:
                     reserve_count += 1
-                    Ensure(value["ref"]).is_in(
+                    Ensure(part[RESERVE_TAG]["ref"]).is_in(
                         list(content[ROUTE_DEFINITIONS_TAG]) + list(content[PHASE_DEFINITIONS_TAG])
                     )
             Ensure(reserve_count).is_less_than_or_equal_to(1)
             if reserve_count == 1:
                 # reserve definition should be the last part
-                Ensure(part_type).equals(RESERVE_TAG)
+                Ensure(RESERVE_TAG).is_in(part)
 
     @classmethod
     def _convert_none_values(cls, struct: Union[dict, list]):

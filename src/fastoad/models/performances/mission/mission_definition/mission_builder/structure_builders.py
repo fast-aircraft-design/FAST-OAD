@@ -22,7 +22,7 @@ from abc import ABC, abstractmethod
 from copy import deepcopy
 from dataclasses import InitVar, dataclass, field, fields
 from itertools import chain
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import numpy as np
 
@@ -30,6 +30,7 @@ from .constants import NAME_TAG, SEGMENT_TYPE_TAG, TYPE_TAG
 from .input_definition import InputDefinition
 from ..schema import (
     CLIMB_PARTS_TAG,
+    COUNT_TAG,
     CRUISE_PART_TAG,
     DESCENT_PARTS_TAG,
     MISSION_DEFINITION_TAG,
@@ -66,6 +67,7 @@ class AbstractStructureBuilder(ABC):
     name: str
     parent_name: str = None
     variable_prefix: str = ""
+    number: Optional[int] = None
 
     _structure: dict = field(default=None, init=False)
 
@@ -133,7 +135,7 @@ class AbstractStructureBuilder(ABC):
 
         .. Important::
 
-            Please use :meth:`_insert_builder` when another StructureBuilder object is needed in
+            Please use :meth:`process_builder` when another StructureBuilder object is needed in
             the currently built structure.
 
         :param definition: the dict that will be converted.
@@ -149,6 +151,8 @@ class AbstractStructureBuilder(ABC):
         name = self.parent_name
         if self.name:
             name += f":{self.name}"
+            if self.number is not None:
+                name += f"_{self.number}"
         return name
 
     def _parse_inputs(
@@ -396,27 +400,29 @@ class MissionStructureBuilder(AbstractStructureBuilder, structure_type="mission"
 
         mission_parts = []
         for part_definition in mission_definition[PARTS_TAG]:
-            if ROUTE_TAG in part_definition:
-                route_name = part_definition[ROUTE_TAG]
-                builder = RouteStructureBuilder(
-                    definition, route_name, self.qualified_name, self.variable_prefix
-                )
-            elif PHASE_TAG in part_definition:
-                phase_name = part_definition[PHASE_TAG]
-                builder = PhaseStructureBuilder(
-                    definition, phase_name, self.qualified_name, self.variable_prefix
-                )
-            elif SEGMENT_TAG in part_definition:
-                builder = SegmentStructureBuilder(
-                    part_definition, "", self.qualified_name, self.variable_prefix
-                )
-            else:
-                builder = DefaultStructureBuilder(
-                    part_definition, "", self.qualified_name, self.variable_prefix
-                )
+            numbers = range(part_definition[COUNT_TAG]) if COUNT_TAG in part_definition else [None]
+            for number in numbers:
+                if ROUTE_TAG in part_definition:
+                    route_name = part_definition[ROUTE_TAG]
+                    builder = RouteStructureBuilder(
+                        definition, route_name, self.qualified_name, self.variable_prefix, number
+                    )
+                elif PHASE_TAG in part_definition:
+                    phase_name = part_definition[PHASE_TAG]
+                    builder = PhaseStructureBuilder(
+                        definition, phase_name, self.qualified_name, self.variable_prefix, number
+                    )
+                elif SEGMENT_TAG in part_definition:
+                    builder = SegmentStructureBuilder(
+                        part_definition, "", self.qualified_name, self.variable_prefix, number
+                    )
+                else:
+                    builder = DefaultStructureBuilder(
+                        part_definition, "", self.qualified_name, self.variable_prefix, number
+                    )
 
-            part_structure = self.process_builder(builder)
-            mission_parts.append(part_structure)
+                part_structure = self.process_builder(builder)
+                mission_parts.append(part_structure)
 
         mission_structure[PARTS_TAG] = mission_parts
 
