@@ -1,10 +1,13 @@
+<!-- You can erase any parts of this template not applicable to your Pull Request. -->
+
 ## Summary of Changes
 
 <!-- Provide a concise description of the changes introduced by this PR -->
 
 ## Related Issues
 
-<!-- List related issues and use keywords to automatically close them, e.g., closes #123 -->
+<!-- List related issues and use keywords to automatically close them, e.g., closes #123, more info here:  -->
+<!-- https://docs.github.com/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue -->
 <!-- This project only accepts pull requests related to open issues -->
 <!-- If suggesting a new feature or change, please discuss it in an issue first -->
 
