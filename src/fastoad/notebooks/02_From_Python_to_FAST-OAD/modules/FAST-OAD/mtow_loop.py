@@ -1,6 +1,7 @@
 import openmdao.api as om
 
 import fastoad.api as oad
+
 from .aerodynamics.aerodynamics import ComputeAerodynamics
 from .geometry.geometry import ComputeGeometry
 from .mass.mass import ComputeMass

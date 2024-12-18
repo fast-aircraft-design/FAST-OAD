@@ -26,11 +26,11 @@ from openmdao.utils.om_warnings import UnitsWarning
 
 import fastoad.models
 from fastoad.module_management._plugins import FastoadLoader
+
 from .openmdao_sellar_example.disc1 import Disc1
 from .openmdao_sellar_example.disc2 import Disc2
 from .openmdao_sellar_example.functions import FunctionF, FunctionG1, FunctionG2
 from ..variables import Variable, VariableList
-
 
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO

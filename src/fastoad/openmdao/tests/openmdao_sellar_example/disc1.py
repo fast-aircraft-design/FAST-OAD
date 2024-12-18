@@ -15,6 +15,7 @@
 import numpy as np
 
 from fastoad._utils.sellar.disc1 import BasicDisc1
+
 from ...validity_checker import ValidityDomainChecker
 
 

@@ -23,10 +23,10 @@ from ._plugins import FastoadLoader
 from .constants import (
     DESCRIPTION_PROPERTY_NAME,
     DOMAIN_PROPERTY_NAME,
-    ModelDomain,
     OPTION_PROPERTY_NAME,
     SERVICE_OPENMDAO_SYSTEM,
     SERVICE_PROPULSION_WRAPPER,
+    ModelDomain,
 )
 from .exceptions import (
     FastBadSystemOptionError,

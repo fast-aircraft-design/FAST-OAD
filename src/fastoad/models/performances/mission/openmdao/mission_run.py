@@ -22,6 +22,7 @@ from fastoad._utils.files import make_parent_dir
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
 from fastoad.module_management.service_registry import RegisterPropulsion
+
 from .base import BaseMissionComp
 from ..polar import Polar
 from ..segments.registered.cruise import BreguetCruiseSegment

@@ -24,6 +24,7 @@ import pytest
 import fastoad.models
 from fastoad.io import DataFile
 from fastoad.openmdao.variables import Variable
+
 from .. import api
 from ..exceptions import (
     FastNoAvailableNotebookError,

@@ -21,6 +21,7 @@ from scipy.constants import foot, knot
 
 from fastoad.io import DataFile
 from fastoad.testing import run_system
+
 from ..mission import OMMission
 from ..mission_run import AdvancedMissionComp
 from ..mission_wrapper import MissionWrapper

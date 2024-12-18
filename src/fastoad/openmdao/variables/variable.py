@@ -16,15 +16,15 @@ Class for managing an OpenMDAO variable.
 
 import logging
 from os import PathLike
-from typing import Dict, Hashable, Iterable, Mapping, Tuple, Union, Optional
+from typing import Dict, Hashable, Iterable, Mapping, Optional, Tuple, Union
 
 import numpy as np
 import openmdao.api as om
 from openmdao.utils.units import convert_units
 
+from fastoad._utils.arrays import scalarize
 from fastoad._utils.files import as_path
 from fastoad._utils.resource_management.contents import PackageReader
-from fastoad._utils.arrays import scalarize
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 

@@ -1,6 +1,7 @@
 import openmdao.api as om
 
 import fastoad.api as oad
+
 from ...OpenMDAO.geometry.sub_components.compute_wing_area import ComputeWingArea
 
 

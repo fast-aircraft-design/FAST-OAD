@@ -21,6 +21,7 @@ import pandas as pd
 from scipy.optimize import root_scalar
 
 from fastoad.model_base import FlightPoint
+
 from .base import FlightSequence
 from .routes import RangedRoute
 from .segments.registered.cruise import CruiseSegment

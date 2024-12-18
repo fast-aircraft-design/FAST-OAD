@@ -17,6 +17,7 @@ from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import FuelEngineSet
 from fastoad.models.performances.mission.polar import Polar
+
 from .conftest import DummyEngine
 from ..altitude_change import AltitudeChangeSegment
 

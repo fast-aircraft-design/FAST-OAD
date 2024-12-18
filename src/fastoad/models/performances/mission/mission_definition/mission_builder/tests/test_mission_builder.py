@@ -24,6 +24,7 @@ from scipy.constants import foot, knot
 from fastoad.model_base.datacls import MANDATORY_FIELD
 from fastoad.model_base.propulsion import IPropulsion
 from fastoad.openmdao.variables import Variable
+
 from ..input_definition import InputDefinition
 from ..mission_builder import MissionBuilder
 from ...exceptions import FastMissionFileMissingMissionNameError

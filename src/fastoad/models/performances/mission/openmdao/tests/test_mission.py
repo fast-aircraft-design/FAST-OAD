@@ -20,6 +20,7 @@ from scipy.constants import foot, knot, nautical_mile
 
 from fastoad.io import DataFile
 from fastoad.testing import run_system
+
 from ..mission import OMMission
 from ..mission_run import AdvancedMissionComp
 from ..mission_wrapper import MissionWrapper

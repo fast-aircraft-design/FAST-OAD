@@ -15,8 +15,7 @@
 import numpy as np
 
 from fastoad._utils.sellar.function_f import BasicFunctionF
-from fastoad._utils.sellar.functions_g import BasicFunctionG1
-from fastoad._utils.sellar.functions_g import BasicFunctionG2
+from fastoad._utils.sellar.functions_g import BasicFunctionG1, BasicFunctionG2
 
 
 class FunctionF(BasicFunctionF):

@@ -14,7 +14,7 @@
 
 from copy import copy
 from dataclasses import dataclass, field
-from typing import List, Tuple, Optional, Union
+from typing import List, Optional, Tuple, Union
 
 import pandas as pd
 from scipy.constants import foot, g
@@ -25,8 +25,8 @@ from fastoad.models.performances.mission.segments.base import (
     RegisterSegment,
 )
 from fastoad.models.performances.mission.segments.time_step_base import (
-    AbstractManualThrustSegment,
     AbstractLiftFromWeightSegment,
+    AbstractManualThrustSegment,
 )
 from fastoad.models.performances.mission.util import get_closest_flight_level
 
