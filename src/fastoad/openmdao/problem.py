@@ -25,6 +25,7 @@ from fastoad.io import DataFile, IVariableIOFormatter
 from fastoad.module_management.service_registry import RegisterSubmodel
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 from fastoad.openmdao.variables import Variable, VariableList
+
 from ._utils import get_mpi_safe_problem_copy
 from .exceptions import FASTNanInInputsError
 from ..module_management._bundle_loader import BundleLoader

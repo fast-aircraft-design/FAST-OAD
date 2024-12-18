@@ -35,6 +35,7 @@ from fastoad.module_management.exceptions import (
     FastUnknownDistPluginError,
     FastUnknownSourceDataFileError,
 )
+
 from . import api
 
 NOTEBOOK_FOLDER_NAME = "FAST-OAD_notebooks"

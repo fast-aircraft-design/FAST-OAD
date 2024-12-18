@@ -23,6 +23,7 @@ from scipy.optimize import root_scalar
 
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.datacls import MANDATORY_FIELD
+
 from .base import FlightSequence, IFlightPart
 from .segments.base import AbstractFlightSegment
 from .segments.registered.cruise import CruiseSegment

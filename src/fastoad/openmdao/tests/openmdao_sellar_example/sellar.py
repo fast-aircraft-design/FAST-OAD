@@ -15,6 +15,7 @@
 import openmdao.api as om
 
 from fastoad._utils.sellar.sellar_base import BasicSellarModel, GenericSellarFactory, ISellarFactory
+
 from .disc1 import Disc1
 from .disc2 import Disc2
 from .functions import FunctionF, FunctionG1, FunctionG2

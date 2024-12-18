@@ -14,6 +14,7 @@
 from numpy.testing import assert_allclose
 
 from fastoad.model_base import FlightPoint
+
 from ..mass_input import MassTargetSegment
 
 

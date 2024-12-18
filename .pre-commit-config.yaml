@@ -32,7 +32,7 @@ repos:
       - id: nbstripout
         name: nbstripout
         description: 'nbstripout: strip output from Jupyter and IPython notebooks'
-        entry: nbstripout
+        entry: poetry run nbstripout
         language: system
         types: [ jupyter ]
         require_serial: true

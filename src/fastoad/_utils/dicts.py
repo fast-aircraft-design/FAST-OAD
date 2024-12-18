@@ -17,7 +17,6 @@ Module for dict-related operations
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, TypeVar
 
-
 _KT = TypeVar("_KT", bound=Any)
 _VT = TypeVar("_VT", bound=Any)
 

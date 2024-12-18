@@ -21,6 +21,7 @@ import pandas as pd
 
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.datacls import BaseDataClass
+
 from .exceptions import FastUnknownMissionElementError
 
 

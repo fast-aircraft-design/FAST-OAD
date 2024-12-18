@@ -18,6 +18,7 @@ from pathlib import Path
 import pytest
 
 from fastoad.openmdao.variables import Variable, VariableList
+
 from ..calc_runner import CalcRunner
 
 DATA_FOLDER_PATH = Path(__file__).parent / "data"

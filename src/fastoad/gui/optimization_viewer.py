@@ -26,12 +26,13 @@ from IPython.display import clear_output, display
 
 from fastoad.io import DataFile
 from fastoad.io.configuration.configuration import (
-    FASTOADProblemConfigurator,
     KEY_CONSTRAINTS,
     KEY_DESIGN_VARIABLES,
     KEY_OBJECTIVE,
+    FASTOADProblemConfigurator,
 )
 from fastoad.openmdao.variables import Variable, VariableList
+
 from .exceptions import FastMissingFile
 
 pd.set_option("display.max_rows", None)

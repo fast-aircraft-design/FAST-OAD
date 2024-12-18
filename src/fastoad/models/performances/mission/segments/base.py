@@ -24,6 +24,7 @@ from stdatm import AtmosphereSI
 
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.datacls import MANDATORY_FIELD
+
 from ..base import IFlightPart, RegisterElement
 from ..exceptions import FastFlightSegmentIncompleteFlightPoint
 

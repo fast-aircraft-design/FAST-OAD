@@ -24,6 +24,7 @@ import pandas as pd
 from fastoad.model_base.openmdao.group import CycleGroup
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+
 from .base import BaseMissionComp, NeedsOWE
 from .mission_run import AdvancedMissionComp
 

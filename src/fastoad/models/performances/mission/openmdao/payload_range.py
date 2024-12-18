@@ -23,6 +23,7 @@ from scipy.interpolate import interp1d
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.openmdao.problem import get_variable_list_from_system
+
 from .base import BaseMissionComp, NeedsMFW, NeedsMTOW, NeedsOWE
 from .mission_run import MissionComp
 

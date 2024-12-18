@@ -21,6 +21,7 @@ import pytest
 
 from fastoad.cmd import api
 from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
+
 from .. import OptimizationViewer
 from ..exceptions import FastMissingFile
 

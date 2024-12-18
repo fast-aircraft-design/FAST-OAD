@@ -25,11 +25,12 @@ from fastoad.models.performances.mission.segments.base import (
     RegisterSegment,
 )
 from fastoad.models.performances.mission.util import get_closest_flight_level
+
 from .altitude_change import AltitudeChangeSegment
 from ..time_step_base import (
+    AbstractLiftFromWeightSegment,
     AbstractRegulatedThrustSegment,
     AbstractTimeStepFlightSegment,
-    AbstractLiftFromWeightSegment,
 )
 
 

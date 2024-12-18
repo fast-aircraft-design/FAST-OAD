@@ -25,6 +25,7 @@ from typing import Callable, Dict, List, Optional
 import numpy as np
 
 from fastoad.openmdao.variables import Variable
+
 from ._bundle_loader import BundleLoader
 from .exceptions import (
     FastNoAvailableConfigurationFileError,

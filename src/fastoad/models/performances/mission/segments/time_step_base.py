@@ -20,7 +20,7 @@ from typing import List, Optional, Tuple
 import numpy as np
 import pandas as pd
 from deprecated import deprecated
-from numpy import sin, cos
+from numpy import cos, sin
 from scipy.constants import g
 from scipy.optimize import root_scalar
 
@@ -28,6 +28,7 @@ from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.datacls import MANDATORY_FIELD
 from fastoad.model_base.propulsion import IPropulsion
+
 from .base import AbstractFlightSegment
 from ..polar import Polar
 from ..polar_modifier import AbstractPolarModifier, UnchangedPolar

@@ -17,6 +17,7 @@ Readers for legacy XML format
 from fastoad._utils.resource_management.contents import PackageReader
 from fastoad.io.xml import VariableXmlBaseFormatter
 from fastoad.io.xml.translator import VarXpathTranslator
+
 from . import resources
 
 CONVERSION_FILENAME_1 = "legacy1.txt"

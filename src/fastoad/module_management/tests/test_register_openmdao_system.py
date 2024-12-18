@@ -21,7 +21,7 @@ import pytest
 
 from .data.module_sellar_example.disc2.disc2 import RegisteredDisc2
 from .._bundle_loader import BundleLoader
-from ..constants import ModelDomain, SERVICE_OPENMDAO_SYSTEM
+from ..constants import SERVICE_OPENMDAO_SYSTEM, ModelDomain
 from ..exceptions import FastBadSystemOptionError, FastBundleLoaderUnknownFactoryNameError
 from ..service_registry import RegisterOpenMDAOSystem
 from ..._utils.sellar.sellar_base import BasicSellarModel, BasicSellarProblem, ISellarFactory

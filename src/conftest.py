@@ -32,7 +32,7 @@ if sys.version_info >= (3, 10):
 else:
     import importlib_metadata
 
-from fastoad.module_management._plugins import FastoadLoader, MODEL_PLUGIN_ID
+from fastoad.module_management._plugins import MODEL_PLUGIN_ID, FastoadLoader
 
 
 @pytest.fixture(autouse=True)

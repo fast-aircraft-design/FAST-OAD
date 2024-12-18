@@ -20,7 +20,6 @@ from fastoad.models.performances.mission.exceptions import FastFlightSegmentInco
 from fastoad.models.performances.mission.segments.base import RegisterSegment
 from fastoad.models.performances.mission.segments.time_step_base import AbstractTakeOffSegment
 
-
 # FIXME: This class is a bit awkward, because get_gamma_and_acceleration() knows
 #       only the current flight point, which prevents from using the slope derivative.
 #       A redefinition of the abstract class is needed.

@@ -21,6 +21,7 @@ from numpy.testing import assert_allclose
 
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.openmdao.variables import Variable, VariableList
+
 from .openmdao_sellar_example.disc1 import Disc1Quater
 from .openmdao_sellar_example.disc2 import Disc2Bis
 from .openmdao_sellar_example.functions import FunctionF

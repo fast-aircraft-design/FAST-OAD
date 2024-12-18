@@ -24,6 +24,7 @@ from jsonschema import validate
 from ruamel.yaml import YAML
 
 from fastoad._utils.resource_management.contents import PackageReader
+
 from . import resources
 
 JSON_SCHEMA_NAME = "mission_schema.json"

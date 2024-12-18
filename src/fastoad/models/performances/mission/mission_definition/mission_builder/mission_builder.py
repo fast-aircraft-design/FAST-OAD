@@ -26,6 +26,7 @@ from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IPropulsion
 from fastoad.openmdao.variables import VariableList
+
 from .constants import NAME_TAG, SEGMENT_TYPE_TAG, TYPE_TAG
 from .input_definition import InputDefinition
 from .structure_builders import (
@@ -39,13 +40,13 @@ from ..schema import (
     CRUISE_PART_TAG,
     DESCENT_PARTS_TAG,
     MISSION_DEFINITION_TAG,
-    MissionDefinition,
     PARTS_TAG,
     PHASE_TAG,
     POLAR_TAG,
     RESERVE_TAG,
     ROUTE_TAG,
     SEGMENT_TAG,
+    MissionDefinition,
 )
 from ...base import FlightSequence
 from ...mission import Mission
@@ -53,7 +54,6 @@ from ...polar import Polar
 from ...polar_modifier import RegisterPolarModifier, UnchangedPolar
 from ...routes import RangedRoute
 from ...segments.base import AbstractFlightSegment, RegisterSegment
-
 
 # Rationale:
 # The way we parse the mission definition file answers several needs:

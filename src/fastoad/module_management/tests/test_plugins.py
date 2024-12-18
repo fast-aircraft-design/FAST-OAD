@@ -14,6 +14,7 @@
 import pytest
 
 from fastoad.openmdao.variables import Variable
+
 from .._plugins import FastoadLoader, SubPackageNames
 from ..exceptions import (
     FastBundleLoaderUnknownFactoryNameError,
