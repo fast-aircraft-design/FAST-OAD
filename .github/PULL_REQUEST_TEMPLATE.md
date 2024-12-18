@@ -17,7 +17,7 @@
 
 ## Checklist
 
-- [ ] Have you followed the guidelines in our Contributing document? <!-- https://tinyurl.com/fast-oad-contribute -->
+- [ ] Have you followed the guidelines in our [Contributing](https://tinyurl.com/fast-oad-contribute) wiki?
 - [ ] Have you checked to ensure there aren't other open [Pull Requests](../../../pulls) for the same update/change?
 - [ ] Have you added new tests to cover your changes?
 - [ ] Have you made corresponding changes to the documentation?
