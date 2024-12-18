@@ -63,20 +63,39 @@ class AbstractStructureBuilder(ABC):
     resolution of :attr:`input_definitions`.
     """
 
+    #: Needed dict to produce the desired dict. The need will depend on implementation.
     definition: InitVar[dict]
+
+    #: Name of the structure to be built
     name: str
+
+    #: Qualified name of the parent structure (e.g.: "parent1:parent2:parent3")
     parent_name: str = None
+
+    #: Prefix that will be used to generate names of OpenMDAO variables
     variable_prefix: str = ""
+
+    #: If set, this number will be appended to structure name in identifier and variable names.
+    #: e.g.: With None as number (default), a structure defined as "run" may be
+    #:       named as op_mission:main_route:run and have an input/output variable like
+    #:       data:mission:op_mission:main_route:run:duration
+    #:       With 2 as number, it will be named as op_mission:main_route:run_2 and have the
+    #:       variable data:mission:op_mission:main_route:run_2:duration
+    #:       In both case, the structure definition is expected to be labeled as "run".
     number: Optional[int] = None
 
+    #: Structure of this mission part
     _structure: dict = field(default=None, init=False)
 
+    #: Definitions of input variables in this mission part
     _input_definitions: List[InputDefinition] = field(default_factory=list, init=False)
+
+    #: Builders of contained structures (see :meth:`process_builder` )
     _builders: List[Tuple["AbstractStructureBuilder", dict]] = field(
         default_factory=list, init=False
     )
 
-    #: Defined by subclass
+    #: String. Defined by subclass for later identification.
     type = None
 
     def __init_subclass__(cls, *, structure_type=None):
