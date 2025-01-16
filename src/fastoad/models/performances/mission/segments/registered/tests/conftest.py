@@ -10,6 +10,7 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import os
 
 import numpy as np
 import pandas as pd
@@ -26,6 +27,18 @@ def polar() -> Polar:
     cl = np.arange(0.0, 1.5, 0.01)
     cd = 0.5e-1 * cl**2 + 0.01
     return Polar(cl, cd)
+
+
+@pytest.fixture
+def data_file():
+    with open("data.txt", "w") as f:
+        f.write("This is a test file for unpickable propulsion test.")
+
+
+@pytest.fixture
+def clean_data_file(data_file):
+    yield data_file
+    os.remove("data.txt")
 
 
 def print_dataframe(df):
@@ -60,3 +73,15 @@ class DummyEngine(AbstractFuelPropulsion):
             flight_point.thrust = self.max_thrust * flight_point.thrust_rate
 
         flight_point.sfc = self.max_sfc * (1.0 + flight_point.thrust_rate) / 2.0
+
+
+class DummyUnpickableEngine(DummyEngine):
+    def __init__(self, max_thrust, max_sfc):
+        """
+        Unpickable dummy engine model, inherites from DummyEngine.
+        """
+        DummyEngine.__init__(self, max_thrust, max_sfc)
+        self.data = open("data.txt", "r")
+
+    def close_file(self):
+        self.data.close()
