@@ -10,7 +10,8 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import os
+import shutil
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -29,16 +30,23 @@ def polar() -> Polar:
     return Polar(cl, cd)
 
 
+TEMP_DIR = Path(__file__).parent / "data"
+DATA_FILE = TEMP_DIR / "data.txt"
+
+
 @pytest.fixture
 def data_file():
-    with open("data.txt", "w") as f:
+    """Creates a temporary folder with dummy data file to simulate an unpickable propulsion."""
+    Path.mkdir(TEMP_DIR, exist_ok=True)
+    with open(DATA_FILE, "w") as f:
         f.write("This is a test file for unpickable propulsion test.")
 
 
 @pytest.fixture
 def clean_data_file(data_file):
+    """Ensure the temporary folder is deleted after running the corresponding test"""
     yield data_file
-    os.remove("data.txt")
+    shutil.rmtree(TEMP_DIR, ignore_errors=True)
 
 
 def print_dataframe(df):
@@ -81,7 +89,8 @@ class DummyUnpickableEngine(DummyEngine):
         Unpickable dummy engine model, inherites from DummyEngine.
         """
         DummyEngine.__init__(self, max_thrust, max_sfc)
-        self.data = open("data.txt", "r")
+        self.data = open(DATA_FILE, "r")
 
     def close_file(self):
+        """Utility function to manually close the datafile."""
         self.data.close()
