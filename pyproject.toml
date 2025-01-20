@@ -162,7 +162,6 @@ exclude = ["tests/dummy_plugins/"]
 
 [tool.ruff.lint.isort] # Add optional configurations for import organization
 case-sensitive = true
-combine-as-imports = true  # Combine `as` imports like `import x as y, z as a`
 relative-imports-order = "closest-to-furthest"
 
 [tool.ruff.lint]

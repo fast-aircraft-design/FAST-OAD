@@ -45,7 +45,7 @@ jobs:
       - name: Check with Ruff
         run: |
           poetry run ruff check .           # Check coding rules
-          poetry run ruff format --check .  # Check format
+          poetry run ruff format --check .  # Check format and import sorting
         shell: bash
 
         # Runners that won't send coverage report are run without coverage overhead
