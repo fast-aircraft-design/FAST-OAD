@@ -20,7 +20,7 @@
 - [ ] Have you followed the guidelines in our [Contributing](https://github.com/fast-aircraft-design/FAST-OAD/wiki/Development-environment) wiki?
 - [ ] Have you checked to ensure there aren't other open [Pull Requests](../../../pulls) for the same update/change?
 - [ ] Have you added new tests to cover your changes?
-- [ ] Have you made corresponding changes to the documentation?
+- [ ] Have you made corresponding changes to the documentation? If yes, please consider providing a link to the updated documentation.
 - [ ] Do the existing tests pass with your changes?
 - [ ] Have you commented on hard-to-understand areas of the code?
 - [ ] Does this PR introduce a breaking change?
@@ -28,3 +28,4 @@
 ## Additional Context
 
 <!-- Add any other context or screenshots about the PR here -->
+<!-- If you have modified the doc and you have the rights, please provide here the link of the updated Read the Docs documentation -->
