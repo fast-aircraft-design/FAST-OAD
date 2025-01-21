@@ -12,7 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# ruff: noqa: F401 # This is an API
 from fastoad import __version__
 from fastoad.cmd.api import (
     evaluate_problem,
@@ -71,3 +70,58 @@ from fastoad.module_management.service_registry import (
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 from fastoad.openmdao.variables import Variable, VariableList
+
+__all__ = [
+    "__version__",
+    "evaluate_problem",
+    "generate_configuration_file",
+    "generate_inputs",
+    "generate_notebooks",
+    "generate_source_data_file",
+    "get_plugin_information",
+    "list_modules",
+    "list_variables",
+    "optimization_viewer",
+    "optimize_problem",
+    "variable_viewer",
+    "write_n2",
+    "write_xdsm",
+    "CalcRunner",
+    "aircraft_geometry_plot",
+    "drag_polar_plot",
+    "mass_breakdown_bar_plot",
+    "mass_breakdown_sun_plot",
+    "payload_range_plot",
+    "wing_geometry_plot",
+    "MissionViewer",
+    "OptimizationViewer",
+    "VariableViewer",
+    "DataFile",
+    "FASTOADProblemConfigurator",
+    "Atmosphere",
+    "AtmosphereSI",
+    "FlightPoint",
+    "MANDATORY_FIELD",
+    "BaseCycleGroup",
+    "CycleGroup",
+    "IOMPropulsionWrapper",
+    "AbstractFlightSegment",
+    "IFlightPart",
+    "RegisterSegment",
+    "AbstractFixedDurationSegment",
+    "AbstractGroundSegment",
+    "AbstractManualThrustSegment",
+    "AbstractPolarModifier",
+    "AbstractRegulatedThrustSegment",
+    "AbstractTakeOffSegment",
+    "AbstractTimeStepFlightSegment",
+    "FlightSegment",
+    "RegisterOpenMDAOSystem",
+    "RegisterPropulsion",
+    "RegisterSpecializedService",
+    "RegisterSubmodel",
+    "FASTOADProblem",
+    "ValidityDomainChecker",
+    "Variable",
+    "VariableList",
+]
