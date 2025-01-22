@@ -83,8 +83,9 @@ class ListSegmentsForAttribute(AbstractLinkList):
     This Sphinx directive creates an "Apply to" admonition that lists segments that contain
     the provided attribute.
 
-    The list will be references to paragraphs, provided they are tagged like
-    `segment-<segment keyword>` (with all "_" replaced by "-")
+    The listed segment keywords will be references to paragraphs (i.e., hyperlinks in the generated
+    doc), if the matching paragraphs are tagged like `segment-<segment keyword>` (with all "_" in
+    the segment keyword replaced by "-")
 
     e.g. for "ground_speed_change":
         .. _segment-ground-speed-change:
@@ -109,8 +110,9 @@ class ListSegmentAttributes(AbstractLinkList):
     """
     This Sphinx directive creates a "Parameters" admonition that lists segment attributes.
 
-    The list will be references to paragraphs, provided they are tagged like
-    `segment-parameter-<attribute name>` (with all "_" replaced by "-")
+    The listed attributes will be references to paragraphs (i.e., hyperlinks in the generated
+    doc), if the matching paragraphs are tagged like `segment-parameter-<attribute name>` (with
+    all "_" in the attribute name replaced by "-")
 
     e.g. for "ground_speed_change":
         .. _segment-parameter-ground-speed-change:
@@ -137,10 +139,10 @@ def check_targets(app, doctree):
     """
     Executed after all rst files have been parsed.
 
-    Populates all created placeholders with list of proper text/hyperlinks
+    Populates all created placeholders with list of proper text/hyperlinks.
     """
 
-    # Retrieving the ènv.target_data populated in the directives.
+    # Retrieving the env.target_data populated in the directives.
     if not hasattr(app.env, "target_data"):
         return
     target_data = app.env.target_data
