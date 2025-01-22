@@ -11,6 +11,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import itertools
 import shutil
 from pathlib import Path
 
@@ -34,8 +35,7 @@ def cleanup():
 
 @pytest.fixture()
 def cleanup_DOEVariable():
-    DOEVariable._instance_counter = 0
-    DOEVariable._next_instance = -1
+    DOEVariable._id_counter = itertools.count()
 
 
 @pytest.fixture
@@ -53,10 +53,49 @@ def sample_variables():
     return [var1, var2, var3]
 
 
-def test_invalid_bounds(cleanup_DOEVariable, cleanup):
-    # Test invalid bounds without reference value (lower>upper)
-    with pytest.raises(ValueError):
-        DOEVariable(name="InvalidBounds", lower_bound=20, upper_bound=10)
+def test_alias_default(cleanup_DOEVariable, cleanup):
+    """Test that the name_alias defaults to the name."""
+    var = DOEVariable(
+        name="Var1",
+        lower_bound=5,
+        upper_bound=15,
+    )
+    assert var.name_alias == "Var1"
+
+
+def test_alias_custom(cleanup_DOEVariable, cleanup):
+    """Test that the name_alias can be set explicitly."""
+    var = DOEVariable(
+        name="Var1",
+        name_alias="custom_alias",
+        lower_bound=5,
+        upper_bound=15,
+    )
+    assert var.name_alias == "custom_alias"
+
+
+def test_missing_bounds_or_binding():
+    """Test that a variable without bounds or binding raises ValueError."""
+    with pytest.raises(ValueError, match="must either be bound to another variable"):
+        DOEVariable(name="var2")
+
+
+def test_bound_variable_with_direct_bounds():
+    """Test that bounds set directly on a bound variable raise a warning."""
+    # Create an independent variable to bind to
+    var1 = DOEVariable(name="var1", lower_bound=0, upper_bound=10)
+
+    # Create a bound variable and ensure warnings are raised for direct bounds
+    with pytest.warns(UserWarning, match="Bounds .* will be ignored"):
+        var3 = DOEVariable(name="var3", lower_bound=5, upper_bound=15, bind_variable_to=var1)
+        assert var3.lower_bound == var1.lower_bound
+        assert var3.upper_bound == var1.upper_bound
+
+
+def test_invalid_bounds():
+    """Test that a variable with invalid bounds (lower > upper) raises ValueError."""
+    with pytest.raises(ValueError, match="Invalid DOE bounds for variable"):
+        DOEVariable(name="var1", lower_bound=20, upper_bound=10)
 
 
 def test_invalid_reference_bounds(cleanup_DOEVariable, cleanup):
@@ -121,6 +160,31 @@ def test_doe_config_initialization(cleanup_DOEVariable, cleanup, sample_variable
     assert len(config.variables_binding) == 3
     assert config.variables_binding == [0, 1, 0]  # Assuming the ID values
     assert config.bounds.shape == (2, 2)  # 3 variables, but one is binded
+
+
+def test_duplicate_variable_warning(
+    cleanup_DOEVariable,
+    cleanup,
+):
+    """
+    Test that a warning is raised when duplicate variable names are added to DOEConfig.
+    """
+    # Define variables with duplicate names
+    var1 = DOEVariable(name="var1", lower_bound=0, upper_bound=10)
+    var2 = DOEVariable(name="var1", lower_bound=20, upper_bound=30)  # Duplicate name
+    var3 = DOEVariable(name="var2", lower_bound=20, upper_bound=30)
+
+    # Create DOEConfig and check for the warning
+    with pytest.warns(UserWarning, match="Variable 'var1' set multiple times"):
+        config = DOEConfig(
+            sampling_method="LHS",
+            variables=[var1, var2, var3],
+            destination_folder=RESULTS_FOLDER_PATH,
+        )
+
+    # Ensure the bounds take precedence for the first variable
+    np.testing.assert_array_equal(config.bounds[0], np.asarray([0, 10]))  # Bounds from var1
+    assert len(config.bounds) == 2  # var2 is ignored
 
 
 def test_generate_doe_full_factorial(cleanup_DOEVariable, cleanup, sample_variables):

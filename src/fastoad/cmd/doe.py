@@ -40,7 +40,7 @@ class DOEVariable:
                             `upper_bound` are considered as percentages. Defaults to None.
     :param bind_variable_to: Another DOEVariable instance to bind this variable to. When bound, this variable
                              inherits the bounds of the bound variable, and no new ID is assigned. Once the DOE
-                             is sampled,the variables will share the same dimension and same values.
+                             is sampled, the variables will share the same dimension and same values.
     :param name_alias: An optional alias for the variable. If not provided, it defaults to the value of `name`.
     """
 
@@ -61,6 +61,7 @@ class DOEVariable:
     _id_counter: ClassVar[itertools.count] = itertools.count()
 
     def __post_init__(self):
+        self.validate_variable()
         if not self.name_alias:
             self.name_alias = self.name
         if self.bind_variable_to:
@@ -126,6 +127,29 @@ class DOEVariable:
                     f"Invalid DOE bounds for variable {self.name}: ({self.lower_bound}) should not be greater than ({self.upper_bound})"
                 )
 
+    def validate_variable(self):
+        """
+        Ensures that the variable is either:
+        1. Bound to another variable (`bind_variable_to` is set), or
+        2. Has both `lower_bound` and `upper_bound` set.
+        """
+        if self.bind_variable_to:
+            if not isinstance(self._lower_bound, property) or not isinstance(
+                self._upper_bound, property
+            ):
+                # If not initialized, upper and lower bounds default to being properties objects
+                warnings.warn(
+                    f"Variable '{self.name}' is bound to '{self.bind_variable_to.name}'. "
+                    f"Bounds ({self._lower_bound}, {self._upper_bound}) will be ignored.",
+                    UserWarning,
+                )
+        else:
+            if isinstance(self.lower_bound, property) or isinstance(self.upper_bound, property):
+                raise ValueError(
+                    f"DOEVariable '{self.name}' must either be bound to another variable (via 'bind_variable_to') "
+                    f"or have both 'lower_bound' and 'upper_bound' defined."
+                )
+
 
 @dataclass
 class DOEConfig:
@@ -169,11 +193,21 @@ class DOEConfig:
         self.var_names_pseudo_mapping = dict(zip(self.var_names, self.var_names_pseudo))
         # Exctract bounds taking into account binding
         seen = set()
+        seen_names = set()
         self.bounds = []
         for var in self.variables:
-            if var.variable_id not in seen:
-                seen.add(var.variable_id)
-                self.bounds.append([var.lower_bound, var.upper_bound])
+            if var.variable_id not in seen:  # Do not add multiple times binded variables
+                if var.name not in seen_names:
+                    seen.add(var.variable_id)
+                    seen_names.add(var.name)
+                    self.bounds.append([var.lower_bound, var.upper_bound])
+                else:
+                    warnings.warn(
+                        f"Variable '{var.name}' set multiple times. Please check the DOE variable definition."
+                        f"The bounds defined first take precedence. ({var.lower_bound, var.upper_bound}) will be"
+                        f"ignored.",
+                        UserWarning,
+                    )
         self.bounds = np.asarray(self.bounds)
 
         self.is_sampled = False
