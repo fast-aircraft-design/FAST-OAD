@@ -611,11 +611,28 @@ The parameters for this segment are the same as for its 3 components, except tha
     Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.takeoff.takeoff.TakeOffSequence`
 
 
+.. _segment-special-parameters:
+
+**************************
+Special segment parameters
+**************************
+
+Most of segment parameters must be set with a unique value, which can be done in several ways,
+as described :ref:`here<setting-values>`.
+
+There are some special parameters that are detailed below.
+
+.. contents::
+   :local:
+   :depth: 1
+
+
 .. _segment-parameter-target:
 
-**************
-Segment target
-**************
+:code:`target` parameter
+=======================
+
+.. list-segments-for:: target
 
 The target of a flight segment is a set of parameters that drives the end of the segment simulation.
 
@@ -629,7 +646,7 @@ that tells the parameter value should be kept constant and equal to the start va
 In any case, please refer to the documentation of the flight segment.
 
 Absolute and relative values
-============================
+----------------------------
 
 Amost all target parameters are considered as absolute values, i.e. the target is considered
 reached if the named parameter gets equal to the provided value.
@@ -659,21 +676,6 @@ name will be preceded by :code:`delta_`.
     relative values. Therefore, :code:`delta_ground_distance` and :code:`delta_time` will have the
     same effect.
 
-
-.. _segment-special-parameters:
-
-**************************
-Special segment parameters
-**************************
-
-Most of segment parameters must be set with a unique value, which can be done in several ways,
-as described :ref:`here<setting-values>`.
-
-There are some special parameters that are detailed below.
-
-.. contents::
-   :local:
-   :depth: 1
 
 
 .. _segment-parameter-engine-setting:
