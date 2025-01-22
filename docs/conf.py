@@ -36,7 +36,7 @@ sys.path.insert(0, os.path.abspath("../src"))
 
 # Overload apidoc options, to add "inherited-members" (which was deactivated because of a bug
 # in earlier sphinx releases)
-environ["SPHINX_APIDOC_OPTIONS"] = "m∂embers,undoc-members,inherited-members,show-inheritance"
+environ["SPHINX_APIDOC_OPTIONS"] = "members,undoc-members,inherited-members,show-inheritance"
 
 
 # -- Run sphinx-apidoc ------------------------------------------------------
@@ -54,7 +54,7 @@ def setup(app):
 
 # -- Project information -----------------------------------------------------
 project = "FAST-OAD"
-copyright = "2021, ONERA & ISAE-SUPAERO"
+copyright = "2025, ONERA & ISAE-SUPAERO"
 
 # -- General configuration ---------------------------------------------------
 
@@ -116,7 +116,7 @@ html_theme = "sphinx_rtd_theme"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-# For custom CSS styles (expected in _static/ folder )
+# For custom CSS styles (expected in _static/ folder)
 html_css_files = ["custom_admonitions.css"]
 
 # To be noted: this import has to take place after the modification of sys.path
