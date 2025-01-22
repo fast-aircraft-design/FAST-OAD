@@ -41,13 +41,13 @@ def cleanup_DOEVariable():
 @pytest.fixture
 def sample_variables():
     """Fixture to create sample DOEVariable instances."""
-    var1 = DOEVariable(name="Var1", bound_lower=10.0, bound_upper=20.0)
+    var1 = DOEVariable(name="Var1", lower_bound=10.0, upper_bound=20.0)
     var2 = DOEVariable(
         name="Var2",
-        bound_lower=5.0,
-        bound_upper=15.0,
+        lower_bound=5.0,
+        upper_bound=15.0,
         reference_value=50,
-        name_pseudo="Var2_pseudo",
+        name_alias="Var2_pseudo",
     )
     var3 = DOEVariable(name="Var3", bind_variable_to=var1)
     return [var1, var2, var3]
@@ -56,37 +56,35 @@ def sample_variables():
 def test_invalid_bounds(cleanup_DOEVariable, cleanup):
     # Test invalid bounds without reference value (lower>upper)
     with pytest.raises(ValueError):
-        DOEVariable(name="InvalidBounds", bound_lower=20, bound_upper=10)
+        DOEVariable(name="InvalidBounds", lower_bound=20, upper_bound=10)
 
 
 def test_invalid_reference_bounds(cleanup_DOEVariable, cleanup):
     # Test invalid bounds when a reference value is provided (negative percetage)
     with pytest.raises(ValueError):
         DOEVariable(
-            name="InvalidReferenceBounds", bound_lower=10, bound_upper=-5, reference_value=50
+            name="InvalidReferenceBounds", lower_bound=10, upper_bound=-5, reference_value=50
         )
 
 
 def test_binding_to_another_variable(cleanup_DOEVariable, cleanup):
     # Create a base variable
-    base_var = DOEVariable(name="BaseVar", bound_lower=10, bound_upper=20)
+    base_var = DOEVariable(name="BaseVar", lower_bound=10, upper_bound=20)
     # Bind another variable to it
     bound_var = DOEVariable(name="BoundVar", bind_variable_to=base_var)
 
-    assert bound_var.bound_lower == base_var.bound_lower
-    assert bound_var.bound_upper == base_var.bound_upper
-    assert bound_var.id_variable == base_var.id_variable
+    assert bound_var.lower_bound == base_var.lower_bound
+    assert bound_var.upper_bound == base_var.upper_bound
+    assert bound_var.variable_id == base_var.variable_id
 
 
 def test_instance_counter_and_id_assignment(cleanup_DOEVariable, cleanup):
-    var1 = DOEVariable(name="Var1", bound_lower=5, bound_upper=15)
-    var2 = DOEVariable(name="Var2", bound_lower=10, bound_upper=20)
-    var3 = DOEVariable(name="Var3", bound_lower=15, bound_upper=25, bind_variable_to=var1)
+    var1 = DOEVariable(name="Var1", lower_bound=5, upper_bound=15)
+    var2 = DOEVariable(name="Var2", lower_bound=10, upper_bound=20)
+    var3 = DOEVariable(name="Var3", bind_variable_to=var1)
 
-    assert var1.id_variable == 0
-    assert var2.id_variable == 1
-    assert var3.id_variable == 0  # Bound to var1
-    assert DOEVariable._instance_counter == 3  # Three instances created
+    assert var1.variable_id == var3.variable_id
+    assert var2.variable_id != var1.variable_id
 
 
 def test_doe_variable_initialization(cleanup_DOEVariable, cleanup, sample_variables):
@@ -95,19 +93,19 @@ def test_doe_variable_initialization(cleanup_DOEVariable, cleanup, sample_variab
 
     # Test default attributes
     assert var1.name == "Var1"
-    assert var1.bound_lower == 10.0
-    assert var1.bound_upper == 20.0
+    assert var1.lower_bound == 10.0
+    assert var1.upper_bound == 20.0
     assert var1.reference_value is None
-    assert var1.name_pseudo == "Var1"  # Default to name as pseudo if not provided
+    assert var1.name_alias == "Var1"  # Default to name as pseudo if not provided
 
     var2 = sample_variables[1]
 
     # Test reference value logic
     assert var2.name == "Var2"
-    assert var2.bound_lower == 47.5
-    assert var2.bound_upper == 57.5
+    assert var2.lower_bound == 47.5
+    assert var2.upper_bound == 57.5
     assert var2.reference_value == 50
-    assert var2.name_pseudo == "Var2_pseudo"
+    assert var2.name_alias == "Var2_pseudo"
 
 
 def test_doe_config_initialization(cleanup_DOEVariable, cleanup, sample_variables):
@@ -133,7 +131,23 @@ def test_generate_doe_full_factorial(cleanup_DOEVariable, cleanup, sample_variab
         destination_folder=RESULTS_FOLDER_PATH,
     )
 
-    doe_points = config.sampling_doe(sample_count=5)
+    doe_points = config.sample_doe(sample_count=5)
+
+    # Test that the return type is a list of VariableList instances
+    assert isinstance(doe_points, list)
+    assert all(isinstance(item, VariableList) for item in doe_points)
+
+
+def test_generate_doe_random(cleanup_DOEVariable, cleanup, sample_variables):
+    """Test DOEConfig generate_doe for Random method."""
+    config = DOEConfig(
+        sampling_method="Random",
+        variables=sample_variables,
+        destination_folder=RESULTS_FOLDER_PATH,
+        seed_value=12,
+    )
+
+    doe_points = config.sample_doe(sample_count=5)
 
     # Test that the return type is a list of VariableList instances
     assert isinstance(doe_points, list)
@@ -149,7 +163,7 @@ def test_generate_doe_lhs_level_count(cleanup_DOEVariable, cleanup, sample_varia
         sampling_options={"level_count": 3, "use_level": 2},
     )
 
-    doe_points = config.sampling_doe(sample_count=5)
+    doe_points = config.sample_doe(sample_count=5)
 
     # Test that the return type is a list of VariableList instances
     assert isinstance(doe_points, list)
@@ -168,7 +182,7 @@ def test_write_doe_inputs_single_level(cleanup_DOEVariable, cleanup, sample_vari
         destination_folder=destination_folder,
         seed_value=12,
     )
-    _ = doe_config.sampling_doe(sample_count=5)
+    doe_config.sample_doe(sample_count=5)
 
     # Act
     doe_config._write_doe_inputs()
@@ -221,7 +235,7 @@ def test_write_doe_inputs_multilevel(cleanup_DOEVariable, cleanup, sample_variab
         seed_value=12,
         sampling_options={"level_count": 3, "use_level": test_level},
     )
-    _ = doe_config.sampling_doe(sample_count=5)
+    doe_config.sample_doe(sample_count=5)
 
     # Act
     doe_config._write_doe_inputs()
@@ -237,4 +251,4 @@ def test_write_doe_inputs_multilevel(cleanup_DOEVariable, cleanup, sample_variab
 
     assert np.allclose(
         written_data.to_numpy(), expected_data.to_numpy(), atol=1e-4, rtol=1e-4
-    )  # We are not checking using assert_frame_equal because the column name of the output file uses pseudo, while the VariableList returned by sampling_doe no
+    )  # We are not checking using assert_frame_equal because the column name of the output file uses pseudo, while the VariableList returned by sample_doe no

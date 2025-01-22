@@ -96,7 +96,7 @@ mpi4py = [
 ]
 
 # Extras ---------------------------------------------------------------
-smt = "^2.8.0"
+smt = "^2.9.0"
 [tool.poetry.extras]
 # Activated with:
 #    poetry install -E mpi
