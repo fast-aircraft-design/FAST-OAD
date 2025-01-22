@@ -34,22 +34,27 @@ def cleanup():
     shutil.rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
-@RegisterSegment("test_segment_A")
-@dataclass
-class SegmentForTest(AbstractFlightSegment):
-    scalar_parameter: float = MANDATORY_FIELD
-    vector_parameter_1: np.ndarray = MANDATORY_FIELD
-    vector_parameter_2: np.ndarray = MANDATORY_FIELD
-    vector_parameter_3: np.ndarray = MANDATORY_FIELD
+@pytest.fixture(scope="module")
+def custom_segment_class():
+    @RegisterSegment("test_segment_A")
+    @dataclass
+    class SegmentForTest(AbstractFlightSegment):
+        scalar_parameter: float = MANDATORY_FIELD
+        vector_parameter_1: np.ndarray = MANDATORY_FIELD
+        vector_parameter_2: np.ndarray = MANDATORY_FIELD
+        vector_parameter_3: np.ndarray = MANDATORY_FIELD
 
-    def compute_from(self, start) -> pd.DataFrame:
-        return pd.DataFrame([start])
+        def compute_from(self, start) -> pd.DataFrame:
+            return pd.DataFrame([start])
 
-    def compute_from_start_to_target(self, start, target) -> pd.DataFrame:
-        pass
+        def compute_from_start_to_target(self, start, target) -> pd.DataFrame:
+            pass
+
+    yield SegmentForTest
+    RegisterSegment.unregister("test_segment_A")
 
 
-def test_with_custom_segment(cleanup, with_dummy_plugin_2):
+def test_with_custom_segment(cleanup, custom_segment_class, with_dummy_plugin_2):
     input_file_path = DATA_FOLDER_PATH / "test_with_custom_segment.xml"
     ivc = DataFile(input_file_path).to_ivc()
 

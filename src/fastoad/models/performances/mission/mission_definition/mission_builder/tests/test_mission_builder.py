@@ -29,7 +29,7 @@ from ..mission_builder import MissionBuilder
 from ...exceptions import FastMissionFileMissingMissionNameError
 from ...schema import MissionDefinition
 from ....base import FlightSequence
-from ....segments.base import AbstractFlightSegment, RegisteredSegment
+from ....segments.base import AbstractFlightSegment, RegisterSegment, RegisteredSegment
 from ....segments.registered.altitude_change import AltitudeChangeSegment
 from ....segments.registered.hold import HoldSegment
 from ....segments.registered.mass_input import MassTargetSegment
@@ -41,19 +41,24 @@ from ....segments.registered.transition import DummyTransitionSegment
 DATA_FOLDER_PATH = Path(__file__).parent / "data"
 
 
-# For this class, we purposely use the deprecated inheritance mechanism
-@dataclass
-class SegmentForTest(
-    AbstractFlightSegment, RegisteredSegment, mission_file_keyword="test_segment_B"
-):
-    scalar_parameter: float = MANDATORY_FIELD
-    vector_parameter_1: np.ndarray = MANDATORY_FIELD
-    vector_parameter_2: np.ndarray = MANDATORY_FIELD
-    vector_parameter_3: np.ndarray = MANDATORY_FIELD
-    vector_parameter_4: np.ndarray = MANDATORY_FIELD
+@pytest.fixture(scope="module")
+def custom_segment_class():
+    # For this class, we purposely use the deprecated inheritance mechanism
+    @dataclass
+    class SegmentForTest(
+        AbstractFlightSegment, RegisteredSegment, mission_file_keyword="test_segment_B"
+    ):
+        scalar_parameter: float = MANDATORY_FIELD
+        vector_parameter_1: np.ndarray = MANDATORY_FIELD
+        vector_parameter_2: np.ndarray = MANDATORY_FIELD
+        vector_parameter_3: np.ndarray = MANDATORY_FIELD
+        vector_parameter_4: np.ndarray = MANDATORY_FIELD
 
-    def compute_from_start_to_target(self, start, target) -> pd.DataFrame:
-        return pd.DataFrame([start])
+        def compute_from_start_to_target(self, start, target) -> pd.DataFrame:
+            return pd.DataFrame([start])
+
+    yield SegmentForTest
+    RegisterSegment.unregister("test_segment_B")
 
 
 def test_input_definition_units():
@@ -75,7 +80,7 @@ def test_input_definition_units():
     assert inp3.value == 3600.0
 
 
-def test_initialization():
+def test_initialization(custom_segment_class):
     mission_builder = MissionBuilder(
         DATA_FOLDER_PATH / "mission.yml",
         propulsion=Mock(IPropulsion),
@@ -99,7 +104,7 @@ def test_initialization():
     )
 
 
-def test_get_input_weight_variable_name():
+def test_get_input_weight_variable_name(custom_segment_class):
     mission_builder = MissionBuilder(
         DATA_FOLDER_PATH / "mission.yml",
         propulsion=Mock(IPropulsion),
@@ -114,7 +119,7 @@ def test_get_input_weight_variable_name():
     assert mission_builder.get_input_weight_variable_name("sizing") == "data:mission:sizing:TOW"
 
 
-def test_inputs():
+def test_inputs(custom_segment_class):
     mission_builder = MissionBuilder(
         DATA_FOLDER_PATH / "mission.yml",
         propulsion=Mock(IPropulsion),
@@ -183,7 +188,7 @@ def test_inputs():
 
 
 @pytest.mark.filterwarnings("ignore:Call to deprecated class RegisteredSegment")
-def test_build():
+def test_build(custom_segment_class):
     mission_definition = MissionDefinition(DATA_FOLDER_PATH / "mission.yml")
     mission_builder = MissionBuilder(
         mission_definition, propulsion=Mock(IPropulsion), reference_area=100.0
@@ -308,14 +313,14 @@ def test_build():
     assert isinstance(test_mission[0], FlightSequence)
     assert len(test_mission[0]) == 2
     segment = test_mission[0][0]
-    assert isinstance(segment, SegmentForTest)
+    assert isinstance(segment, custom_segment_class)
     assert segment.scalar_parameter == 42.0
     assert_allclose(segment.vector_parameter_1, [1.0, 2.0, 3.0])
     assert_allclose(segment.vector_parameter_2, [0.0, 1.0, 2.0, 3.0, 4.0, 5.0])
     assert_allclose(segment.vector_parameter_3, [10.0, 20.0, 30.0])
 
 
-def test_get_route_ranges():
+def test_get_route_ranges(custom_segment_class):
     mission_definition = MissionDefinition(DATA_FOLDER_PATH / "mission.yml")
     mission_builder = MissionBuilder(
         mission_definition, propulsion=Mock(IPropulsion), reference_area=100.0
@@ -352,7 +357,7 @@ def test_get_route_ranges():
     assert_allclose(mission_builder.get_route_ranges(inputs, "operational"), [500.0e3])
 
 
-def test_get_reserve():
+def test_get_reserve(custom_segment_class):
     mission_builder = MissionBuilder(
         DATA_FOLDER_PATH / "mission.yml",
         propulsion=Mock(IPropulsion),

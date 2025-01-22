@@ -219,7 +219,7 @@ class RegisterElement:
             )
 
     @classmethod
-    def get_class(cls, keyword) -> Optional[type]:
+    def get_class(cls, keyword: str) -> Optional[type]:
         """
         Provides the element implementation for provided name.
 
@@ -241,3 +241,14 @@ class RegisterElement:
         :return: dict that associates keywords to their registered class.
         """
         return cls._keyword_vs_implementation.copy()
+
+    @classmethod
+    def unregister(cls, keyword: str):
+        """
+        Removes entry from the know keyword.
+        Does nothing if keyword is already not known.
+
+        :param keyword:
+        """
+        if keyword in cls._keyword_vs_implementation:
+            del cls._keyword_vs_implementation[keyword]
