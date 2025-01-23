@@ -184,6 +184,15 @@ class DOEConfig:
         default=None
     )  # This dict stores the eventual additional options for the chosen sampling method
 
+    # Dataclass features initialized in __post_init__
+    variables_binding: List[int] = field(init=False, repr=False)
+    var_names: List[str] = field(init=False, repr=False)
+    var_names_pseudo: List[str] = field(init=False, repr=False)
+    bounds: np.ndarray = field(init=False, repr=False)
+    _is_sampled: bool = field(
+        default=False, init=False, repr=False
+    )  # Internal flag, default to False
+
     def __post_init__(self):
         self.destination_folder = as_path(self.destination_folder).resolve()
         # Extract the necessary data to configurate the DOE
@@ -209,8 +218,6 @@ class DOEConfig:
                         UserWarning,
                     )
         self.bounds = np.asarray(self.bounds)
-
-        self.is_sampled = False
         self.doe_points_multilevel = None
 
     def _handle_lhs(self, level_count=None):
@@ -226,7 +233,7 @@ class DOEConfig:
         return samp.Random(xlimits=self.bounds, random_state=self.seed_value)
 
     def _write_doe_inputs(self):
-        if self.is_sampled:
+        if self._is_sampled:
             file_name = "DOE_inputs"
             if self.doe_points_multilevel:
                 level_count = len(self.doe_points_multilevel)
@@ -297,7 +304,7 @@ class DOEConfig:
         self.doe_points_df = pd.DataFrame(doe_points_upd, columns=column_names)
         doe_points_dict = self.doe_points_df.to_dict(orient="records")
 
-        self.is_sampled = True
+        self._is_sampled = True
 
         return [  # Good format for CalcRunner
             oad.VariableList(
