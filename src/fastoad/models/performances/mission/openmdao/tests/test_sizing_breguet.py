@@ -19,6 +19,7 @@ import pytest
 from numpy.testing import assert_allclose
 
 from fastoad.testing import run_system
+
 from ..mission import OMMission
 
 RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem

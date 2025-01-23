@@ -16,6 +16,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
 from fastoad.model_base.flight_point import FlightPoint
+
 from .base import RegisterElement
 from .polar import Polar
 

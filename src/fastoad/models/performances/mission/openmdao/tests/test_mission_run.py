@@ -20,6 +20,7 @@ from scipy.constants import nautical_mile
 
 from fastoad.io import DataFile
 from fastoad.testing import run_system
+
 from ..mission_run import MissionComp
 
 DATA_FOLDER_PATH = Path(__file__).parent / "data"

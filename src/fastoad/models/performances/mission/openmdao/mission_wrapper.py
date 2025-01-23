@@ -25,16 +25,17 @@ from openmdao.vectors.vector import Vector
 
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IPropulsion
+
 from ..mission_definition.mission_builder import MissionBuilder
 from ..mission_definition.mission_builder.constants import NAME_TAG, TYPE_TAG
 from ..mission_definition.schema import (
     CLIMB_PARTS_TAG,
     DESCENT_PARTS_TAG,
-    MissionDefinition,
     PARTS_TAG,
     PHASE_TAG,
     RESERVE_TAG,
     ROUTE_TAG,
+    MissionDefinition,
 )
 
 

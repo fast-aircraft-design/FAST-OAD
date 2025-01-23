@@ -19,6 +19,7 @@ from numpy.testing import assert_allclose
 
 from fastoad.io import DataFile
 from fastoad.testing import run_system
+
 from ..payload_range import PayloadRange
 
 DATA_FOLDER_PATH = Path(__file__).parent / "data"

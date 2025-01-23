@@ -41,6 +41,7 @@ from fastoad.io.xml.exceptions import (
 )
 from fastoad.io.xml.translator import VarXpathTranslator
 from fastoad.openmdao.variables import VariableList
+
 from .constants import DEFAULT_IO_ATTRIBUTE, DEFAULT_UNIT_ATTRIBUTE, ROOT_TAG
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module

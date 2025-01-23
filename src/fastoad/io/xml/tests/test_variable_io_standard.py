@@ -25,6 +25,7 @@ from numpy.testing import assert_allclose
 from fastoad.io import VariableIO
 from fastoad.io.xml import VariableXmlStandardFormatter
 from fastoad.openmdao.variables import VariableList
+
 from ..exceptions import FastXPathEvalError
 
 DATA_FOLDER_PATH = Path(__file__).parent / "data"

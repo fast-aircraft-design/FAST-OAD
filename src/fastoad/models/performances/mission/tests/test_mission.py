@@ -16,6 +16,7 @@ from scipy.constants import foot, knot
 
 from fastoad.constants import EngineSetting, FlightPhase
 from fastoad.model_base import FlightPoint
+
 from .conftest import ClimbPhase, DescentPhase, InitialClimbPhase, TaxiPhase
 from ..mission import Mission
 from ..routes import RangedRoute

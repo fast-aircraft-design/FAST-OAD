@@ -1,6 +1,7 @@
 import openmdao.api as om
 
 import fastoad.api as oad
+
 from ...OpenMDAO.aerodynamics.sub_components.compute_induced_drag_coefficient import (
     ComputeInducedDragCoefficient,
 )

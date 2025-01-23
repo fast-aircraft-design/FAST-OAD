@@ -34,6 +34,7 @@ from fastoad._utils.resource_management.contents import PackageReader
 from fastoad.io import IVariableIOFormatter
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from fastoad.openmdao.problem import FASTOADProblem
+
 from . import resources
 from .exceptions import (
     FASTConfigurationBadOpenMDAOInstructionError,

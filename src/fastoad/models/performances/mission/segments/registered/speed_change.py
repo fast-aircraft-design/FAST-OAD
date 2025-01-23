@@ -21,8 +21,8 @@ from fastoad.models.performances.mission.segments.base import (
     RegisterSegment,
 )
 from fastoad.models.performances.mission.segments.time_step_base import (
-    AbstractManualThrustSegment,
     AbstractLiftFromWeightSegment,
+    AbstractManualThrustSegment,
 )
 
 

@@ -17,6 +17,7 @@ from numpy.testing import assert_allclose
 from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import FuelEngineSet
+
 from .conftest import DummyEngine
 from ..hold import HoldSegment
 

@@ -4,5 +4,4 @@ exclude_paths:
   - 'tests/**'
   - '**/conftest.py'
   - 'docs/conf.py'
-  - 'src/fastoad/api.py'
   - '.github/**'

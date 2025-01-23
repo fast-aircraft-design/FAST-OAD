@@ -23,6 +23,7 @@ import pandas as pd
 from deprecated import deprecated
 
 from fastoad.openmdao._utils import get_unconnected_input_names
+
 from ._util import get_problem_variables
 from .variable import METADATA_TO_IGNORE, Variable
 

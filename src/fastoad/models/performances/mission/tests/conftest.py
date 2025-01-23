@@ -25,6 +25,7 @@ from fastoad.model_base import FlightPoint
 from fastoad.model_base.datacls import MANDATORY_FIELD
 from fastoad.model_base.propulsion import FuelEngineSet, IPropulsion
 from fastoad.models.performances.mission.base import FlightSequence
+
 from ..polar import Polar
 from ..segments.registered.altitude_change import AltitudeChangeSegment
 from ..segments.registered.speed_change import SpeedChangeSegment
