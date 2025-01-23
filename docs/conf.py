@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,26 +17,29 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-# -- Path setup --------------------------------------------------------------
-
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-
 import os
 import sys
 from os import environ
 
+from sphinx.ext import apidoc
+
+# -- Path setup --------------------------------------------------------------
+# If extensions (or modules to document with autodoc) are in another directory,
+# add these directories to sys.path here. If the directory is relative to the
+# documentation root, use os.path.abspath to make it absolute, like shown here.
+
+# For custom directives
+sys.path.insert(0, os.path.abspath("./directives"))
+
+# For autodoc... and custom directives
 sys.path.insert(0, os.path.abspath("../src"))
 
 # Overload apidoc options, to add "inherited-members" (which was deactivated because of a bug
 # in earlier sphinx releases)
 environ["SPHINX_APIDOC_OPTIONS"] = "members,undoc-members,inherited-members,show-inheritance"
 
+
 # -- Run sphinx-apidoc ------------------------------------------------------
-from sphinx.ext import apidoc
-
-
 def run_apidoc(_):
     sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
     cur_dir = os.path.abspath(os.path.dirname(__file__))
@@ -50,10 +53,8 @@ def setup(app):
 
 
 # -- Project information -----------------------------------------------------
-
 project = "FAST-OAD"
-copyright = "2021, ONERA & ISAE-SUPAERO"
-
+copyright = "2025, ONERA & ISAE-SUPAERO"
 
 # -- General configuration ---------------------------------------------------
 
@@ -73,6 +74,7 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
     "sphinxcontrib.bibtex",
+    "segment_attributes",
 ]
 bibtex_bibfiles = ["refs.bib"]
 
@@ -114,13 +116,16 @@ html_theme = "sphinx_rtd_theme"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
+# For custom CSS styles (expected in _static/ folder)
+html_css_files = ["custom_admonitions.css"]
+
+# To be noted: this import has to take place after the modification of sys.path
 try:
     from fastoad import __version__
 except ImportError:
     pass
 else:
     release = version = __version__
-
 
 # -- External mapping ------------------------------------------------------------
 python_version = ".".join(map(str, sys.version_info[0:2]))

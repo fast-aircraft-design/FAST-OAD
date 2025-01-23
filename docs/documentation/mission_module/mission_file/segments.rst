@@ -1,6 +1,7 @@
 .. _flight-segments:
 
 
+
 ###############
 Flight segments
 ###############
@@ -20,6 +21,7 @@ Sections:
    :depth: 1
 
 
+
 *************
 Segment types
 *************
@@ -29,7 +31,7 @@ Python implementation.
 All parameters of the Python constructor can be set in the mission file (except for
 :code:`propulsion` and :code:`reference_area` that are set within the mission module).
 Most of these parameters are scalars and can be set as described :ref:`here<setting-values>`.
-The segment target is a special parameter, detailed in :ref:`further section<segment-target>`.
+The segment target is a special parameter, detailed in :ref:`further section<segment-parameter-target>`.
 Other special parameters are detailed in :ref:`last section<segment-special-parameters>`.
 
 
@@ -40,13 +42,15 @@ Available segments are:
    :local:
    :depth: 1
 
-.. _segment-start:
 
+.. _segment-start:
 
 :code:`start` segment
 =====================
 
 .. versionadded:: 1.4.0
+
+.. list-attributes-for:: start
 
 :code:`start` is a special segment to be used at the beginning of the mission definition to
 specify the starting point of the mission, preferably by defining variables so it can be
@@ -99,12 +103,14 @@ With no :code:`start` specified, the mission is assumed to start at altitude 0.0
     Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.start.Start`
 
 
-.. _segment-mass_input:
+.. _segment-mass-input:
 
 :code:`mass_input` segment
 ==========================
 
 .. versionadded:: 1.4.0
+
+.. list-attributes-for:: mass_input
 
 The `start segment`_ allows to define aircraft mass at the beginning of the mission, but it
 is sometimes needed to define the aircraft mass at some point in the mission. The typical
@@ -143,10 +149,13 @@ achieved at the specify instant in the mission by setting the start mass input a
 
     Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.mass_input.MassTargetSegment`
 
-.. _segment-speed_change:
+
+.. _segment-speed-change:
 
 :code:`speed_change` segment
 ============================
+
+.. list-attributes-for:: speed_change
 
 A :code:`speed_change` segment simulates an acceleration or deceleration flight part, at constant
 altitude and thrust rate. It ends when the target speed (mach, true_airspeed or
@@ -170,10 +179,13 @@ equivalent_airspeed) is reached.
 
     Python documentation: :mod:`~fastoad.models.performances.mission.segments.registered.speed_change.SpeedChangeSegment`
 
-.. _segment-altitude_change:
+
+.. _segment-altitude-change:
 
 :code:`altitude_change` segment
 ===============================
+
+.. list-attributes-for:: altitude_change
 
 An :code:`altitude_change` segment simulates a climb or descent flight part at constant thrust rate.
 Typically, it ends when the target altitude is reached.
@@ -234,10 +246,13 @@ Mach 0.8 while keeping equivalent_airspeed constant).
 
     Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.altitude_change.AltitudeChangeSegment`
 
+
 .. _segment-cruise:
 
 :code:`cruise` segment
 ======================
+
+.. list-attributes-for:: cruise
 
 A :code:`cruise` segment simulates a flight part at constant speed and altitude, and regulated
 thrust rate (drag is compensated).
@@ -245,7 +260,7 @@ thrust rate (drag is compensated).
 Optionally, target altitude can be set to :code:`optimal_flight_level`. In such case, cruise will
 be preceded by a climb segment that will put the aircraft at the altitude that will minimize the
 fuel consumption for the whole segment (including the prepending climb).
-This option is available because the :ref:`segment-altitude_change` segment can reach an altitude
+This option is available because the :ref:`segment-altitude-change` segment can reach an altitude
 that will optimize the lift/drag ratio at current mass, but the obtained altitude will not
 guaranty an optimal fuel consumption for the whole cruise.
 
@@ -280,10 +295,13 @@ prepending climb, if any).
 
     Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.cruise.ClimbAndCruiseSegment`
 
-.. _segment-optimal_cruise:
+
+.. _segment-optimal-cruise:
 
 :code:`optimal_cruise` segment
 ==============================
+
+.. list-attributes-for:: optimal_cruise
 
 An :code:`optimal_cruise` segment simulates a cruise climb, i.e. a cruise where the aircraft
 climbs gradually to keep being at altitude of maximum lift/drag ratio.
@@ -291,7 +309,7 @@ climbs gradually to keep being at altitude of maximum lift/drag ratio.
 The :code:`optimal_cruise` segment can be realised at a constant lift coefficient using the parameter :code:`maximum_CL`.
 
 It assumed the segment actually starts at altitude of maximum lift/drag ratio or the altitude given by :code:`maximum_CL`, which can be
-achieved with an :ref:`segment-altitude_change` segment with :code:`optimal_altitude` as target
+achieved with an :ref:`segment-altitude-change` segment with :code:`optimal_altitude` as target
 altitude and :code:`maximum_CL` as parameter.
 
 *The common way to optimize the fuel consumption for commercial aircraft is a step climb cruise.
@@ -314,10 +332,13 @@ Such segment will be implemented in the future.*
 
     Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.cruise.OptimalCruiseSegment`
 
+
 .. _segment-holding:
 
 :code:`holding` segment
 =======================
+
+.. list-attributes-for:: holding
 
 A :code:`holding` segment simulates a flight part at constant speed and altitude, and regulated
 thrust rate (drag is compensated). It ends when the target time is covered.
@@ -338,10 +359,13 @@ thrust rate (drag is compensated). It ends when the target time is covered.
 
     Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.hold.HoldSegment`
 
+
 .. _segment-taxi:
 
 :code:`taxi` segment
 ====================
+
+.. list-attributes-for:: taxi
 
 A :code:`taxi` segment simulates the mission parts between gate and takeoff or landing, at constant
 thrust rate. It ends when the target time is covered.
@@ -360,10 +384,13 @@ thrust rate. It ends when the target time is covered.
 
     Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.taxi.TaxiSegment`
 
+
 .. _segment-transition:
 
 :code:`transition` segment
 ==========================
+
+.. list-attributes-for:: taxi
 
 A :code:`transition` segment is intended to "fill the gaps" when some flight part is not available
 for computation or is needed to be assessed without spending CPU time.
@@ -457,7 +484,7 @@ to :code:`False` the parameter :code:`fuel_is_consumed`.
     Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.transition.DummyTransitionSegment`
 
 
-.. _segment-ground_speed_change:
+.. _segment-ground-speed-change:
 
 :code:`ground_speed_change` segment
 ===================================
@@ -482,6 +509,7 @@ The segment ends when the target velocity is reached.
 .. seealso::
 
     Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.ground_speed_change.GroundSpeedChangeSegment`
+
 
 .. _segment-rotation:
 
@@ -514,7 +542,8 @@ The segment ends when lift equals weight. Therefore, no target needs to be set.
 
     Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.takeoff.rotation.RotationSegment`
 
-.. _segment-end_of_takeoff:
+
+.. _segment-end-of-takeoff:
 
 :code:`end_of_takeoff` segment
 ==============================
@@ -539,6 +568,7 @@ good accuracy on takeoff distance.
 .. seealso::
 
     Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.takeoff.end_of_takeoff.EndOfTakeoffSegment`
+
 
 .. _segment-takeoff:
 
@@ -580,11 +610,29 @@ The parameters for this segment are the same as for its 3 components, except tha
 
     Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.takeoff.takeoff.TakeOffSequence`
 
-.. _segment-target:
 
-**************
-Segment target
-**************
+.. _segment-special-parameters:
+
+**************************
+Special segment parameters
+**************************
+
+Most of segment parameters must be set with a unique value, which can be done in several ways,
+as described :ref:`here<setting-values>`.
+
+There are some special parameters that are detailed below.
+
+.. contents::
+   :local:
+   :depth: 1
+
+
+.. _segment-parameter-target:
+
+:code:`target` parameter
+=======================
+
+.. list-segments-for:: target
 
 The target of a flight segment is a set of parameters that drives the end of the segment simulation.
 
@@ -598,7 +646,7 @@ that tells the parameter value should be kept constant and equal to the start va
 In any case, please refer to the documentation of the flight segment.
 
 Absolute and relative values
-============================
+----------------------------
 
 Amost all target parameters are considered as absolute values, i.e. the target is considered
 reached if the named parameter gets equal to the provided value.
@@ -630,32 +678,17 @@ name will be preceded by :code:`delta_`.
 
 
 
-.. _segment-special-parameters:
-
-**************************
-Special segment parameters
-**************************
-
-Most of segment parameters must be set with a unique value, which can be done in several ways,
-as described :ref:`here<setting-values>`.
-
-There are some special parameters that are detailed below.
-
-.. contents::
-   :local:
-   :depth: 1
-
-
-
-.. _segment-parameter-engine_setting:
+.. _segment-parameter-engine-setting:
 
 :code:`engine_setting` parameter
 ================================
 
+.. list-segments-for:: engine_setting
+
 Expected value for :code:`engine_setting` are :code:`takeoff`, :code:`climb`
 , :code:`cruise` or :code:`idle`
 
-This setting is used by the "rubber engine" propulsion model
+This setting can be used by a model like the "rubber engine" propulsion model
 (see class `RubberEngine <https://fast-oad-cs25.readthedocs.io/en/latest/api/fastoad_cs25.models.propulsion.fuel_propulsion.rubber_engine.rubber_engine.html#fastoad_cs25.models.propulsion.fuel_propulsion.rubber_engine.rubber_engine.RubberEngine>`_).
 It roughly links the "turbine inlet temperature" (a.k.a. T4) to the flight conditions.
 
@@ -666,6 +699,8 @@ If another propulsion model is used, this parameter may become irrelevant, and t
 
 :code:`polar` parameter(s)
 ==========================
+
+.. list-segments-for:: polar
 
 The aerodynamic polar defines the relation between lift and drag coefficients
 (respectively CL and CD).
@@ -702,3 +737,4 @@ Therefore, the next example is equivalent to the previous one:
 
     segment: cruise
     polar: data:aerodynamics:aircraft:cruise
+

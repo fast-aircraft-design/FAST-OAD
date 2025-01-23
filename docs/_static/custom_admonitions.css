@@ -1,0 +1,31 @@
+.admonition.parameters {
+    background-color: #dde;
+/*
+    border-left: 0px solid #007acc;
+    padding: 0px;
+*/
+    color: #333;
+}
+
+.admonition.parameters .admonition-title {
+/*
+    color: #fff;
+*/
+    background-color: #889;
+}
+
+.admonition.applies-to {
+    background-color: #cdc;
+/*
+    border-left: 0px solid #007acc;
+    padding: 0px;
+    color: #333;
+*/
+}
+
+.admonition.applies-to .admonition-title {
+/*
+    color: #fff;
+*/
+    background-color: #787;
+}
