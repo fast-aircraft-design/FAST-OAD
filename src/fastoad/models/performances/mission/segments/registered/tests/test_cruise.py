@@ -189,8 +189,16 @@ def test_climb_and_cruise_at_optimal_flight_level(polar):
     run()
 
 
-def test_climb_and_cruise_at_optimal_flight_level_with_unpickable(polar, clean_data_file):
-    engine = DummyUnpickableEngine(0.5e5, 3.0e-5)
+def test_climb_and_cruise_at_optimal_flight_level_with_unpickable(polar, tmp_path):
+    # Create temporary folder containing a dummy data file
+    d = tmp_path / "sub"
+    d.mkdir()
+    file = d / "data.txt"
+    with open(file, "w") as f:
+        f.write("This is a test file for unpickable propulsion test.")
+
+    # Actually try to run the cruise segment
+    engine = DummyUnpickableEngine(0.5e5, 3.0e-5, file)
     propulsion = FuelEngineSet(engine, 2)
     reference_area = 120.0
     try:
