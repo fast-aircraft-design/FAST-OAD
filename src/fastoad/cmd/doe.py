@@ -1,4 +1,4 @@
-"""Tools for generating and postprocess Design of Experiments (DOEs) in FAST-OAD"""
+"""Tools for generating and postprocess Design of Experiments (DOEs) in FAST-OAD."""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -16,12 +16,13 @@ import itertools
 import warnings
 from dataclasses import dataclass, field
 from os import PathLike
-from typing import ClassVar, Dict, List, Optional, Union
+from typing import ClassVar, Optional, Union
 
 import numpy as np
 import pandas as pd
 import smt.sampling_methods as samp
 from smt.applications.mfk import NestedLHS
+from smt.sampling_methods.sampling_method import ScaledSamplingMethod
 
 import fastoad.api as oad
 from fastoad._utils.files import as_path
@@ -30,18 +31,20 @@ from fastoad.openmdao.variables import VariableList
 
 @dataclass
 class DOEVariable:
-    """
-    Represents a Design of Experiments (DOE) variable defined by its unique `variable_id`.
+    """Represents a Design of Experiments (DOE) variable defined by its unique `variable_id`.
 
     :param name: The name of the FAST-OAD DOE variable.
     :param lower_bound: The lower bound of the variable. Defaults to None.
     :param upper_bound: The upper bound of the variable. Defaults to None.
-    :param reference_value: A reference value used to adjust bounds as percentages. If given, `lower_bound` and
-                            `upper_bound` are considered as percentages. Defaults to None.
-    :param bind_variable_to: Another DOEVariable instance to bind this variable to. When bound, this variable
-                             inherits the bounds of the bound variable, and no new ID is assigned. Once the DOE
-                             is sampled, the variables will share the same dimension and same values.
-    :param name_alias: An optional alias for the variable. If not provided, it defaults to the value of `name`.
+    :param reference_value: A reference value used to adjust bounds as percentages. If given,
+                            `lower_bound` and `upper_bound` are considered as percentages.
+                            Defaults to None.
+    :param bind_variable_to: Another DOEVariable instance to bind this variable to. When bound,
+                             this variable inherits the bounds of the bound variable, and no new
+                             ID is assigned. Once the DOE is sampled, the variables will share
+                             the same dimension and same values.
+    :param name_alias: An optional alias for the variable. If not provided, it defaults to the
+                       value of `name`.
     """
 
     name: str
@@ -52,68 +55,75 @@ class DOEVariable:
     upper_bound: Optional[float] = None
     _upper_bound: Optional[float] = field(
         init=False, repr=False
-    )  # More info here: # noqa: F811 # https://florimond.dev/en/posts/2018/10/reconciling-dataclasses-and-properties-in-python
+    )  # More info here: # https://florimond.dev/en/posts/2018/10/reconciling-dataclasses-and-properties-in-python
     reference_value: Optional[float] = None
     bind_variable_to: Optional["DOEVariable"] = None
     name_alias: Optional[str] = None
 
-    # Class-level counter using itertools to handle unique IDs. If two variables are binded, they shares the same ID.
+    # Class-level counter using itertools to handle unique IDs. If two variables are binded
+    # they shares the same ID.
     _id_counter: ClassVar[itertools.count] = itertools.count()
 
-    def __post_init__(self):
-        self.validate_variable()
+    def __post_init__(self) -> None:
+        self._validate_variable()
         if not self.name_alias:
             self.name_alias = self.name
         if self.bind_variable_to:
             self.variable_id = self.bind_variable_to.variable_id
         else:
             self.variable_id = self._generate_id()
-            self.validate_bounds()
+            self._validate_bounds()
 
     @classmethod
-    def _generate_id(cls):
+    def _generate_id(cls) -> int:
         """Generates a unique ID for each instance."""
         return next(cls._id_counter)
 
     @property
-    def lower_bound(self):  # noqa: F811 # https://florimond.dev/en/posts/2018/10/reconciling-dataclasses-and-properties-in-python
+    def lower_bound(self) -> float:  # noqa: F811 # https://florimond.dev/en/posts/2018/10/reconciling-dataclasses-and-properties-in-python
+        """The lower bound of the DOE variable."""
         if self.bind_variable_to:
             return self.bind_variable_to.lower_bound
         return self._lower_bound
 
     @lower_bound.setter
-    def lower_bound(self, value):
+    def lower_bound(self, value: float) -> None:
         if self.bind_variable_to:
             warnings.warn(
-                f"Cannot set lower_bound directly for variable '{self.name}' because it is bound to '{self.bind_variable_to.name}'. "
-                f"The bound variable's bounds take precedence.",
+                f"Cannot set lower_bound directly for variable '{self.name}' because it is bound to"
+                f" '{self.bind_variable_to.name}'. The bound variable's bounds take precedence.",
                 UserWarning,
+                stacklevel=2,
             )
         else:
             self._lower_bound = value
 
     @property
-    def upper_bound(self):  # noqa: F811 # https://florimond.dev/en/posts/2018/10/reconciling-dataclasses-and-properties-in-python
+    def upper_bound(self) -> float:  # noqa: F811 # https://florimond.dev/en/posts/2018/10/reconciling-dataclasses-and-properties-in-python
+        """The upper bound of the DOE variable."""
         if self.bind_variable_to:
             return self.bind_variable_to.upper_bound
         return self._upper_bound
 
     @upper_bound.setter
-    def upper_bound(self, value):
+    def upper_bound(self, value: float) -> None:
         if self.bind_variable_to:
             warnings.warn(
-                f"Cannot set upper_bound directly for variable '{self.name}' because it is bound to '{self.bind_variable_to.name}'. "
-                f"The bound variable's bounds take precedence.",
+                f"Cannot set upper_bound directly for variable '{self.name}' because it is bound to"
+                f" '{self.bind_variable_to.name}'. The bound variable's bounds take precedence.",
                 UserWarning,
+                stacklevel=2,
             )
         else:
             self._upper_bound = value
 
-    def validate_bounds(self):
+    def _validate_bounds(self) -> None:
         if self.reference_value:
             if (self.lower_bound < 0) or (self.upper_bound < 0):
                 raise ValueError(
-                    f"Invalid DOE bounds for variable {self.name}: ({self.lower_bound}) and ({self.upper_bound}) should be greater than zero when a reference value is given."
+                    f"Invalid DOE bounds for variable {self.name}: ({self.lower_bound}) and "
+                    f"({self.upper_bound}) should be greater than zero when a reference value "
+                    f"is given."
                 )
             self._lower_bound = self.reference_value - (
                 self.reference_value * self.lower_bound / 100
@@ -124,12 +134,12 @@ class DOEVariable:
         else:
             if self.lower_bound > self.upper_bound:
                 raise ValueError(
-                    f"Invalid DOE bounds for variable {self.name}: ({self.lower_bound}) should not be greater than ({self.upper_bound})"
+                    f"Invalid DOE bounds for variable {self.name}: ({self.lower_bound}) should "
+                    f"not be greater than ({self.upper_bound})"
                 )
 
-    def validate_variable(self):
-        """
-        Ensures that the variable is either:
+    def _validate_variable(self) -> None:
+        """Ensures that the variable is either:
         1. Bound to another variable (`bind_variable_to` is set), or
         2. Has both `lower_bound` and `upper_bound` set.
         """
@@ -142,19 +152,19 @@ class DOEVariable:
                     f"Variable '{self.name}' is bound to '{self.bind_variable_to.name}'. "
                     f"Bounds ({self._lower_bound}, {self._upper_bound}) will be ignored.",
                     UserWarning,
+                    stacklevel=2,
                 )
         else:
             if isinstance(self.lower_bound, property) or isinstance(self.upper_bound, property):
                 raise ValueError(
-                    f"DOEVariable '{self.name}' must either be bound to another variable (via 'bind_variable_to') "
-                    f"or have both 'lower_bound' and 'upper_bound' defined."
+                    f"DOEVariable '{self.name}' must either be bound to another variable "
+                    "(via 'bind_variable_to') or have both 'lower_bound' and 'upper_bound' defined."
                 )
 
 
 @dataclass
 class DOEConfig:
-    """
-    Configuration and management of Design of Experiments (DOE) processes.
+    """Configuration and management of Design of Experiments (DOE) processes.
 
     This class serves as a central entity for configuring and generating sampling points
     for experiments using various DOE sampling methods using the SMT package. It manages the
@@ -177,23 +187,23 @@ class DOEConfig:
     """
 
     sampling_method: str
-    variables: List[DOEVariable]
+    variables: list[DOEVariable]
     destination_folder: Union[str, PathLike]
     seed_value: int = 0
-    sampling_options: Optional[Dict] = field(
+    sampling_options: Optional[dict] = field(
         default=None
     )  # This dict stores the eventual additional options for the chosen sampling method
 
     # Dataclass features initialized in __post_init__
-    variables_binding: List[int] = field(init=False, repr=False)
-    var_names: List[str] = field(init=False, repr=False)
-    var_names_pseudo: List[str] = field(init=False, repr=False)
+    variables_binding: list[int] = field(init=False, repr=False)
+    var_names: list[str] = field(init=False, repr=False)
+    var_names_pseudo: list[str] = field(init=False, repr=False)
     bounds: np.ndarray = field(init=False, repr=False)
     _is_sampled: bool = field(
         default=False, init=False, repr=False
     )  # Internal flag, default to False
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.destination_folder = as_path(self.destination_folder).resolve()
         # Extract the necessary data to configurate the DOE
         self.variables_binding = [var.variable_id for var in self.variables]
@@ -212,27 +222,28 @@ class DOEConfig:
                     self.bounds.append([var.lower_bound, var.upper_bound])
                 else:
                     warnings.warn(
-                        f"Variable '{var.name}' set multiple times. Please check the DOE variable definition."
-                        f"The bounds defined first take precedence. ({var.lower_bound, var.upper_bound}) will be"
-                        f"ignored.",
+                        f"Variable '{var.name}' set multiple times. Please check the DOE variable "
+                        f"definition. The bounds defined first take precedence. "
+                        f"({var.lower_bound, var.upper_bound}) will be ignored.",
                         UserWarning,
+                        stacklevel=2,
                     )
         self.bounds = np.asarray(self.bounds)
         self.doe_points_multilevel = None
 
-    def _handle_lhs(self, level_count=None):
+    def _handle_lhs(self, level_count: Optional[int] = None) -> ScaledSamplingMethod:
         if level_count:
             return NestedLHS(nlevel=level_count, xlimits=self.bounds, random_state=self.seed_value)
         else:
             return samp.LHS(criterion="ese", xlimits=self.bounds, random_state=self.seed_value)
 
-    def _handle_full_factorial(self):
+    def _handle_full_factorial(self) -> ScaledSamplingMethod:
         return samp.FullFactorial(xlimits=self.bounds)
 
-    def _handle_random(self):
+    def _handle_random(self) -> ScaledSamplingMethod:
         return samp.Random(xlimits=self.bounds, random_state=self.seed_value)
 
-    def _write_doe_inputs(self):
+    def _write_doe_inputs(self) -> None:
         if self._is_sampled:
             file_name = "DOE_inputs"
             if self.doe_points_multilevel:
@@ -263,9 +274,8 @@ class DOEConfig:
                 "You cannot call _write_doe_inputs without having performed the sampling."
             )
 
-    def sample_doe(self, sample_count: int) -> List[VariableList]:
-        """
-        Generates sampling points for a Design of Experiments (DOE) using the SMT library.
+    def sample_doe(self, sample_count: int) -> list[VariableList]:
+        """Generates sampling points for a Design of Experiments (DOE) using the SMT library.
 
         :param sample_count: The number of samples to generate.
 
@@ -274,10 +284,9 @@ class DOEConfig:
         method = self.sampling_method
         level_count = None
         use_level = None
-        if self.sampling_options:
-            if self.sampling_options.get("level_count"):
-                level_count = self.sampling_options.get("level_count")
-                use_level = self.sampling_options.get("use_level")
+        if self.sampling_options and self.sampling_options.get("level_count"):
+            level_count = self.sampling_options.get("level_count")
+            use_level = self.sampling_options.get("use_level")
 
         method_dispatch = {
             "LHS": lambda: self._handle_lhs(level_count),
@@ -287,7 +296,8 @@ class DOEConfig:
         handler = method_dispatch.get(method)
         if handler is None:
             raise ValueError(
-                f"Unknown sampling method. Please use one of the following implemented method:\n{method_dispatch.keys()}"
+                f"Unknown sampling method. Please use one of the following implemented "
+                f"method:\n{method_dispatch.keys()}"
             )
         sample_method = handler()
         doe_points = sample_method(sample_count)

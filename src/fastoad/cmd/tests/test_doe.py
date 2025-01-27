@@ -33,8 +33,8 @@ def cleanup():
     shutil.rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
-@pytest.fixture()
-def cleanup_DOEVariable():
+@pytest.fixture
+def cleanup_doe_variable():
     DOEVariable._id_counter = itertools.count()
 
 
@@ -53,7 +53,7 @@ def sample_variables():
     return [var1, var2, var3]
 
 
-def test_alias_default(cleanup_DOEVariable, cleanup):
+def test_alias_default(cleanup_doe_variable, cleanup):
     """Test that the name_alias defaults to the name."""
     var = DOEVariable(
         name="Var1",
@@ -63,7 +63,7 @@ def test_alias_default(cleanup_DOEVariable, cleanup):
     assert var.name_alias == "Var1"
 
 
-def test_alias_custom(cleanup_DOEVariable, cleanup):
+def test_alias_custom(cleanup_doe_variable, cleanup):
     """Test that the name_alias can be set explicitly."""
     var = DOEVariable(
         name="Var1",
@@ -98,15 +98,15 @@ def test_invalid_bounds():
         DOEVariable(name="var1", lower_bound=20, upper_bound=10)
 
 
-def test_invalid_reference_bounds(cleanup_DOEVariable, cleanup):
+def test_invalid_reference_bounds(cleanup_doe_variable, cleanup):
     # Test invalid bounds when a reference value is provided (negative percetage)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Invalid DOE bounds for variable"):
         DOEVariable(
             name="InvalidReferenceBounds", lower_bound=10, upper_bound=-5, reference_value=50
         )
 
 
-def test_binding_to_another_variable(cleanup_DOEVariable, cleanup):
+def test_binding_to_another_variable(cleanup_doe_variable, cleanup):
     # Create a base variable
     base_var = DOEVariable(name="BaseVar", lower_bound=10, upper_bound=20)
     # Bind another variable to it
@@ -117,7 +117,7 @@ def test_binding_to_another_variable(cleanup_DOEVariable, cleanup):
     assert bound_var.variable_id == base_var.variable_id
 
 
-def test_instance_counter_and_id_assignment(cleanup_DOEVariable, cleanup):
+def test_instance_counter_and_id_assignment(cleanup_doe_variable, cleanup):
     var1 = DOEVariable(name="Var1", lower_bound=5, upper_bound=15)
     var2 = DOEVariable(name="Var2", lower_bound=10, upper_bound=20)
     var3 = DOEVariable(name="Var3", bind_variable_to=var1)
@@ -126,7 +126,7 @@ def test_instance_counter_and_id_assignment(cleanup_DOEVariable, cleanup):
     assert var2.variable_id != var1.variable_id
 
 
-def test_doe_variable_initialization(cleanup_DOEVariable, cleanup, sample_variables):
+def test_doe_variable_initialization(cleanup_doe_variable, cleanup, sample_variables):
     """Test initialization of DOEVariable."""
     var1 = sample_variables[0]
 
@@ -147,7 +147,7 @@ def test_doe_variable_initialization(cleanup_DOEVariable, cleanup, sample_variab
     assert var2.name_alias == "Var2_pseudo"
 
 
-def test_doe_config_initialization(cleanup_DOEVariable, cleanup, sample_variables):
+def test_doe_config_initialization(cleanup_doe_variable, cleanup, sample_variables):
     """Test initialization of DOEConfig."""
     config = DOEConfig(
         sampling_method="LHS",
@@ -163,12 +163,10 @@ def test_doe_config_initialization(cleanup_DOEVariable, cleanup, sample_variable
 
 
 def test_duplicate_variable_warning(
-    cleanup_DOEVariable,
+    cleanup_doe_variable,
     cleanup,
 ):
-    """
-    Test that a warning is raised when duplicate variable names are added to DOEConfig.
-    """
+    """Test that a warning is raised when duplicate variable names are added to DOEConfig."""
     # Define variables with duplicate names
     var1 = DOEVariable(name="var1", lower_bound=0, upper_bound=10)
     var2 = DOEVariable(name="var1", lower_bound=20, upper_bound=30)  # Duplicate name
@@ -187,7 +185,7 @@ def test_duplicate_variable_warning(
     assert len(config.bounds) == 2  # var2 is ignored
 
 
-def test_generate_doe_full_factorial(cleanup_DOEVariable, cleanup, sample_variables):
+def test_generate_doe_full_factorial(cleanup_doe_variable, cleanup, sample_variables):
     """Test DOEConfig generate_doe for Full Factorial method."""
     config = DOEConfig(
         sampling_method="Full Factorial",
@@ -202,7 +200,7 @@ def test_generate_doe_full_factorial(cleanup_DOEVariable, cleanup, sample_variab
     assert all(isinstance(item, VariableList) for item in doe_points)
 
 
-def test_generate_doe_random(cleanup_DOEVariable, cleanup, sample_variables):
+def test_generate_doe_random(cleanup_doe_variable, cleanup, sample_variables):
     """Test DOEConfig generate_doe for Random method."""
     config = DOEConfig(
         sampling_method="Random",
@@ -218,7 +216,7 @@ def test_generate_doe_random(cleanup_DOEVariable, cleanup, sample_variables):
     assert all(isinstance(item, VariableList) for item in doe_points)
 
 
-def test_generate_doe_lhs_level_count(cleanup_DOEVariable, cleanup, sample_variables):
+def test_generate_doe_lhs_level_count(cleanup_doe_variable, cleanup, sample_variables):
     """Test DOEConfig generate_doe for LHS method missing level_count."""
     config = DOEConfig(
         sampling_method="LHS",
@@ -234,7 +232,7 @@ def test_generate_doe_lhs_level_count(cleanup_DOEVariable, cleanup, sample_varia
     assert all(isinstance(item, VariableList) for item in doe_points)
 
 
-def test_write_doe_inputs_single_level(cleanup_DOEVariable, cleanup, sample_variables):
+def test_write_doe_inputs_single_level(cleanup_doe_variable, cleanup, sample_variables):
     """Test _write_doe_inputs for single-level DOE points using sample variables."""
     destination_folder = RESULTS_FOLDER_PATH / "write_doe_inputs_single_level"
     destination_folder.mkdir(parents=True, exist_ok=True)
@@ -284,7 +282,7 @@ def test_write_doe_inputs_single_level(cleanup_DOEVariable, cleanup, sample_vari
     pd.testing.assert_frame_equal(written_data.set_index("ID"), expected_data)
 
 
-def test_write_doe_inputs_multilevel(cleanup_DOEVariable, cleanup, sample_variables):
+def test_write_doe_inputs_multilevel(cleanup_doe_variable, cleanup, sample_variables):
     """Test _write_doe_inputs for multi-level DOE points using sample variables."""
     destination_folder = RESULTS_FOLDER_PATH / "write_doe_inputs_multilevel"
     destination_folder.mkdir(parents=True, exist_ok=True)
@@ -313,6 +311,6 @@ def test_write_doe_inputs_multilevel(cleanup_DOEVariable, cleanup, sample_variab
 
     expected_data = doe_config.doe_points_df
 
-    assert np.allclose(
-        written_data.to_numpy(), expected_data.to_numpy(), atol=1e-4, rtol=1e-4
-    )  # We are not checking using assert_frame_equal because the column name of the output file uses pseudo, while the VariableList returned by sample_doe no
+    # We are not checking using assert_frame_equal because the column name of the output file
+    # uses pseudo, while the VariableList returned by sample_doe no
+    assert np.allclose(written_data.to_numpy(), expected_data.to_numpy(), atol=1e-4, rtol=1e-4)
