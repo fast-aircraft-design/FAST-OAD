@@ -55,7 +55,7 @@ class DOEVariable:
     upper_bound: Optional[float] = None
     _upper_bound: Optional[float] = field(
         init=False, repr=False
-    )  # More info here: # https://florimond.dev/en/posts/2018/10/reconciling-dataclasses-and-properties-in-python
+    )  # https://florimond.dev/en/posts/2018/10/reconciling-dataclasses-and-properties-in-python
     reference_value: Optional[float] = None
     bind_variable_to: Optional["DOEVariable"] = None
     name_alias: Optional[str] = None
@@ -80,7 +80,7 @@ class DOEVariable:
         return next(cls._id_counter)
 
     @property
-    def lower_bound(self) -> float:  # noqa: F811 # https://florimond.dev/en/posts/2018/10/reconciling-dataclasses-and-properties-in-python
+    def lower_bound(self) -> float:  # noqa: F811
         """The lower bound of the DOE variable."""
         if self.bind_variable_to:
             return self.bind_variable_to.lower_bound
@@ -99,7 +99,7 @@ class DOEVariable:
             self._lower_bound = value
 
     @property
-    def upper_bound(self) -> float:  # noqa: F811 # https://florimond.dev/en/posts/2018/10/reconciling-dataclasses-and-properties-in-python
+    def upper_bound(self) -> float:  # noqa: F811
         """The upper bound of the DOE variable."""
         if self.bind_variable_to:
             return self.bind_variable_to.upper_bound
@@ -234,8 +234,7 @@ class DOEConfig:
     def _handle_lhs(self, level_count: Optional[int] = None) -> ScaledSamplingMethod:
         if level_count:
             return NestedLHS(nlevel=level_count, xlimits=self.bounds, random_state=self.seed_value)
-        else:
-            return samp.LHS(criterion="ese", xlimits=self.bounds, random_state=self.seed_value)
+        return samp.LHS(criterion="ese", xlimits=self.bounds, random_state=self.seed_value)
 
     def _handle_full_factorial(self) -> ScaledSamplingMethod:
         return samp.FullFactorial(xlimits=self.bounds)
