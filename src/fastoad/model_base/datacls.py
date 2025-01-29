@@ -12,7 +12,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from dataclasses import fields, dataclass
+from dataclasses import dataclass, fields
 
 #: To be put as default value for dataclass fields that should not have a default value.
 #: See :class:`BaseDataClass` for further information.
