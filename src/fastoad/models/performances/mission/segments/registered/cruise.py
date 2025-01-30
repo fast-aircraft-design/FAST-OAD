@@ -120,9 +120,16 @@ class ClimbAndCruiseSegment(CruiseSegment):
     maximum_flight_level: float = 500.0
 
     def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
-        climb_segment = deepcopy(self.climb_segment)
-        if climb_segment is not None:
-            climb_segment.target = target
+        if self.climb_segment is not None:
+            attr_dict = {
+                key: val
+                for key, val in self.climb_segment.__dict__.items()
+                if not key.startswith("_")
+            }
+            attr_dict["target"] = target
+            climb_segment = AltitudeChangeSegment(**attr_dict)
+        else:
+            climb_segment = None
 
         cruise_segment = CruiseSegment(
             target=deepcopy(target),  # deepcopy needed because altitude will be modified.

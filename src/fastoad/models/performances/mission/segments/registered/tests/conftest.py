@@ -60,3 +60,16 @@ class DummyEngine(AbstractFuelPropulsion):
             flight_point.thrust = self.max_thrust * flight_point.thrust_rate
 
         flight_point.sfc = self.max_sfc * (1.0 + flight_point.thrust_rate) / 2.0
+
+
+class DummyUnpickableEngine(DummyEngine):
+    def __init__(self, max_thrust, max_sfc, file_name):
+        """
+        Unpickable dummy engine model, inherites from DummyEngine.
+        """
+        DummyEngine.__init__(self, max_thrust, max_sfc)
+        self.data = open(file_name, "r")
+
+    def close_file(self):
+        """Utility function to manually close the datafile."""
+        self.data.close()

@@ -12,7 +12,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass, fields
 
 #: To be put as default value for dataclass fields that should not have a default value.
 #: See :class:`BaseDataClass` for further information.
@@ -36,6 +36,7 @@ class BaseDataClass:
     """
 
     def __post_init__(self):
-        for name, value in asdict(self).items():
+        field_dict = {field.name: getattr(self, field.name) for field in fields(self)}
+        for name, value in field_dict.items():
             if value is MANDATORY_FIELD:
                 raise TypeError(f"__init__ missing 1 required argument: '{name}'")
