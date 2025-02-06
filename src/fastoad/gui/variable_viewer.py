@@ -216,15 +216,15 @@ class VariableViewer:
         #         data.append(cell.value)
         #     else:
         #         data.extend([cell.value] * (cell.row_end - cell.row_start + 1))
-# 
+        #
         # # Reshape data to match the number of columns
         # num_columns = len(sheet.column_headers)
         # reshaped_data = [data[i:i + num_columns] for i in range(0, len(data), num_columns)]
-# 
+        #
         # # Ensure reshaped_data has the correct number of rows
         # if len(reshaped_data[-1]) != num_columns:
         #     reshaped_data.pop()
-# 
+        #
         # df = pd.DataFrame(reshaped_data, columns=sheet.column_headers)
         return df
 
