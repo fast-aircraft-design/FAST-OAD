@@ -209,23 +209,16 @@ class VariableViewer:
         :param sheet: the ipysheet Sheet to be converted
         :return the equivalent pandas DataFrame
         """
-        data = []
-        for cell in sheet.cells:
-            if cell.row_end - cell.row_start == 0 and cell.column_end - cell.column_start == 0:
-                data.append(cell.value)
-            else:
-                data.extend([cell.value] * (cell.row_end - cell.row_start + 1))
-
-        # Reshape data to match the number of columns
-        num_columns = len(sheet.column_headers)
-        reshaped_data = [data[i : i + num_columns] for i in range(0, len(data), num_columns)]
-
-        # Ensure reshaped_data has the correct number of rows
-        if len(reshaped_data[-1]) != num_columns:
-            reshaped_data.pop()
-
-        df = pd.DataFrame(reshaped_data, columns=sheet.column_headers)
-        return df
+        cells = sheet.cells
+        columns = [cells[col_idx].value for col_idx in range(sheet.columns)]
+        data_rows = []
+        for row_idx in range(1, sheet.rows):
+            row_data = {}
+            for col_idx, col_name in enumerate(columns):
+                cell_index = row_idx * sheet.columns + col_idx
+                row_data[col_name] = cells[cell_index].value
+            data_rows.append(row_data)
+        return pd.DataFrame(data_rows)
 
     # pylint: disable=unused-argument  # args has to be there for observe() to work
     def _update_df(self, change=None):
