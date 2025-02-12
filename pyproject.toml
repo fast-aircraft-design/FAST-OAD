@@ -183,6 +183,7 @@ minversion = "8.0"
 addopts = "--cov-report term-missing --cov-report html --verbose"
 testpaths = ["src"]
 norecursedirs = ["dist", "build", ".tox", ".ipynb_checkpoints"]
+markers = ["mpi: marks tests that use MPI"]
 
 
 # Coverage settings ============================================================

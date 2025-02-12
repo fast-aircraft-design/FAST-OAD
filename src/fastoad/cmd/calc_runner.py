@@ -99,7 +99,7 @@ class CalcRunner:
                 input_data.save()
 
         problem = configuration.get_problem(read_inputs=True)
-        problem.comm = FakeComm()
+        problem.comm = FakeComm()  # We do not run OpenMDAO in parallel
         problem.setup()
 
         if input_values and not calculation_folder:
@@ -158,6 +158,10 @@ class CalcRunner:
         if max_workers == -1:
             max_workers = max_proc - 1
         elif max_workers is not None:
+            if max_workers > max_proc:
+                _LOGGER.info(
+                    'Asked for "%d" workers, but only "%d" available.', max_workers, max_proc
+                )
             max_workers = max(1, min(max_workers, max_proc))
 
         pool_cls = _MPIPool if use_MPI else mp.Pool

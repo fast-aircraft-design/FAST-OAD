@@ -30,11 +30,15 @@ def cleanup():
     shutil.rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
+# Mark this test as MPI-related
+@pytest.mark.mpi
 def test_one_run(cleanup):
     run_case = CalcRunner(configuration_file_path=DATA_FOLDER_PATH / "sellar2.yml")
     run_case.run(calculation_folder=RESULTS_FOLDER_PATH)
 
 
+# Mark this test as MPI-related
+@pytest.mark.mpi
 def test_MPI_run_max_cpu(cleanup):
     run_case = CalcRunner(configuration_file_path=DATA_FOLDER_PATH / "sellar2.yml")
 
@@ -51,6 +55,8 @@ def test_MPI_run_max_cpu(cleanup):
     )
 
 
+# Mark this test as MPI-related
+@pytest.mark.mpi
 def test_MPI_run_2cpu(cleanup):
     run_case = CalcRunner(configuration_file_path=DATA_FOLDER_PATH / "sellar2.yml")
 
