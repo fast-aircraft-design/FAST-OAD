@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         python-version: [ "3.9", "3.10", "3.12" ]
-        os: [ ubuntu-20.04, windows-latest, macos-latest ] # on 2024-04-24, serious problems on ubuntu-latest (MPI installation)
+        os: [ ubuntu-22.04, windows-latest, macos-latest ] # on 2024-04-24, serious problems on ubuntu-latest (MPI installation)
         # Exceptions:
         # - Python 3.8 and 3.9 is on macos-13 but not macos-latest (macos-14-arm64)
         #   https://github.com/actions/setup-python/issues/696#issuecomment-1637587760
