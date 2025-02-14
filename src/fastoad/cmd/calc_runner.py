@@ -14,6 +14,7 @@
 
 import logging
 import multiprocessing as mp
+import os
 from contextlib import contextmanager
 from dataclasses import dataclass
 from math import ceil, log10
@@ -30,7 +31,6 @@ from fastoad.openmdao.variables import VariableList
 
 # Import MPI4Py at the module level to avoid repeated imports
 try:
-    from mpi4py import MPI
     from mpi4py.futures import MPIPoolExecutor
 except ImportError:
     HAVE_MPI = False
@@ -152,8 +152,7 @@ class CalcRunner:
         if use_MPI_if_available and not HAVE_MPI:
             _LOGGER.warning("No MPI environment found. Using multiprocessing instead.")
 
-        # One worker is consumed by the MPIPoolExecutor
-        max_proc = (MPI.COMM_WORLD.Get_size() - 1) if use_MPI else mp.cpu_count()
+        max_proc = get_max_proc(use_MPI)
 
         if max_workers is None:
             max_workers = max_proc  # Use all available processors
@@ -165,7 +164,7 @@ class CalcRunner:
             )
             max_workers = 1
         elif max_workers == -1:
-            max_workers = max(1, max_proc - 1)  # Ensures at least 1 worker
+            max_workers = max(1, max_proc - 1)  # Ensures at least 1 worker for single-core machines
         else:
             if max_workers > max_proc:
                 _LOGGER.warning(
@@ -175,9 +174,7 @@ class CalcRunner:
                     max_proc,
                     max_proc,
                 )
-            max_workers = max(
-                1, min(max_workers, max_proc)
-            )  # We avoid the case in which MPI.COMM_WORLD.Get_size() gives 0
+            max_workers = min(max_workers, max_proc)
 
         pool_cls = _MPIPool if use_MPI else mp.Pool
 
@@ -206,6 +203,29 @@ class CalcRunner:
                 yield self, input_vars, calculation_folder
             else:
                 _LOGGER.info('Subfolder "%s" exists. Computation skipped', calculation_folder)
+
+
+def get_max_proc(use_MPI):
+    """Determine the max number of processors based on the environment."""
+    if use_MPI:
+        # SLURM
+        if "SLURM_CPUS_PER_TASK" in os.environ:
+            return int(os.getenv("SLURM_CPUS_PER_TASK"))
+        elif "SLURM_JOB_CPUS_PER_NODE" in os.environ:
+            return int(os.getenv("SLURM_JOB_CPUS_PER_NODE").split("(")[0])  # Handle "32(x2)" cases
+        elif "SLURM_NTASKS" in os.environ:
+            return int(os.getenv("SLURM_NTASKS"))
+
+        # GitHub Actions
+        elif (
+            "MPI4PY_FUTURES_MAX_WORKERS" in os.environ
+        ):  # This variable is set up in the Github workflows
+            return int(os.getenv("MPI4PY_FUTURES_MAX_WORKERS"))
+        else:  # default to the multiprocessing library
+            return os.cpu_count() or 1
+
+    else:  # default to the multiprocessing library
+        return os.cpu_count() or 1
 
 
 @contextmanager

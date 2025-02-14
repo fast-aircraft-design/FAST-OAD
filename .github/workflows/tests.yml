@@ -31,6 +31,14 @@ jobs:
         uses: mpi4py/setup-mpi@v1
         with:
           mpi: ${{ (runner.os == 'Windows') && 'microsoftmpi' || 'openmpi' }} # openmpi and microsoftmpi are the only MPI implementations that works
+      # Evaluation of the available resources of the VM for the MPI tests
+      - name: Get CPU core count
+        id: cpu
+        uses: SimenB/github-actions-cpu-cores@v1
+      - name: Set environment variable MPI4PY_FUTURES_MAX_WORKERS
+        run: echo "MPI4PY_FUTURES_MAX_WORKERS=${{ steps.cpu.outputs.count }}" >> $GITHUB_ENV
+      - name: Verify environment variable
+        run: echo "MPI4PY_FUTURES_MAX_WORKERS=$MPI4PY_FUTURES_MAX_WORKERS"
 
       - name: Install poetry
         run: pipx install poetry==${{ vars.POETRY_VERSION }}
