@@ -159,8 +159,12 @@ class CalcRunner:
             max_workers = max_proc - 1
         elif max_workers is not None:
             if max_workers > max_proc:
-                _LOGGER.info(
-                    'Asked for "%d" workers, but only "%d" available.', max_workers, max_proc
+                _LOGGER.warning(
+                    'Asked for "%d" workers, but only "%d" available.'
+                    'Setting "max_workers" to "%d".',
+                    max_workers,
+                    max_proc,
+                    max_proc,
                 )
             max_workers = max(1, min(max_workers, max_proc))
 

@@ -30,7 +30,7 @@ jobs:
       - name: Set up MPI
         uses: mpi4py/setup-mpi@v1
         with:
-          mpi: ${{ (runner.os == 'Windows') && 'microsoftmpi' || 'openmpi' }} # openmpi and microsoftmpi are the only implementations that works
+          mpi: ${{ (runner.os == 'Windows') && 'microsoftmpi' || 'openmpi' }} # openmpi and microsoftmpi are the only MPI implementations that works
 
       - name: Install poetry
         run: pipx install poetry==${{ vars.POETRY_VERSION }}
@@ -51,14 +51,14 @@ jobs:
           poetry run ruff format --check .  # Check format and import sorting
         shell: bash
       
-      ## No MPI tests
+      ## Tests without MPI
       # Runners that won't send coverage report are run without coverage overhead
       - name: Unit tests without coverage
         if: ${{( runner.os != 'Linux' || matrix.python-version != '3.10' )}}
         run: poetry run pytest src -m "not mpi"
         shell: bash
       
-      ## MPI tests
+      ## Tests with MPI
       - name: MPI unit tests
         run: poetry run mpiexec -n 1 pytest src -m mpi
         shell: bash
