@@ -16,9 +16,9 @@ jobs:
     strategy:
       matrix:
         python-version: [ "3.9", "3.10", "3.12" ]
-        os: [ ubuntu-20.04, windows-latest, macos-latest ] # on 2024-04-24, serious problems on ubuntu-latest (MPI installation)
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
         # Exceptions:
-        # - Python 3.8 and 3.9 is on macos-13 but not macos-latest (macos-14-arm64)
+        # - Python 3.9 is on macos-13 but not macos-latest (macos-14-arm64)
         #   https://github.com/actions/setup-python/issues/696#issuecomment-1637587760
         exclude:
         - { python-version: "3.9", os: "macos-latest" }
@@ -27,7 +27,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: mpi4py/setup-mpi@v1
+      - name: Set up MPI
+        uses: mpi4py/setup-mpi@v1
+        with:
+          mpi: ${{ (runner.os == 'Windows') && 'microsoftmpi' || 'openmpi' }} # openmpi and microsoftmpi are the only MPI implementations that works
 
       - name: Install poetry
         run: pipx install poetry==${{ vars.POETRY_VERSION }}
@@ -47,16 +50,17 @@ jobs:
           poetry run ruff check .           # Check coding rules
           poetry run ruff format --check .  # Check format and import sorting
         shell: bash
-
-        # Runners that won't send coverage report are run without coverage overhead
+      
+      ## Tests without MPI
+      # Runners that won't send coverage report are run without coverage overhead
       - name: Unit tests without coverage
-        if: ${{ (runner.os != 'macOS') && ( runner.os != 'Linux' || matrix.python-version != '3.10' )}}
-        run: poetry run mpiexec -n 1 pytest src
+        if: ${{( runner.os != 'Linux' || matrix.python-version != '3.10' )}}
+        run: poetry run pytest src -m "not mpi"
         shell: bash
-      - name: Unit tests without coverage
-        # MPI tests stall on macOS if launched with mpiexec
-        if: ${{ runner.os == 'macOS' }}
-        run: poetry run pytest src
+      
+      ## Tests with MPI
+      - name: MPI unit tests
+        run: poetry run mpiexec -n 1 pytest src -m mpi
         shell: bash
 
       - name: Unit tests with coverage
