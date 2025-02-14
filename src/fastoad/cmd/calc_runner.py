@@ -155,9 +155,18 @@ class CalcRunner:
         # One worker is consumed by the MPIPoolExecutor
         max_proc = (MPI.COMM_WORLD.Get_size() - 1) if use_MPI else mp.cpu_count()
 
-        if max_workers == -1:
-            max_workers = max_proc - 1
-        elif max_workers is not None:
+        if max_workers is None:
+            max_workers = max_proc  # Use all available processors
+        elif max_workers < -1 or max_workers == 0:
+            _LOGGER.warning(
+                'Invalid value for "max_workers": %d. Must be -1 or a positive integer. '
+                'Setting "max_workers" to 1.',
+                max_workers,
+            )
+            max_workers = 1
+        elif max_workers == -1:
+            max_workers = max(1, max_proc - 1)  # Ensures at least 1 worker
+        else:
             if max_workers > max_proc:
                 _LOGGER.warning(
                     'Asked for "%d" workers, but only "%d" available.'
@@ -166,7 +175,9 @@ class CalcRunner:
                     max_proc,
                     max_proc,
                 )
-            max_workers = max(1, min(max_workers, max_proc))
+            max_workers = max(
+                1, min(max_workers, max_proc)
+            )  # We avoid the case in which MPI.COMM_WORLD.Get_size() gives 0
 
         pool_cls = _MPIPool if use_MPI else mp.Pool
 
