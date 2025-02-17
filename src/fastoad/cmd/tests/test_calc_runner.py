@@ -14,12 +14,12 @@
 import shutil
 from filecmp import cmp
 from pathlib import Path
+from unittest import mock
 
 import pytest
 
+from fastoad.cmd.calc_runner import CalcRunner
 from fastoad.openmdao.variables import Variable, VariableList
-
-from ..calc_runner import CalcRunner
 
 DATA_FOLDER_PATH = Path(__file__).parent / "data"
 RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
@@ -30,11 +30,54 @@ def cleanup():
     shutil.rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
+# Mocking the logger to capture the warning messages
+@pytest.fixture
+def mock_logger():
+    with mock.patch("fastoad.cmd.calc_runner._LOGGER") as mock_logger:
+        yield mock_logger
+
+
+# Test when max_workers is None
+def test_max_workers_none(cleanup, mock_logger):
+    run_case = CalcRunner(configuration_file_path=DATA_FOLDER_PATH / "sellar2.yml")
+
+    # Mock get_max_proc() to return 2 (for example)
+    with mock.patch("fastoad.cmd.calc_runner.get_max_proc", return_value=2):
+        run_case.run_cases(
+            [
+                VariableList([Variable("x", val=0.0)]),
+                VariableList([Variable("x", val=10.0)]),
+            ],
+            RESULTS_FOLDER_PATH / "test_logger",
+            max_workers=None,
+        )
+
+    # Assert max_workers was set to max_proc
+    assert run_case.max_workers == 2
+
+    with mock.patch("fastoad.cmd.calc_runner.get_max_proc", return_value=1):
+        run_case.run_cases(
+            [
+                VariableList([Variable("x", val=0.0)]),
+                VariableList([Variable("x", val=10.0)]),
+            ],
+            RESULTS_FOLDER_PATH / "test_logger",
+            max_workers=2,
+        )
+
+    # Check if the warning was logged
+    mock_logger.warning.assert_called_with(
+        'Asked for "2" workers, but only "1" available.' 'Setting "max_workers" to "1".', 2, 1, 1
+    )
+    # Assert max_workers is set to 1
+    assert run_case.max_workers == 1
+
+
 # Mark this test as MPI-related
 @pytest.mark.mpi
 def test_one_run(cleanup):
     run_case = CalcRunner(configuration_file_path=DATA_FOLDER_PATH / "sellar2.yml")
-    run_case.run(calculation_folder=RESULTS_FOLDER_PATH)
+    run_case.run(calculation_folder=RESULTS_FOLDER_PATH / "without_MPI")
 
 
 # Mark this test as MPI-related
