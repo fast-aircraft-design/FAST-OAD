@@ -1,5 +1,7 @@
-"""Python module containing the tools for generating and postprocessing Design of
-Experiments (DOEs) in FAST-OAD."""
+"""
+Python module containing the tools for generating and postprocessing Design of
+Experiments (DOEs) in FAST-OAD.
+"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -32,7 +34,8 @@ from fastoad.openmdao.variables import VariableList
 
 @dataclass
 class DOEVariable:
-    """Represents a Design of Experiments (DOE) variable defined by its unique `id`.
+    """
+    Represents a Design of Experiments (DOE) variable defined by its unique `id`.
 
     :param name: The name of the FAST-OAD OpenMDAO variable used for the DOE.
     :param bind_variable_to: Another DOEVariable instance to bind this variable to. When bound,
@@ -42,8 +45,10 @@ class DOEVariable:
     :param lower_bound: The lower bound of the variable. Defaults to None.
     :param upper_bound: The upper bound of the variable. Defaults to None.
     :param reference_value: A reference value used to adjust bounds as percentages. If given,
-                            `lower_bound` and `upper_bound` are considered as percentages.
-                            Defaults to None.
+                    `lower_bound` and `upper_bound` are considered as percentages, following
+                    this formula:
+                    [ref_value - ref_value * lower_bound, ref_value + ref_value * upper_bound].
+                    Defaults to None.
     :param name_alias: An optional alias for the variable. If not provided, it defaults to the
                        value of `name`.
     """
@@ -62,7 +67,7 @@ class DOEVariable:
     name_alias: Optional[str] = None
 
     # Class-level counter using itertools to handle unique IDs. If two variables are binded
-    # they shares the same id.
+    # they share the same id.
     _id_counter: ClassVar[itertools.count] = itertools.count()
 
     def __post_init__(self) -> None:
@@ -259,8 +264,10 @@ class DOESampling:
                 level_count = len(self.doe_points_multilevel)
                 for i, point_list in enumerate(self.doe_points_multilevel):
                     # Rearrange columns based on the variables_binding variable
-                    doe_points_upd = point_list[:, self.variables_binding_list]
-                    doe_points_df_nest = pd.DataFrame(doe_points_upd, columns=self.var_names_pseudo)
+                    doe_points_updated = point_list[:, self.variables_binding_list]
+                    doe_points_df_nest = pd.DataFrame(
+                        doe_points_updated, columns=self.var_names_pseudo
+                    )
                     doe_points_df_nest.to_csv(
                         self.destination_folder
                         / (
@@ -325,10 +332,10 @@ class DOESampling:
         if level_count is not None:
             self.doe_points_multilevel = doe_points.copy()  # Used for writing
             doe_points = doe_points[use_level]
-        doe_points_upd = doe_points[
+        doe_points_updated = doe_points[
             :, self.variables_binding_list
         ]  # Rearrange columns based on the variables_binding variable
-        self.doe_points_df = pd.DataFrame(doe_points_upd, columns=column_names)
+        self.doe_points_df = pd.DataFrame(doe_points_updated, columns=column_names)
         doe_points_dict = self.doe_points_df.to_dict(orient="records")
 
         self._is_sampled = True

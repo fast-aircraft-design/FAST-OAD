@@ -235,10 +235,13 @@ def test_generate_doe_random(cleanup_doe_variable, cleanup, sample_variables):
         seed_value=12,
     )
 
-    doe_points = config.sample_doe(sample_count=5)
+    samples = 5
+
+    doe_points = config.sample_doe(sample_count=samples)
 
     # Test that the return type is a list of VariableList instances
     assert isinstance(doe_points, list)
+    assert len(doe_points) == samples
     assert all(isinstance(item, VariableList) for item in doe_points)
 
 
