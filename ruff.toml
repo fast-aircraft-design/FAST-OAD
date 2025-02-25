@@ -1,0 +1,29 @@
+line-length = 100
+target-version = "py39"
+extend-include = ["*.ipynb"]
+exclude = ["tests/dummy_plugins/"]
+
+[lint]
+# Specify which rules to enforce. Each code corresponds to a specific linting category:
+select = [
+    "F",  # Enable Pyflakes for identifying logical errors.
+    "I",  # Import sorting using isort rules
+    "E4",
+    "E7",
+    "E9",
+]
+
+# No rules are ignored by default. Specify rule codes here to suppress them.
+ignore = []
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+
+unfixable = []
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[lint.isort] # Add optional configurations for import organization
+case-sensitive = true
+relative-imports-order = "closest-to-furthest"
