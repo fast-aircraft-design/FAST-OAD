@@ -158,8 +158,7 @@ class FastSeveralDistPluginsError(FastError):
 
     def __init__(self):
         super().__init__(
-            "Several installed packages with FAST-OAD plugins are available. "
-            "One must be specified."
+            "Several installed packages with FAST-OAD plugins are available. One must be specified."
         )
 
 

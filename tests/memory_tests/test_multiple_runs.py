@@ -79,7 +79,7 @@ def test_runs(cleanup):
 
     count = 2
     for i in range(count):
-        print(f"RUN {i+1}/{count}")
+        print(f"RUN {i + 1}/{count}")
         run_problem()
 
     print_memory_state("Before garbage collector")

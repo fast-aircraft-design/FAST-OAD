@@ -205,12 +205,12 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
         for i in range(2):
             self.connect(
                 self._contour_names.range,
-                f"mux_grid.range_{nb_grid_points+i}",
+                f"mux_grid.range_{nb_grid_points + i}",
                 src_indices=[i + 1],
             )
             self.connect(
                 self._contour_names.duration,
-                f"mux_grid.duration_{nb_grid_points+i}",
+                f"mux_grid.duration_{nb_grid_points + i}",
                 src_indices=om.slicer[i + 1],
             )
 
