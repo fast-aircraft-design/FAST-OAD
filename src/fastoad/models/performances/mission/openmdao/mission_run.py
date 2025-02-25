@@ -106,7 +106,7 @@ class MissionComp(om.ExplicitComponent, BaseMissionComp):
     def _postprocess_flight_points(self, flight_points):
         flight_points = flight_points.copy()  # local copy for renaming columns before CSV export
         rename_dict = {
-            field_name: f"{field_name}{' ['+unit+']' if unit else ''}"
+            field_name: f"{field_name}{' [' + unit + ']' if unit else ''}"
             for field_name, unit in FlightPoint.get_units().items()
         }
         flight_points.rename(columns=rename_dict, inplace=True)
