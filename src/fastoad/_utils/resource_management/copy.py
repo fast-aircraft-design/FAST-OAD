@@ -1,6 +1,7 @@
 """
 Helper module for copying resources
 """
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -13,20 +14,21 @@ Helper module for copying resources
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from __future__ import annotations
 
 import shutil
+from collections.abc import Iterable
 from os import PathLike
 from types import ModuleType
-from typing import Iterable, Union
 
 from .contents import PackageReader
 from ..files import as_path, make_parent_dir
 
 
 def copy_resource(
-    package: Union[str, ModuleType],
-    resource: Union[str, PathLike],
-    target_path: Union[str, PathLike],
+    package: str | ModuleType,
+    resource: str | PathLike,
+    target_path: str | PathLike,
 ):
     """
     Copies the indicated resource file to provided target path.
@@ -45,9 +47,9 @@ def copy_resource(
 
 
 def copy_resource_folder(
-    package: Union[str, ModuleType],
-    destination_path: Union[str, PathLike],
-    exclude: Iterable[str] = None,
+    package: str | ModuleType,
+    destination_path: str | PathLike,
+    exclude: Iterable[str] | None = None,
 ):
     """
     Copies the full content of provided package in destination folder.

@@ -1,6 +1,7 @@
 """
 Schema for mission definition files.
 """
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -13,16 +14,18 @@ Schema for mission definition files.
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from __future__ import annotations
 
 import json
 from collections import OrderedDict
 from os import PathLike
-from typing import Union
+from pathlib import Path
 
 from ensure import Ensure
 from jsonschema import validate
 from ruamel.yaml import YAML
 
+from fastoad._utils.files import as_path
 from fastoad._utils.resource_management.contents import PackageReader
 
 from . import resources
@@ -45,7 +48,7 @@ POLAR_TAG = "polar"
 
 
 class MissionDefinition(OrderedDict):
-    def __init__(self, file_path: Union[str, PathLike] = None):
+    def __init__(self, file_path: str | PathLike | None = None):
         """
         Class for reading a mission definition from a YAML file.
 
@@ -58,7 +61,7 @@ class MissionDefinition(OrderedDict):
         if file_path:
             self.load(file_path)
 
-    def load(self, file_path: Union[str, PathLike]):
+    def load(self, file_path: str | PathLike):
         """
         Loads a mission definition from provided file path.
 
@@ -69,7 +72,9 @@ class MissionDefinition(OrderedDict):
         self.clear()
         yaml = YAML(typ="safe", pure=True)
 
-        with open(file_path) as yaml_file:
+        file_path = as_path(file_path)
+
+        with Path.open(file_path) as yaml_file:
             data = yaml.load(yaml_file)
 
         with PackageReader(resources).open_text(JSON_SCHEMA_NAME) as json_file:
@@ -129,7 +134,7 @@ class MissionDefinition(OrderedDict):
                 Ensure(part_type).equals(RESERVE_TAG)
 
     @classmethod
-    def _convert_none_values(cls, struct: Union[dict, list]):
+    def _convert_none_values(cls, struct: dict | list):
         """
         Recursively transforms any None value in struct to "~"
         """

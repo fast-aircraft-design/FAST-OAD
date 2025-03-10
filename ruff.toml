@@ -6,8 +6,14 @@ exclude = ["tests/dummy_plugins/"]
 [lint]
 # Specify which rules to enforce. Each code corresponds to a specific linting category:
 select = [
-    "F",  # Enable Pyflakes for identifying logical errors.
-    "I",  # Import sorting using isort rules
+    "F",   # Enable Pyflakes for identifying logical errors.
+    "I",   # Import sorting using isort rules
+    "UP",  # Check for Python version upgrade compatibility.
+    "RET", # Flake8 plugin that checks return values.
+    "FBT", # flake8 plugin to detect boolean traps.
+    "FA",  # Check if a type is used in the module that can be rewritten using PEP 563.
+    "PTH", # A plugin for flake8 finding use of functions that can be replaced by pathlib module.
+    "RUF", # Ruff-specific rules.
     "E4",
     "E7",
     "E9",
@@ -23,6 +29,11 @@ unfixable = []
 
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[lint.per-file-ignores]
+# We prefer clarity over efficency in notebook examples
+"*.ipynb" = ["RET504"]
+"*/fastoad/notebooks/*" = ["RET504"]
 
 [lint.isort] # Add optional configurations for import organization
 case-sensitive = true

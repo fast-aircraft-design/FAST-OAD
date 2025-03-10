@@ -12,10 +12,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -92,7 +93,7 @@ class AbstractTimeStepFlightSegment(
 
     @abstractmethod
     def get_distance_to_target(
-        self, flight_points: List[FlightPoint], target: FlightPoint
+        self, flight_points: list[FlightPoint], target: FlightPoint
     ) -> float:
         """
         Computes a "distance" from last flight point to target.
@@ -132,7 +133,7 @@ class AbstractTimeStepFlightSegment(
         """
 
     @abstractmethod
-    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
+    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> tuple[float, float]:
         """
         Computes slope angle (gamma) and acceleration.
 
@@ -227,11 +228,10 @@ class AbstractTimeStepFlightSegment(
 
             previous_point_to_target = last_point_to_target
 
-        flight_points_df = pd.DataFrame(flight_points)
-        return flight_points_df
+        return pd.DataFrame(flight_points)  # flight_points_df
 
     def compute_next_flight_point(
-        self, flight_points: List[FlightPoint], time_step: float
+        self, flight_points: list[FlightPoint], time_step: float
     ) -> FlightPoint:
         """
         Computes time, altitude, speed, mass and ground distance of next flight point.
@@ -284,7 +284,7 @@ class AbstractTimeStepFlightSegment(
         else:
             flight_point.CL = flight_point.CD = flight_point.lift = flight_point.drag = 0.0
 
-    def _check_values(self, flight_point: FlightPoint) -> Optional[str]:
+    def _check_values(self, flight_point: FlightPoint) -> str | None:
         """
         Checks that computed values are consistent.
 
@@ -302,7 +302,7 @@ class AbstractTimeStepFlightSegment(
             return "Negative mass value."
         return None
 
-    def _add_new_flight_point(self, flight_points: List[FlightPoint], time_step):
+    def _add_new_flight_point(self, flight_points: list[FlightPoint], time_step):
         """
         Appends a new flight point to provided flight point list.
 
@@ -322,7 +322,7 @@ class AbstractTimeStepFlightSegment(
         )
 
     def _get_optimal_altitude(
-        self, mass: float, mach: float, altitude_guess: float = None
+        self, mass: float, mach: float, altitude_guess: float | None = None
     ) -> float:
         """
         Computes optimal altitude for provided mass and Mach number.
@@ -347,11 +347,9 @@ class AbstractTimeStepFlightSegment(
             )
             return (atm.density - optimal_air_density) * 100.0
 
-        optimal_altitude = root_scalar(
+        return root_scalar(  # optimal_altitude
             distance_to_optimum, x0=altitude_guess, x1=altitude_guess - 1000.0
         ).root
-
-        return optimal_altitude
 
 
 @dataclass
@@ -387,7 +385,7 @@ class AbstractRegulatedThrustSegment(AbstractTimeStepFlightSegment, ABC):
         flight_point.thrust_is_regulated = True
         self.propulsion.compute_flight_points(flight_point)
 
-    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
+    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> tuple[float, float]:
         return 0.0, 0.0
 
 
@@ -400,7 +398,7 @@ class AbstractFixedDurationSegment(AbstractTimeStepFlightSegment, ABC):
     time_step: float = 60.0
 
     def get_distance_to_target(
-        self, flight_points: List[FlightPoint], target: FlightPoint
+        self, flight_points: list[FlightPoint], target: FlightPoint
     ) -> float:
         current = flight_points[-1]
         return target.time - current.time

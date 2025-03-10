@@ -12,11 +12,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from collections import ChainMap
+from collections.abc import Mapping
 from copy import deepcopy
 from dataclasses import fields
 from os import PathLike
-from typing import Dict, List, Mapping, Optional, Union
 
 import pandas as pd
 from deprecated import deprecated
@@ -80,11 +82,11 @@ class MissionBuilder:
 
     def __init__(
         self,
-        mission_definition: Union[str, PathLike, MissionDefinition],
+        mission_definition: str | PathLike | MissionDefinition,
         *,
         propulsion: IPropulsion = None,
-        reference_area: float = None,
-        mission_name: Optional[str] = None,
+        reference_area: float | None = None,
+        mission_name: str | None = None,
         variable_prefix: str = "data:mission",
     ):
         """
@@ -96,7 +98,7 @@ class MissionBuilder:
         :param mission_name: name of chosen mission, if already decided.
         :param variable_prefix: prefix for auto-generated variable names.
         """
-        self._structure_builders: Dict[str, AbstractStructureBuilder] = {}
+        self._structure_builders: dict[str, AbstractStructureBuilder] = {}
 
         self._variable_prefix: str = variable_prefix
 
@@ -117,7 +119,7 @@ class MissionBuilder:
         return self._definition
 
     @definition.setter
-    def definition(self, mission_definition: Union[str, PathLike, MissionDefinition]):
+    def definition(self, mission_definition: str | PathLike | MissionDefinition):
         if isinstance(mission_definition, MissionDefinition):
             self._definition = mission_definition
         else:
@@ -172,7 +174,7 @@ class MissionBuilder:
         self._variable_prefix = value
         self._update_structure_builders()
 
-    def build(self, inputs: Optional[Mapping] = None, mission_name: str = None) -> Mission:
+    def build(self, inputs: Mapping | None = None, mission_name: str | None = None) -> Mission:
         """
         Builds the flight sequence from definition file.
 
@@ -191,10 +193,9 @@ class MissionBuilder:
         for input_def in self._structure_builders[mission_name].get_input_definitions():
             input_def.set_variable_value(inputs)
 
-        mission = self._build_mission(self._structure_builders[mission_name].structure)
-        return mission
+        return self._build_mission(self._structure_builders[mission_name].structure)  # Mission
 
-    def get_route_names(self, mission_name: str = None) -> List[str]:
+    def get_route_names(self, mission_name: str | None = None) -> list[str]:
         """
 
         :param mission_name:
@@ -204,13 +205,11 @@ class MissionBuilder:
             mission_name = self.mission_name
 
         mission_parts = self.definition[MISSION_DEFINITION_TAG][mission_name][PARTS_TAG]
-        route_names = [part[ROUTE_TAG] for part in mission_parts if ROUTE_TAG in part]
-
-        return route_names
+        return [part[ROUTE_TAG] for part in mission_parts if ROUTE_TAG in part]  # Rooute names
 
     def get_route_ranges(
-        self, inputs: Optional[Mapping] = None, mission_name: str = None
-    ) -> List[float]:
+        self, inputs: Mapping | None = None, mission_name: str | None = None
+    ) -> list[float]:
         """
 
         :param inputs: if provided, any input parameter that is a string which matches
@@ -225,7 +224,7 @@ class MissionBuilder:
         routes = self.build(inputs, mission_name)
         return [route.flight_distance for route in routes if isinstance(route, RangedRoute)]
 
-    def get_reserve(self, flight_points: pd.DataFrame, mission_name: str = None) -> float:
+    def get_reserve(self, flight_points: pd.DataFrame, mission_name: str | None = None) -> float:
         """
         Computes the reserve fuel according to definition in mission input file.
 
@@ -279,13 +278,13 @@ class MissionBuilder:
                                                        file
         """
         if len(self._structure_builders) == 1:
-            return list(self._structure_builders.keys())[0]
+            return next(iter(self._structure_builders.keys()))  # return only the first item
 
         raise FastMissionFileMissingMissionNameError(
             "Mission name must be specified if several missions are defined in mission file."
         )
 
-    def get_input_weight_variable_name(self, mission_name: str = None) -> Optional[str]:
+    def get_input_weight_variable_name(self, mission_name: str | None = None) -> str | None:
         """
         Search the mission structure for a segment that has a target absolute mass defined and
         returns the associated variable name.
@@ -348,7 +347,7 @@ class MissionBuilder:
 
         return mission
 
-    def _build_route(self, route_structure: dict, kwargs: Mapping = None):
+    def _build_route(self, route_structure: dict, kwargs: Mapping | None = None):
         """
         Builds route instance.
 
@@ -401,7 +400,7 @@ class MissionBuilder:
         route.name = route_structure[NAME_TAG]
         return route
 
-    def _build_phase(self, phase_structure: Mapping, kwargs: Mapping = None):
+    def _build_phase(self, phase_structure: Mapping, kwargs: Mapping | None = None):
         """
         Builds phase instance
 
@@ -470,8 +469,7 @@ class MissionBuilder:
             class_field.name for class_field in fields(segment_class) if class_field.init
         ]
         part_kwargs = {key: value for key, value in part_kwargs.items() if key in input_field_names}
-        segment = segment_class(**part_kwargs)
-        return segment
+        return segment_class(**part_kwargs)  # Segment
 
     @staticmethod
     def _replace_input_definitions_by_values(part_kwargs):
@@ -483,23 +481,21 @@ class MissionBuilder:
         return self._structure_builders[mission_name].structure[PARTS_TAG]
 
     def _get_part_kwargs(
-        self, kwargs: Mapping, phase_structure: Mapping, specific_exclude: List[str] = None
+        self, kwargs: Mapping, phase_structure: Mapping, specific_exclude: list[str] | None = None
     ):
         part_kwargs = {}
         if kwargs is not None:
             part_kwargs.update(kwargs)
         if specific_exclude is None:
             specific_exclude = []
-        exclude = [NAME_TAG, PARTS_TAG, TYPE_TAG] + specific_exclude
+        exclude = [NAME_TAG, PARTS_TAG, TYPE_TAG, *specific_exclude]
         part_kwargs.update(
             {name: value for name, value in phase_structure.items() if name not in exclude}
         )
         self._replace_input_definitions_by_values(part_kwargs)
         return part_kwargs
 
-    def _get_input_weight_variable_name_in_structure(
-        self, structure: Union[list, dict]
-    ) -> Optional[str]:
+    def _get_input_weight_variable_name_in_structure(self, structure: list | dict) -> str | None:
         for tag in [PARTS_TAG, CLIMB_PARTS_TAG, DESCENT_PARTS_TAG]:
             if tag in structure:
                 return self._get_input_weight_variable_name_in_structure(structure[tag])

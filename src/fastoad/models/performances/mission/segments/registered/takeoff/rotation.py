@@ -14,7 +14,6 @@
 
 import logging
 from dataclasses import dataclass
-from typing import List
 
 import numpy as np
 from numpy import cos, sin
@@ -47,7 +46,7 @@ class RotationSegment(AbstractGroundSegment):
     alpha_limit: float = np.radians(13.5)
 
     def get_distance_to_target(
-        self, flight_points: List[FlightPoint], target: FlightPoint
+        self, flight_points: list[FlightPoint], target: FlightPoint
     ) -> float:
         # compute lift, including thrust projection, compare with weight
         current = flight_points[-1]

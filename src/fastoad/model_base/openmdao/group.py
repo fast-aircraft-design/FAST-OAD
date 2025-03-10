@@ -14,6 +14,8 @@ Convenience classes to be used in OpenMDAO components.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import abc
 
 import openmdao.api as om
@@ -51,11 +53,12 @@ class CycleGroup(om.Group, abc.ABC):
 
     def __init_subclass__(
         cls,
-        use_solvers_by_default: bool = True,
         default_linear_solver: str = "om.DirectSolver",
         default_nonlinear_solver: str = "om.NonlinearBlockGS",
-        default_linear_options: dict = None,
-        default_nonlinear_options: dict = None,
+        default_linear_options: dict | None = None,
+        default_nonlinear_options: dict | None = None,
+        *,
+        use_solvers_by_default: bool = True,
     ):
         cls.use_solvers_by_default = use_solvers_by_default
         cls.default_linear_solver = default_linear_solver

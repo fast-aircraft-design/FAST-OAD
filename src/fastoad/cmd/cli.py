@@ -205,7 +205,7 @@ def list_modules(out_file, force, verbose, source_path):
     "table_format",
     default="grid",
     show_default=True,
-    help=f"format of the list. Available options are {['var_desc'] + tabulate.tabulate_formats}. "
+    help=f"format of the list. Available options are {['var_desc', *tabulate.tabulate_formats]}. "
     '"var_desc" is the variable_descriptions.txt format. Other formats are part of the '
     "tabulate package.",
 )

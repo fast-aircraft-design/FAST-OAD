@@ -11,9 +11,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import gc
-import os.path as pth
 import tracemalloc
-from os import makedirs
+from pathlib import Path
 from shutil import rmtree
 
 import openmdao.api as om
@@ -21,16 +20,14 @@ import pytest
 
 import fastoad.api as oad
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
-RESULTS_FOLDER_PATH = pth.join(
-    pth.dirname(__file__), "results", pth.splitext(pth.basename(__file__))[0]
-)
+DATA_FOLDER_PATH = Path(__file__).parent / "data"
+RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
 
 
 @pytest.fixture(scope="module")
 def cleanup():
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
-    makedirs(RESULTS_FOLDER_PATH)
+    RESULTS_FOLDER_PATH.mkdir(parents=True, exist_ok=True)
 
 
 def print_stat_diffs(snapshot1, snapshot2):
@@ -49,12 +46,12 @@ def print_memory_state(tag):
 
 
 def run_problem():
-    configurator = oad.FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "oad_process.yml"))
-    configurator.input_file_path = pth.join(RESULTS_FOLDER_PATH, "inputs.xml")
-    configurator.output_file_path = pth.join(RESULTS_FOLDER_PATH, "outputs.xml")
+    configurator = oad.FASTOADProblemConfigurator(DATA_FOLDER_PATH / "oad_process.yml")
+    configurator.input_file_path = RESULTS_FOLDER_PATH / "inputs.xml"
+    configurator.output_file_path = RESULTS_FOLDER_PATH / "outputs.xml"
     print_memory_state("After reading configuration file")
 
-    ref_inputs = pth.join(DATA_FOLDER_PATH, "CeRAS01.xml")
+    ref_inputs = DATA_FOLDER_PATH / "CeRAS01.xml"
     configurator.write_needed_inputs(ref_inputs)
     print_memory_state("After writing input file")
 

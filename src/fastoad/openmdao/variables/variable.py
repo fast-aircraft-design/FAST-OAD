@@ -14,9 +14,13 @@ Class for managing an OpenMDAO variable.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
+from collections.abc import Hashable, Iterable, Mapping
 from os import PathLike
-from typing import Dict, Hashable, Iterable, Mapping, Optional, Tuple, Union
+from pathlib import Path
+from typing import ClassVar
 
 import numpy as np
 import openmdao.api as om
@@ -83,13 +87,13 @@ class Variable(Hashable):
     """
 
     # Will store content of description files
-    _variable_descriptions = {}
+    _variable_descriptions: ClassVar[dict] = {}
 
     # The list of modules of path where description files have been read
-    _loaded_descriptions = set()
+    _loaded_descriptions: ClassVar[set] = set()
 
     # Default metadata
-    _base_metadata = {}
+    _base_metadata: ClassVar[dict] = {}
 
     def __init__(self, name, **kwargs):
         super().__init__()
@@ -97,7 +101,7 @@ class Variable(Hashable):
         self.name = name
         """ Name of the variable """
 
-        self.metadata: Dict = {}
+        self.metadata: dict = {}
         """ Dictionary for metadata of the variable """
 
         # Initialize class attributes once at first instantiation -------------
@@ -137,7 +141,7 @@ class Variable(Hashable):
         if not self.description and self.name in self._variable_descriptions:
             self.description = self._variable_descriptions[self.name]
 
-    def get_val(self, new_units: Optional[str] = None) -> Union[float, np.ndarray]:
+    def get_val(self, new_units: str | None = None) -> float | np.ndarray:
         """Returns the variable value converted in the `new_units`"""
         if new_units:
             return scalarize(convert_units(np.asarray(self.value), self.units, new_units))
@@ -145,7 +149,7 @@ class Variable(Hashable):
 
     @classmethod
     def read_variable_descriptions(
-        cls, file_parent: Union[str, PathLike], update_existing: bool = True
+        cls, file_parent: str | PathLike, *, update_existing: bool = True
     ):
         """
         Reads variable descriptions in indicated folder or package, if it contains some.
@@ -174,7 +178,7 @@ class Variable(Hashable):
             if file_parent.is_dir():
                 file_path = file_parent / DESCRIPTION_FILENAME
                 if file_path.is_file():
-                    description_file = open(file_path)
+                    description_file = Path.open(file_path)
             else:
                 # Then it is a module name
                 pack_reader = PackageReader(str(file_parent))
@@ -208,7 +212,7 @@ class Variable(Hashable):
 
     @classmethod
     def update_variable_descriptions(
-        cls, variable_descriptions: Union[Mapping[str, str], Iterable[Tuple[str, str]]]
+        cls, variable_descriptions: Mapping[str, str] | Iterable[tuple[str, str]]
     ):
         """
         Updates description of variables.
@@ -290,7 +294,7 @@ class Variable(Hashable):
     def is_input(self, value):
         self.metadata["is_input"] = value
 
-    def get_openmdao_kwargs(self, keys: Iterable = None) -> dict:
+    def get_openmdao_kwargs(self, keys: Iterable | None = None) -> dict:
         """
         Provides a dict usable as keyword args by OpenMDAO add_input()/add_output().
 
@@ -349,7 +353,7 @@ class Variable(Hashable):
         )
 
     def __repr__(self):
-        return "Variable(name=%s, metadata=%s)" % (self.name, self.metadata)
+        return f"Variable(name={self.name}, metadata={self.metadata})"
 
     def __hash__(self) -> int:
         return hash("var=" + self.name)  # Name is normally unique

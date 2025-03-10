@@ -157,12 +157,12 @@ def test_basic_xml_read_and_write_from_vars(cleanup):
         xml_write.write(var_list)
 
     # Check using text file object --------------------
-    with open(file_path) as text_file_io:
+    with Path.open(file_path) as text_file_io:
         var_list_2 = VariableIO(text_file_io, formatter=VariableXmlStandardFormatter()).read()
     assert var_list_2 == var_list
 
     # Check using binary file object --------------------
-    with open(file_path, "rb") as binary_file_io:
+    with Path.open(file_path, "rb") as binary_file_io:
         var_list_3 = VariableIO(binary_file_io, formatter=VariableXmlStandardFormatter()).read()
     assert var_list_3 == var_list
 

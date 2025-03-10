@@ -14,9 +14,11 @@ Defines the variable viewer for postprocessing
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from math import isnan
 from pathlib import Path
-from typing import Dict
+from typing import ClassVar
 
 import ipysheet as sh
 import ipywidgets as widgets
@@ -45,7 +47,7 @@ class OptimizationViewer:
 
     # When getting a dataframe from a VariableList, the dictionary keys tell what columns
     #  are kept and values tell what name will be displayed.
-    _DEFAULT_COLUMN_RENAMING = {
+    _DEFAULT_COLUMN_RENAMING: ClassVar[dict] = {
         "type": "Type",
         "name": "Name",
         "initial_value": "Initial Value",
@@ -176,7 +178,7 @@ class OptimizationViewer:
         conf.save()
 
     @staticmethod
-    def _update_optim_variable(variable: Variable, optim_definition: Dict):
+    def _update_optim_variable(variable: Variable, optim_definition: dict):
         """
         Updates optim_definition with metadata of provided variable.
 
@@ -215,7 +217,9 @@ class OptimizationViewer:
         self._create_save_load_buttons()
         return self._render_ui()
 
-    def load_variables(self, variables: VariableList, attribute_to_column: Dict[str, str] = None):
+    def load_variables(
+        self, variables: VariableList, attribute_to_column: dict[str, str] | None = None
+    ):
         """
         Loads provided variable list and replace current data set.
 
@@ -226,7 +230,7 @@ class OptimizationViewer:
         """
 
         if not attribute_to_column:
-            attribute_to_column = self._DEFAULT_COLUMN_RENAMING
+            attribute_to_column = OptimizationViewer._DEFAULT_COLUMN_RENAMING
 
         self.dataframe = (
             variables.to_dataframe()
@@ -234,7 +238,7 @@ class OptimizationViewer:
             .reset_index(drop=True)
         )
 
-    def get_variables(self, column_to_attribute: Dict[str, str] = None) -> VariableList:
+    def get_variables(self, column_to_attribute: dict[str, str] | None = None) -> VariableList:
         """
 
         :param column_to_attribute: dictionary keys tell what columns are kept and the values
@@ -244,7 +248,7 @@ class OptimizationViewer:
         """
         if not column_to_attribute:
             column_to_attribute = {
-                value: key for key, value in self._DEFAULT_COLUMN_RENAMING.items()
+                value: key for key, value in OptimizationViewer._DEFAULT_COLUMN_RENAMING.items()
             }
 
         return VariableList.from_dataframe(
@@ -322,8 +326,7 @@ class OptimizationViewer:
         :param sheet: the ipysheet Sheet to be converted
         :return: the equivalent pandas DataFrame
         """
-        df = sh.to_dataframe(sheet)
-        return df
+        return sh.to_dataframe(sheet)
 
     # pylint: disable=unused-argument  # args has to be there for observe() to work
     def _update_df(self, change=None):
@@ -339,7 +342,7 @@ class OptimizationViewer:
 
         df = pd.concat(frames, sort=True)
         columns = {}
-        columns.update(self._DEFAULT_COLUMN_RENAMING)
+        columns.update(OptimizationViewer._DEFAULT_COLUMN_RENAMING)
         columns.pop("type")
 
         column_to_attribute = {value: key for key, value in columns.items()}
@@ -455,7 +458,7 @@ class OptimizationViewer:
         return widgets.VBox([widgets.Label(value="Objectives"), self._objective_sheet])
 
     @staticmethod
-    def _cell_styling(df) -> Dict:
+    def _cell_styling(df) -> dict:
         """
         Returns bound activities in the form of cell style dictionary.
 
@@ -509,10 +512,7 @@ class OptimizationViewer:
 
             return style
 
-        style = highlight_active_bounds(df, threshold=0.1)
-        # style.update(another_styling_method())
-
-        return style
+        return highlight_active_bounds(df, threshold=0.1)  # Style
 
     def _update_style(self, change=None):
         """

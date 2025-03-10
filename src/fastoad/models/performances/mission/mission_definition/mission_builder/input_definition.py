@@ -12,9 +12,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from collections.abc import Iterable, Mapping
 from dataclasses import InitVar, dataclass, field
 from numbers import Number
-from typing import Iterable, Mapping, Optional, Tuple, Union
 
 import numpy as np
 from openmdao import api as om
@@ -40,10 +42,10 @@ class InputDefinition:
     parameter_name: str
 
     #: Value, matching `input_unit`. At instantiation, it can also be the variable name.
-    input_value: Optional[Union[Number, Iterable, str]]
+    input_value: Number | Iterable | str | None
 
     #: Unit used for self.input_value.
-    input_unit: Optional[str] = None
+    input_unit: str | None = None
 
     #: Default value. Used if value is a variable name.
     default_value: Number = np.nan
@@ -56,10 +58,10 @@ class InputDefinition:
 
     #: Unit used for self.value. Automatically determined from self.parameter_name,
     #: mainly from unit definition for FlightPoint class.
-    output_unit: Optional[str] = field(default=None, init=False, repr=False)
+    output_unit: str | None = field(default=None, init=False, repr=False)
 
     #: Value of the "shape" openMDAO flag for input declaration.
-    shape: Optional[Tuple[int]] = None
+    shape: tuple[int] | None = None
 
     #: Value of the "shape_by_conn" openMDAO flag for input declaration.
     shape_by_conn: bool = False
@@ -68,17 +70,17 @@ class InputDefinition:
     prefix: str = ""
 
     #: Used only for tests
-    variable_name_: InitVar[Optional[str]] = None
+    variable_name_: InitVar[str | None] = None
 
     #: Used only for tests
-    use_opposite_: InitVar[Optional[bool]] = None
+    use_opposite_: InitVar[bool | None] = None
 
     #: True if the opposite value should be used, if input is defined by a variable.
     _use_opposite: bool = field(default=False, init=False, repr=True)
 
-    _variable_name: Optional[str] = field(default=None, init=False, repr=True)
+    _variable_name: str | None = field(default=None, init=False, repr=True)
 
-    def __post_init__(self, variable_name_: Optional[str], use_opposite_: Optional[bool]):
+    def __post_init__(self, variable_name_: str | None, use_opposite_: bool | None):
         if self.parameter_name.startswith("delta_"):
             self.is_relative = True
             self.parameter_name = self.parameter_name[6:]
@@ -114,7 +116,9 @@ class InputDefinition:
             self._use_opposite = use_opposite_
 
     @classmethod
-    def from_dict(cls, parameter_name, definition_dict: dict, part_identifier=None, prefix=None):
+    def from_dict(
+        cls, parameter_name, definition_dict: dict, part_identifier=None, prefix=None
+    ) -> InputDefinition | None:
         """
         Instantiates InputDefinition from definition_dict.
 
@@ -130,7 +134,7 @@ class InputDefinition:
         if "value" not in definition_dict:
             return None
 
-        input_def = cls(
+        return cls(  # input_def
             parameter_name,
             definition_dict["value"],
             input_unit=definition_dict.get("unit"),
@@ -139,7 +143,6 @@ class InputDefinition:
             part_identifier=part_identifier,
             prefix=prefix,
         )
-        return input_def
 
     @property
     def value(self):
@@ -155,12 +158,12 @@ class InputDefinition:
             return self.input_value
 
     @property
-    def variable_name(self):  # noqa: F811 #  the variable_name field is an InitVar.
+    def variable_name(self):  # The variable_name field is an InitVar.
         """Associated variable name."""
         return self._variable_name
 
     @variable_name.setter
-    def variable_name(self, var_name: Optional[str]):
+    def variable_name(self, var_name: str | None):
         if isinstance(var_name, str):
             self._use_opposite = var_name.startswith("-")
             var_name = var_name.strip("- ")
@@ -214,7 +217,7 @@ class InputDefinition:
             else:
                 self.input_value = value
 
-    def get_input_definition(self) -> Optional[Variable]:
+    def get_input_definition(self) -> Variable | None:
         """
         Provides information for input definition in OpenMDAO.
 

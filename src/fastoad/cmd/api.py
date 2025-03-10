@@ -1,6 +1,7 @@
 """
 API
 """
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -13,9 +14,9 @@ API
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from __future__ import annotations
 
 import logging
-import os
 import shutil
 import sys
 import textwrap as tw
@@ -25,7 +26,7 @@ from enum import Enum
 from os import PathLike
 from pathlib import Path
 from time import time
-from typing import Dict, List, TextIO, Union
+from typing import TextIO
 
 import openmdao.api as om
 import pandas as pd
@@ -64,7 +65,7 @@ class UserFileType(Enum):
     SOURCE_DATA = "source_data"
 
 
-def get_plugin_information(print_data=False) -> Dict[str, DistributionPluginDefinition]:
+def get_plugin_information(print_data=False) -> dict[str, DistributionPluginDefinition]:  # noqa: FBT002 no breaking changes in API functions
     """
     Provides information about available FAST-OAD plugins.
 
@@ -89,9 +90,9 @@ def get_plugin_information(print_data=False) -> Dict[str, DistributionPluginDefi
 
 
 def generate_notebooks(
-    destination_path: Union[str, PathLike],
-    overwrite: bool = False,
+    destination_path: str | PathLike,
     distribution_name=None,
+    overwrite: bool = False,  # noqa: FBT001, FBT002 no breaking changes in API functions
 ):
     """
     Copies notebook folder(s) from available plugin(s).
@@ -99,8 +100,8 @@ def generate_notebooks(
     :param destination_path: the inner structure of the folders will depend on
                              the number of installed package and the number of
                              plugins they contain.
-    :param overwrite: if True and `destination_path` exists, it will be removed before writing.
     :param distribution_name: the name of an installed package that provides notebooks
+    :param overwrite: if True and `destination_path` exists, it will be removed before writing.
     """
     destination_path = as_path(destination_path)
 
@@ -141,7 +142,7 @@ def generate_notebooks(
                 target_path_elements.append(folder_info.plugin_name)
 
             target_path = Path(*target_path_elements)
-            os.makedirs(target_path)
+            target_path.mkdir(parents=True, exist_ok=True)
             copy_resource_folder(folder_info.package_name, target_path)
 
     return destination_path
@@ -149,10 +150,11 @@ def generate_notebooks(
 
 def _generate_user_file(
     user_file_type: UserFileType,
-    user_file_path: Union[str, PathLike],
-    overwrite: bool = False,
+    user_file_path: str | PathLike,
     distribution_name=None,
     sample_user_file_name=None,
+    *,
+    overwrite: bool = False,
 ):
     """
     Copies a sample user file from an available plugin. Since there are a lot of similarities
@@ -163,11 +165,11 @@ def _generate_user_file(
     :param user_file_type: the type of user file that needs to be written, should match one
                           available in _AVAILABLE_USER_FILE_TYPE
     :param user_file_path: the path of the user file to be written
-    :param overwrite: if True, the file will be written, even if it already exists
     :param distribution_name: the name of the installed package that provides the sample
                              user file (can be omitted if only one plugin is available)
     :param sample_user_file_name: the name of the sample user file (can be omitted if the plugin
                                  provides only one user file)
+    :param overwrite: if True, the file will be written, even if it already exists
     :return: path of generated file
     :raise FastPathExistsError: if overwrite==False and user_file_path already exists
     """
@@ -240,20 +242,20 @@ def _generate_user_file(
 
 
 def generate_configuration_file(
-    configuration_file_path: Union[str, PathLike],
-    overwrite: bool = False,
+    configuration_file_path: str | PathLike,
     distribution_name=None,
     sample_file_name=None,
+    overwrite: bool = False,  # noqa: FBT001, FBT002 no breaking changes in API functions
 ):
     """
     Copies a sample configuration file from an available plugin.
 
     :param configuration_file_path: the path of file to be written
-    :param overwrite: if True, the file will be written, even if it already exists
     :param distribution_name: the name of the installed package that provides the sample
                              configuration file (can be omitted if only one plugin is available)
     :param sample_file_name: the name of the sample configuration file (can be omitted if
                              the plugin provides only one configuration file)
+    :param overwrite: if True, the file will be written, even if it already exists
     :return: path of generated file
     :raise FastPathExistsError: if overwrite==False and configuration_file_path already exists
     """
@@ -268,20 +270,20 @@ def generate_configuration_file(
 
 
 def generate_source_data_file(
-    source_data_file_path: Union[str, PathLike],
-    overwrite: bool = False,
+    source_data_file_path: str | PathLike,
     distribution_name=None,
     sample_file_name=None,
+    overwrite: bool = False,  # noqa: FBT001, FBT002 no breaking changes in API functions
 ):
     """
     Copies a sample source data file from an available plugin.
 
     :param source_data_file_path: the path of file to be written
-    :param overwrite: if True, the file will be written, even if it already exists
     :param distribution_name: the name of the installed package that provides the sample
                              source data file (can be omitted if only one plugin is available)
     :param sample_file_name: the name of the sample source data file (can be omitted if
                              the plugin provides only one source data file)
+    :param overwrite: if True, the file will be written, even if it already exists
     :return: path of generated file
     :raise FastPathExistsError: if overwrite==False and source_file_path already exists
     """
@@ -296,10 +298,10 @@ def generate_source_data_file(
 
 
 def generate_inputs(
-    configuration_file_path: Union[str, PathLike],
-    source_data_path: Union[str, PathLike] = None,
+    configuration_file_path: str | PathLike,
+    source_data_path: str | PathLike | None = None,
     source_data_path_schema="native",
-    overwrite: bool = False,
+    overwrite: bool = False,  # noqa: FBT001, FBT002 no breaking changes in API functions
 ) -> str:
     """
     Generates input file for the problem specified in configuration_file_path.
@@ -332,11 +334,11 @@ def generate_inputs(
 
 
 def list_variables(
-    configuration_file_path: Union[str, PathLike],
-    out: Union[str, PathLike, TextIO] = None,
-    overwrite: bool = False,
-    force_text_output: bool = False,
+    configuration_file_path: str | PathLike,
+    out: str | PathLike | TextIO | None = None,
     tablefmt: str = "grid",
+    overwrite: bool = False,  # noqa: FBT001, FBT002 no breaking changes in API functions
+    force_text_output: bool = False,  # noqa: FBT001, FBT002 no breaking changes in API functions
 ):
     """
     Writes list of variables for the problem specified in configuration_file_path.
@@ -348,14 +350,14 @@ def list_variables(
 
     :param configuration_file_path:
     :param out: the output stream or a path for the output file (None means sys.stdout)
+    :param tablefmt: The formatting of the requested table. Options are the same as those available
+                     to the tabulate package. See tabulate.tabulate_formats for a complete list.
+                     If "var_desc" the file will use the variable_descriptions.txt format.
     :param overwrite: if True and out parameter is a file path, the file will be written even if one
                       already exists
     :param force_text_output: if True, list will be written as text, even if command is used in an
                               interactive IPython shell (Jupyter notebook). Has no effect in other
                               shells or if out parameter is not sys.stdout
-    :param tablefmt: The formatting of the requested table. Options are the same as those available
-                     to the tabulate package. See tabulate.tabulate_formats for a complete list.
-                     If "var_desc" the file will use the variable_descriptions.txt format.
     :return: path of generated file, or None if no file was generated.
     :raise FastPathExistsError: if `overwrite==False` and `out` is a file path and the file exists
     """
@@ -394,7 +396,7 @@ def list_variables(
                 out,
             )
         make_parent_dir(out)
-        out_file = open(out, "w", encoding="utf-8")
+        out_file = Path(out).open("w", encoding="utf-8")
     else:
         if out == sys.stdout and InteractiveShell.initialized() and not force_text_output:
             display(HTML(variables_df.to_html(index=False)))
@@ -425,8 +427,7 @@ def _generate_var_desc_format(variables_df):
     else:
         kwargs["lineterminator"] = "\n"
 
-    content = variables_df.to_csv(**kwargs).replace("|", " || ")
-    return content
+    return variables_df.to_csv(**kwargs).replace("|", " || ")  # Contenent
 
 
 def _generate_table_format(variables_df, tablefmt="grid"):
@@ -441,11 +442,11 @@ def _generate_table_format(variables_df, tablefmt="grid"):
 
 
 def list_modules(
-    source_path: Union[List[Union[str, PathLike]], str, PathLike] = None,
-    out: Union[str, PathLike, TextIO] = None,
-    overwrite: bool = False,
-    verbose: bool = False,
-    force_text_output: bool = False,
+    source_path: list[str | PathLike] | str | PathLike | None = None,
+    out: str | PathLike | TextIO | None = None,
+    overwrite: bool = False,  # noqa: FBT001, FBT002 no breaking changes in API functions
+    verbose: bool = False,  # noqa: FBT001, FBT002 no breaking changes in API functions
+    force_text_output: bool = False,  # noqa: FBT001, FBT002 no breaking changes in API functions
 ):
     """
     Writes list of available systems.
@@ -502,7 +503,7 @@ def list_modules(
             )
 
         make_parent_dir(out)
-        out_file = open(out, "w", encoding="utf-8")
+        out_file = Path(out).open("w", encoding="utf-8")
     else:
         if (
             out == sys.stdout
@@ -579,9 +580,9 @@ def _get_detailed_system_list():
 
 
 def write_n2(
-    configuration_file_path: Union[str, PathLike],
-    n2_file_path: Union[str, PathLike] = None,
-    overwrite: bool = False,
+    configuration_file_path: str | PathLike,
+    n2_file_path: str | PathLike | None = None,
+    overwrite: bool = False,  # noqa: FBT001, FBT002 no breaking changes in API functions
 ):
     """
     Write the N2 diagram of the problem in file n2.html
@@ -621,12 +622,12 @@ def write_n2(
 
 
 def write_xdsm(
-    configuration_file_path: Union[str, PathLike],
-    xdsm_file_path: Union[str, PathLike] = None,
-    overwrite: bool = False,
+    configuration_file_path: str | PathLike,
+    xdsm_file_path: str | PathLike | None = None,
     depth: int = 2,
-    wop_server_url: str = None,
-    dry_run: bool = False,
+    wop_server_url: str | None = None,
+    overwrite: bool = False,  # noqa: FBT001, FBT002 no breaking changes in API functions
+    dry_run: bool = False,  # noqa: FBT001, FBT002 no breaking changes in API functions
 ):
     """
 
@@ -649,8 +650,8 @@ def write_xdsm(
 
     if not overwrite and xdsm_file_path.exists():
         raise FastPathExistsError(
-            "XDSM-diagram file %s not written because it already exists. "
-            "Use overwrite=True to bypass." % xdsm_file_path,
+            f"XDSM-diagram file {xdsm_file_path} not written because it already exists. "
+            "Use overwrite=True to bypass.",
             xdsm_file_path,
         )
 
@@ -667,17 +668,18 @@ def write_xdsm(
 
 
 def _run_problem(
-    configuration_file_path: Union[str, PathLike],
-    overwrite: bool = False,
+    configuration_file_path: str | PathLike,
     mode="run_model",
+    *,
+    overwrite: bool = False,
     auto_scaling: bool = False,
 ) -> FASTOADProblem:
     """
     Runs problem according to provided file
 
     :param configuration_file_path: problem definition
-    :param overwrite: if True, output file will be overwritten
     :param mode: 'run_model' or 'run_driver'
+    :param overwrite: if True, output file will be overwritten
     :param auto_scaling: if True, automatic scaling is performed for design variables and
                          constraints
     :return: the OpenMDAO problem after run
@@ -723,7 +725,8 @@ def _run_problem(
 
 
 def evaluate_problem(
-    configuration_file_path: Union[str, PathLike], overwrite: bool = False
+    configuration_file_path: str | PathLike,
+    overwrite: bool = False,  # noqa: FBT001, FBT002 no breaking changes in API functions
 ) -> FASTOADProblem:
     """
     Runs model according to provided problem file
@@ -733,13 +736,17 @@ def evaluate_problem(
     :return: the OpenMDAO problem after run
     :raise FastPathExistsError: if overwrite==False and output data file of problem already exists
     """
-    return _run_problem(configuration_file_path, overwrite, "run_model")
+    return _run_problem(
+        configuration_file_path,
+        "run_model",
+        overwrite=overwrite,
+    )
 
 
 def optimize_problem(
-    configuration_file_path: Union[str, PathLike],
-    overwrite: bool = False,
-    auto_scaling: bool = False,
+    configuration_file_path: str | PathLike,
+    overwrite: bool = False,  # noqa: FBT001, FBT002 no breaking changes in API functions
+    auto_scaling: bool = False,  # noqa: FBT001, FBT002 no breaking changes in API functions
 ) -> FASTOADProblem:
     """
     Runs driver according to provided problem file
@@ -751,10 +758,12 @@ def optimize_problem(
     :return: the OpenMDAO problem after run
     :raise FastPathExistsError: if overwrite==False and output data file of problem already exists
     """
-    return _run_problem(configuration_file_path, overwrite, "run_driver", auto_scaling=auto_scaling)
+    return _run_problem(
+        configuration_file_path, "run_driver", overwrite=overwrite, auto_scaling=auto_scaling
+    )
 
 
-def optimization_viewer(configuration_file_path: Union[str, PathLike]):
+def optimization_viewer(configuration_file_path: str | PathLike):
     """
     Displays optimization information and enables its editing
 
@@ -770,7 +779,9 @@ def optimization_viewer(configuration_file_path: Union[str, PathLike]):
 
 
 def variable_viewer(
-    file_path: Union[str, PathLike], file_formatter: IVariableIOFormatter = None, editable=True
+    file_path: str | PathLike,
+    file_formatter: IVariableIOFormatter = None,
+    editable=True,  # noqa: FBT002 no breaking changes in API functions
 ):
     """
     Displays a widget that enables to visualize variables information and edit their values.

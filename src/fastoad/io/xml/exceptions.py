@@ -40,7 +40,7 @@ class FastXpathTranslatorVariableError(FastError):
     """
 
     def __init__(self, variable):
-        super().__init__("Unknown variable %s" % variable)
+        super().__init__(f"Unknown variable {variable}")
         self.variable = variable
 
 
@@ -50,7 +50,7 @@ class FastXpathTranslatorXPathError(FastError):
     """
 
     def __init__(self, xpath):
-        super().__init__("Unknown xpath %s" % xpath)
+        super().__init__(f"Unknown xpath {xpath}")
         self.xpath = xpath
 
 

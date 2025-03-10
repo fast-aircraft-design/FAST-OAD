@@ -11,6 +11,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -68,7 +70,7 @@ class DummyUnpickableEngine(DummyEngine):
         Unpickable dummy engine model, inherites from DummyEngine.
         """
         DummyEngine.__init__(self, max_thrust, max_sfc)
-        self.data = open(file_name, "r")
+        self.data = Path.open(file_name, "r")
 
     def close_file(self):
         """Utility function to manually close the datafile."""

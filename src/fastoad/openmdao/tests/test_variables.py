@@ -15,7 +15,6 @@ Module for testing VariableList.py
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from pathlib import Path
-from typing import List
 
 import numpy as np
 import openmdao.api as om
@@ -191,7 +190,7 @@ def test_df_from_to_variables():
         assert var == new_var
 
 
-def _compare_variable_lists(vars: List[Variable], expected_vars: List[Variable]):
+def _compare_variable_lists(vars: list[Variable], expected_vars: list[Variable]):
     def sort_key(v):
         return v.name
 
@@ -632,8 +631,8 @@ pytestmark = pytest.mark.filterwarnings(
 
 def _test_and_check_from_unconnected_inputs(
     problem: om.Problem,
-    expected_mandatory_vars: List[Variable],
-    expected_optional_vars: List[Variable],
+    expected_mandatory_vars: list[Variable],
+    expected_optional_vars: list[Variable],
 ):
     problem.setup()
     vars = VariableList.from_unconnected_inputs(problem, with_optional_inputs=False)

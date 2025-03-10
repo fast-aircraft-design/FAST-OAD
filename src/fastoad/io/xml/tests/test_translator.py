@@ -34,11 +34,11 @@ def test_translator_with_set():
 
     translator = VarXpathTranslator()
     indices = range(10)
-    var_list = ["var%i" % i for i in indices]
-    xpath_list = ["xpath%i" % i for i in indices]
+    var_list = [f"var{i}" for i in indices]
+    xpath_list = [f"xpath{i}" for i in indices]
 
     # test with lists of different lengths -> error
-    var_list2 = ["var0"] + var_list
+    var_list2 = ["var0", *var_list]
     with pytest.raises(FastXpathTranslatorInconsistentLists):
         translator.set(var_list2, xpath_list)
 
@@ -67,8 +67,8 @@ def test_translator_with_set():
     assert translator.xpaths == xpath_list
 
     for i in indices:
-        assert translator.get_xpath("var%i" % i) == "xpath%i" % i
-        assert translator.get_variable_name("xpath%i" % i) == "var%i" % i
+        assert translator.get_xpath(f"var{i}") == f"xpath{i}"
+        assert translator.get_variable_name(f"xpath{i}") == f"var{i}"
 
     with pytest.raises(FastXpathTranslatorVariableError) as exc_info:
         _ = translator.get_xpath("unknown_var")

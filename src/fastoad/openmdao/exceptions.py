@@ -14,8 +14,8 @@ Module for custom Exception classes linked to OpenMDAO
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from collections.abc import Iterable
 from os import PathLike
-from typing import Iterable
 
 from fastoad._utils.files import as_path
 from fastoad.exceptions import FastError

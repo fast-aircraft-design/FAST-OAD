@@ -1,6 +1,7 @@
 """
 Base classes for propulsion components.
 """
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2021 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -13,9 +14,9 @@ Base classes for propulsion components.
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -48,7 +49,7 @@ class IPropulsion(ABC):
     """
 
     @abstractmethod
-    def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
+    def compute_flight_points(self, flight_points: FlightPoint | pd.DataFrame):
         """
         Computes Specific Fuel Consumption according to provided conditions.
 
@@ -213,7 +214,7 @@ class FuelEngineSet(AbstractFuelPropulsion):
         self.engine = engine
         self.engine_count = engine_count
 
-    def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
+    def compute_flight_points(self, flight_points: FlightPoint | pd.DataFrame):
         if flight_points.thrust is not None:
             flight_points.thrust = flight_points.thrust / self.engine_count
 

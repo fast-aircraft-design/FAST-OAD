@@ -1,4 +1,5 @@
 """WhatsOpt-related operations."""
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -11,9 +12,9 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from __future__ import annotations
 
 from os import PathLike
-from typing import Union
 
 import openmdao.api as om
 import whatsopt.whatsopt_client as wop
@@ -24,9 +25,10 @@ from fastoad._utils.files import make_parent_dir
 
 def write_xdsm(
     problem: om.Problem,
-    xdsm_file_path: Union[str, PathLike] = None,
+    xdsm_file_path: str | PathLike | None = None,
     depth: int = 2,
-    wop_server_url: str = None,
+    wop_server_url: str | None = None,
+    *,
     dry_run: bool = False,
 ):
     """
