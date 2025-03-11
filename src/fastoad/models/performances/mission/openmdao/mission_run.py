@@ -11,9 +11,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
 from os import PathLike
-from typing import Optional
 
 import numpy as np
 from openmdao import api as om
@@ -129,7 +130,7 @@ class MissionComp(om.ExplicitComponent, BaseMissionComp):
             self._mission_wrapper.consumed_fuel_before_input_weight
         )
 
-    def get_engine_wrapper(self) -> Optional[IOMPropulsionWrapper]:
+    def get_engine_wrapper(self) -> IOMPropulsionWrapper | None:
         """
         Overloading this method allows to define the engine without relying on the propulsion
         option.

@@ -17,7 +17,6 @@ parameter.
 
 from abc import ABC, abstractmethod
 from dataclasses import fields
-from typing import List, Tuple
 
 from docutils import nodes
 from sphinx.util.docutils import SphinxDirective
@@ -39,7 +38,7 @@ class AbstractLinkList(SphinxDirective, ABC):
     header_text = None
 
     @abstractmethod
-    def get_text_and_targets(self) -> List[Tuple[str, str]]:
+    def get_text_and_targets(self) -> list[tuple[str, str]]:
         """
         :return: a list of tuples for future hyperlinks (displayed text, rst target)
         """

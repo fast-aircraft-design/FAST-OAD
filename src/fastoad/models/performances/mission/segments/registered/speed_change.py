@@ -13,7 +13,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass
-from typing import List, Tuple
 
 from fastoad.model_base import FlightPoint
 from fastoad.models.performances.mission.exceptions import FastFlightSegmentIncompleteFlightPoint
@@ -37,7 +36,7 @@ class SpeedChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightSegm
     """
 
     def get_distance_to_target(
-        self, flight_points: List[FlightPoint], target: FlightPoint
+        self, flight_points: list[FlightPoint], target: FlightPoint
     ) -> float:
         if target.true_airspeed is not None:
             return target.true_airspeed - flight_points[-1].true_airspeed
@@ -50,6 +49,6 @@ class SpeedChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightSegm
             "No valid target definition for altitude change."
         )
 
-    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
+    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> tuple[float, float]:
         acceleration = (flight_point.thrust - flight_point.drag) / flight_point.mass
         return 0.0, acceleration

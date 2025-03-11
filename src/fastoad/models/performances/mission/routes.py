@@ -14,8 +14,9 @@ Classes for computation of routes (i.e. assemblies of climb, cruise and descent 
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -42,13 +43,13 @@ class RangedRoute(FlightSequence):
     """
 
     #: Any number of flight phases that will occur before cruise.
-    climb_phases: List[FlightSequence] = MANDATORY_FIELD
+    climb_phases: list[FlightSequence] = MANDATORY_FIELD
 
     #: The cruise phase.
     cruise_segment: CruiseSegment = MANDATORY_FIELD
 
     #: Any number of flight phases that will occur after cruise.
-    descent_phases: List[FlightSequence] = MANDATORY_FIELD
+    descent_phases: list[FlightSequence] = MANDATORY_FIELD
 
     #: Target ground distance for whole route
     flight_distance: float = MANDATORY_FIELD
@@ -79,7 +80,7 @@ class RangedRoute(FlightSequence):
         self.cruise_segment.target.set_as_relative("ground_distance")
 
     @property
-    def cruise_speed(self) -> Optional[Tuple[str, float]]:
+    def cruise_speed(self) -> tuple[str, float] | None:
         """
         Type (among `true_airspeed`, `equivalent_airspeed` and `mach`) and value of cruise speed.
         """
@@ -117,7 +118,7 @@ class RangedRoute(FlightSequence):
         self.cruise_distance = self.flight_distance - np.sum(climb_descent_distances)
         return super().compute_from(start)
 
-    def _get_flight_sequence(self) -> List[IFlightPart]:
+    def _get_flight_sequence(self) -> list[IFlightPart]:
         # The preliminary climb segment of the cruise segment is set to the
         # last segment before cruise.
         cruise_climb = self.climb_phases[-1]
@@ -125,7 +126,7 @@ class RangedRoute(FlightSequence):
             cruise_climb = cruise_climb[-1]
         self.cruise_segment.climb_segment = cruise_climb
 
-        return self.climb_phases + [self.cruise_segment] + self.descent_phases
+        return [*self.climb_phases, self.cruise_segment, *self.descent_phases]
 
     @classmethod
     def _get_ground_distances(cls, phase: FlightSequence) -> list:

@@ -1,6 +1,7 @@
 """
 Module for pandas-related operations
 """
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -13,8 +14,9 @@ Module for pandas-related operations
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from __future__ import annotations
 
-from typing import Callable, Optional
+from typing import Callable
 
 import pandas as pd
 from packaging.version import Version
@@ -29,7 +31,7 @@ else:
 
 # TODO: remove me when pandas <2.1 is no longer used.
 def apply_map(
-    dataframe: pd.DataFrame, func: Callable, na_action: Optional[str] = None, **kwargs
+    dataframe: pd.DataFrame, func: Callable, na_action: str | None = None, **kwargs
 ) -> pd.DataFrame:
     """
     Convenience function for using DataFrame.applymap or DataFrame.map

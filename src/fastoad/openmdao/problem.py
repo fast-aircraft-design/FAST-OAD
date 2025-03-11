@@ -11,10 +11,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
 from dataclasses import dataclass, field
 from os import PathLike
-from typing import Optional, Tuple, Union
 
 import numpy as np
 import openmdao.api as om
@@ -72,15 +73,15 @@ class FASTOADProblem(om.Problem):
 
         self._copy = None
 
-        self._analysis: Optional[ProblemAnalysis] = None
+        self._analysis: ProblemAnalysis | None = None
 
-    def run_model(self, case_prefix=None, reset_iter_counts=True):
+    def run_model(self, case_prefix=None, *, reset_iter_counts=True):
         status = super().run_model(case_prefix, reset_iter_counts)
         ValidityDomainChecker.check_problem_variables(self)
         BundleLoader().clean_memory()
         return status
 
-    def run_driver(self, case_prefix=None, reset_iter_counts=True):
+    def run_driver(self, case_prefix=None, *, reset_iter_counts=True):
         status = super().run_driver(case_prefix, reset_iter_counts)
         ValidityDomainChecker.check_problem_variables(self)
         BundleLoader().clean_memory()
@@ -100,7 +101,7 @@ class FASTOADProblem(om.Problem):
 
     def write_needed_inputs(
         self,
-        source_file_path: Union[str, PathLike] = None,
+        source_file_path: str | PathLike | None = None,
         source_formatter: IVariableIOFormatter = None,
     ):
         """
@@ -138,7 +139,7 @@ class FASTOADProblem(om.Problem):
                 _LOGGER.warning("The following variables have NaN values: %s", nan_variable_names)
         variables.save()
 
-    def write_outputs(self) -> Optional[DataFile]:
+    def write_outputs(self) -> DataFile | None:
         """
         Writes all outputs in the configured output file.
         """
@@ -173,7 +174,7 @@ class FASTOADProblem(om.Problem):
             self._set_input_values_after_setup = True
 
     @property
-    def analysis(self) -> "ProblemAnalysis":
+    def analysis(self) -> ProblemAnalysis:
         """
         Information about inner structure of this problem.
 
@@ -194,7 +195,7 @@ class FASTOADProblem(om.Problem):
         """
         self._analysis = None
 
-    def _get_problem_inputs(self) -> Tuple[VariableList, VariableList]:
+    def _get_problem_inputs(self) -> tuple[VariableList, VariableList]:
         """
         Reads input file for the configured problem.
 
@@ -239,10 +240,9 @@ class FASTOADProblem(om.Problem):
         nan_input_file_variable_names = {
             var.name for var in input_file_variables if np.any(np.isnan(var.value))
         }
-        non_filled_variable_names = (
+        return (  # non_filled_variable_names
             default_nan_problem_variable_names - non_nan_input_file_variable_names
         ) | nan_input_file_variable_names
-        return non_filled_variable_names
 
     def _set_input_values_post_setup(self):
         """
@@ -286,7 +286,7 @@ class FASTOADProblem(om.Problem):
 
     def _insert_input_ivc(self, ivc: om.IndepVarComp, subsystem_name=INPUT_SYSTEM_NAME):
         self.model.add_subsystem(subsystem_name, ivc, promotes=["*"])
-        self.model.set_order([subsystem_name] + self.analysis.subsystem_order)
+        self.model.set_order([subsystem_name, *self.analysis.subsystem_order])
 
 
 class AutoUnitsDefaultGroup(om.Group):
@@ -333,10 +333,11 @@ class FASTOADModel(AutoUnitsDefaultGroup):
 
 def get_variable_list_from_system(
     system: System,
+    io_status: str = "all",
+    *,
     get_promoted_names: bool = True,
     promoted_only: bool = True,
-    io_status: str = "all",
-) -> "VariableList":
+) -> VariableList:
     """
     Creates a VariableList instance containing inputs and outputs of any OpenMDAO System.
 
@@ -461,11 +462,9 @@ class ProblemAnalysis:
                 }
             )
 
-        dynamic_vars = VariableList(
+        return VariableList(  # dynamic_vars
             [Variable(meta["prom_name"], **meta) for meta in dynamic_vars_metadata.values()]
         )
-
-        return dynamic_vars
 
     @staticmethod
     def _get_order_of_subsystems(problem, ignored_system_names=("_auto_ivc", SHAPER_SYSTEM_NAME)):

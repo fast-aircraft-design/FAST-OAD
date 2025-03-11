@@ -14,10 +14,9 @@ Test module for Overall Aircraft Design process
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
-import os.path as pth
 import shutil
 from dataclasses import dataclass
+from pathlib import Path
 from platform import system
 from shutil import rmtree
 
@@ -33,8 +32,8 @@ from fastoad.io.configuration.configuration import (
     _IConfigurationModifier,
 )
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
-RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
+DATA_FOLDER_PATH = Path(__file__).parent / "data"
+RESULTS_FOLDER_PATH = Path(__file__).parent / "results"
 
 
 @pytest.fixture(scope="module")
@@ -47,10 +46,10 @@ def test_oad_process(cleanup):
     Test for the overall aircraft design process.
     """
 
-    configurator = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "oad_process.yml"))
-    configurator.make_local(pth.join(RESULTS_FOLDER_PATH, "test_oad_process"))
+    configurator = FASTOADProblemConfigurator(DATA_FOLDER_PATH / "oad_process.yml")
+    configurator.make_local(RESULTS_FOLDER_PATH / "test_oad_process")
 
-    ref_inputs = pth.join(DATA_FOLDER_PATH, "CeRAS01_legacy.xml")
+    ref_inputs = DATA_FOLDER_PATH / "CeRAS01_legacy.xml"
     problem = configurator.get_problem()
     problem.write_needed_inputs(ref_inputs)
     problem.read_inputs()
@@ -59,12 +58,11 @@ def test_oad_process(cleanup):
     problem.run_model()
     problem.write_outputs()
 
-    if not pth.exists(RESULTS_FOLDER_PATH):
-        os.mkdir(RESULTS_FOLDER_PATH)
+    RESULTS_FOLDER_PATH.mkdir(parents=True, exist_ok=True)
     om.view_connections(
-        problem, outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"), show_browser=False
+        problem, outfile=str(RESULTS_FOLDER_PATH / "connections.html"), show_browser=False
     )
-    om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, "n2.html"), show_browser=False)
+    om.n2(problem, outfile=str(RESULTS_FOLDER_PATH / "n2.html"), show_browser=False)
 
     # Check that weight-performances loop correctly converged
     _check_weight_performance_loop(problem)
@@ -114,11 +112,12 @@ def run_non_regression_test(
     conf_file,
     legacy_result_file,
     result_dir,
-    use_xfoil=False,
     xfoil_path=None,
     global_tolerance=1e-2,
     vars_to_check=None,
     specific_tolerance=5.0e-3,
+    *,
+    use_xfoil=False,
     check_weight_perfo_loop=True,
 ):
     """
@@ -126,26 +125,26 @@ def run_non_regression_test(
     :param conf_file: FAST-OAD configuration file
     :param legacy_result_file: reference data for inputs and outputs
     :param result_dir: relative name, folder will be in RESULTS_FOLDER_PATH
-    :param use_xfoil: if True, XFOIL computation will be activated
     :param xfoil_path: used if use_xfoil==True
     :param vars_to_check: variables that will be concerned by specific_tolerance
     :param specific_tolerance: test will fail if absolute relative error between computed and
                                reference values is beyond this value for variables in vars_to_check
     :param global_tolerance: test will fail if absolute relative error between computed and
                              reference values is beyond this value for ANY variable
+    :param use_xfoil: if True, XFOIL computation will be activated
     :param check_weight_perfo_loop: if True, consistency of weights will be checked
     """
-    results_folder_path = pth.join(RESULTS_FOLDER_PATH, result_dir)
-    configuration_file_path = pth.join(results_folder_path, conf_file)
+    results_folder_path = RESULTS_FOLDER_PATH / result_dir
+    configuration_file_path = results_folder_path / conf_file
 
     # Copy of configuration file and generation of problem instance ------------------
     oad.generate_configuration_file(configuration_file_path)  # just ensure folders are created...
-    shutil.copy(pth.join(DATA_FOLDER_PATH, conf_file), configuration_file_path)
+    shutil.copy(DATA_FOLDER_PATH / conf_file, configuration_file_path)
     configurator = FASTOADProblemConfigurator(configuration_file_path)
     configurator._set_configuration_modifier(XFOILConfigurator(use_xfoil, xfoil_path))
 
     # Generation of inputs ----------------------------------------
-    ref_inputs = pth.join(DATA_FOLDER_PATH, legacy_result_file)
+    ref_inputs = DATA_FOLDER_PATH / legacy_result_file
     configurator.write_needed_inputs(ref_inputs)
 
     # Get problem with inputs -------------------------------------
@@ -157,13 +156,13 @@ def run_non_regression_test(
     problem.write_outputs()
 
     om.view_connections(
-        problem, outfile=pth.join(results_folder_path, "connections.html"), show_browser=False
+        problem, outfile=str(results_folder_path / "connections.html"), show_browser=False
     )
 
     if check_weight_perfo_loop:
         _check_weight_performance_loop(problem)
 
-    ref_data = oad.DataFile(pth.join(DATA_FOLDER_PATH, legacy_result_file))
+    ref_data = oad.DataFile(DATA_FOLDER_PATH / legacy_result_file)
 
     row_list = []
     for ref_var in ref_data:
@@ -200,19 +199,19 @@ def run_non_regression_test(
 
 
 def test_api_eval_breguet(cleanup):
-    results_folder_path = pth.join(RESULTS_FOLDER_PATH, "api_eval_breguet")
-    configuration_file_path = pth.join(results_folder_path, "oad_process.yml")
+    results_folder_path = RESULTS_FOLDER_PATH / "api_eval_breguet"
+    configuration_file_path = results_folder_path / "oad_process.yml"
 
     # Generation of configuration file ----------------------------------------
-    oad.generate_configuration_file(configuration_file_path, True)
+    oad.generate_configuration_file(configuration_file_path, overwrite=True)
 
     # Generation of inputs ----------------------------------------------------
     # We get the same inputs as in tutorial notebook
-    source_xml = pth.join(DATA_FOLDER_PATH, "CeRAS01_notebooks.xml")
+    source_xml = DATA_FOLDER_PATH / "CeRAS01_notebooks.xml"
     oad.generate_inputs(configuration_file_path, source_xml, overwrite=True)
 
     # Run model ---------------------------------------------------------------
-    problem = oad.evaluate_problem(configuration_file_path, True)
+    problem = oad.evaluate_problem(configuration_file_path, overwrite=True)
 
     # Check that weight-performances loop correctly converged
     _check_weight_performance_loop(problem)
@@ -229,19 +228,19 @@ def test_api_eval_breguet(cleanup):
 
 
 def test_api_optim(cleanup):
-    results_folder_path = pth.join(RESULTS_FOLDER_PATH, "api_optim")
-    configuration_file_path = pth.join(results_folder_path, "oad_process.yml")
+    results_folder_path = RESULTS_FOLDER_PATH / "api_optim"
+    configuration_file_path = results_folder_path / "oad_process.yml"
 
     # Generation of configuration file ----------------------------------------
-    oad.generate_configuration_file(configuration_file_path, True)
+    oad.generate_configuration_file(configuration_file_path, overwrite=True)
 
     # Generation of inputs ----------------------------------------------------
     # We get the same inputs as in tutorial notebook
-    source_xml = pth.join(DATA_FOLDER_PATH, "CeRAS01_notebooks.xml")
+    source_xml = DATA_FOLDER_PATH / "CeRAS01_notebooks.xml"
     oad.generate_inputs(configuration_file_path, source_xml, overwrite=True)
 
     # Run optim ---------------------------------------------------------------
-    problem = oad.optimize_problem(configuration_file_path, True)
+    problem = oad.optimize_problem(configuration_file_path, overwrite=True)
     assert not problem.optim_failed
 
     # Check that weight-performances loop correctly converged

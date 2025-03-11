@@ -13,7 +13,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass
-from typing import Tuple
 
 import pandas as pd
 
@@ -33,7 +32,7 @@ from fastoad.models.performances.mission.segments.time_step_base import (
 @dataclass
 class TaxiSegment(
     AbstractManualThrustSegment, AbstractFixedDurationSegment, AbstractLiftFromAoASegment
-):  # noqa: F821
+):
     """
     Class for computing Taxi phases.
 
@@ -46,7 +45,7 @@ class TaxiSegment(
     time_step: float = 60.0
     true_airspeed: float = 0.0
 
-    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
+    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> tuple[float, float]:
         return 0.0, 0.0
 
     def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:

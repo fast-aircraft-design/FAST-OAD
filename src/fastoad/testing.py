@@ -1,4 +1,5 @@
 """Convenience utilities for testing."""
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -11,8 +12,7 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-from typing import Union
+from __future__ import annotations
 
 import numpy as np
 from openmdao import api as om
@@ -24,7 +24,7 @@ from fastoad.openmdao.variables import VariableList
 
 
 def run_system(
-    component: System, input_vars: Union[om.IndepVarComp, VariableList], **kwargs
+    component: System, input_vars: om.IndepVarComp | VariableList, **kwargs
 ) -> FASTOADProblem:
     """
     Runs and returns an OpenMDAO problem with provided component and data.
@@ -62,7 +62,7 @@ def run_system(
         if np.any(np.isnan(var.val))
     ]
 
-    assert not variable_names, "These inputs are not provided: %s" % variable_names
+    assert not variable_names, f"These inputs are not provided: {variable_names}"
 
     problem.run_model()
 

@@ -14,8 +14,10 @@ Class for managing a list of OpenMDAO variables.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from collections.abc import Iterable, Mapping
 from copy import deepcopy
-from typing import Iterable, List, Mapping, Tuple, Union
 
 import numpy as np
 import openmdao.api as om
@@ -73,13 +75,13 @@ class VariableList(list):
         print( 'var/2' in vars_A.names() )
     """
 
-    def names(self) -> List[str]:
+    def names(self) -> list[str]:
         """
         :return: names of variables
         """
         return [var.name for var in self]
 
-    def metadata_keys(self) -> List[str]:
+    def metadata_keys(self) -> list[str]:
         """
         :return: the metadata keys that are common to all variables in the list
         """
@@ -110,7 +112,7 @@ class VariableList(list):
         """
         self.append(Variable(name, **kwargs))
 
-    def update(self, other_var_list: list, add_variables: bool = True):
+    def update(self, other_var_list: list, *, add_variables: bool = True):
         """
         Uses variables in other_var_list to update the current VariableList instance.
 
@@ -175,14 +177,10 @@ class VariableList(list):
                         metadata = variable.metadata[metadata_name]
                     var_dict[metadata_name].append(metadata)
 
-        df = pd.DataFrame.from_dict(var_dict)
-
-        return df
+        return pd.DataFrame.from_dict(var_dict)
 
     @classmethod
-    def from_dict(
-        cls, var_dict: Union[Mapping[str, dict], Iterable[Tuple[str, dict]]]
-    ) -> "VariableList":
+    def from_dict(cls, var_dict: Mapping[str, dict] | Iterable[tuple[str, dict]]) -> VariableList:
         """
         Creates a VariableList instance from a dict-like object.
 
@@ -197,7 +195,7 @@ class VariableList(list):
         return variables
 
     @classmethod
-    def from_ivc(cls, ivc: om.IndepVarComp) -> "VariableList":
+    def from_ivc(cls, ivc: om.IndepVarComp) -> VariableList:
         """
         Creates a VariableList instance from an OpenMDAO IndepVarComp instance
 
@@ -237,7 +235,7 @@ class VariableList(list):
         return value.tolist()
 
     @classmethod
-    def from_dataframe(cls, df: pd.DataFrame) -> "VariableList":
+    def from_dataframe(cls, df: pd.DataFrame) -> VariableList:
         """
         Creates a VariableList instance from a pandas DataFrame instance.
 
@@ -265,11 +263,12 @@ class VariableList(list):
     def from_problem(
         cls,
         problem: om.Problem,
+        io_status: str = "all",
+        *,
         use_initial_values: bool = False,
         get_promoted_names: bool = True,
         promoted_only: bool = True,
-        io_status: str = "all",
-    ) -> "VariableList":
+    ) -> VariableList:
         """
         Creates a VariableList instance containing inputs and outputs of an OpenMDAO Problem.
 
@@ -281,12 +280,12 @@ class VariableList(list):
             Variables from _auto_ivc are ignored.
 
         :param problem: OpenMDAO Problem instance to inspect
+        :param io_status: to choose with type of variable we return ("all", "inputs, "outputs")
         :param use_initial_values: if True, or if problem has not been run, returned instance will
                                    contain values before computation
         :param get_promoted_names: if True, promoted names will be returned instead of absolute ones
                                    (if no promotion, absolute name will be returned)
         :param promoted_only: if True, only promoted variable names will be returned
-        :param io_status: to choose with type of variable we return ("all", "inputs, "outputs")
         :return: VariableList instance
         """
 
@@ -331,8 +330,8 @@ class VariableList(list):
         reason="Will be removed in version 2.0. Please use VariableList.from_problem() instead",
     )
     def from_unconnected_inputs(
-        cls, problem: om.Problem, with_optional_inputs: bool = False
-    ) -> "VariableList":
+        cls, problem: om.Problem, *, with_optional_inputs: bool = False
+    ) -> VariableList:
         """
         Creates a VariableList instance containing unconnected inputs of an OpenMDAO Problem.
 
@@ -389,8 +388,7 @@ class VariableList(list):
     def __getitem__(self, key) -> Variable:
         if isinstance(key, str):
             return self[self.names().index(key)]
-        else:
-            return super().__getitem__(key)
+        return super().__getitem__(key)
 
     def __setitem__(self, key, value):
         if isinstance(key, str):
@@ -416,11 +414,10 @@ class VariableList(list):
         else:
             super().__delitem__(key)
 
-    def __add__(self, other) -> Union[List, "VariableList"]:
+    def __add__(self, other) -> list | VariableList:
         if isinstance(other, VariableList):
             return type(self)(super().__add__(other))
-        else:
-            return super().__add__(other)
+        return super().__add__(other)
 
     def __eq__(self, other) -> bool:
         return set(self) == set(other)

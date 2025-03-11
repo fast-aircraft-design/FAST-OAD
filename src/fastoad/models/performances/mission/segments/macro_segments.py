@@ -14,6 +14,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from abc import ABCMeta
 from dataclasses import dataclass, field, fields, make_dataclass
+from typing import ClassVar
 
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.datacls import MANDATORY_FIELD
@@ -42,7 +43,7 @@ class MacroSegmentBase(FlightSequence):
     target: FlightPoint = MANDATORY_FIELD
 
     #: List of segment classes that will compose this macro-segment.
-    cls_sequence = []
+    cls_sequence: ClassVar[list] = []
 
     # Flag that is set to True after instantiation is finished.
     _initialized: bool = field(default=False, init=False)

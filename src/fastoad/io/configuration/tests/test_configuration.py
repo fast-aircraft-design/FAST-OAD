@@ -15,7 +15,6 @@ Test module for configuration.py
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import filecmp
-import os
 import shutil
 import sys
 import tempfile
@@ -244,7 +243,7 @@ def test_problem_definition_with_custom_xml(cleanup):
     conf.output_file_path = result_folder_path / "outputs.xml"
 
     input_data = DATA_FOLDER_PATH / "ref_inputs.xml"
-    os.makedirs(result_folder_path, exist_ok=True)
+    result_folder_path.mkdir(parents=True, exist_ok=True)
     shutil.copy(input_data, conf.input_file_path)
 
     problem = conf.get_problem(read_inputs=True, auto_scaling=True)
@@ -327,7 +326,7 @@ def test_set_optimization_definition(cleanup):
 
         read = tomlkit.loads if extension == "toml" else YAML(typ="safe").load
 
-        with open(reference_file, "r") as file:
+        with Path.open(reference_file, "r") as file:
             d = file.read()
             conf_dict = read(d)
         conf_dict_opt = conf_dict["optimization"]
@@ -336,7 +335,7 @@ def test_set_optimization_definition(cleanup):
 
         conf.set_optimization_definition(optimization_def)
         conf.save(editable_file)
-        with open(editable_file, "r") as file:
+        with Path.open(editable_file, "r") as file:
             d = file.read()
             conf_dict = read(d)
         conf_dict_opt = conf_dict["optimization"]
@@ -475,7 +474,7 @@ def test_driver_configuration(added_sys_path):
 
     with tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".yaml") as temp_config_file:
         yaml.dump(config_data_new, temp_config_file)
-        temp_config_file_path = temp_config_file.name
+        temp_config_file_path = Path(temp_config_file.name)
 
     configurator = FASTOADProblemConfigurator()
     configurator.load(temp_config_file_path)
@@ -487,7 +486,7 @@ def test_driver_configuration(added_sys_path):
     assert problem.driver.options["tol"] == 1e-2
     assert problem.driver.opt_settings["maxtime"] == 10
 
-    os.remove(temp_config_file_path)
+    Path.unlink(temp_config_file_path)
 
     # Test standard syntax
     config_data_old = {
@@ -499,7 +498,7 @@ def test_driver_configuration(added_sys_path):
 
     with tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".yaml") as temp_config_file:
         yaml.dump(config_data_old, temp_config_file)
-        temp_config_file_path = temp_config_file.name
+        temp_config_file_path = Path(temp_config_file.name)
 
     configurator = FASTOADProblemConfigurator()
     configurator.load(temp_config_file_path)
@@ -509,4 +508,4 @@ def test_driver_configuration(added_sys_path):
     assert problem.driver.options["optimizer"] == "COBYLA"
     assert problem.driver.options["tol"] == 1e-2
 
-    os.remove(temp_config_file_path)
+    Path.unlink(temp_config_file_path)

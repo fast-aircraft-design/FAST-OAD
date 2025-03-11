@@ -20,7 +20,7 @@ from scipy.constants import foot
 FLIGHT_LEVEL = 100 * foot
 
 
-def get_closest_flight_level(altitude, base_level=0, level_step=10, up_direction=True):
+def get_closest_flight_level(altitude, base_level=0, level_step=10, *, up_direction=True):
     """
     Computes the altitude (in meters) of a flight level close to provided altitude.
 

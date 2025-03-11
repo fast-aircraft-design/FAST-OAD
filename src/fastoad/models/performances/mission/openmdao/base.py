@@ -14,10 +14,11 @@ Base classes for mission-related OpenMDAO components.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from abc import ABCMeta
 from enum import Enum
 from os import PathLike
-from typing import Optional, Union
 
 from openmdao.core.system import System
 
@@ -78,7 +79,7 @@ class BaseMissionComp(System, metaclass=ABCMeta):
     def __init__(self, **kwargs):
         # These attributes will be updated automatically wrt to option values
         # (see method '_update_mission_wrapper')
-        self._mission_wrapper: Optional[MissionWrapper] = None
+        self._mission_wrapper: MissionWrapper | None = None
         self._name_provider = None
 
         super().__init__(**kwargs)
@@ -141,7 +142,7 @@ class BaseMissionComp(System, metaclass=ABCMeta):
         return self._mission_wrapper.mission_name
 
     @property
-    def first_route_name(self) -> Optional[str]:
+    def first_route_name(self) -> str | None:
         """The name of first route (and normally the main one) in the mission."""
         try:
             return self._mission_wrapper.get_route_names()[0]
@@ -150,7 +151,7 @@ class BaseMissionComp(System, metaclass=ABCMeta):
 
     @staticmethod
     def get_mission_definition(
-        mission_file_path: Optional[Union[str, PathLike, MissionDefinition]],
+        mission_file_path: str | PathLike | MissionDefinition | None,
     ) -> MissionDefinition:
         """
 
@@ -217,7 +218,7 @@ class BaseMissionComp(System, metaclass=ABCMeta):
         except FastMissionFileMissingMissionNameError:
             return
 
-    def _get_variable_name_provider(self) -> Optional[type]:
+    def _get_variable_name_provider(self) -> type | None:
         """Factory that returns an enum class that provide mission variable names."""
 
         def get_variable_name(suffix):

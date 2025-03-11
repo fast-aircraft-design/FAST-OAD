@@ -18,11 +18,12 @@ be transformed into a Python implementation.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import typing
 from abc import ABC, abstractmethod
 from copy import deepcopy
-from dataclasses import InitVar, dataclass, field, fields
+from dataclasses import InitVar, dataclass, field
 from itertools import chain
-from typing import List, Tuple
+from typing import ClassVar, get_type_hints
 
 import numpy as np
 
@@ -69,8 +70,8 @@ class AbstractStructureBuilder(ABC):
 
     _structure: dict = field(default=None, init=False)
 
-    _input_definitions: List[InputDefinition] = field(default_factory=list, init=False)
-    _builders: List[Tuple["AbstractStructureBuilder", dict]] = field(
+    _input_definitions: list[InputDefinition] = field(default_factory=list, init=False)
+    _builders: list[tuple["AbstractStructureBuilder", dict]] = field(
         default_factory=list, init=False
     )
 
@@ -97,8 +98,8 @@ class AbstractStructureBuilder(ABC):
         self._builders = []  # Builders have been used and can be forgotten.
         return self._structure
 
-    def get_input_definitions(self) -> List[InputDefinition]:
-        """List of InputDefinition instances in the structure."""
+    def get_input_definitions(self) -> list[InputDefinition]:
+        """list of InputDefinition instances in the structure."""
         return self._input_definitions + list(
             chain(*[builder.get_input_definitions() for builder, _ in self._builders])
         )
@@ -154,7 +155,7 @@ class AbstractStructureBuilder(ABC):
     def _parse_inputs(
         self,
         structure,
-        input_definitions: List[InputDefinition],
+        input_definitions: list[InputDefinition],
         parent=None,
         part_identifier="",
         segment_class=None,
@@ -227,11 +228,40 @@ class AbstractStructureBuilder(ABC):
     @staticmethod
     def _is_shape_by_conn(key, segment_class) -> bool:
         """
-        Here variables that are expected to be arrays or lists in the provided segment class are
-        attributed the "shape_by_conn=True" property.
+        Check if a field in `segment_class` is a list or NumPy array.
+        Works with `from __future__ import annotations` and handles ClassVar properly.
         """
-        segment_fields = [fld for fld in fields(segment_class) if fld.name == key]
-        return len(segment_fields) == 1 and issubclass(segment_fields[0].type, (list, np.ndarray))
+        # Retrieve type annotations using get_type_hints().
+        # WHY? Because `from __future__ import annotations` makes type hints **lazy** (stored as strings),
+        # and get_type_hints() converts them back into real types.
+        # TODO https://peps.python.org/pep-0649/ will simplify all this
+        try:
+            type_hints = get_type_hints(segment_class)
+            if key not in type_hints:
+                return False
+
+            field_type = type_hints[key]
+
+            # Handle ClassVar if present, issubclass()
+            # does not accept ClassVar as a valid type
+            origin = typing.get_origin(field_type)
+            if origin is ClassVar:
+                field_type = typing.get_args(field_type)[0]
+                origin = typing.get_origin(field_type)
+
+            # Check for list
+            if origin is not None and origin is list:
+                return True
+
+            # Direct type check for list or ndarray
+            if isinstance(field_type, type):
+                try:
+                    return issubclass(field_type, (list, np.ndarray))
+                except TypeError:
+                    pass
+            return False
+        except (TypeError, NameError):
+            return False
 
     def _process_polar(self, structure):
         """

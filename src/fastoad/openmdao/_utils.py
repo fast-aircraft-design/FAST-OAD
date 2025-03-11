@@ -16,7 +16,7 @@ Utility functions for OpenMDAO classes/instances
 
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import List, Tuple, TypeVar
+from typing import TypeVar
 
 import numpy as np
 import openmdao.api as om
@@ -37,9 +37,7 @@ def get_mpi_safe_problem_copy(problem: T) -> T:
     :return: a copy of the problem with a FakeComm object as problem.comm
     """
     with copyable_problem(problem) as no_mpi_problem:
-        problem_copy = deepcopy(no_mpi_problem)
-
-    return problem_copy
+        return deepcopy(no_mpi_problem)
 
 
 @contextmanager
@@ -74,11 +72,11 @@ def copyable_problem(problem: om.Problem) -> om.Problem:
 
 @deprecated(
     version="1.3.0",
-    reason="Will be removed in version 2.0. Please use VariableList.from_problem() instead",
+    reason="Will be removed in version 2.0. Please use Variable list.from_problem() instead",
 )
 def get_unconnected_input_names(
-    problem: om.Problem, promoted_names=False
-) -> Tuple[List[str], List[str]]:
+    problem: om.Problem, *, promoted_names=False
+) -> tuple[list[str], list[str]]:
     """
     For provided OpenMDAO problem, looks for inputs that are connected to no output.
 

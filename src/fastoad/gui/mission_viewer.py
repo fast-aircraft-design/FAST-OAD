@@ -15,8 +15,9 @@ Defines the analysis and plotting functions for postprocessing regarding the mis
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from os import PathLike
-from typing import Union
 
 import ipywidgets as widgets
 import pandas as pd
@@ -45,7 +46,7 @@ class MissionViewer:
         # The y selector
         self._y_widget = None
 
-    def add_mission(self, mission_data: Union[str, PathLike, pd.DataFrame], name=None):
+    def add_mission(self, mission_data: str | PathLike | pd.DataFrame, name=None):
         """
         Adds the mission to the mission database (self.missions)
         :param mission_data: path of the mission file or Dataframe containing the mission data
@@ -64,7 +65,7 @@ class MissionViewer:
             else:
                 raise TypeError("Unknown type for mission data, please use .csv of DataFrame")
 
-    def display(self, layout_dict=None, layout_overwrite=False, **kwargs):
+    def display(self, layout_dict=None, layout_overwrite=False, **kwargs):  # noqa: FBT002 no breaking changes in API functions
         """
         Display the user interface
 
@@ -77,7 +78,7 @@ class MissionViewer:
         :return the display object
         """
 
-        key = list(self.missions)[0]
+        key = next(iter(self.missions))  # Single element slice
         keys = self.missions[key].keys()
 
         self._output_widget = widgets.Output()
@@ -98,12 +99,10 @@ class MissionViewer:
             [widgets.Label(value="x:"), self._x_widget, widgets.Label(value="y:"), self._y_widget]
         )
 
-        ui = display(toolbar, self._output_widget)
-
-        return ui
+        return display(toolbar, self._output_widget)  # UI
 
     # pylint: disable=unused-argument # change has to be there for observe() to work
-    def _show_plot(self, change=None, layout_dict=None, layout_overwrite=False, **kwargs):
+    def _show_plot(self, change=None, layout_dict=None, *, layout_overwrite=False, **kwargs):
         """
         Updates and shows the plots
 
@@ -151,6 +150,4 @@ class MissionViewer:
 
         unit_quantity = FlightPoint.get_unit(quantity_name)
         column_quantity = f"{quantity_name} [{unit_quantity}]"
-        label_quantity = column_quantity if column_quantity in keys else keys[default_idx]
-
-        return label_quantity
+        return column_quantity if column_quantity in keys else keys[default_idx]  # label_quantity

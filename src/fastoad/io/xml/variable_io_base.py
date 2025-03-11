@@ -14,12 +14,14 @@ Defines how OpenMDAO variables are serialized to XML using a conversion table
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import json
 import logging
 import re
 from os import PathLike
 from pathlib import Path
-from typing import IO, Optional, Union
+from typing import IO
 
 import numpy as np
 from lxml import etree
@@ -90,7 +92,7 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
             r"\bin\b": "inch",
         }
 
-    def read_variables(self, data_source: Union[str, PathLike, IO]) -> VariableList:
+    def read_variables(self, data_source: str | PathLike | IO) -> VariableList:
         variables = VariableList()
 
         # If there is a comment, it will be used as description if the previous
@@ -141,7 +143,7 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
 
         return variables
 
-    def write_variables(self, data_source: Union[str, PathLike, IO], variables: VariableList):
+    def write_variables(self, data_source: str | PathLike | IO, variables: VariableList):
         root = etree.Element(ROOT_TAG)
 
         for variable in variables:
@@ -178,7 +180,7 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
 
         tree.write(data_source, pretty_print=True)
 
-    def _read_units(self, elem) -> Optional[str]:
+    def _read_units(self, elem) -> str | None:
         units = elem.attrib.get(self.xml_unit_attribute, None)
         if units:
             # Ensures compatibility with OpenMDAO units
@@ -187,7 +189,7 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
                 units = units.replace(legacy_chars, om_chars)
         return units
 
-    def _get_matching_variable_name(self, elem: _Element) -> Optional[str]:
+    def _get_matching_variable_name(self, elem: _Element) -> str | None:
         path_tags = [ancestor.tag for ancestor in elem.iterancestors()]
         path_tags.reverse()
         path_tags.append(elem.tag)

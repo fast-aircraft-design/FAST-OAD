@@ -11,9 +11,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from dataclasses import InitVar, dataclass, field
 from pathlib import Path
-from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -130,8 +131,8 @@ class AbstractManualThrustFlightPhase(FlightSequence):
         propulsion: IPropulsion,
         reference_area: float,
         polar: Polar,
-        thrust_rate: float = 1.0,
-        time_step=None,
+        thrust_rate: float,
+        time_step,
     ):
         """
 
@@ -151,7 +152,7 @@ class AbstractManualThrustFlightPhase(FlightSequence):
             "time_step": time_step,
         }
 
-    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
+    def compute_from(self, start: FlightPoint) -> pd.DataFrame | None:
         parts = []
         part_start = start
         for part in self:
@@ -169,6 +170,7 @@ class AbstractManualThrustFlightPhase(FlightSequence):
 
         if parts:
             return pd.concat(parts).reset_index(drop=True)
+        return None
 
 
 @dataclass
@@ -237,7 +239,7 @@ class ClimbPhase(AbstractManualThrustFlightPhase):
     """
 
     maximum_mach: float = field(default=5.0)
-    target_altitude: Union[float, str] = MANDATORY_FIELD
+    target_altitude: float | str = MANDATORY_FIELD
 
     def __post_init__(self, *args, **kwargs):
         super().__post_init__(*args, **kwargs)
@@ -275,7 +277,7 @@ class DescentPhase(AbstractManualThrustFlightPhase):
     - Descends down to target altitude at constant EAS
     """
 
-    target_altitude: Union[float, str] = MANDATORY_FIELD
+    target_altitude: float | str = MANDATORY_FIELD
 
     def __post_init__(self, *args, **kwargs):
         super().__post_init__(*args, **kwargs)
