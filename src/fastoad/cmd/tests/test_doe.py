@@ -21,7 +21,7 @@ import pytest
 
 from fastoad.openmdao.variables import VariableList
 
-from ..doe import DOE_from_sampled_csv, DOESampling, DOEVariable
+from ..doe import DoeSampling, DoeVariable, doe_from_sampled_csv
 
 DATA_FOLDER_PATH = Path(__file__).parent / "data"
 RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
@@ -35,21 +35,21 @@ def cleanup():
 
 @pytest.fixture
 def cleanup_doe_variable():
-    DOEVariable._id_counter = itertools.count()
+    DoeVariable._id_counter = itertools.count()
 
 
 @pytest.fixture
 def sample_variables():
-    """Fixture to create sample DOEVariable instances."""
-    var1 = DOEVariable(name="Var1", lower_bound=10.0, upper_bound=20.0)
-    var2 = DOEVariable(
+    """Fixture to create sample DoeVariable instances."""
+    var1 = DoeVariable(name="Var1", lower_bound=10.0, upper_bound=20.0)
+    var2 = DoeVariable(
         name="Var2",
         lower_bound=5.0,
         upper_bound=15.0,
         reference_value=50,
         name_alias="Var2_pseudo",
     )
-    var3 = DOEVariable(name="Var3", bind_variable_to=var1)
+    var3 = DoeVariable(name="Var3", bind_variable_to=var1)
     return [var1, var2, var3]
 
 
@@ -78,7 +78,7 @@ def sample_csv_with_mapping(tmp_path):
 
 
 def test_doe_variable_initialization(cleanup_doe_variable, cleanup, sample_variables):
-    """Test initialization of DOEVariable."""
+    """Test initialization of DoeVariable."""
     var1 = sample_variables[0]
 
     # Test default attributes
@@ -113,17 +113,17 @@ def test_alias_custom(cleanup_doe_variable, cleanup, sample_variables):
 def test_missing_bounds_or_binding():
     """Test that a variable without bounds or binding raises ValueError."""
     with pytest.raises(ValueError, match="must either be bound to another variable"):
-        DOEVariable(name="var2")
+        DoeVariable(name="var2")
 
 
 def test_bound_variable_with_direct_bounds():
     """Test that bounds set directly on a bound variable raise a warning."""
     # Create an independent variable to bind to
-    var1 = DOEVariable(name="var1", lower_bound=0, upper_bound=10)
+    var1 = DoeVariable(name="var1", lower_bound=0, upper_bound=10)
 
     # Create a bound variable and ensure warnings are raised for direct bounds
     with pytest.warns(UserWarning, match="Cannot set"):
-        var3 = DOEVariable(name="var3", lower_bound=5, upper_bound=15, bind_variable_to=var1)
+        var3 = DoeVariable(name="var3", lower_bound=5, upper_bound=15, bind_variable_to=var1)
     with pytest.warns(UserWarning, match="Cannot set"):
         var3.lower_bound = 3.0
     assert var3.lower_bound == var1.lower_bound
@@ -133,22 +133,22 @@ def test_bound_variable_with_direct_bounds():
 def test_invalid_bounds():
     """Test that a variable with invalid bounds (lower > upper) raises ValueError."""
     with pytest.raises(ValueError, match="Invalid DOE bounds for variable"):
-        DOEVariable(name="var1", lower_bound=20, upper_bound=10)
+        DoeVariable(name="var1", lower_bound=20, upper_bound=10)
 
 
 def test_invalid_reference_bounds(cleanup_doe_variable, cleanup):
     # Test invalid bounds when a reference value is provided (negative percetage)
     with pytest.raises(ValueError, match="Invalid DOE bounds for variable"):
-        DOEVariable(
+        DoeVariable(
             name="InvalidReferenceBounds", lower_bound=-5, upper_bound=10, reference_value=50
         )
 
 
 def test_binding_to_another_variable(cleanup_doe_variable, cleanup):
     # Create a base variable
-    base_var = DOEVariable(name="BaseVar", lower_bound=10, upper_bound=20)
+    base_var = DoeVariable(name="BaseVar", lower_bound=10, upper_bound=20)
     # Bind another variable to it
-    bound_var = DOEVariable(name="BoundVar", bind_variable_to=base_var)
+    bound_var = DoeVariable(name="BoundVar", bind_variable_to=base_var)
 
     assert bound_var.lower_bound == base_var.lower_bound
     assert bound_var.upper_bound == base_var.upper_bound
@@ -156,17 +156,17 @@ def test_binding_to_another_variable(cleanup_doe_variable, cleanup):
 
 
 def test_instance_counter_and_id_assignment(cleanup_doe_variable, cleanup):
-    var1 = DOEVariable(name="Var1", lower_bound=5, upper_bound=15)
-    var2 = DOEVariable(name="Var2", lower_bound=10, upper_bound=20)
-    var3 = DOEVariable(name="Var3", bind_variable_to=var1)
+    var1 = DoeVariable(name="Var1", lower_bound=5, upper_bound=15)
+    var2 = DoeVariable(name="Var2", lower_bound=10, upper_bound=20)
+    var3 = DoeVariable(name="Var3", bind_variable_to=var1)
 
     assert var1.id == var3.id
     assert var2.id != var1.id
 
 
 def test_doe_config_initialization(cleanup_doe_variable, cleanup, sample_variables):
-    """Test initialization of DOESampling."""
-    config = DOESampling(
+    """Test initialization of DoeSampling."""
+    config = DoeSampling(
         sampling_method="LHS",
         variables=sample_variables,
         destination_folder=RESULTS_FOLDER_PATH,
@@ -183,15 +183,15 @@ def test_duplicate_variable_warning(
     cleanup_doe_variable,
     cleanup,
 ):
-    """Test that a warning is raised when duplicate variable names are added to DOESampling."""
+    """Test that a warning is raised when duplicate variable names are added to DoeSampling."""
     # Define variables with duplicate names
-    var1 = DOEVariable(name="var1", lower_bound=0, upper_bound=10)
-    var2 = DOEVariable(name="var1", lower_bound=20, upper_bound=30)  # Duplicate name
-    var3 = DOEVariable(name="var2", lower_bound=20, upper_bound=30)
+    var1 = DoeVariable(name="var1", lower_bound=0, upper_bound=10)
+    var2 = DoeVariable(name="var1", lower_bound=20, upper_bound=30)  # Duplicate name
+    var3 = DoeVariable(name="var2", lower_bound=20, upper_bound=30)
 
-    # Create DOESampling and check for the warning
+    # Create DoeSampling and check for the warning
     with pytest.warns(UserWarning, match="Variable 'var1' set multiple times"):
-        config = DOESampling(
+        config = DoeSampling(
             sampling_method="LHS",
             variables=[var1, var2, var3],
             destination_folder=RESULTS_FOLDER_PATH,
@@ -203,11 +203,11 @@ def test_duplicate_variable_warning(
 
 
 def test_generate_doe_full_factorial(cleanup_doe_variable, cleanup, sample_variables):
-    """Test DOESampling generate_doe for Full Factorial method."""
+    """Test DoeSampling generate_doe for Full Factorial method."""
     destination_folder = RESULTS_FOLDER_PATH / "generate_doe_full_factorial"
     destination_folder.mkdir(parents=True, exist_ok=True)
 
-    config = DOESampling(
+    config = DoeSampling(
         sampling_method="Full Factorial",
         variables=sample_variables,
         destination_folder=destination_folder,
@@ -224,11 +224,11 @@ def test_generate_doe_full_factorial(cleanup_doe_variable, cleanup, sample_varia
 
 
 def test_generate_doe_random(cleanup_doe_variable, cleanup, sample_variables):
-    """Test DOESampling generate_doe for Random method."""
+    """Test DoeSampling generate_doe for Random method."""
     destination_folder = RESULTS_FOLDER_PATH / "generate_doe_random"
     destination_folder.mkdir(parents=True, exist_ok=True)
 
-    config = DOESampling(
+    config = DoeSampling(
         sampling_method="Random",
         variables=sample_variables,
         destination_folder=destination_folder,
@@ -250,8 +250,8 @@ def test_write_doe_inputs_single_level(cleanup_doe_variable, cleanup, sample_var
     destination_folder = RESULTS_FOLDER_PATH / "write_doe_inputs_single_level"
     destination_folder.mkdir(parents=True, exist_ok=True)
 
-    # Create DOESampling instance with sample_variables and start the sampling
-    doe_config = DOESampling(
+    # Create DoeSampling instance with sample_variables and start the sampling
+    doe_config = DoeSampling(
         sampling_method="LHS",
         variables=sample_variables,
         destination_folder=destination_folder,
@@ -299,8 +299,8 @@ def test_write_doe_inputs_multilevel(cleanup_doe_variable, cleanup, sample_varia
 
     test_level = 1
 
-    # Create DOESampling instance with sample_variables and start the sampling
-    doe_config = DOESampling(
+    # Create DoeSampling instance with sample_variables and start the sampling
+    doe_config = DoeSampling(
         sampling_method="LHS",
         variables=sample_variables,
         destination_folder=destination_folder,
@@ -323,11 +323,11 @@ def test_write_doe_inputs_multilevel(cleanup_doe_variable, cleanup, sample_varia
     assert np.allclose(written_data.to_numpy(), expected_data.to_numpy(), atol=1e-4, rtol=1e-4)
 
 
-def test_DOE_from_sampled_csv(sample_csv_file):
-    """Test the DOE_from_sampled_csv function. Automatic adding of the ID column."""
+def test_doe_from_sampled_csv(sample_csv_file):
+    """Test the doe_from_sampled_csv function. Automatic adding of the ID column."""
     expected_variables = ["ID", "Var1", "Var2"]
 
-    result = DOE_from_sampled_csv(file_path=sample_csv_file)
+    result = doe_from_sampled_csv(file_path=sample_csv_file)
 
     assert isinstance(result, list)
     assert all(isinstance(v, VariableList) for v in result)
@@ -349,11 +349,11 @@ def test_DOE_from_sampled_csv(sample_csv_file):
     assert extracted_values == expected_values
 
 
-def test_DOE_from_sampled_csv_with_mapping(sample_csv_with_mapping):
-    """Test DOE_from_sampled_csv with pseudo variable mapping."""
+def test_doe_from_sampled_csv_with_mapping(sample_csv_with_mapping):
+    """Test doe_from_sampled_csv with pseudo variable mapping."""
     var_mapping = {"RealVar1": "PseudoVar1", "RealVar2": "PseudoVar2"}
 
-    result = DOE_from_sampled_csv(
+    result = doe_from_sampled_csv(
         file_path=sample_csv_with_mapping, var_names_pseudo_mapping=var_mapping
     )
 
@@ -379,14 +379,14 @@ def test_DOE_from_sampled_csv_with_mapping(sample_csv_with_mapping):
 
 
 def test_generate_doe_lhs_level_count(cleanup_doe_variable, cleanup, sample_variables, rtol=1e-6):
-    """Test DOESampling generate_doe for LHS method missing level_count."""
+    """Test DoeSampling generate_doe for LHS method missing level_count."""
     destination_folder = RESULTS_FOLDER_PATH / "generate_doe_lhs_level_count"
     destination_folder.mkdir(parents=True, exist_ok=True)
 
     variables = sample_variables
     variables[1].name_alias = "Var2"  # No pseudos here
 
-    config = DOESampling(
+    config = DoeSampling(
         sampling_method="LHS",
         variables=variables,
         destination_folder=destination_folder,
@@ -401,7 +401,7 @@ def test_generate_doe_lhs_level_count(cleanup_doe_variable, cleanup, sample_vari
     # Test that the doe_points are the level 2
     output_file = destination_folder / "DOE_inputs_3D_level2.csv"
     assert output_file.exists(), "The output CSV file was not created."
-    expected = DOE_from_sampled_csv(output_file)
+    expected = doe_from_sampled_csv(output_file)
     expected_values = [
         {var.name: var.value for var in var_list if var.name != "ID"} for var_list in expected
     ]

@@ -33,12 +33,12 @@ from fastoad.openmdao.variables import VariableList
 
 
 @dataclass
-class DOEVariable:
+class DoeVariable:
     """
     Represents a Design of Experiments (DOE) variable defined by its unique `id`.
 
     :param name: The name of the FAST-OAD OpenMDAO variable used for the DOE.
-    :param bind_variable_to: Another DOEVariable instance to bind this variable to. When bound,
+    :param bind_variable_to: Another DoeVariable instance to bind this variable to. When bound,
                             this variable inherits the bounds of the bound variable, and no new
                             ID is assigned. Once the DOE is sampled, the variables will share
                             the same dimension and same values. Defaults to None.
@@ -54,7 +54,7 @@ class DOEVariable:
     """
 
     name: str
-    bind_variable_to: Optional["DOEVariable"] = None
+    bind_variable_to: Optional["DoeVariable"] = None
     lower_bound: Optional[float] = None
     _lower_bound: Optional[float] = field(
         init=False, repr=False
@@ -155,13 +155,13 @@ class DOEVariable:
             if isinstance(self.lower_bound, property) or isinstance(self.upper_bound, property):
                 # If not initialized, upper and lower bounds default to being properties objects
                 raise ValueError(
-                    f"DOEVariable '{self.name}' must either be bound to another variable "
+                    f"DoeVariable '{self.name}' must either be bound to another variable "
                     "(via 'bind_variable_to') or have both 'lower_bound' and 'upper_bound' defined."
                 )
 
 
 @dataclass
-class DOESampling:
+class DoeSampling:
     """Configuration and management of Design of Experiments (DOE) processes.
 
     This class serves as a central entity for configuring and generating sampling points
@@ -173,7 +173,7 @@ class DOESampling:
 
     :param sampling_method: The method used for sampling (e.g., LHS, Full Factorial, Random).
                             This determines how sampling points are generated.
-    :param variables: A list of DOEVariable instances that represent the variables to be
+    :param variables: A list of DoeVariable instances that represent the variables to be
                     included in the experiment. Each variable defines its bounds,
                     reference value, and optional bindings.
     :param destination_folder: The folder where the generated DOE data will be saved. This
@@ -185,7 +185,7 @@ class DOESampling:
     """
 
     sampling_method: str
-    variables: List[DOEVariable]
+    variables: List[DoeVariable]
     destination_folder: Union[str, PathLike]
     seed_value: int = 0
     sampling_options: Optional[dict] = field(
@@ -202,12 +202,12 @@ class DOESampling:
 
     @property
     def var_names(self):  # noqa: F811
-        """List of the names of the DOEVariables."""
+        """List of the names of the DoeVariables."""
         return [var.name for var in self.variables]
 
     @property
     def var_names_pseudo(self):  # noqa: F811
-        """List of the pseudo names of the DOEVariables."""
+        """List of the pseudo names of the DoeVariables."""
         return [var.name_alias for var in self.variables]
 
     @property
@@ -216,7 +216,7 @@ class DOESampling:
 
     @property
     def bounds(self):  # noqa: F811
-        """List of the absolute bounds value of the DOEVariables."""
+        """List of the absolute bounds value of the DoeVariables."""
         seen = set()
         seen_names = set()
         bounds_list = []
@@ -349,7 +349,7 @@ class DOESampling:
         ]
 
 
-def DOE_from_sampled_csv(
+def doe_from_sampled_csv(
     file_path: Union[str, PathLike],
     var_names_pseudo_mapping: Optional[Dict] = None,
 ) -> list[VariableList]:
