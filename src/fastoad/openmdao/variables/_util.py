@@ -81,6 +81,9 @@ def get_problem_variables(
         _remove_non_promoted(outputs)
 
         if get_promoted_names:
+            # This setup is neded starting from OpenMDAO 3.38 before calling get_source()
+            # More info https://github.com/OpenMDAO/OpenMDAO/issues/3485#issuecomment-2732738340
+            problem.final_setup()
             # Check connections
             for name, metadata in inputs.copy().items():
                 source_name = problem.model.get_source(name)
