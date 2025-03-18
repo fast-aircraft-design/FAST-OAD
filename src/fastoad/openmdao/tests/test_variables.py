@@ -153,8 +153,8 @@ def test_ivc_from_to_variables():
     problem = om.Problem()
     problem.model.add_subsystem("ivc", ivc, promotes=["*"])
     problem.setup()
-    assert problem["a"] == 5
-    assert problem["b"] == 2.5
+    assert problem.get_val("a") == 5
+    assert problem.get_val("b") == 2.5
     assert problem.get_val("b", units="cm") == 250
     assert problem.get_val("c", units="kg/ms") == -0.0032
 
