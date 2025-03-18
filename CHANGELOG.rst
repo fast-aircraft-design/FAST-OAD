@@ -2,6 +2,21 @@
 Changelog
 =========
 
+Version 1.8.3
+=============
+
+- Added:
+  - New github Pull Request template. (https://github.com/fast-aircraft-design/FAST-OAD/pull/585)
+  - Add sorting capability to imports using ruff. (https://github.com/fast-aircraft-design/FAST-OAD/pull/587)
+  - Allow non pickable object as propulsion component. (https://github.com/fast-aircraft-design/FAST-OAD/pull/588)
+  - Enhanced documentation for mission segment parameters. (https://github.com/fast-aircraft-design/FAST-OAD/pull/582)
+- Fixed:
+  - Remove Codecov plain text token in Github Action. (https://github.com/fast-aircraft-design/FAST-OAD/pull/591)
+  - Upgrade Github actions test to ubuntu-latest. (https://github.com/fast-aircraft-design/FAST-OAD/pull/602)
+  - Set a timeout limit on GitHub Action's pipeline. (https://github.com/fast-aircraft-design/FAST-OAD/pull/605)
+- Temporary fix:
+  - Freeze OpenMDAO version to <3.38. (https://github.com/fast-aircraft-design/FAST-OAD/pull/613)
+
 Version 1.8.2
 =============
 - Modified:
