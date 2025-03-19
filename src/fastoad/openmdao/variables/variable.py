@@ -141,7 +141,7 @@ class Variable(Hashable):
         """Returns the variable value converted in the `new_units`"""
         if new_units:
             return scalarize(convert_units(np.asarray(self.value), self.units, new_units))
-        return self.value
+        return scalarize(self.value)
 
     @classmethod
     def read_variable_descriptions(
