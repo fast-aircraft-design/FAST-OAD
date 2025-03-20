@@ -269,6 +269,7 @@ def test_get_variables_from_problem_sellar_with_promotion_without_computation():
     problem = om.Problem(group)
     with pytest.warns(UnitsWarning):
         problem.setup()
+        problem.final_setup()
 
     expected_vars_promoted = [
         Variable(name="x", val=np.array([1.0]), units="Pa", is_input=True, desc="input x"),
@@ -336,6 +337,7 @@ def test_get_variables_from_problem_sellar_with_promotion_with_computation():
     problem = om.Problem(group)
     with pytest.warns(UnitsWarning):
         problem.setup()
+        problem.final_setup()
 
     expected_vars_promoted_initial = [
         Variable(name="x", val=np.array([1.0]), units="Pa", is_input=True, desc="input x"),
@@ -457,6 +459,7 @@ def test_get_variables_from_problem_sellar_without_promotion_without_computation
 
     problem = om.Problem(group)
     problem.setup()
+    problem.final_setup()
 
     expected_vars_initial = [
         Variable(name="indeps.x", val=np.array([1.0]), is_input=True),
@@ -636,6 +639,7 @@ def _test_and_check_from_unconnected_inputs(
     expected_optional_vars: List[Variable],
 ):
     problem.setup()
+    problem.final_setup()
     vars = VariableList.from_unconnected_inputs(problem, with_optional_inputs=False)
     assert set(vars) == set(expected_mandatory_vars)
 
@@ -780,6 +784,7 @@ def test_get_variables_from_problem_sellar_with_promotion_and_connect():
         problem, use_initial_values=False, get_promoted_names=True
     )
     problem.setup()
+    problem.final_setup()
     vars = VariableList.from_problem(problem, use_initial_values=False, get_promoted_names=True)
     assert vars_before_setup == vars
 

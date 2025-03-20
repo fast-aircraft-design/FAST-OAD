@@ -43,9 +43,7 @@ def get_problem_variables(
     :param promoted_only: if True, only promoted variable names will be returned
     :return: input dict, output dict
     """
-    if not problem._metadata or problem._metadata["setup_status"] < _SetupStatus.POST_SETUP:
-        problem = get_mpi_safe_problem_copy(problem)
-        problem.setup()
+    problem.set_setup_status(_SetupStatus.POST_SETUP2)
 
     # Get inputs and outputs
     metadata_keys = (
