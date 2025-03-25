@@ -87,6 +87,7 @@ stdatm = ">=0.4.2"
 Deprecated = "^1.2.13"
 click = "^8.0.3"
 pyDOE3 = "^1.0.0"
+smt = "^2.9.0"
 importlib-metadata = { version = "^4.2", python = "<3.10" }
 
 mpi4py = [
