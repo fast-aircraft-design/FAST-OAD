@@ -348,36 +348,36 @@ class DoeSampling:
             for doe_point in doe_points_dict
         ]
 
+    @staticmethod
+    def doe_from_sampled_csv(
+        file_path: Union[str, PathLike],
+        var_names_pseudo_mapping: Optional[Dict] = None,
+    ) -> list[VariableList]:
+        """Generates the DOE points directly from a pre-sampled CSV file.
 
-def doe_from_sampled_csv(
-    file_path: Union[str, PathLike],
-    var_names_pseudo_mapping: Optional[Dict] = None,
-) -> list[VariableList]:
-    """Generates the DOE points directly from a pre-sampled CSV file.
+        :param file_path: The path of the input CSV file.
+        :param var_names_pseudo_mapping: A dict containing var_name:var_name_pseudo used
+                                        for reading the CSV file.
 
-    :param file_path: The path of the input CSV file.
-    :param var_names_pseudo_mapping: A dict containing var_name:var_name_pseudo used
-                                    for reading the CSV file.
+        :return: A list of `oad.VariableList` objects containing the generated sampling points.
+        """
+        doe_points_df = pd.read_csv(file_path)
+        # Ensure "ID" column exists
+        if "ID" not in doe_points_df.columns:
+            doe_points_df.insert(0, "ID", range(len(doe_points_df)))  # Create ID column
 
-    :return: A list of `oad.VariableList` objects containing the generated sampling points.
-    """
-    doe_points_df = pd.read_csv(file_path)
-    # Ensure "ID" column exists
-    if "ID" not in doe_points_df.columns:
-        doe_points_df.insert(0, "ID", range(len(doe_points_df)))  # Create ID column
+        # Handle column renaming (mapping or default behavior)
+        if var_names_pseudo_mapping is None:
+            var_names = doe_points_df.drop(columns=["ID"]).columns.tolist()
+            var_names_pseudo_mapping = dict(zip(var_names, var_names))
 
-    # Handle column renaming (mapping or default behavior)
-    if var_names_pseudo_mapping is None:
-        var_names = doe_points_df.drop(columns=["ID"]).columns.tolist()
-        var_names_pseudo_mapping = dict(zip(var_names, var_names))
-
-    doe_points_dict = doe_points_df.rename(columns=var_names_pseudo_mapping).to_dict(
-        orient="records"
-    )
-
-    return [  # Good format for CalcRunner
-        oad.VariableList(
-            [oad.Variable(var_name, val=var_value) for var_name, var_value in doe_point.items()]
+        doe_points_dict = doe_points_df.rename(columns=var_names_pseudo_mapping).to_dict(
+            orient="records"
         )
-        for doe_point in doe_points_dict
-    ]
+
+        return [  # Good format for CalcRunner
+            oad.VariableList(
+                [oad.Variable(var_name, val=var_value) for var_name, var_value in doe_point.items()]
+            )
+            for doe_point in doe_points_dict
+        ]

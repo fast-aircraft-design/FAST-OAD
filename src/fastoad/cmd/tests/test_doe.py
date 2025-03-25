@@ -21,7 +21,7 @@ import pytest
 
 from fastoad.openmdao.variables import VariableList
 
-from ..doe import DoeSampling, DoeVariable, doe_from_sampled_csv
+from ..doe import DoeSampling, DoeVariable
 
 DATA_FOLDER_PATH = Path(__file__).parent / "data"
 RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
@@ -327,7 +327,7 @@ def test_doe_from_sampled_csv(sample_csv_file):
     """Test the doe_from_sampled_csv function. Automatic adding of the ID column."""
     expected_variables = ["ID", "Var1", "Var2"]
 
-    result = doe_from_sampled_csv(file_path=sample_csv_file)
+    result = DoeSampling.doe_from_sampled_csv(file_path=sample_csv_file)
 
     assert isinstance(result, list)
     assert all(isinstance(v, VariableList) for v in result)
@@ -353,7 +353,7 @@ def test_doe_from_sampled_csv_with_mapping(sample_csv_with_mapping):
     """Test doe_from_sampled_csv with pseudo variable mapping."""
     var_mapping = {"RealVar1": "PseudoVar1", "RealVar2": "PseudoVar2"}
 
-    result = doe_from_sampled_csv(
+    result = DoeSampling.doe_from_sampled_csv(
         file_path=sample_csv_with_mapping, var_names_pseudo_mapping=var_mapping
     )
 
@@ -401,7 +401,7 @@ def test_generate_doe_lhs_level_count(cleanup_doe_variable, cleanup, sample_vari
     # Test that the doe_points are the level 2
     output_file = destination_folder / "DOE_inputs_3D_level2.csv"
     assert output_file.exists(), "The output CSV file was not created."
-    expected = doe_from_sampled_csv(output_file)
+    expected = DoeSampling.doe_from_sampled_csv(output_file)
     expected_values = [
         {var.name: var.value for var in var_list if var.name != "ID"} for var_list in expected
     ]
