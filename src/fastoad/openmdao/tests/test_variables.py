@@ -154,8 +154,8 @@ def test_ivc_from_to_variables():
     problem = om.Problem()
     problem.model.add_subsystem("ivc", ivc, promotes=["*"])
     problem.setup()
-    assert problem.get_val("a") == 5
-    assert problem.get_val("b") == 2.5
+    assert problem["a"] == 5
+    assert problem["b"] == 2.5
     assert problem.get_val("b", units="cm") == 250
     assert problem.get_val("c", units="kg/ms") == -0.0032
 
@@ -850,10 +850,10 @@ def test_get_val():
     vars["qux"] = {"value": np.array([1.0, 2.0]), "units": "m"}
     vars["quux"] = {"value": [[1.0, 2.0], [2.0, 3.0]], "units": "m"}
     data = vars["bar"].get_val()
-    not isinstance(data, Iterable) and not isinstance(data, np.ndarray)
+    assert not isinstance(data, Iterable) and not isinstance(data, np.ndarray)
     assert_allclose(data, 1, rtol=1e-3, atol=1e-5)
     data = vars["baq"].get_val()
-    not isinstance(data, Iterable) and not isinstance(data, np.ndarray)
+    assert not isinstance(data, Iterable) and not isinstance(data, np.ndarray)
     units = "km"
     data = vars["bar"].get_val(new_units=units)
     assert_allclose(data, 1e-3, rtol=1e-3, atol=1e-5)
