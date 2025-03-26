@@ -48,8 +48,7 @@ def get_problem_variables(
         problem.setup()
     try:  # This block will execute only if openMDAO >= 3.38
         # TODO clean this code once versions < 3.38 are deprecated
-        if problem._metadata["setup_status"] < _SetupStatus.POST_SETUP2:
-            problem.model._setup_part2()
+        problem.set_setup_status(_SetupStatus.POST_SETUP2)
     except AttributeError:
         pass
 
