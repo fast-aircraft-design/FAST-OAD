@@ -3924,4 +3924,4 @@ mpi4py = ["mpi4py"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9, <3.13"
-content-hash = "a83680be4ffcd6bf86d6bff7be1424adfdef6525287de2b44d88ab8c50944e33"
+content-hash = "750707d457f19765abd61379210abf95b14e36ab42bfc0f1e75248ca9f209e38"

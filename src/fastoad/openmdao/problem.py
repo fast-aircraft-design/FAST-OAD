@@ -394,15 +394,12 @@ class ProblemAnalysis:
             om.Problem.setup(problem_copy)
             om.Problem.final_setup(problem_copy)
 
-            # om.Problem.set_setup_status(problem_copy, _SetupStatus.POST_SETUP2)
-
         except RuntimeError:
             self.undetermined_dynamic_input_vars = self._get_undetermined_dynamic_vars(problem_copy)
 
             problem_copy = get_mpi_safe_problem_copy(self.problem)
             self.fills_dynamically_shaped_inputs(problem_copy)
             om.Problem.setup(problem_copy)
-            # om.Problem.set_setup_status(problem_copy, _SetupStatus.POST_SETUP2)
             om.Problem.final_setup(problem_copy)
 
         self.problem_variables = VariableList().from_problem(problem_copy)

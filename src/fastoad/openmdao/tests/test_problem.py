@@ -88,7 +88,16 @@ def test_problem_read_inputs_after_setup(cleanup):
     problem.setup()
 
     assert problem.get_val(name="x") == [2.0]  # Here x is set by integrated IVC
+    with pytest.raises((RuntimeError, KeyError)):
+        # Several default values are defined for "z", thus OpenMDAO raises an error that
+        # will be solved only after run_model() (the final_setup() in it) has been used.
+        # In version >3.38, we have instead a KeyError, again solved by final_setup(). We
+        # cannot call however here the final_setup(), as we haven't yet read the inputs.
+        _ = problem.get_val(name="z", units="m**2")
     problem.read_inputs()
+
+    problem.final_setup()
+    assert_allclose(problem.get_val(name="z", units="m**2"), [4.0, 3.0])
 
     problem.run_model()
     assert_allclose(problem.get_val(name="x"), 1.0)
@@ -156,8 +165,8 @@ def test_problem_with_case_recorder(cleanup):
 
     problem.input_file_path = DATA_FOLDER_PATH / "ref_inputs.xml"
 
-    problem.read_inputs()
     problem.setup()
+    problem.read_inputs()
     problem.run_model()
 
     assert_allclose(problem.get_val(name="x"), 1.0)
@@ -269,10 +278,7 @@ def test_problem_with_dynamically_shaped_inputs(cleanup):
     # In such case, reading inputs after the setup will make run_model fail, because dummy shapes
     # have already been provided, and will probably not match the ones in input file.
     fastoad_problem.input_file_path = DATA_FOLDER_PATH / "dynamic_shape_inputs_1.xml"
-    with pytest.raises(
-        RuntimeError or ValueError
-    ):  # This is to have compatibility with openMDAO < 3.38
-        # TODO remove ValueError when 3.37 is dropped
+    with pytest.raises(RuntimeError):
         fastoad_problem.read_inputs()
         fastoad_problem.run_model()
 
@@ -314,9 +320,6 @@ def test_problem_with_dynamically_shaped_inputs(cleanup):
     fastoad_problem.model.add_subsystem("comp2", MyComp2(), promotes=["*"])
     fastoad_problem.model.add_subsystem("comp3", MyComp3(), promotes=["*"])
 
-    fastoad_problem.setup()
-    fastoad_problem.final_setup()
-
     inputs = VariableList.from_problem(fastoad_problem, io_status="inputs")
     assert inputs.names() == ["x"]
     outputs = VariableList.from_problem(fastoad_problem, io_status="outputs")
@@ -324,4 +327,6 @@ def test_problem_with_dynamically_shaped_inputs(cleanup):
     variables = VariableList.from_problem(fastoad_problem)
     assert variables.names() == ["x", "y", "z", "a"]
 
+    fastoad_problem.setup()
+    fastoad_problem.final_setup()
     fastoad_problem.run_model()
