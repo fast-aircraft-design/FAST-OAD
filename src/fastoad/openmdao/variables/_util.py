@@ -43,7 +43,15 @@ def get_problem_variables(
     :param promoted_only: if True, only promoted variable names will be returned
     :return: input dict, output dict
     """
-    problem.set_setup_status(_SetupStatus.POST_SETUP2)
+    if not problem._metadata or problem._metadata["setup_status"] < _SetupStatus.POST_SETUP:
+        problem = get_mpi_safe_problem_copy(problem)
+        problem.setup()
+    try:  # This block will execute only if openMDAO >= 3.38
+        # TODO clean this code once versions < 3.38 are deprecated
+        if problem._metadata["setup_status"] < _SetupStatus.POST_SETUP2:
+            problem.model._setup_part2()
+    except AttributeError:
+        pass
 
     # Get inputs and outputs
     metadata_keys = (

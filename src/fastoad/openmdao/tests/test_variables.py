@@ -217,7 +217,6 @@ def test_get_variables_from_problem_with_an_explicit_component():
     vars_before_setup = VariableList.from_problem(
         problem, use_initial_values=False, get_promoted_names=True
     )
-    problem.setup()
     vars = VariableList.from_problem(problem, use_initial_values=False, get_promoted_names=True)
     assert vars_before_setup == vars
 

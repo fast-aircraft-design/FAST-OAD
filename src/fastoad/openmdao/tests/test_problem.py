@@ -45,6 +45,7 @@ def test_write_outputs(cleanup):
     problem.model.add_subsystem("sellar", SellarModel(), promotes=["*"])
     problem.output_file_path = RESULTS_FOLDER_PATH / "output.xml"
     problem.setup()
+    problem.final_setup()
 
     problem.write_outputs()
     variables = VariableIO(problem.output_file_path).read()
@@ -246,7 +247,9 @@ def test_problem_with_dynamically_shaped_inputs(cleanup):
     vanilla_problem = om.Problem()
     vanilla_problem.model.add_subsystem("comp1", MyComp1(), promotes=["*"])
     vanilla_problem.model.add_subsystem("comp2", MyComp2(), promotes=["*"])
-    vanilla_problem.setup()
+    with pytest.raises(RuntimeError):
+        vanilla_problem.setup()
+        vanilla_problem.final_setup()
 
     # --------------------------------------------------------------------------
     # ... But fastoad problem will do the setup and provide dummy shapes
@@ -255,14 +258,22 @@ def test_problem_with_dynamically_shaped_inputs(cleanup):
     fastoad_problem.model.add_subsystem("comp1", MyComp1(), promotes=["*"])
     fastoad_problem.model.add_subsystem("comp2", MyComp2(), promotes=["*"])
     fastoad_problem.setup()
-    assert fastoad_problem["x"] == fastoad_problem["y"] == fastoad_problem["z"] == 1.0
+    fastoad_problem.final_setup()
+    assert (
+        fastoad_problem["x"].shape
+        == fastoad_problem["y"].shape
+        == fastoad_problem["z"].shape
+        == (2,)
+    )
 
     # In such case, reading inputs after the setup will make run_model fail, because dummy shapes
     # have already been provided, and will probably not match the ones in input file.
     fastoad_problem.input_file_path = DATA_FOLDER_PATH / "dynamic_shape_inputs_1.xml"
-    fastoad_problem.read_inputs()
-    fastoad_problem.setup()
-    with pytest.raises(RuntimeError):
+    with pytest.raises(
+        RuntimeError or ValueError
+    ):  # This is to have compatibility with openMDAO < 3.38
+        # TODO remove ValueError when 3.37 is dropped
+        fastoad_problem.read_inputs()
         fastoad_problem.run_model()
 
     # --------------------------------------------------------------------------
@@ -303,6 +314,9 @@ def test_problem_with_dynamically_shaped_inputs(cleanup):
     fastoad_problem.model.add_subsystem("comp2", MyComp2(), promotes=["*"])
     fastoad_problem.model.add_subsystem("comp3", MyComp3(), promotes=["*"])
 
+    fastoad_problem.setup()
+    fastoad_problem.final_setup()
+
     inputs = VariableList.from_problem(fastoad_problem, io_status="inputs")
     assert inputs.names() == ["x"]
     outputs = VariableList.from_problem(fastoad_problem, io_status="outputs")
@@ -310,5 +324,4 @@ def test_problem_with_dynamically_shaped_inputs(cleanup):
     variables = VariableList.from_problem(fastoad_problem)
     assert variables.names() == ["x", "y", "z", "a"]
 
-    fastoad_problem.setup()
     fastoad_problem.run_model()
