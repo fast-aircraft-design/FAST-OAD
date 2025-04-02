@@ -44,6 +44,7 @@ class DoeVariable:
                             the same dimension and same values. Defaults to None.
     :param lower_bound: The lower bound of the variable. Defaults to None.
     :param upper_bound: The upper bound of the variable. Defaults to None.
+    :param units: Units of measure used for the DoeVariable
     :param reference_value: A reference value used to adjust bounds as percentages. If given,
                     `lower_bound` and `upper_bound` are considered as percentages, following
                     this formula:
@@ -63,6 +64,7 @@ class DoeVariable:
     _upper_bound: Optional[float] = field(
         init=False, repr=False
     )  # https://florimond.dev/en/posts/2018/10/reconciling-dataclasses-and-properties-in-python
+    units: Optional[str] = None
     reference_value: Optional[float] = None
     name_alias: Optional[str] = None
 
@@ -206,6 +208,11 @@ class DoeSampling:
         return [var.name for var in self.variables]
 
     @property
+    def var_units(self):  # noqa: F811
+        """List of the units of the DoeVariables."""
+        return [var.units for var in self.variables]
+
+    @property
     def var_names_pseudo(self):  # noqa: F811
         """List of the pseudo names of the DoeVariables."""
         return [var.name_alias for var in self.variables]
@@ -343,7 +350,10 @@ class DoeSampling:
 
         return [  # Good format for CalcRunner
             oad.VariableList(
-                [oad.Variable(var_name, val=var_value) for var_name, var_value in doe_point.items()]
+                [
+                    oad.Variable(var_name, val=var_value["val"], units=var_value["units"])
+                    for var_name, var_value in doe_point.items()
+                ]
             )
             for doe_point in doe_points_dict
         ]
