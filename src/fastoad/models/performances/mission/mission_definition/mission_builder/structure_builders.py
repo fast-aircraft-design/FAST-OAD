@@ -18,12 +18,11 @@ be transformed into a Python implementation.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import typing
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from dataclasses import InitVar, dataclass, field
 from itertools import chain
-from typing import ClassVar, get_type_hints
+from typing import ClassVar, get_args, get_origin, get_type_hints
 
 import numpy as np
 
@@ -228,40 +227,47 @@ class AbstractStructureBuilder(ABC):
     @staticmethod
     def _is_shape_by_conn(key, segment_class) -> bool:
         """
+        Here variables that are expected to be arrays or lists in the provided segment class are
+        attributed the "shape_by_conn=True" property.
         Check if a field in `segment_class` is a list or NumPy array.
-        Works with `from __future__ import annotations` and handles ClassVar properly.
+        Works with `from __future__ import annotations` and properly handles the ClassVars
+        defined in `segment_class`.
         """
-        # Retrieve type annotations using get_type_hints().
-        # WHY? Because `from __future__ import annotations` makes type hints **lazy** (stored as strings),
-        # and get_type_hints() converts them back into real types.
-        # TODO https://peps.python.org/pep-0649/ will simplify all this
+
         try:
+            # Resolve type annotations to handle cases where they are stored as strings due to
+            # `from __future__ import annotations`. This ensures we work with real types.
+            # TODO once https://peps.python.org/pep-0649/ is implemented, get_type_hints should
+            # not be necessary anymore.
             type_hints = get_type_hints(segment_class)
+
             if key not in type_hints:
-                return False
+                return False  # If the field does not exist, return False immediately.
 
             field_type = type_hints[key]
 
-            # Handle ClassVar if present, issubclass()
-            # does not accept ClassVar as a valid type
-            origin = typing.get_origin(field_type)
+            # Handle ClassVar, which wraps types but is not itself a valid type for `issubclass()`.
+            origin = get_origin(field_type)
             if origin is ClassVar:
-                field_type = typing.get_args(field_type)[0]
-                origin = typing.get_origin(field_type)
+                field_type = get_args(field_type)[0]  # Extract the real type inside ClassVar.
+                origin = get_origin(field_type)  # Re-evaluate origin in case it's a generic type.
 
-            # Check for list
+            # If the field is explicitly declared as a `list` (e.g., `list[int]`), return True.
             if origin is not None and origin is list:
                 return True
 
-            # Direct type check for list or ndarray
+            # Check if the field is a subclass of `list` or `np.ndarray`.
+            # This handles cases where the type is directly `list` or `np.ndarray` without generics.
             if isinstance(field_type, type):
                 try:
                     return issubclass(field_type, (list, np.ndarray))
                 except TypeError:
-                    pass
-            return False
+                    pass  # Some types cannot be used in `issubclass()`, so we ignore errors.
+
+            return False  # If no conditions matched, return False.
+
         except (TypeError, NameError):
-            return False
+            return False  # Catch errors from missing imports or invalid type hints.
 
     def _process_polar(self, structure):
         """

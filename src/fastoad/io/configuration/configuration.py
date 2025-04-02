@@ -323,7 +323,7 @@ class FASTOADProblemConfigurator:
         self,
         structure: dict,
         new_root_path: Path,
-        local_path: Path = Path("."),  # noqa: PTH201
+        local_path: Path = Path(),
     ):
         """
         Recursively modifies `structure` to make each path-like value local with respect to
