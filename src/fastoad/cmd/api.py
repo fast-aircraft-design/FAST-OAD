@@ -91,8 +91,8 @@ def get_plugin_information(print_data=False) -> dict[str, DistributionPluginDefi
 
 def generate_notebooks(
     destination_path: str | PathLike,
-    distribution_name=None,
     overwrite: bool = False,  # noqa: FBT001, FBT002 no breaking changes in API functions
+    distribution_name=None,
 ):
     """
     Copies notebook folder(s) from available plugin(s).
@@ -100,8 +100,8 @@ def generate_notebooks(
     :param destination_path: the inner structure of the folders will depend on
                              the number of installed package and the number of
                              plugins they contain.
-    :param distribution_name: the name of an installed package that provides notebooks
     :param overwrite: if True and `destination_path` exists, it will be removed before writing.
+    :param distribution_name: the name of an installed package that provides notebooks
     """
     destination_path = as_path(destination_path)
 
@@ -243,19 +243,19 @@ def _generate_user_file(
 
 def generate_configuration_file(
     configuration_file_path: str | PathLike,
+    overwrite: bool = False,  # noqa: FBT001, FBT002 no breaking changes in API functions
     distribution_name=None,
     sample_file_name=None,
-    overwrite: bool = False,  # noqa: FBT001, FBT002 no breaking changes in API functions
 ):
     """
     Copies a sample configuration file from an available plugin.
 
     :param configuration_file_path: the path of file to be written
+    :param overwrite: if True, the file will be written, even if it already exists
     :param distribution_name: the name of the installed package that provides the sample
                              configuration file (can be omitted if only one plugin is available)
     :param sample_file_name: the name of the sample configuration file (can be omitted if
                              the plugin provides only one configuration file)
-    :param overwrite: if True, the file will be written, even if it already exists
     :return: path of generated file
     :raise FastPathExistsError: if overwrite==False and configuration_file_path already exists
     """
@@ -271,19 +271,19 @@ def generate_configuration_file(
 
 def generate_source_data_file(
     source_data_file_path: str | PathLike,
+    overwrite: bool = False,  # noqa: FBT001, FBT002 no breaking changes in API functions
     distribution_name=None,
     sample_file_name=None,
-    overwrite: bool = False,  # noqa: FBT001, FBT002 no breaking changes in API functions
 ):
     """
     Copies a sample source data file from an available plugin.
 
     :param source_data_file_path: the path of file to be written
+    :param overwrite: if True, the file will be written, even if it already exists
     :param distribution_name: the name of the installed package that provides the sample
                              source data file (can be omitted if only one plugin is available)
     :param sample_file_name: the name of the sample source data file (can be omitted if
                              the plugin provides only one source data file)
-    :param overwrite: if True, the file will be written, even if it already exists
     :return: path of generated file
     :raise FastPathExistsError: if overwrite==False and source_file_path already exists
     """
@@ -336,9 +336,9 @@ def generate_inputs(
 def list_variables(
     configuration_file_path: str | PathLike,
     out: str | PathLike | TextIO | None = None,
-    tablefmt: str = "grid",
     overwrite: bool = False,  # noqa: FBT001, FBT002 no breaking changes in API functions
     force_text_output: bool = False,  # noqa: FBT001, FBT002 no breaking changes in API functions
+    tablefmt: str = "grid",
 ):
     """
     Writes list of variables for the problem specified in configuration_file_path.
@@ -350,14 +350,14 @@ def list_variables(
 
     :param configuration_file_path:
     :param out: the output stream or a path for the output file (None means sys.stdout)
-    :param tablefmt: The formatting of the requested table. Options are the same as those available
-                     to the tabulate package. See tabulate.tabulate_formats for a complete list.
-                     If "var_desc" the file will use the variable_descriptions.txt format.
     :param overwrite: if True and out parameter is a file path, the file will be written even if one
                       already exists
     :param force_text_output: if True, list will be written as text, even if command is used in an
                               interactive IPython shell (Jupyter notebook). Has no effect in other
                               shells or if out parameter is not sys.stdout
+    :param tablefmt: The formatting of the requested table. Options are the same as those available
+                     to the tabulate package. See tabulate.tabulate_formats for a complete list.
+                     If "var_desc" the file will use the variable_descriptions.txt format.
     :return: path of generated file, or None if no file was generated.
     :raise FastPathExistsError: if `overwrite==False` and `out` is a file path and the file exists
     """
