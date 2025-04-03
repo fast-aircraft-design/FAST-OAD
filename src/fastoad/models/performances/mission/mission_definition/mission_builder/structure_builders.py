@@ -20,9 +20,8 @@ be transformed into a Python implementation.
 
 from abc import ABC, abstractmethod
 from copy import deepcopy
-from dataclasses import InitVar, dataclass, field
+from dataclasses import InitVar, dataclass, field, fields
 from itertools import chain
-from typing import ClassVar, get_args, get_origin, get_type_hints
 
 import numpy as np
 
@@ -230,44 +229,14 @@ class AbstractStructureBuilder(ABC):
         Here variables that are expected to be arrays or lists in the provided segment class are
         attributed the "shape_by_conn=True" property.
         Check if a field in `segment_class` is a list or NumPy array.
-        Works with `from __future__ import annotations` and properly handles the ClassVars
-        defined in `segment_class`.
         """
-
+        segment_fields = [fld for fld in fields(segment_class) if fld.name == key]
         try:
-            # Resolve type annotations to handle cases where they are stored as strings due to
-            # `from __future__ import annotations`. This ensures we work with real types.
-            # TODO once https://peps.python.org/pep-0649/ is implemented, get_type_hints should
-            # not be necessary anymore.
-            type_hints = get_type_hints(segment_class)
-
-            if key not in type_hints:
-                return False  # If the field does not exist, return False immediately.
-
-            field_type = type_hints[key]
-
-            # Handle ClassVar, which wraps types but is not itself a valid type for `issubclass()`.
-            origin = get_origin(field_type)
-            if origin is ClassVar:
-                field_type = get_args(field_type)[0]  # Extract the real type inside ClassVar.
-                origin = get_origin(field_type)  # Re-evaluate origin in case it's a generic type.
-
-            # If the field is explicitly declared as a `list` (e.g., `list[int]`), return True.
-            if origin is not None and origin is list:
-                return True
-
-            # Check if the field is a subclass of `list` or `np.ndarray`.
-            # This handles cases where the type is directly `list` or `np.ndarray` without generics.
-            if isinstance(field_type, type):
-                try:
-                    return issubclass(field_type, (list, np.ndarray))
-                except TypeError:
-                    pass  # Some types cannot be used in `issubclass()`, so we ignore errors.
-
-            return False  # If no conditions matched, return False.
-
-        except (TypeError, NameError):
-            return False  # Catch errors from missing imports or invalid type hints.
+            return len(segment_fields) == 1 and issubclass(
+                segment_fields[0].type, (list, np.ndarray)
+            )
+        except TypeError:
+            return len(segment_fields) == 1 and isinstance(segment_fields[0], (list, np.ndarray))
 
     def _process_polar(self, structure):
         """
