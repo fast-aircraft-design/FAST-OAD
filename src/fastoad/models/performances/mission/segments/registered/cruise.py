@@ -14,7 +14,6 @@
 
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import List
 
 import numpy as np
 import pandas as pd
@@ -58,7 +57,7 @@ class CruiseSegment(AbstractRegulatedThrustSegment, AbstractLiftFromWeightSegmen
             self.target.mach = AbstractTimeStepFlightSegment.CONSTANT_VALUE
 
     def get_distance_to_target(
-        self, flight_points: List[FlightPoint], target: FlightPoint
+        self, flight_points: list[FlightPoint], target: FlightPoint
     ) -> float:
         current = flight_points[-1]
         return target.ground_distance - current.ground_distance

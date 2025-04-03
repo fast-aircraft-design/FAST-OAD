@@ -405,8 +405,8 @@ def test_write_n2(cleanup):
     api.write_n2(CONFIGURATION_FILE_PATH, n2_file_path)
     # Running again without forcing overwrite of outputs will make it fail
     with pytest.raises(FastPathExistsError):
-        api.write_n2(CONFIGURATION_FILE_PATH, n2_file_path, False)
-    api.write_n2(CONFIGURATION_FILE_PATH, n2_file_path, True)
+        api.write_n2(CONFIGURATION_FILE_PATH, n2_file_path, overwrite=False)
+    api.write_n2(CONFIGURATION_FILE_PATH, n2_file_path, overwrite=True)
     assert n2_file_path.exists()
 
 
@@ -419,7 +419,7 @@ def test_write_xdsm(cleanup):
     default_xdsm_file_path = DATA_FOLDER_PATH / "xdsm.html"
     api.write_xdsm(CONFIGURATION_FILE_PATH, overwrite=True, dry_run=True)
     assert default_xdsm_file_path.exists()
-    os.remove(default_xdsm_file_path)
+    Path.unlink(default_xdsm_file_path)
 
     xdsm_file_path = RESULTS_FOLDER_PATH / "other_xdsm.html"
     api.write_xdsm(CONFIGURATION_FILE_PATH, xdsm_file_path)
@@ -432,11 +432,11 @@ def test_write_xdsm(cleanup):
 
 def test_evaluate_problem(cleanup):
     api.generate_inputs(CONFIGURATION_FILE_PATH, DATA_FOLDER_PATH / "inputs.xml", overwrite=True)
-    api.evaluate_problem(CONFIGURATION_FILE_PATH, False)
+    api.evaluate_problem(CONFIGURATION_FILE_PATH, overwrite=False)
     # Running again without forcing overwrite of outputs will make it fail
     with pytest.raises(FastPathExistsError):
-        api.evaluate_problem(CONFIGURATION_FILE_PATH, False)
-    problem = api.evaluate_problem(CONFIGURATION_FILE_PATH, True)
+        api.evaluate_problem(CONFIGURATION_FILE_PATH, overwrite=False)
+    problem = api.evaluate_problem(CONFIGURATION_FILE_PATH, overwrite=True)
     assert problem["f"] == pytest.approx(32.56910089, abs=1e-8)
 
     # Move output file because it will be overwritten by the optim test
@@ -445,11 +445,11 @@ def test_evaluate_problem(cleanup):
 
 def test_optimize_problem(cleanup):
     api.generate_inputs(CONFIGURATION_FILE_PATH, DATA_FOLDER_PATH / "inputs.xml", overwrite=True)
-    api.optimize_problem(CONFIGURATION_FILE_PATH, False)
+    api.optimize_problem(CONFIGURATION_FILE_PATH, overwrite=False)
     # Running again without forcing overwrite of outputs will make it fail
     with pytest.raises(FastPathExistsError):
-        api.optimize_problem(CONFIGURATION_FILE_PATH, False)
-    problem = api.optimize_problem(CONFIGURATION_FILE_PATH, True)
+        api.optimize_problem(CONFIGURATION_FILE_PATH, overwrite=False)
+    problem = api.optimize_problem(CONFIGURATION_FILE_PATH, overwrite=True)
 
     assert problem["f"] == pytest.approx(3.18339395, abs=1e-8)
 
@@ -460,7 +460,7 @@ def test_optimization_viewer(cleanup):
     # Before a run
     api.optimization_viewer(CONFIGURATION_FILE_PATH)
 
-    api.optimize_problem(CONFIGURATION_FILE_PATH, True)
+    api.optimize_problem(CONFIGURATION_FILE_PATH, overwrite=True)
 
     # After a run
     api.optimization_viewer(CONFIGURATION_FILE_PATH)

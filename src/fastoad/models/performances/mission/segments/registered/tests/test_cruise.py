@@ -11,6 +11,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from pathlib import Path
+
 import pytest
 from numpy.testing import assert_allclose
 
@@ -195,7 +197,7 @@ def test_climb_and_cruise_at_optimal_flight_level_with_unpickable(polar, tmp_pat
     d = tmp_path / "sub"
     d.mkdir()
     file = d / "data.txt"
-    with open(file, "w") as f:
+    with Path.open(file, "w") as f:
         f.write("This is a test file for unpickable propulsion test.")
 
     # Actually try to run the cruise segment

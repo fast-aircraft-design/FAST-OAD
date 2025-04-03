@@ -14,9 +14,11 @@ Base class for VariableIOFormatter objects.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from os import PathLike
-from typing import IO, Union
+from typing import IO
 
 from fastoad.openmdao.variables import VariableList
 
@@ -29,7 +31,7 @@ class IVariableIOFormatter(ABC):
     """
 
     @abstractmethod
-    def read_variables(self, data_source: Union[str, PathLike, IO]) -> VariableList:
+    def read_variables(self, data_source: str | PathLike | IO) -> VariableList:
         """
         Reads variables from provided data source file.
 
@@ -38,7 +40,7 @@ class IVariableIOFormatter(ABC):
         """
 
     @abstractmethod
-    def write_variables(self, data_source: Union[str, PathLike, IO], variables: VariableList):
+    def write_variables(self, data_source: str | PathLike | IO, variables: VariableList):
         """
         Writes variables to defined data source file.
 

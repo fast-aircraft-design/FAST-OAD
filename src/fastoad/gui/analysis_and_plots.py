@@ -1,6 +1,7 @@
 """
 Defines the analysis and plotting functions for postprocessing
 """
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -13,9 +14,9 @@ Defines the analysis and plotting functions for postprocessing
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from __future__ import annotations
 
 from os import PathLike
-from typing import Dict, Union
 
 import numpy as np
 import plotly.express as px
@@ -29,9 +30,8 @@ from fastoad.openmdao.variables import Variable, VariableList
 COLS = px.colors.qualitative.Plotly
 
 
-# pylint: disable-msg=too-many-locals
 def wing_geometry_plot(
-    aircraft_file_path: Union[str, PathLike], name=None, fig=None, *, file_formatter=None
+    aircraft_file_path: str | PathLike, name=None, fig=None, *, file_formatter=None
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the top view of the wing.
@@ -101,9 +101,8 @@ def wing_geometry_plot(
     return fig
 
 
-# pylint: disable-msg=too-many-locals
 def aircraft_geometry_plot(
-    aircraft_file_path: Union[str, PathLike], name=None, fig=None, *, file_formatter=None
+    aircraft_file_path: str | PathLike, name=None, fig=None, *, file_formatter=None
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the top view of the wing.
@@ -232,7 +231,7 @@ def aircraft_geometry_plot(
 
 
 def drag_polar_plot(
-    aircraft_file_path: Union[str, PathLike], name=None, fig=None, *, file_formatter=None
+    aircraft_file_path: str | PathLike, name=None, fig=None, *, file_formatter=None
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the aircraft drag polar.
@@ -272,7 +271,7 @@ def drag_polar_plot(
 
 
 def mass_breakdown_bar_plot(
-    aircraft_file_path: Union[str, PathLike],
+    aircraft_file_path: str | PathLike,
     name=None,
     fig=None,
     *,
@@ -357,7 +356,7 @@ def mass_breakdown_bar_plot(
 
 
 def mass_breakdown_sun_plot(
-    aircraft_file_path: Union[str, PathLike],
+    aircraft_file_path: str | PathLike,
     *,
     file_formatter=None,
     input_mass_name="data:weight:aircraft:MTOW",
@@ -530,11 +529,11 @@ def _get_sunburst_mass_label(quantity_name, value, parent_value=None, unit="kg")
 
 
 def payload_range_plot(
-    aircraft_file_path: Union[str, PathLike],
+    aircraft_file_path: str | PathLike,
     name="Payload-Range",
     mission_name="operational",
-    variable_of_interest: str = None,
-    variable_of_interest_legend: str = None,
+    variable_of_interest: str | None = None,
+    variable_of_interest_legend: str | None = None,
 ):
     """
     Returns a figure of the payload-range diagram.
@@ -653,7 +652,7 @@ def _get_variable_value_with_new_units(variable: Variable, new_units):
 
 
 def _get_variable_values_with_new_units(
-    variables: VariableList, var_names_and_new_units: Dict[str, str]
+    variables: VariableList, var_names_and_new_units: dict[str, str]
 ):
     """
     Returns the value of the requested variable names with respect to their new units in the order
@@ -663,12 +662,10 @@ def _get_variable_values_with_new_units(
     :param var_names_and_new_units: dictionary of the variable names as keys and units as value
     :return: values of the requested variables with respect to their new units
     """
-    new_values = [
+    return [  # new_values
         _get_variable_value_with_new_units(variables[variable_name], unit)
         for variable_name, unit in var_names_and_new_units.items()
     ]
-
-    return new_values
 
 
 def _data_weight_decomposition(variables: VariableList, owe=None):

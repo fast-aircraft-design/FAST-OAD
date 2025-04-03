@@ -14,7 +14,7 @@ Test package
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
+from pathlib import Path
 
-root_folder_path = pth.dirname(pth.dirname(__file__))
+root_folder_path = Path(__file__).parent.parent
 """ Path of the whole project folder """

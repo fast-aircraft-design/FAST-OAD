@@ -105,7 +105,7 @@ def test_register_checks_instantiation(cleanup):
     ]
 
     ValidityDomainChecker.log_records(records)
-    with open(log_file_path) as log_file:
+    with Path.open(log_file_path) as log_file:
         assert len(log_file.readlines()) == 4
 
     # Check 2 --------------------------------------------------------------------------------------
@@ -149,7 +149,7 @@ def test_register_checks_instantiation(cleanup):
     ]
 
     ValidityDomainChecker.log_records(records)
-    with open(log_file_path) as log_file:
+    with Path.open(log_file_path) as log_file:
         assert len(log_file.readlines()) == 4
 
     # Check 3 --------------------------------------------------------------------------------------
@@ -184,7 +184,7 @@ def test_register_checks_instantiation(cleanup):
     ]
 
     ValidityDomainChecker.log_records(records)
-    with open(log_file_path) as log_file:
+    with Path.open(log_file_path) as log_file:
         assert len(log_file.readlines()) == 0
 
 
@@ -243,7 +243,7 @@ def test_register_checks_as_decorator(cleanup):
     ]
 
     ValidityDomainChecker.log_records(records)
-    with open(log_file_path) as log_file:
+    with Path.open(log_file_path) as log_file:
         assert len(log_file.readlines()) == 4
 
 

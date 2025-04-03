@@ -14,7 +14,10 @@ Conversion from OpenMDAO variables to XPath
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import IO, Sequence, Set, Union
+from __future__ import annotations
+
+from collections.abc import Sequence
+from typing import IO
 
 import numpy as np
 
@@ -38,9 +41,9 @@ class VarXpathTranslator:
     def __init__(
         self,
         *,
-        variable_names: Sequence[str] = None,
-        xpaths: Sequence[str] = None,
-        source: Union[str, IO] = None,
+        variable_names: Sequence[str] | None = None,
+        xpaths: Sequence[str] | None = None,
+        source: str | IO | None = None,
     ):
         if variable_names is not None and xpaths is not None:
             self.set(variable_names, xpaths)
@@ -58,29 +61,28 @@ class VarXpathTranslator:
         """
         if len(variable_names) != len(xpaths):
             raise FastXpathTranslatorInconsistentLists(
-                "lists var_names and xpaths have not the same length (%i and %i)"
-                % (len(variable_names), len(xpaths))
+                f"lists var_names and xpaths have not the same length ({len(variable_names)} and {len(xpaths)})"
             )
 
         # check duplicate variable names
         dupe_vars = self._get_duplicates(variable_names)
         if dupe_vars:
             raise FastXpathTranslatorDuplicates(
-                "Following variable names are provided more than once: %s" % dupe_vars, dupe_vars
+                f"Following variable names are provided more than once: {dupe_vars}", dupe_vars
             )
 
         # check duplicate XPaths
         dupe_xpaths = self._get_duplicates(xpaths)
         if dupe_xpaths:
             raise FastXpathTranslatorDuplicates(
-                "Following variable names are provided more than once: %s" % dupe_xpaths,
+                f"Following variable names are provided more than once: {dupe_xpaths}",
                 dupe_xpaths,
             )
 
         self._variable_names = list(variable_names)
         self._xpaths = list(xpaths)
 
-    def read_translation_table(self, source: Union[str, IO]):
+    def read_translation_table(self, source: str | IO):
         """
         Reads a file that sets how OpenMDAO variable are matched to XML Path.
         Provided file should have 2 comma-separated columns:
@@ -128,7 +130,7 @@ class VarXpathTranslator:
         raise FastXpathTranslatorXPathError(xpath)
 
     @staticmethod
-    def _get_duplicates(seq: Sequence) -> Set:
+    def _get_duplicates(seq: Sequence) -> set:
         dupes = set()
         seen = set()
         for elem in seq:

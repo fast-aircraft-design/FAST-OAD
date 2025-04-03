@@ -14,9 +14,11 @@ Defines how OpenMDAO variables are serialized to XML
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
 from os import PathLike
-from typing import IO, Union
+from typing import IO
 
 from fastoad.openmdao.variables import VariableList
 
@@ -77,7 +79,7 @@ class VariableXmlStandardFormatter(VariableXmlBaseFormatter):
     def path_separator(self, separator):
         self._translator.path_separator = separator
 
-    def read_variables(self, data_source: Union[str, PathLike, IO]) -> VariableList:
+    def read_variables(self, data_source: str | PathLike | IO) -> VariableList:
         # Check separator, as OpenMDAO won't accept the dot.
         if self.path_separator == ".":
             _LOGGER.warning(
@@ -85,13 +87,13 @@ class VariableXmlStandardFormatter(VariableXmlBaseFormatter):
             )
         return super().read_variables(data_source)
 
-    def write_variables(self, data_source: Union[str, PathLike, IO], variables: VariableList):
+    def write_variables(self, data_source: str | PathLike | IO, variables: VariableList):
         try:
             super().write_variables(data_source, variables)
         except FastXPathEvalError as err:
             # Trying to help...
             raise FastXPathEvalError(
-                err.args[0] + ' : self.path_separator is "%s". It is correct?' % self.path_separator
+                err.args[0] + f' : self.path_separator is "{self.path_separator}". It is correct?'
             )
 
 
@@ -107,10 +109,8 @@ class BasicVarXpathTranslator(VarXpathTranslator):
 
     def get_variable_name(self, xpath: str) -> str:
         path_components = xpath.split("/")
-        name = self.path_separator.join(path_components)
-        return name
+        return self.path_separator.join(path_components)  # Name
 
     def get_xpath(self, var_name: str) -> str:
         path_components = var_name.split(self.path_separator)
-        xpath = "/".join(path_components)
-        return xpath
+        return "/".join(path_components)  # Xpath
