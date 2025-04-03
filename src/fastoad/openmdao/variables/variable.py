@@ -147,8 +147,13 @@ class Variable(Hashable):
             return scalarize(convert_units(np.asarray(self.value), self.units, new_units))
         return self.value
 
-    def update(self, source_variable: Variable):
-        """Update Variable self.metadata with values from source_variable.metadata, keeping existing keys."""
+    def update_missing_metadata(self, source_variable: Variable):
+        """
+        Add metadata from source_variable to this variable, but only for keys that don't already exist.
+        This is used to fill in missing metadata while preserving existing values.
+
+        :param source_variable: Source for additional metadata
+        """
         for key, value in source_variable.metadata.items():
             if key not in self.metadata:  # Only add missing keys
                 self.metadata[key] = value

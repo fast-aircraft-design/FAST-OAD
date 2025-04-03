@@ -111,7 +111,7 @@ class VariableList(list):
         self.append(Variable(name, **kwargs))
 
     def update(
-        self, other_var_list: list, add_variables: bool = True, fill_variables: bool = False
+        self, other_var_list: list, add_variables: bool = True, merge_metadata: bool = False
     ):
         """
         Uses variables in other_var_list to update the current VariableList instance.
@@ -123,8 +123,16 @@ class VariableList(list):
             - if not, Variable instance from other_var_list will be added only if
               add_variables==True
 
+        The merge_metadata parameter controls how metadata is handled when replacing variables:
+            - if merge_metadata=False (default): The variable is completely overwritten with the
+              new one, and all previous metadata is lost (except for descriptions as noted above)
+            - if merge_metadata=True: Only the metadata explicitly provided in the new variable
+              is updated, while all other metadata from the original variable is preserved
+
         :param other_var_list: source for new Variable data
         :param add_variables: if True, unknown variables are also added
+        :param merge_metadata: if True, preserves existing metadata for keys not present in the
+                               new variable
         """
 
         for var in other_var_list:
@@ -133,8 +141,8 @@ class VariableList(list):
                 # list without descriptions (issue # 319)
                 if var.name in self.names() and self[var.name].description and not var.description:
                     var.description = self[var.name].description
-                if fill_variables:
-                    var.update(self[var.name])
+                if merge_metadata:
+                    var.update_missing_metadata(self[var.name])
                 self.append(deepcopy(var))
 
     def to_ivc(self) -> om.IndepVarComp:

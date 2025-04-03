@@ -14,6 +14,7 @@ Module for testing VariableList.py
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from copy import deepcopy
 from pathlib import Path
 from typing import List
 
@@ -138,6 +139,176 @@ def test_variables(with_dummy_plugin_2):
     assert len(variables) == 3
     assert list(variables.names()) == ["a", "b", "n"]
     assert variables["n"].description == "new description"
+
+
+def test_variable_update_missing_metadata():
+    """Test that Variable.update_missing_metadata only adds missing metadata keys without modifying existing ones."""
+    # Create a source variable with several metadata items
+    source_var = Variable(
+        "source_var",
+        val=10.0,
+        units="kg",  # Should be added
+        desc="Source variable",
+        upper=100.0,
+    )
+
+    # Create a target variable with some overlapping and some different metadata
+    original_var = Variable(
+        "original_var",
+        val=20.0,  # Different value
+        desc="Target variable",  # Different description
+        upper=50.0,  # Different upper bound
+        ref=30.0,  # Metadata not in source
+        init_metadata=False,
+        # Needed because if True (default), the metadata are automatically filled with dummy values
+    )
+
+    # Save original values to check they don't change
+    original_value = original_var.value
+    original_desc = original_var.description
+    original_upper = original_var.metadata["upper"]
+    original_ref = original_var.metadata["ref"]
+
+    # Apply the update_missing_metadata method
+    original_var.update_missing_metadata(source_var)
+
+    # Verify existing metadata was preserved
+    assert original_var.value == original_value, "Value should not change"
+    assert original_var.description == original_desc, "Description should not change"
+    assert original_var.metadata["upper"] == original_upper, "Upper bound should not change"
+    assert original_var.metadata["ref"] == original_ref, "Ref should not change"
+    assert "units" in original_var.metadata, "units should be added"
+    assert (
+        original_var.metadata["units"] == source_var.metadata["units"]
+    ), "Units should match source"
+
+    # Create a variable with no metadata to update from
+    empty_var = Variable("empty_var", val=5.0, init_metadata=False)
+    original_metadata_count = len(original_var.metadata)
+
+    # Apply the update_missing_metadata with an empty variable
+    original_var.update_missing_metadata(empty_var)
+    assert len(original_var.metadata) == original_metadata_count, "No new metadata should be added"
+
+
+def test_update_with_no_init_metadata_variables():
+    """Test updating variable list with variables created with init_metadata=False."""
+    # Create variables with standard metadata initialization
+    var1 = Variable("var1", val=10.0, units="m", desc="Description for var1")
+    var2 = Variable("var2", val=20.0, units="kg", desc="Description for var2")
+    var3 = Variable("var3", val=30.0, units="s", desc="Description for var3")
+    standard_var_list = VariableList([var1, var2, var3])
+
+    # Create variables without metadata initialization
+    no_meta_var1 = Variable(
+        "var1", val=15.0, units="ft", desc="Updated description for var1", init_metadata=False
+    )
+    no_meta_var2 = Variable("var2", val=25.0, units="lb", init_metadata=False)  # No description
+    no_meta_var4 = Variable(
+        "var4", val=40.0, units="K", desc="Description for var4", init_metadata=False
+    )
+    no_meta_var_list = VariableList([no_meta_var1, no_meta_var2, no_meta_var4])
+
+    # Update with default parameters (add_variables=True, merge_metadata=False)
+    test_var_list = deepcopy(standard_var_list)
+    test_var_list.update(no_meta_var_list)
+
+    # Check that values and metadata were updated
+    assert test_var_list["var1"].value == 15.0
+    assert test_var_list["var1"].units == "ft"
+    assert test_var_list["var1"].description == "Updated description for var1"
+
+    # Check that description is preserved when no description is provided
+    assert test_var_list["var2"].value == 25.0
+    assert test_var_list["var2"].units == "lb"
+    assert test_var_list["var2"].description == "Description for var2"
+
+    # Check that new variable was added
+    assert "var4" in test_var_list.names()
+    assert test_var_list["var4"].value == 40.0
+    assert test_var_list["var4"].units == "K"
+
+    # Check that var3 is unchanged
+    assert test_var_list["var3"].value == 30.0
+    assert test_var_list["var3"].units == "s"
+
+
+def test_update_with_no_init_metadata_and_merge_metadata():
+    """Test the merge_metadata parameter with variables created with init_metadata=False."""
+    # Create a variable with rich metadata
+    rich_var = Variable(
+        "var1",
+        val=10.0,
+        units="m",
+        desc="Rich description",
+        upper=200.0,
+        lower=0.0,
+        tags={"tag1", "tag2"},
+    )
+    rich_var_list = VariableList([rich_var])
+
+    # Save original metadata keys for later comparison
+    original_metadata_keys = set(rich_var.metadata.keys())
+
+    # Create a variable with minimal metadata (init_metadata=False)
+    minimal_var = Variable("var1", val=15.0, init_metadata=False)
+    minimal_var_list = VariableList([minimal_var])
+
+    # Case 1: Update with merge_metadata=False (default)
+    test_var_list_no_fill = deepcopy(rich_var_list)
+    test_var_list_no_fill.update(minimal_var_list)
+
+    # Check that values were updated
+    assert test_var_list_no_fill["var1"].value == 15.0
+    # Description should be preserved since minimal_var has no description
+    assert test_var_list_no_fill["var1"].description == "Rich description"
+
+    # With merge_metadata=False, metadata like units, lower should be lost
+    updated_metadata_keys = set(test_var_list_no_fill["var1"].metadata.keys())
+    assert "units" not in updated_metadata_keys
+    assert "lower" not in updated_metadata_keys
+
+    # Case 2: Update with merge_metadata=True
+    test_var_list_with_fill = deepcopy(rich_var_list)
+    test_var_list_with_fill.update(minimal_var_list, merge_metadata=True)
+
+    # Check that values were updated
+    assert test_var_list_with_fill["var1"].value == 15.0
+    assert test_var_list_with_fill["var1"].description == "Rich description"
+
+    # With merge_metadata=True, all metadata should be preserved
+    filled_metadata_keys = set(test_var_list_with_fill["var1"].metadata.keys())
+
+    # All original keys should still be present
+    for key in original_metadata_keys:
+        assert key in filled_metadata_keys
+
+    # Check specific metadata values are preserved
+    assert test_var_list_with_fill["var1"].metadata["upper"] == 200.0
+    assert test_var_list_with_fill["var1"].metadata["lower"] == 0.0
+    assert "tag1" in test_var_list_with_fill["var1"].metadata["tags"]
+    assert "tag2" in test_var_list_with_fill["var1"].metadata["tags"]
+
+    # Test a variable list with multiple variables
+    var1 = Variable("var1", val=10.0, units="m", desc="Description for var1")
+    var2 = Variable("var2", val=20.0, units="kg", desc="Description for var2")
+    var_list = VariableList([var1, var2])
+
+    no_meta_var1 = Variable("var1", val=15.0, units="ft", init_metadata=False)
+    no_meta_var2 = Variable("var2", val=25.0, desc="New description", init_metadata=False)
+    no_meta_var_list = VariableList([no_meta_var1, no_meta_var2])
+
+    # Update with merge_metadata=True
+    var_list.update(no_meta_var_list, merge_metadata=True)
+
+    # Check results
+    assert var_list["var1"].value == 15.0
+    assert var_list["var1"].units == "ft"
+    assert var_list["var1"].description == "Description for var1"  # Preserved
+
+    assert var_list["var2"].value == 25.0
+    assert var_list["var2"].units == "kg"  # Preserved
+    assert var_list["var2"].description == "New description"  # Updated
 
 
 def test_ivc_from_to_variables():
