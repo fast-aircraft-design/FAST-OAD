@@ -14,6 +14,8 @@ Class for managing an OpenMDAO variable.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
 from os import PathLike
 from typing import Dict, Hashable, Iterable, Mapping, Optional, Tuple, Union
@@ -101,21 +103,23 @@ class Variable(Hashable):
         """ Dictionary for metadata of the variable """
 
         # Initialize class attributes once at first instantiation -------------
-        if not self._base_metadata:
-            # Get variable base metadata from an ExplicitComponent
-            comp = om.ExplicitComponent()
-            # get attributes
-            metadata = comp.add_output(name="a")
+        init_metadata = kwargs.pop("init_metadata", True)
+        if init_metadata:
+            if not self._base_metadata:
+                # Get variable base metadata from an ExplicitComponent
+                comp = om.ExplicitComponent()
+                # get attributes
+                metadata = comp.add_output(name="a")
 
-            self.__class__._base_metadata = metadata
-            self.__class__._base_metadata["val"] = 1.0
-            self.__class__._base_metadata["tags"] = set()
-            self.__class__._base_metadata["shape"] = None
-        # Done with class attributes ------------------------------------------
+                self.__class__._base_metadata = metadata
+                self.__class__._base_metadata["val"] = 1.0
+                self.__class__._base_metadata["tags"] = set()
+                self.__class__._base_metadata["shape"] = None
+            self.metadata = self.__class__._base_metadata.copy()
+            # Done with class attributes ------------------------------------------
 
         # Feed self.metadata with kwargs, but remove first attributes with "Unavailable" as
         # value, which is a value that can be provided by OpenMDAO.
-        self.metadata = self.__class__._base_metadata.copy()
         self.metadata.update(
             {
                 key: value
@@ -142,6 +146,12 @@ class Variable(Hashable):
         if new_units:
             return scalarize(convert_units(np.asarray(self.value), self.units, new_units))
         return self.value
+
+    def update(self, source_variable: Variable):
+        """Update Variable self.metadata with values from source_variable.metadata, keeping existing keys."""
+        for key, value in source_variable.metadata.items():
+            if key not in self.metadata:  # Only add missing keys
+                self.metadata[key] = value
 
     @classmethod
     def read_variable_descriptions(
@@ -318,11 +328,12 @@ class Variable(Hashable):
 
     def _set_default_shape(self):
         """Automatically sets shape if not set"""
-        if self.metadata["shape"] is None:
-            shape = np.shape(self.value)
-            if not shape:
-                shape = (1,)
-            self.metadata["shape"] = shape
+        if "shape" in self.metadata.keys():
+            if self.metadata["shape"] is None:
+                shape = np.shape(self.value)
+                if not shape:
+                    shape = (1,)
+                self.metadata["shape"] = shape
 
     def __eq__(self, other):
         # same arrays with nan are declared non equals, so we need a workaround

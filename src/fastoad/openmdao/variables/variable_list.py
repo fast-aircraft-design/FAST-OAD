@@ -110,7 +110,9 @@ class VariableList(list):
         """
         self.append(Variable(name, **kwargs))
 
-    def update(self, other_var_list: list, add_variables: bool = True):
+    def update(
+        self, other_var_list: list, add_variables: bool = True, fill_variables: bool = False
+    ):
         """
         Uses variables in other_var_list to update the current VariableList instance.
 
@@ -131,6 +133,8 @@ class VariableList(list):
                 # list without descriptions (issue # 319)
                 if var.name in self.names() and self[var.name].description and not var.description:
                     var.description = self[var.name].description
+                if fill_variables:
+                    var.update(self[var.name])
                 self.append(deepcopy(var))
 
     def to_ivc(self) -> om.IndepVarComp:
