@@ -14,7 +14,6 @@ Module for testing VariableList.py
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from collections.abc import Iterable
 from pathlib import Path
 from typing import List
 
@@ -850,13 +849,14 @@ def test_get_val():
     vars["qux"] = {"value": np.array([1.0, 2.0]), "units": "m"}
     vars["quux"] = {"value": [[1.0, 2.0], [2.0, 3.0]], "units": "m"}
     data = vars["bar"].get_val()
-    assert not isinstance(data, Iterable) and not isinstance(data, np.ndarray)
+    assert not isinstance(data, list) and not isinstance(data, np.ndarray)
     assert_allclose(data, 1, rtol=1e-3, atol=1e-5)
-    data = vars["baq"].get_val()
-    assert not isinstance(data, Iterable) and not isinstance(data, np.ndarray)
     units = "km"
     data = vars["bar"].get_val(new_units=units)
     assert_allclose(data, 1e-3, rtol=1e-3, atol=1e-5)
+    data = vars["baq"].get_val()
+    assert not isinstance(data, list) and not isinstance(data, np.ndarray)
+    assert_allclose(data, 1, rtol=1e-3, atol=1e-5)
     with pytest.raises(TypeError):
         data = vars["foo"].get_val(new_units=units)
     data = vars["baz"].get_val(new_units=units)
