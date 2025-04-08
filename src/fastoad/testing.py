@@ -56,6 +56,7 @@ def run_system(
     model.add_subsystem("component", component, promotes=["*"])
 
     problem.setup()
+    problem.final_setup()
     variable_names = [
         var.name
         for var in VariableList.from_problem(problem, io_status="inputs")

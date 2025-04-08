@@ -45,6 +45,7 @@ def test_write_outputs(cleanup):
     problem.model.add_subsystem("sellar", SellarModel(), promotes=["*"])
     problem.output_file_path = RESULTS_FOLDER_PATH / "output.xml"
     problem.setup()
+    problem.final_setup()
 
     problem.write_outputs()
     variables = VariableIO(problem.output_file_path).read()
@@ -87,12 +88,16 @@ def test_problem_read_inputs_after_setup(cleanup):
     problem.setup()
 
     assert problem.get_val(name="x") == [2.0]  # Here x is set by integrated IVC
-    with pytest.raises(RuntimeError):
+    with pytest.raises((RuntimeError, KeyError)):
         # Several default values are defined for "z", thus OpenMDAO raises an error that
-        # will be solved only after run_model() has been used.
+        # will be solved only after run_model() (the final_setup() in it) has been used.
+        # In version >3.38, we have instead a KeyError, again solved by final_setup(). We
+        # cannot call however here the final_setup(), as we haven't yet read the inputs.
         _ = problem.get_val(name="z", units="m**2")
-
     problem.read_inputs()
+
+    problem.final_setup()
+    assert_allclose(problem.get_val(name="z", units="m**2"), [4.0, 3.0])
 
     problem.run_model()
     assert_allclose(problem.get_val(name="x"), 1.0)
@@ -253,6 +258,7 @@ def test_problem_with_dynamically_shaped_inputs(cleanup):
     vanilla_problem.model.add_subsystem("comp2", MyComp2(), promotes=["*"])
     with pytest.raises(RuntimeError):
         vanilla_problem.setup()
+        vanilla_problem.final_setup()
 
     # --------------------------------------------------------------------------
     # ... But fastoad problem will do the setup and provide dummy shapes
@@ -261,6 +267,7 @@ def test_problem_with_dynamically_shaped_inputs(cleanup):
     fastoad_problem.model.add_subsystem("comp1", MyComp1(), promotes=["*"])
     fastoad_problem.model.add_subsystem("comp2", MyComp2(), promotes=["*"])
     fastoad_problem.setup()
+    fastoad_problem.final_setup()
     assert (
         fastoad_problem["x"].shape
         == fastoad_problem["y"].shape
@@ -271,8 +278,8 @@ def test_problem_with_dynamically_shaped_inputs(cleanup):
     # In such case, reading inputs after the setup will make run_model fail, because dummy shapes
     # have already been provided, and will probably not match the ones in input file.
     fastoad_problem.input_file_path = DATA_FOLDER_PATH / "dynamic_shape_inputs_1.xml"
-    fastoad_problem.read_inputs()
-    with pytest.raises(ValueError):
+    with pytest.raises(RuntimeError):
+        fastoad_problem.read_inputs()
         fastoad_problem.run_model()
 
     # --------------------------------------------------------------------------
@@ -283,6 +290,7 @@ def test_problem_with_dynamically_shaped_inputs(cleanup):
     fastoad_problem.input_file_path = DATA_FOLDER_PATH / "dynamic_shape_inputs_1.xml"
     fastoad_problem.read_inputs()
     fastoad_problem.setup()
+    fastoad_problem.final_setup()
 
     inputs = VariableList.from_problem(fastoad_problem, io_status="inputs")
     assert inputs.names() == ["x"]
@@ -320,4 +328,5 @@ def test_problem_with_dynamically_shaped_inputs(cleanup):
     assert variables.names() == ["x", "y", "z", "a"]
 
     fastoad_problem.setup()
+    fastoad_problem.final_setup()
     fastoad_problem.run_model()

@@ -104,6 +104,7 @@ def _test_problem(
     """Tests get_unconnected_inputs for provided problem"""
 
     problem.setup()
+    problem.final_setup()
 
     mandatory, optional = get_unconnected_input_names(problem, promoted_names=get_promoted_names)
     assert set(mandatory) == expected_missing_mandatory_variables
