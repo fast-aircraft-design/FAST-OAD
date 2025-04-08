@@ -87,7 +87,7 @@ def plot_flight(flight_points, fig_filename):
 
 
 def test_mission_component(cleanup, with_dummy_plugin_2):
-    input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
+    input_file_path = DATA_FOLDER_PATH / "test_mission_takeoff.xml"
     ivc = DataFile(input_file_path).to_ivc()
 
     ivc.add_output("data:mission:operational_wo_gnd_effect:TOW", 70000, units="kg")
@@ -102,7 +102,7 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
     problem = run_system(
         AdvancedMissionComp(
             propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=RESULTS_FOLDER_PATH / "test_mission.csv",
+            out_file=RESULTS_FOLDER_PATH / "test_mission_takeoff.csv",
             use_initializer_iteration=False,
             mission_file_path=MissionWrapper(
                 DATA_FOLDER_PATH / "test_mission_takeoff.yml",
@@ -111,7 +111,7 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
         ),
         ivc,
     )
-    # plot_flight(problem.model.component.flight_points, "test_mission.png")
+    # plot_flight(problem.model.component.flight_points, "test_mission_takeoff.png")
     take_off_distance = problem[
         "data:mission:operational_wo_gnd_effect:takeoff_wo_gnd_effect:distance"
     ]
@@ -132,7 +132,7 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
 
 
 def test_ground_effect(cleanup, with_dummy_plugin_2):
-    input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
+    input_file_path = DATA_FOLDER_PATH / "test_mission_takeoff.xml"
     datafile = DataFile(input_file_path)
     del datafile["data:mission:operational:takeoff:fuel"]
 
@@ -156,7 +156,7 @@ def test_ground_effect(cleanup, with_dummy_plugin_2):
         ),
         ivc,
     )
-    # plot_flight(problem.model.component.flight_points, "test_mission.png")
+    # plot_flight(problem.model.component.flight_points, "test_mission_takeoff.png")
     take_off_distance = problem["data:mission:operational:takeoff:distance"]
     assert_allclose(take_off_distance, 1762, atol=1.0)
     assert_allclose(problem["data:mission:operational:takeoff:fuel"], 122.1, atol=1e-1)
@@ -164,7 +164,7 @@ def test_ground_effect(cleanup, with_dummy_plugin_2):
 
 
 def test_start_stop(cleanup, with_dummy_plugin_2):
-    input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
+    input_file_path = DATA_FOLDER_PATH / "test_mission_takeoff.xml"
     ivc = DataFile(input_file_path).to_ivc()
 
     ivc.add_output("data:mission:start_stop_mission:TOW", 79000, units="kg")
@@ -188,14 +188,14 @@ def test_start_stop(cleanup, with_dummy_plugin_2):
         ),
         ivc,
     )
-    # plot_flight(problem.model.component.flight_points, "test_mission.png")
+    # plot_flight(problem.model.component.flight_points, "test_mission_takeoff.png")
     start_stop_distance = problem["data:mission:start_stop_mission:start_stop:distance"]
     assert_allclose(start_stop_distance, 1659, atol=1.0)
     assert_allclose(problem["data:mission:start_stop_mission:start_stop:duration"], 42.8, atol=1e-1)
 
 
 def test_mission_group_without_loop(cleanup, with_dummy_plugin_2):
-    input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
+    input_file_path = DATA_FOLDER_PATH / "test_mission_takeoff.xml"
     datafile = DataFile(input_file_path)
     del datafile["data:mission:operational:takeoff:fuel"]
     ivc = datafile.to_ivc()
