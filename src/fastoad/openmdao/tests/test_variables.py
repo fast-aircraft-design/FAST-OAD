@@ -842,16 +842,21 @@ def test_get_variables_from_problem_sellar_with_promotion_and_connect():
 def test_get_val():
     vars = VariableList()
     vars["bar"] = {"value": 1.0, "units": "m"}
+    vars["baq"] = {"value": np.array([1.0])}
     vars["foo"] = {"value": 1.0, "units": "m**2"}
     vars["baz"] = {"value": [1.0, 2.0], "units": "m"}
     vars["bat"] = {"value": (1.0, 2.0), "units": "m"}
     vars["qux"] = {"value": np.array([1.0, 2.0]), "units": "m"}
     vars["quux"] = {"value": [[1.0, 2.0], [2.0, 3.0]], "units": "m"}
     data = vars["bar"].get_val()
+    assert not isinstance(data, list) and not isinstance(data, np.ndarray)
     assert_allclose(data, 1, rtol=1e-3, atol=1e-5)
     units = "km"
     data = vars["bar"].get_val(new_units=units)
     assert_allclose(data, 1e-3, rtol=1e-3, atol=1e-5)
+    data = vars["baq"].get_val()
+    assert not isinstance(data, list) and not isinstance(data, np.ndarray)
+    assert_allclose(data, 1, rtol=1e-3, atol=1e-5)
     with pytest.raises(TypeError):
         data = vars["foo"].get_val(new_units=units)
     data = vars["baz"].get_val(new_units=units)
