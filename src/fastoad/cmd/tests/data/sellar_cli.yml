@@ -3,8 +3,8 @@ title: Sellar
 module_folders:
   - ./cmd_sellar_example
 
-input_file: ../results/test_api/inputs.xml
-output_file: ../results/test_api/outputs.xml
+input_file: ../results/test_cli/inputs_cli.xml
+output_file: ../results/test_cli/outputs_cli.xml
 
 driver: om.ScipyOptimizeDriver(optimizer='SLSQP', tol=1e-8)
 model:
