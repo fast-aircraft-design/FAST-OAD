@@ -45,6 +45,10 @@ prof/
 # test results
 results/
 
+# OpenMDAO reports
+reports/
+*.openmdao_out
+
 # Build and docs folder/files
 build/*
 dist/*
