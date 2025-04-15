@@ -28,7 +28,6 @@ from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.datacls import MANDATORY_FIELD
 from fastoad.model_base.propulsion import IPropulsion
-
 from .base import AbstractFlightSegment
 from ..polar import Polar
 from ..polar_modifier import AbstractPolarModifier, UnchangedPolar
@@ -204,7 +203,7 @@ class AbstractTimeStepFlightSegment(
                         x1=self.time_step / 2.0,
                         rtol=rtol,
                     )
-                    last_point_to_target = self.get_distance_to_target(flight_points, target)
+                    last_point_to_target = self.get_distance_to_target(flight_points, target)/last_point_to_target
             elif (
                 np.abs(last_point_to_target) > np.abs(previous_point_to_target)
                 # If self.target.CL is defined, it means that we look for an optimal altitude and
