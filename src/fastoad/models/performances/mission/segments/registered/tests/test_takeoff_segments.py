@@ -121,7 +121,8 @@ def test_rotation(polar, polar_modifier):
             flight_points = pool.apply_async(segment.compute_from, (initial_flight_point,)).get(timeout=1)
     except multiprocessing.TimeoutError:
         # do something if timeout
-        assert False, "The segment has timed out, it cannot find the time at which target is reached with sufficient accuracy."
+        assert False, ("The segment has timed out, it cannot find the time at which target is reached with"
+                       "sufficient accuracy.")
 
     last_point = flight_points.iloc[-1]
     assert_allclose(last_point.altitude, 0.0)
