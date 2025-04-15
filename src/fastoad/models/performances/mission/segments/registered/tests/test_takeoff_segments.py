@@ -115,14 +115,20 @@ def test_rotation(polar, polar_modifier):
     segment.thrust_rate = 1.0
     segment.time_step = 5e-2
 
-    initial_flight_point = FlightPoint(time=30.0, altitude=0.0, mass=70000.0, true_airspeed=75.0, alpha=0.0)
+    initial_flight_point = FlightPoint(
+        time=30.0, altitude=0.0, mass=70000.0, true_airspeed=75.0, alpha=0.0
+    )
     try:
         with multiprocessing.pool.ThreadPool() as pool:
-            flight_points = pool.apply_async(segment.compute_from, (initial_flight_point,)).get(timeout=1)
+            flight_points = pool.apply_async(segment.compute_from, (initial_flight_point,)).get(
+                timeout=1
+            )
     except multiprocessing.TimeoutError:
         # do something if timeout
-        assert False, ("The segment has timed out, it cannot find the time at which target is reached with"
-                       "sufficient accuracy.")
+        assert False, (
+            "The segment has timed out, it cannot find the time at which target is reached with"
+            "sufficient accuracy."
+        )
 
     last_point = flight_points.iloc[-1]
     assert_allclose(last_point.altitude, 0.0)
@@ -132,7 +138,6 @@ def test_rotation(polar, polar_modifier):
     assert_allclose(last_point.ground_distance, 200.64, rtol=1e-3)
     assert_allclose(np.degrees(last_point.alpha), 7.713, rtol=1e-3)
     assert last_point.engine_setting == EngineSetting.CLIMB
-
 
 
 def test_end_of_takeoff(polar, polar_modifier):

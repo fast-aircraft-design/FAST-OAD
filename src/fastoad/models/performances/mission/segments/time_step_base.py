@@ -203,7 +203,9 @@ class AbstractTimeStepFlightSegment(
                         x1=self.time_step / 2.0,
                         rtol=rtol,
                     )
-                    last_point_to_target = self.get_distance_to_target(flight_points, target)/last_point_to_target
+                    last_point_to_target = (
+                        self.get_distance_to_target(flight_points, target) / last_point_to_target
+                    )
             elif (
                 np.abs(last_point_to_target) > np.abs(previous_point_to_target)
                 # If self.target.CL is defined, it means that we look for an optimal altitude and
