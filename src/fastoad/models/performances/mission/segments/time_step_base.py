@@ -28,6 +28,7 @@ from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.datacls import MANDATORY_FIELD
 from fastoad.model_base.propulsion import IPropulsion
+
 from .base import AbstractFlightSegment
 from ..polar import Polar
 from ..polar_modifier import AbstractPolarModifier, UnchangedPolar
