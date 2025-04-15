@@ -22,7 +22,7 @@ def test_base_cycle_group():
         pass
 
     # -------------------------------------------------------------------------
-    problem = om.Problem()
+    problem = om.Problem(reports=False)
     problem.model.add_subsystem("group", Group1())
     problem.setup()
 
@@ -30,7 +30,7 @@ def test_base_cycle_group():
     assert isinstance(problem.model.group.nonlinear_solver, om.NonlinearBlockGS)
 
     # -------------------------------------------------------------------------
-    problem = om.Problem()
+    problem = om.Problem(reports=False)
     problem.model.add_subsystem("group", Group1(use_inner_solvers=False))
     problem.setup()
 
@@ -38,7 +38,7 @@ def test_base_cycle_group():
     assert isinstance(problem.model.group.nonlinear_solver, om.NonlinearRunOnce)
 
     # -------------------------------------------------------------------------
-    problem = om.Problem()
+    problem = om.Problem(reports=False)
     problem.model.add_subsystem(
         "group",
         Group1(
@@ -53,7 +53,7 @@ def test_base_cycle_group():
     assert problem.model.group.linear_solver.options["iprint"] == 2
 
     # -------------------------------------------------------------------------
-    problem = om.Problem()
+    problem = om.Problem(reports=False)
     problem.model.add_subsystem(
         "group",
         Group1(
@@ -69,7 +69,7 @@ def test_base_cycle_group():
     assert problem.model.group.nonlinear_solver.options["iprint"] == 0
 
     # -------------------------------------------------------------------------
-    problem = om.Problem()
+    problem = om.Problem(reports=False)
     problem.model.add_subsystem(
         "group",
         Group1(
@@ -93,7 +93,7 @@ def test_cycle_group_with_no_solver_by_default():
         pass
 
     # -------------------------------------------------------------------------
-    problem = om.Problem()
+    problem = om.Problem(reports=False)
     problem.model.add_subsystem("group", Group2())
     problem.setup()
 
@@ -101,7 +101,7 @@ def test_cycle_group_with_no_solver_by_default():
     assert isinstance(problem.model.group.nonlinear_solver, om.NonlinearRunOnce)
 
     # -------------------------------------------------------------------------
-    problem = om.Problem()
+    problem = om.Problem(reports=False)
     problem.model.add_subsystem(
         "group",
         Group2(use_inner_solvers=True, nonlinear_solver_options={"maxiter": 100, "iprint": 3}),
@@ -114,7 +114,7 @@ def test_cycle_group_with_no_solver_by_default():
     assert problem.model.group.nonlinear_solver.options["iprint"] == 3
 
     # -------------------------------------------------------------------------
-    problem = om.Problem()
+    problem = om.Problem(reports=False)
     with pytest.raises(ValueError) as err:
         problem.model.add_subsystem("group", Group2(linear_solver=True))
     assert 'please use "use_inner_solvers=True" and "nonlinear_solver=False"' in err.value.args[0]
@@ -135,7 +135,7 @@ def test_cycle_group_with_default_solver_options():
         pass
 
     # -------------------------------------------------------------------------
-    problem = om.Problem()
+    problem = om.Problem(reports=False)
     problem.model.add_subsystem("group", Group3())
     problem.setup()
 
@@ -146,7 +146,7 @@ def test_cycle_group_with_default_solver_options():
     assert problem.model.group.nonlinear_solver.options["iprint"] == -1
 
     # -------------------------------------------------------------------------
-    problem = om.Problem()
+    problem = om.Problem(reports=False)
     problem.model.add_subsystem(
         "group",
         Group3(
@@ -164,7 +164,7 @@ def test_cycle_group_with_default_solver_options():
     assert problem.model.group.nonlinear_solver.options["iprint"] == 1
 
     # -------------------------------------------------------------------------
-    problem = om.Problem()
+    problem = om.Problem(reports=False)
     problem.model.add_subsystem(
         "group",
         Group3(

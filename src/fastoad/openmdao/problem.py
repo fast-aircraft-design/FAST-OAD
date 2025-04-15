@@ -51,7 +51,7 @@ class FASTOADProblem(om.Problem):
     def __init__(self, *args, **kwargs):
         # Automatic reports are deactivated for FAST-OAD, unless OPENMDAO_REPORTS env
         # variable is set.
-        kwargs["reports"] = None
+        kwargs["reports"] = False
         super().__init__(*args, **kwargs)
 
         #: File path where :meth:`read_inputs` will read inputs
