@@ -50,7 +50,7 @@ def run_system(
         else:
             kwargs["nonlinear_solver"] = "om.NonlinearRunOnce"
 
-    problem = om.Problem()
+    problem = FASTOADProblem()
     model = problem.model = BaseCycleGroup(**kwargs)
 
     if isinstance(input_vars, VariableList):

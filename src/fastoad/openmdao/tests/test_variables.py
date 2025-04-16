@@ -2,7 +2,7 @@
 Module for testing VariableList.py
 """
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -31,19 +31,6 @@ from .openmdao_sellar_example.disc1 import Disc1
 from .openmdao_sellar_example.disc2 import Disc2
 from .openmdao_sellar_example.functions import FunctionF, FunctionG1, FunctionG2
 from ..variables import Variable, VariableList
-
-#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
-#  FAST is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or
-#  (at your option) any later version.
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#  You should have received a copy of the GNU General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 @pytest.fixture(scope="module")
@@ -150,7 +137,7 @@ def test_ivc_from_to_variables():
     vars["c"] = {"value": -3.2, "units": "kg/s", "desc": "some test"}
 
     ivc = vars.to_ivc()
-    problem = om.Problem()
+    problem = om.Problem(reports=False)
     problem.model.add_subsystem("ivc", ivc, promotes=["*"])
     problem.setup()
     assert problem["a"] == 5
@@ -211,7 +198,7 @@ def _compare_variable_lists(vars: List[Variable], expected_vars: List[Variable])
 
 
 def test_get_variables_from_problem_with_an_explicit_component():
-    problem = om.Problem()
+    problem = om.Problem(reports=False)
     problem.model.add_subsystem("disc1", Disc1(), promotes=["*"])
 
     vars_before_setup = VariableList.from_problem(
@@ -235,7 +222,7 @@ def test_get_variables_from_problem_with_a_group():
     group = om.Group()
     group.add_subsystem("disc1", Disc1(), promotes=["*"])
     group.add_subsystem("disc2", Disc2(), promotes=["*"])
-    problem = om.Problem(group)
+    problem = om.Problem(group, reports=False)
     vars_before_setup = VariableList.from_problem(
         problem, use_initial_values=False, get_promoted_names=True
     )
@@ -266,7 +253,7 @@ def test_get_variables_from_problem_sellar_with_promotion_without_computation():
     group.add_subsystem("constraint1", FunctionG1(), promotes=["*"])
     group.add_subsystem("constraint2", FunctionG2(), promotes=["*"])
     group.nonlinear_solver = om.NonlinearBlockGS()
-    problem = om.Problem(group)
+    problem = om.Problem(group, reports=False)
     with pytest.warns(UnitsWarning):
         problem.setup()
         problem.final_setup()
@@ -334,7 +321,7 @@ def test_get_variables_from_problem_sellar_with_promotion_with_computation():
     group.add_subsystem("constraint1", FunctionG1(), promotes=["*"])
     group.add_subsystem("constraint2", FunctionG2(), promotes=["*"])
     group.nonlinear_solver = om.NonlinearBlockGS()
-    problem = om.Problem(group)
+    problem = om.Problem(group, reports=False)
     with pytest.warns(UnitsWarning):
         problem.setup()
         problem.final_setup()
@@ -457,7 +444,7 @@ def test_get_variables_from_problem_sellar_without_promotion_without_computation
     group.connect("disc1.y1", ["disc2.y1", "objective.y1", "constraint1.y1"])
     group.connect("disc2.y2", ["disc1.y2", "objective.y2", "constraint2.y2"])
 
-    problem = om.Problem(group)
+    problem = om.Problem(group, reports=False)
     problem.setup()
     problem.final_setup()
 
@@ -536,7 +523,7 @@ def test_get_variables_from_problem_sellar_without_promotion_with_computation():
     group.connect("disc1.y1", ["disc2.y1", "objective.y1", "constraint1.y1"])
     group.connect("disc2.y2", ["disc1.y2", "objective.y2", "constraint2.y2"])
 
-    problem = om.Problem(group)
+    problem = om.Problem(group, reports=False)
     problem.setup()
 
     expected_vars_initial = [
@@ -660,7 +647,7 @@ def _test_and_check_from_unconnected_inputs(
 def test_variables_from_unconnected_inputs_with_an_explicit_component():
     group = om.Group()
     group.add_subsystem("disc1", Disc1(), promotes=["*"])
-    problem = om.Problem(group)
+    problem = om.Problem(group, reports=False)
 
     expected_mandatory_vars = [
         Variable(
@@ -692,7 +679,7 @@ def test_variables_from_unconnected_inputs_with_a_group(cleanup):
     group = om.Group()
     group.add_subsystem("disc1", Disc1(), promotes=["*"])
     group.add_subsystem("disc2", Disc2(), promotes=["*"])
-    problem = om.Problem(group)
+    problem = om.Problem(group, reports=False)
 
     expected_mandatory_vars = [
         Variable(
@@ -727,7 +714,7 @@ def test_variables_from_unconnected_inputs_with_sellar_problem(cleanup):
     group.add_subsystem("objective", FunctionF(), promotes=["*"])
     group.add_subsystem("constaint1", FunctionG1(), promotes=["*"])
     group.add_subsystem("constaint2", FunctionG2(), promotes=["*"])
-    problem = om.Problem(group)
+    problem = om.Problem(group, reports=False)
 
     expected_mandatory_vars = [
         Variable(
@@ -779,7 +766,7 @@ def test_get_variables_from_problem_sellar_with_promotion_and_connect():
     group.connect("disc1.y1", "y1")
     group.connect("disc2.y2", "y2")
 
-    problem = om.Problem(group)
+    problem = om.Problem(group, reports=False)
     vars_before_setup = VariableList.from_problem(
         problem, use_initial_values=False, get_promoted_names=True
     )

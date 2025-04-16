@@ -201,7 +201,7 @@ def test_register_checks_as_decorator(cleanup):
             self.add_output("output3", 1000.0, units="kg", lower=0.0, upper=5000.0)
 
     comp = Comp1()
-    problem = om.Problem()
+    problem = FASTOADProblem()
     problem.model.add_subsystem("comp", comp, promotes=["*"])
     problem.setup()
 

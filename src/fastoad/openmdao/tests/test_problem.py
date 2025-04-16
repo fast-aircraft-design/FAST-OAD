@@ -253,7 +253,7 @@ def test_problem_with_dynamically_shaped_inputs(cleanup):
     # --------------------------------------------------------------------------
     # With these 2 components, an OpenMDAO problem won't pass the setup due to
     # the non-determined shapes
-    vanilla_problem = om.Problem()
+    vanilla_problem = om.Problem(reports=False)
     vanilla_problem.model.add_subsystem("comp1", MyComp1(), promotes=["*"])
     vanilla_problem.model.add_subsystem("comp2", MyComp2(), promotes=["*"])
     with pytest.raises(RuntimeError):
