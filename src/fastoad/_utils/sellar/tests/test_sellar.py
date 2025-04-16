@@ -17,7 +17,7 @@ from fastoad._utils.sellar.sellar_base import BasicSellarModel, BasicSellarProbl
 
 
 def test_sellar():
-    problem = BasicSellarProblem(BasicSellarModel(), reports=False)
+    problem = BasicSellarProblem(BasicSellarModel())
 
     problem.setup()
     problem.run_driver()

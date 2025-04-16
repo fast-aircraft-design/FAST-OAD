@@ -171,11 +171,11 @@ def test_sellar(load):
 
             return constraints
 
-    classical_problem = BasicSellarProblem(BasicSellarModel(), reports=False)  # Reference
+    classical_problem = BasicSellarProblem(BasicSellarModel())  # Reference
     classical_problem.setup()
 
     fastoad_problem = BasicSellarProblem(
-        BasicSellarModel(sellar_factory=SellarComponentProviderByFast()), reports=False
+        BasicSellarModel(sellar_factory=SellarComponentProviderByFast())
     )  # Using RegisterOpenMDAOSystem
     fastoad_problem.setup()
 
