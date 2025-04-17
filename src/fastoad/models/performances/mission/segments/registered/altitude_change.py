@@ -1,4 +1,5 @@
 """Classes for climb/descent segments."""
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -11,10 +12,10 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from __future__ import annotations
 
 from copy import copy
 from dataclasses import dataclass, field
-from typing import List, Optional, Tuple, Union
 
 import pandas as pd
 from scipy.constants import foot, g
@@ -77,7 +78,7 @@ class AltitudeChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightS
     maximum_flight_level: float = 500.0
 
     # To keep track of originally instructed target (used for "optimal_altitude" and so on)
-    _original_target_altitude: Optional[Union[str]] = field(default=None, init=False)
+    _original_target_altitude: str | None = field(default=None, init=False)
 
     #: Using this value will tell to target the altitude with max lift/drag ratio.
     OPTIMAL_ALTITUDE = "optimal_altitude"  # pylint: disable=invalid-name # used as constant
@@ -119,7 +120,7 @@ class AltitudeChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightS
         return super().compute_from_start_to_target(start, target)
 
     def get_distance_to_target(
-        self, flight_points: List[FlightPoint], target: FlightPoint
+        self, flight_points: list[FlightPoint], target: FlightPoint
     ) -> float:
         current = flight_points[-1]
 
@@ -152,7 +153,7 @@ class AltitudeChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightS
             )
         return distance_to_target
 
-    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> Tuple[float, float]:
+    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> tuple[float, float]:
         gamma = (flight_point.thrust - flight_point.drag) / flight_point.mass / g
         return gamma, 0.0
 

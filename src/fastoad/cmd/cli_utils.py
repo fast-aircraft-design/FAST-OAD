@@ -12,6 +12,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from typing import Callable
 
 import click
@@ -47,7 +49,7 @@ def out_file_option(func):
     )(overwrite_option(func))
 
 
-def manage_overwrite(func: Callable, filename_func: Callable = None, **kwargs):
+def manage_overwrite(func: Callable, filename_func: Callable | None = None, **kwargs):
     """
     Runs `func`, that is expected to write a file, with provided keyword arguments `args`.
 
@@ -76,7 +78,7 @@ def manage_overwrite(func: Callable, filename_func: Callable = None, **kwargs):
     return written
 
 
-def _run_write_func(func: Callable, filename_func: Callable = None, **kwargs):
+def _run_write_func(func: Callable, filename_func: Callable | None = None, **kwargs):
     result = func(**kwargs)
     if result:
         if filename_func:

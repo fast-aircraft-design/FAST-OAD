@@ -12,4 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .mission_builder import MissionBuilder  # noqa: F401
+from .mission_builder import MissionBuilder
+
+__all__ = ["MissionBuilder"]

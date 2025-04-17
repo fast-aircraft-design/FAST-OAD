@@ -1,4 +1,5 @@
 """Tools for running multiple computations"""
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -11,6 +12,7 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from __future__ import annotations
 
 import logging
 import multiprocessing as mp
@@ -19,7 +21,6 @@ from dataclasses import dataclass
 from math import ceil, log10
 from os import PathLike
 from pathlib import Path
-from typing import List, Optional, Union
 
 from openmdao.utils.mpi import FakeComm
 
@@ -51,11 +52,11 @@ class CalcRunner:
     """
 
     #: Configuration file, common to all computations
-    configuration_file_path: Union[str, PathLike]
+    configuration_file_path: str | PathLike
 
     #: Input file for the computation (will supersede the input file setting in
     #  configuration file)
-    input_file_path: Optional[Union[str, PathLike]] = None
+    input_file_path: str | PathLike | None = None
 
     #: For activating MDO instead MDA
     optimize: bool = False
@@ -68,8 +69,8 @@ class CalcRunner:
 
     def run(
         self,
-        input_values: Optional[VariableList] = None,
-        calculation_folder: Optional[Union[str, PathLike]] = None,
+        input_values: VariableList | None = None,
+        calculation_folder: str | PathLike | None = None,
     ) -> DataFile:
         """
         Run the computation.
@@ -115,16 +116,14 @@ class CalcRunner:
         else:
             problem.run_model()
 
-        output_data = problem.write_outputs()
-
-        return output_data
+        return problem.write_outputs()  # output_data
 
     def run_cases(
         self,
-        input_list: List[VariableList],
-        destination_folder: Union[str, PathLike],
+        input_list: list[VariableList],
+        destination_folder: str | PathLike,
         *,
-        max_workers: Optional[int] = None,
+        max_workers: int | None = None,
         use_MPI_if_available: bool = True,
         overwrite_subfolders: bool = False,
     ):
@@ -173,7 +172,9 @@ class CalcRunner:
         with pool_cls(max_workers) as pool:
             pool.starmap(
                 CalcRunner.run,
-                self._calculation_inputs(input_list, destination_folder, overwrite_subfolders),
+                self._calculation_inputs(
+                    input_list, destination_folder, overwrite_subfolders=overwrite_subfolders
+                ),
                 # If a computation crashes, the whole chunk stops.
                 # chunksize=1 ensures all computations will be launched.
                 chunksize=1,
@@ -181,8 +182,9 @@ class CalcRunner:
 
     def _calculation_inputs(
         self,
-        input_list: List[VariableList],
+        input_list: list[VariableList],
         destination_folder: Path,
+        *,
         overwrite_subfolders: bool,
     ):
         """Iterator for providing inputs of :meth:`run`."""

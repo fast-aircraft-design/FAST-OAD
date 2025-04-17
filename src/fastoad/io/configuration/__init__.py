@@ -14,5 +14,6 @@ Package for building OpenMDAO problem from configuration file
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# flake8: noqa
 from .configuration import FASTOADProblemConfigurator
+
+__all__ = ["FASTOADProblemConfigurator"]

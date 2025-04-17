@@ -1,6 +1,7 @@
 """
 Convenience functions for file and directories
 """
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -13,10 +14,11 @@ Convenience functions for file and directories
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from __future__ import annotations
 
 from os import PathLike
 from pathlib import Path
-from typing import Union, overload
+from typing import overload
 
 
 @overload
@@ -24,7 +26,7 @@ def as_path(path: None) -> None: ...
 
 
 @overload
-def as_path(path: Union[str, PathLike]) -> Path: ...
+def as_path(path: str | PathLike) -> Path: ...
 
 
 def as_path(path):
@@ -43,6 +45,6 @@ def as_path(path):
         return None
 
 
-def make_parent_dir(path: Union[str, PathLike]):
+def make_parent_dir(path: str | PathLike):
     """Ensures parent directory of provided path exists or is created"""
     as_path(path).parent.mkdir(parents=True, exist_ok=True)

@@ -11,4 +11,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from src.conftest import no_xfoil_skip, xfoil_path  # noqa: F401
+from src.conftest import no_xfoil_skip, xfoil_path
+
+__all__ = ["no_xfoil_skip", "xfoil_path"]

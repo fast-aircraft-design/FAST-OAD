@@ -14,13 +14,15 @@ Plugin system for declaration of FAST-OAD models.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
 import sys
 import warnings
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Callable, Dict, List, Optional
+from typing import Callable
 
 import numpy as np
 
@@ -62,7 +64,7 @@ class DistributionNameDict(AbstractNormalizedDict):
     """
 
     @staticmethod
-    def normalize(dist_name: Optional[str]):  # pylint: disable=arguments-differ
+    def normalize(dist_name: str | None):  # pylint: disable=arguments-differ
         """
         Returns a normalized distribution name for PEP-426-compliant comparison of distribution
         names.
@@ -105,7 +107,7 @@ class PluginDefinition:
     dist_name: str
     plugin_name: str
     package_name: str = ""
-    subpackages: Dict[SubPackageNames, str] = field(default_factory=dict)
+    subpackages: dict[SubPackageNames, str] = field(default_factory=dict)
 
     def detect_subfolders(self):
         """
@@ -118,7 +120,7 @@ class PluginDefinition:
                     [self.package_name, subpackage_name.value]
                 )
 
-    def get_configuration_file_list(self) -> List[ResourceInfo]:
+    def get_configuration_file_list(self) -> list[ResourceInfo]:
         """
         :return: List of configuration files that are provided by the distribution.
         """
@@ -136,7 +138,7 @@ class PluginDefinition:
 
         return []
 
-    def get_source_data_file_list(self) -> List[ResourceInfo]:
+    def get_source_data_file_list(self) -> list[ResourceInfo]:
         """
         :return: List of data files that are provided by the distribution.
         """
@@ -206,7 +208,7 @@ class DistributionPluginDefinition(dict):
         if group == MODEL_PLUGIN_ID:
             self[entry_point.name].detect_subfolders()
 
-    def get_source_data_file_list(self, plugin_name=None) -> List[ResourceInfo]:
+    def get_source_data_file_list(self, plugin_name=None) -> list[ResourceInfo]:
         """
         :param plugin_name: If provided, only file names provided by the plugin in
                             the distribution will be returned, or an empty list if
@@ -255,7 +257,7 @@ class DistributionPluginDefinition(dict):
 
         return file_info
 
-    def get_configuration_file_list(self, plugin_name=None) -> List[ResourceInfo]:
+    def get_configuration_file_list(self, plugin_name=None) -> list[ResourceInfo]:
         """
         :param plugin_name: If provided, only file names provided by the plugin in
                             the distribution will be returned, or an empty list if
@@ -303,7 +305,7 @@ class DistributionPluginDefinition(dict):
 
         return file_info
 
-    def get_notebook_folder_list(self, plugin_name=None) -> List[ResourceInfo]:
+    def get_notebook_folder_list(self, plugin_name=None) -> list[ResourceInfo]:
         """
         :param plugin_name: If provided, only notebook folder provided by the plugin (if any)
                             will be returned, or an empty list if the plugin is not in the
@@ -329,7 +331,7 @@ class DistributionPluginDefinition(dict):
                 )
         return info
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """
         :return: a dict that contains plugin information
         """
@@ -374,12 +376,12 @@ class FastoadLoader(BundleLoader):
             self.load()
 
     @property
-    def distribution_plugin_definitions(self) -> Dict[str, DistributionPluginDefinition]:
+    def distribution_plugin_definitions(self) -> dict[str, DistributionPluginDefinition]:
         """Stores plugin definitions with distribution names as dict keys."""
         return self._dist_plugin_definitions.copy()
 
     def get_distribution_plugin_definition(
-        self, dist_name: str = None
+        self, dist_name: str | None = None
     ) -> DistributionPluginDefinition:
         """
         :param dist_name: needed if more than one distribution with FAST-OAD plugin is installed.
@@ -403,7 +405,7 @@ class FastoadLoader(BundleLoader):
 
         return self._dist_plugin_definitions[dist_name]
 
-    def get_configuration_file_list(self, dist_name: str) -> List[ResourceInfo]:
+    def get_configuration_file_list(self, dist_name: str) -> list[ResourceInfo]:
         """
         :param dist_name: the distribution to inspect
         :return: list of configuration files available for named distribution,
@@ -414,7 +416,7 @@ class FastoadLoader(BundleLoader):
             dist_name,
         )
 
-    def get_source_data_file_list(self, dist_name: str) -> List[ResourceInfo]:
+    def get_source_data_file_list(self, dist_name: str) -> list[ResourceInfo]:
         """
         :param dist_name: the distribution to inspect
         :return: list of source data files available for named distribution, or an empty list if the
@@ -425,7 +427,7 @@ class FastoadLoader(BundleLoader):
             dist_name,
         )
 
-    def get_notebook_folder_list(self, dist_name: str = None) -> List[ResourceInfo]:
+    def get_notebook_folder_list(self, dist_name: str | None = None) -> list[ResourceInfo]:
         """
         Returns the list of notebook folders available for named distribution
         and optionally the named plugin of this distribution.
@@ -439,7 +441,9 @@ class FastoadLoader(BundleLoader):
             dist_name,
         )
 
-    def _get_resource_list(self, method: Callable, dist_name: str = None) -> List[ResourceInfo]:
+    def _get_resource_list(
+        self, method: Callable, dist_name: str | None = None
+    ) -> list[ResourceInfo]:
         infos = []
         if dist_name:
             if dist_name not in self._dist_plugin_definitions:

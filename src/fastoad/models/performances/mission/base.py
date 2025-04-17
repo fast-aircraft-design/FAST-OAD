@@ -12,10 +12,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+from typing import ClassVar
 
 import pandas as pd
 
@@ -58,11 +60,11 @@ class FlightSequence(IFlightPart):
     #: Consumed mass between sequence start and target mass, if any defined
     consumed_mass_before_input_weight: float = field(default=0.0, init=False)
 
-    #: List of flight points for each part of the sequence, obtained after
+    #: list of flight points for each part of the sequence, obtained after
     #  running :meth:`compute_from`
-    part_flight_points: List[pd.DataFrame] = field(default_factory=list, init=False)
+    part_flight_points: list[pd.DataFrame] = field(default_factory=list, init=False)
 
-    _sequence: List[IFlightPart] = field(default_factory=list, init=False)
+    _sequence: list[IFlightPart] = field(default_factory=list, init=False)
 
     _target: FlightPoint = None
 
@@ -118,9 +120,10 @@ class FlightSequence(IFlightPart):
 
         if self.part_flight_points:
             return pd.concat(self.part_flight_points).reset_index(drop=True)
+        return None
 
     @property
-    def target(self) -> Optional[FlightPoint]:
+    def target(self) -> FlightPoint | None:
         """Target of the last element of current sequence."""
         if hasattr(self, "_sequence") and len(self._sequence) > 0:
             return self._sequence[-1].target
@@ -189,7 +192,7 @@ class RegisterElement:
     """
 
     _base_class = object
-    _keyword_vs_implementation: Dict[str, type] = {}
+    _keyword_vs_implementation: ClassVar[dict[str, type]] = {}
 
     @classmethod
     def __init_subclass__(cls, *, base_class=object):
@@ -220,7 +223,7 @@ class RegisterElement:
             )
 
     @classmethod
-    def get_class(cls, keyword: str) -> Optional[type]:
+    def get_class(cls, keyword: str) -> type | None:
         """
         Provides the element implementation for provided name.
 
@@ -236,7 +239,7 @@ class RegisterElement:
         return element_class
 
     @classmethod
-    def get_classes(cls) -> Dict[str, type]:
+    def get_classes(cls) -> dict[str, type]:
         """
 
         :return: dict that associates keywords to their registered class.

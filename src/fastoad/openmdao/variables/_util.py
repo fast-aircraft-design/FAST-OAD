@@ -13,7 +13,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import itertools
-from typing import Tuple
 
 import numpy as np
 from openmdao.core.constants import _SetupStatus
@@ -23,9 +22,10 @@ from fastoad.openmdao._utils import get_mpi_safe_problem_copy
 
 def get_problem_variables(
     problem,
+    *,
     get_promoted_names: bool = True,
     promoted_only: bool = True,
-) -> Tuple[dict, dict]:
+) -> tuple[dict, dict]:
     """
     Creates dict instances (var_name vs metadata) containing inputs and outputs of an OpenMDAO
     Problem.

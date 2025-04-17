@@ -54,11 +54,11 @@ class FASTConfigurationBaseKeyBuildingError(FastError):
         """ the original error, when eval failed """
 
         if hasattr(original_exception, "key"):
-            self.key = "%s.%s" % (key, original_exception.key)
+            self.key = f"{key}.{original_exception.key}"
         else:
             self.key = key
         if hasattr(original_exception, "value"):
-            self.value = "%s.%s" % (value, original_exception.value)
+            self.value = f"{value}.{original_exception.value}"
         else:
             self.value = value
         if hasattr(original_exception, "original_exception"):
@@ -67,8 +67,8 @@ class FASTConfigurationBaseKeyBuildingError(FastError):
             self.original_exception = original_exception
         super().__init__(
             self,
-            'Attribute or value not recognized : %s = "%s"\nOriginal error: %s'
-            % (self.key, self.value, self.original_exception),
+            f'Attribute or value not recognized : {self.key} = "{self.value}"\n'
+            "Original error: {self.original_exception}",
         )
 
 

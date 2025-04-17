@@ -15,7 +15,8 @@ Module for dict-related operations
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, TypeVar
+from collections.abc import Iterable, Mapping
+from typing import Any, TypeVar
 
 _KT = TypeVar("_KT", bound=Any)
 _VT = TypeVar("_VT", bound=Any)

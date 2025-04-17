@@ -12,7 +12,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import List, Sequence
+from collections.abc import Sequence
 
 from fastoad.exceptions import FastError
 
@@ -26,7 +26,7 @@ class FastBundleLoaderDuplicateFactoryError(FastError):
         """
         :param factory_name:
         """
-        super().__init__('Name "%s" is already used.' % factory_name)
+        super().__init__(f'Name "{factory_name}" is already used.')
         self.factory_name = factory_name
 
 
@@ -39,7 +39,7 @@ class FastBundleLoaderUnknownFactoryNameError(FastError):
         """
         :param factory_name:
         """
-        super().__init__('"%s" is not registered.' % factory_name)
+        super().__init__(f'"{factory_name}" is not registered.')
         self.factory_name = factory_name
 
 
@@ -54,8 +54,7 @@ class FastBadSystemOptionError(FastError):
         :param option_names: incorrect option names
         """
         super().__init__(
-            "OpenMDAO system %s does not accept following option(s): %s"
-            % (identifier, option_names)
+            f"OpenMDAO system {identifier} does not accept following option(s): {option_names}"
         )
         self.identifier = identifier
         self.option_names = option_names
@@ -74,8 +73,7 @@ class FastIncompatibleServiceClassError(FastError):
         :param base_class: the unmatched interface
         """
         super().__init__(
-            'Trying to register %s as service "%s" but it does not inherit from %s'
-            % (str(registered_class), service_id, str(base_class))
+            f'Trying to register {registered_class!s} as service "{service_id}" but it does not inherit from {base_class!s}'
         )
         self.registered_class = registered_class
         self.service_id = service_id
@@ -91,7 +89,7 @@ class FastNoSubmodelFoundError(FastError):
         """
         :param service_id:
         """
-        super().__init__('No submodel found for requirement "%s"' % service_id)
+        super().__init__(f'No submodel found for requirement "{service_id}"')
         self.service_id = service_id
 
 
@@ -107,8 +105,7 @@ class FastTooManySubmodelsError(FastError):
         :param candidates:
         """
         super().__init__(
-            'Submodel requirement "%s" needs a choice among following candidates: %s'
-            % (service_id, candidates)
+            f'Submodel requirement "{service_id}" needs a choice among following candidates: {candidates}'
         )
         self.service_id = service_id
         self.candidates = candidates
@@ -119,15 +116,15 @@ class FastUnknownSubmodelError(FastError):
     Raised when a submodel identifier is unknown for given required service.
     """
 
-    def __init__(self, service_id: str, submodel_id: str, submodel_ids: List[str]):
+    def __init__(self, service_id: str, submodel_id: str, submodel_ids: list[str]):
         """
         :param service_id:
         :param submodel_id:
         :param submodel_ids:
         """
 
-        msg = '"%s" is not a submodel identifier for requirement "%s"' % (submodel_id, service_id)
-        msg += "\nValid identifiers are %s" % submodel_ids
+        msg = f'"{submodel_id}" is not a submodel identifier for requirement "{service_id}"'
+        msg += f"\nValid identifiers are {submodel_ids}"
         super().__init__(msg)
         self.service_id = service_id
         self.submodel_id = submodel_id

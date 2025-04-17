@@ -13,7 +13,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass
-from typing import List
 
 from fastoad.model_base import FlightPoint
 from fastoad.models.performances.mission.exceptions import FastFlightSegmentIncompleteFlightPoint
@@ -41,7 +40,7 @@ class EndOfTakeoffSegment(AbstractTakeOffSegment):
     """
 
     def compute_next_flight_point(
-        self, flight_points: List[FlightPoint], time_step: float
+        self, flight_points: list[FlightPoint], time_step: float
     ) -> FlightPoint:
         """
         Computes time, altitude, speed, mass and ground distance of next flight point.
@@ -57,7 +56,7 @@ class EndOfTakeoffSegment(AbstractTakeOffSegment):
         return next_point
 
     def get_distance_to_target(
-        self, flight_points: List[FlightPoint], target: FlightPoint
+        self, flight_points: list[FlightPoint], target: FlightPoint
     ) -> float:
         current = flight_points[-1]
 

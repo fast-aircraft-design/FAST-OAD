@@ -14,7 +14,7 @@ Enables to remove duplicate variables from text file
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from os import remove
+from pathlib import Path
 
 
 def remove_duplicate(input_file_name: str):
@@ -22,7 +22,7 @@ def remove_duplicate(input_file_name: str):
     Removes duplicate lines in a text file
 
     """
-    input_file = open(input_file_name, "r")
+    input_file = Path.open(input_file_name, "r")
 
     # Store all the variables
     stored_lines = []
@@ -31,10 +31,10 @@ def remove_duplicate(input_file_name: str):
             stored_lines.append(line)
     # Delete the file
     input_file.close()
-    remove(input_file_name)
+    Path.unlink(input_file_name)
 
     # Create new file
-    input_file = open(input_file_name, "w")
+    input_file = Path.open(input_file_name, "w")
 
     # Write non duplicate lines
     for line in stored_lines:

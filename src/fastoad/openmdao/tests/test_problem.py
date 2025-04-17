@@ -140,10 +140,10 @@ def test_problem_read_inputs_before_setup(cleanup):
     assert_allclose(problem["f"], 21.7572, atol=1.0e-4)
 
     # We start from solution, so we should converge with only 2 iterations.
-    iter_count = [
+    iter_count = next(
         iter_desc[2]
         for iter_desc in problem.iter_count_iter(include_driver=False, include_solvers=True)
-    ][0]
+    )
     assert iter_count == 2
 
 
