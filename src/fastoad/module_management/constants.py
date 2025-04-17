@@ -36,5 +36,6 @@ class ModelDomain(Enum):
     WEIGHT = "Weight"
     PERFORMANCE = "Performance"
     PROPULSION = "Propulsion"
+    LOADS = "Loads"
     OTHER = "Other"
     UNSPECIFIED = "Unspecified"
