@@ -61,14 +61,14 @@ jobs:
       
       ## Tests with MPI
       - name: MPI unit tests
-        run: poetry run mpiexec -n 1 pytest src -m mpi
+        run: poetry run mpiexec -n 1 pytest src -m mpi -n 0
         shell: bash
 
       - name: Unit tests with coverage
         # Only for runner that will send coverage reports (see below)
         if: ${{ runner.os == 'Linux' && matrix.python-version == '3.10' }}
         run: |
-          poetry run mpiexec -n 1 pytest src --cov
+          poetry run mpiexec -n 1 pytest src -n 0 --cov 
           poetry run coverage xml  # for sending coverage report
         shell: bash
 
@@ -91,11 +91,11 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV }} # do not use the secret directly in run command, it would write it plainly in the log
 
       - name: Integration tests
-        run: poetry run pytest --no-cov tests/integration_tests
+        run: poetry run pytest --dist worksteal --no-cov tests/integration_tests # We run all the tests on different process
         shell: bash
 
       - name: Memory tests
-        run: poetry run pytest --no-cov tests/memory_tests
+        run: poetry run pytest -n 0 --no-cov tests/memory_tests # No parallelisation for memory test
         shell: bash
 
       # There is a problem with notebook tests in MPI environment

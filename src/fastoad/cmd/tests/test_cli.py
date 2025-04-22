@@ -451,15 +451,15 @@ def test_eval(cleanup):
             fast_oad,
             [
                 "gen_inputs",
-                (DATA_FOLDER_PATH / "sellar.yml").as_posix(),
-                (DATA_FOLDER_PATH / "inputs.xml").as_posix(),
+                (DATA_FOLDER_PATH / "sellar_cli.yml").as_posix(),
+                (DATA_FOLDER_PATH / "inputs_cli.xml").as_posix(),
             ],
         )
         assert not result_1.exception
 
         result_2 = runner.invoke(
             fast_oad,
-            ["eval", (DATA_FOLDER_PATH / "sellar.yml").as_posix(), "-f"],
+            ["eval", (DATA_FOLDER_PATH / "sellar_cli.yml").as_posix(), "-f"],
         )
         assert not result_2.exception
 
@@ -471,15 +471,15 @@ def test_optim(cleanup):
             fast_oad,
             [
                 "gen_inputs",
-                (DATA_FOLDER_PATH / "sellar.yml").as_posix(),
-                (DATA_FOLDER_PATH / "inputs.xml").as_posix(),
+                (DATA_FOLDER_PATH / "sellar_cli.yml").as_posix(),
+                (DATA_FOLDER_PATH / "inputs_cli.xml").as_posix(),
             ],
         )
         assert not result_1.exception
 
         result_2 = runner.invoke(
             fast_oad,
-            ["optim", (DATA_FOLDER_PATH / "sellar.yml").as_posix(), "-f"],
+            ["optim", (DATA_FOLDER_PATH / "sellar_cli.yml").as_posix(), "-f"],
         )
         assert not result_2.exception
 
