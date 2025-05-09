@@ -141,8 +141,8 @@ class VariableList(list):
                 # list without descriptions (issue # 319)
                 if var.name in self.names() and self[var.name].description and not var.description:
                     var.description = self[var.name].description
-                if merge_metadata:
-                    var.update_missing_metadata(self[var.name])
+                    if merge_metadata:
+                        var.update_missing_metadata(self[var.name])
                 self.append(deepcopy(var))
 
     def to_ivc(self) -> om.IndepVarComp:
