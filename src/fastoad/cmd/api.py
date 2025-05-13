@@ -368,6 +368,7 @@ def list_variables(
     conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
     problem = conf.get_problem()
     problem.setup()
+    problem.final_setup()
 
     # Extracting inputs and outputs
     variables = VariableList.from_problem(problem)
@@ -390,8 +391,7 @@ def list_variables(
         out = as_path(out).absolute()
         if not overwrite and out.exists():
             raise FastPathExistsError(
-                f"File {out} not written because it already exists. "
-                "Use overwrite=True to bypass.",
+                f"File {out} not written because it already exists. Use overwrite=True to bypass.",
                 out,
             )
         make_parent_dir(out)
@@ -498,8 +498,7 @@ def list_modules(
         out = as_path(out).absolute()
         if not overwrite and out.exists():
             raise FastPathExistsError(
-                f"File {out} not written because it already exists. "
-                "Use overwrite=True to bypass.",
+                f"File {out} not written because it already exists. Use overwrite=True to bypass.",
                 out,
             )
 

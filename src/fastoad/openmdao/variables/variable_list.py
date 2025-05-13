@@ -220,7 +220,7 @@ class VariableList(list):
 
         # Need setup on ivc to have get_io_metadata() working
         ivc = deepcopy(ivc)
-        problem = om.Problem()
+        problem = om.Problem(reports=False)
         problem.model.add_subsystem("ivc", ivc)
         problem.setup()
 

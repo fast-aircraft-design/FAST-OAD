@@ -35,8 +35,8 @@ jobs:
         # Development version of OpenMDAO is installed to ensure preview of any problem.
         # Installing pytest-cov is needed because of pytest.ini
         run: |
-          pip install git+https://github.com/OpenMDAO/OpenMDAO.git
           pip install .
+          pip install git+https://github.com/OpenMDAO/OpenMDAO.git
           pip install pytest pytest-cov nbval
         shell: bash
 
