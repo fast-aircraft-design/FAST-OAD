@@ -11,6 +11,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import multiprocessing.pool
+
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
@@ -112,9 +114,22 @@ def test_rotation(polar, polar_modifier):
         engine_setting=EngineSetting.CLIMB,
     )
     segment.thrust_rate = 1.0
-    flight_points = segment.compute_from(
-        FlightPoint(time=30.0, altitude=0.0, mass=70000.0, true_airspeed=75.0, alpha=0.0)
-    )  # Test with dict
+    segment.time_step = 5e-2
+
+    initial_flight_point = FlightPoint(
+        time=30.0, altitude=0.0, mass=70000.0, true_airspeed=75.0, alpha=0.0
+    )
+    try:
+        with multiprocessing.pool.ThreadPool() as pool:
+            flight_points = pool.apply_async(segment.compute_from, (initial_flight_point,)).get(
+                timeout=1
+            )
+    except multiprocessing.TimeoutError:
+        # do something if timeout
+        assert False, (
+            "The segment has timed out, it cannot find the time at which target is reached with"
+            "sufficient accuracy."
+        )
 
     last_point = flight_points.iloc[-1]
     assert_allclose(last_point.altitude, 0.0)
