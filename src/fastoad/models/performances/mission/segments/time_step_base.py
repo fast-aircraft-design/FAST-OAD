@@ -197,14 +197,25 @@ class AbstractTimeStepFlightSegment(
                         last_point_to_target
                     )
 
-                root_scalar(
+                root_results = root_scalar(
                     replace_last_point,
                     args=(last_point_to_target,),
                     x0=self.time_step,
                     x1=self.time_step / 2.0,
                     xtol=tol / 10,
                 )
+
+                if not root_results.converged:
+                    # We are having problem determining the time at which target is reached.
+                    # Let's issue a warning but continue the segment computation.
+                    _LOGGER.warning(
+                        'Target time step cannot be determined in "%s".'
+                        "Please review the segment settings.",
+                        self.name,
+                    )
+
                 last_point_to_target = self.get_distance_to_target(flight_points, target)
+
             elif (
                 np.abs(last_point_to_target) > np.abs(previous_point_to_target)
                 # If self.target.CL is defined, it means that we look for an optimal altitude and
