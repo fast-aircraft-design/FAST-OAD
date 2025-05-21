@@ -137,12 +137,13 @@ class VariableList(list):
 
         for var in other_var_list:
             if add_variables or var.name in self.names():
-                # To avoid to lose variables description when the variable list is updated with a
-                # list without descriptions (issue # 319)
-                if var.name in self.names() and self[var.name].description and not var.description:
-                    var.description = self[var.name].description
+                if var.name in self.names():
+                    existing_var = self[var.name]
+                    if existing_var.description and not var.description:
+                        # Preserve existing description if the new one is missing (issue #319)
+                        var.description = existing_var.description
                     if merge_metadata:
-                        var.update_missing_metadata(self[var.name])
+                        var.update_missing_metadata(existing_var)
                 self.append(deepcopy(var))
 
     def to_ivc(self) -> om.IndepVarComp:
