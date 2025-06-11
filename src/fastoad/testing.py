@@ -39,14 +39,18 @@ def run_system(
     :return: a FASTOADProblem instance
     """
 
-    if isinstance(component, om.ImplicitComponent) and "nonlinear_solver" not in kwargs:
-        kwargs["nonlinear_solver"] = "om.NewtonSolver"
-        kwargs["linear_solver"] = "om.DirectSolver"
+    if "nonlinear_solver" not in kwargs:
+        if isinstance(component, om.ImplicitComponent):
+            kwargs["nonlinear_solver"] = "om.NewtonSolver"
+            kwargs["linear_solver"] = "om.DirectSolver"
 
-        if kwargs.get("nonlinear_solver_options", {}).get("solve_subsystems") is None:
-            kwargs["nonlinear_solver_options"]["solve_subsystems"] = False
+            if kwargs.get("nonlinear_solver_options", {}).get("solve_subsystems") is None:
+                kwargs["nonlinear_solver_options"]["solve_subsystems"] = False
 
-    problem = om.Problem()
+        else:
+            kwargs["nonlinear_solver"] = "om.NonlinearRunOnce"
+
+    problem = FASTOADProblem()
     model = problem.model = BaseCycleGroup(**kwargs)
 
     if isinstance(input_vars, VariableList):
@@ -56,6 +60,7 @@ def run_system(
     model.add_subsystem("component", component, promotes=["*"])
 
     problem.setup()
+    problem.final_setup()
     variable_names = [
         var.name
         for var in VariableList.from_problem(problem, io_status="inputs")

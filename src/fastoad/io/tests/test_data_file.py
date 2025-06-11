@@ -105,7 +105,7 @@ def test_datafile_from_dataframe(variables_ref):
 
 
 def test_datafile_from_problem(variables_ref):
-    pb = om.Problem()
+    pb = om.Problem(reports=False)
     pb.model.add_subsystem("inputs", om.IndepVarComp("data:foo", val=5.0), promotes=["*"])
     pb.model.add_subsystem(
         "comp", om.ExecComp("b=2*a"), promotes=[("a", "data:foo"), ("b", "data:bar")]

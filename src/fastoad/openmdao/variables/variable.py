@@ -142,10 +142,21 @@ class Variable(Hashable):
             self.description = self._variable_descriptions[self.name]
 
     def get_val(self, new_units: str | None = None) -> float | np.ndarray:
-        """Returns the variable value converted in the `new_units`"""
+        """
+        Returns the variable value converted in the `new_units`. One dimensional lists and np.array
+        are scalarized.
+
+        Note that this method should not be confused with OpenMDAO's `problem.get_val()`.
+        While they have similar behavior, this method applies to a Variable instance rather
+        than to a Problem instance.
+
+        :param new_units: units to convert the value to. If None, the value will be returned with
+                          its original units.
+        :return: the variable value, converted to new_units if specified.
+        """
         if new_units:
             return scalarize(convert_units(np.asarray(self.value), self.units, new_units))
-        return self.value
+        return scalarize(self.value)
 
     @classmethod
     def read_variable_descriptions(

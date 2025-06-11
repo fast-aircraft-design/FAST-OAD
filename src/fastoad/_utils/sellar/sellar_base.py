@@ -149,6 +149,7 @@ class BasicSellarProblem(om.Problem):
     """
 
     def __init__(self, *args, **kwargs):
+        kwargs["reports"] = False
         super().__init__(*args, **kwargs)
 
         self.driver = om.ScipyOptimizeDriver()

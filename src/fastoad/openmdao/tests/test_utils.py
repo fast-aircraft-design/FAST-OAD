@@ -36,13 +36,13 @@ def test_get_unconnected_input_names_single_component_group():
     expected_mandatory_variables = {"disc1.x"}
     expected_optional_variables = {"disc1.y2", "disc1.z"}
     _test_problem(
-        om.Problem(group),
+        om.Problem(group, reports=False),
         expected_mandatory_variables,
         expected_optional_variables,
         get_promoted_names=False,
     )
     _test_problem(
-        om.Problem(group),
+        om.Problem(group, reports=False),
         expected_mandatory_variables,
         expected_optional_variables,
         get_promoted_names=True,
@@ -60,13 +60,13 @@ def test_get_unconnected_input_names_one_component_and_ivc():
     expected_mandatory_variables = {"disc1.x"}
     expected_optional_variables = {"disc1.z"}
     _test_problem(
-        om.Problem(group),
+        om.Problem(group, reports=False),
         expected_mandatory_variables,
         expected_optional_variables,
         get_promoted_names=False,
     )
     _test_problem(
-        om.Problem(group),
+        om.Problem(group, reports=False),
         expected_mandatory_variables,
         expected_optional_variables,
         get_promoted_names=True,
@@ -84,7 +84,7 @@ def test_get_unconnected_input_names_sellar_components():
     expected_mandatory_variables = {"disc1.x", "functions.z"}
     expected_optional_variables = {"disc1.z", "disc2.z", "functions.x"}
     _test_problem(
-        om.Problem(group),
+        om.Problem(group, reports=False),
         expected_mandatory_variables,
         expected_optional_variables,
         get_promoted_names=False,
@@ -93,7 +93,7 @@ def test_get_unconnected_input_names_sellar_components():
     expected_mandatory_variables = {"z", "x"}
     expected_optional_variables = set()
     _test_problem(
-        om.Problem(group),
+        om.Problem(group, reports=False),
         expected_mandatory_variables,
         expected_optional_variables,
         get_promoted_names=True,
@@ -104,7 +104,7 @@ def test_get_unconnected_input_names_full_sellar():
     expected_mandatory_variables = {"objective.z"}
     expected_optional_variables = {"disc1.z", "disc2.z"}
     _test_problem(
-        om.Problem(SellarModel()),
+        om.Problem(SellarModel(), reports=False),
         expected_mandatory_variables,
         expected_optional_variables,
         get_promoted_names=False,
@@ -112,7 +112,7 @@ def test_get_unconnected_input_names_full_sellar():
     expected_mandatory_variables = {"z"}
     expected_optional_variables = set()
     _test_problem(
-        om.Problem(SellarModel()),
+        om.Problem(SellarModel(), reports=False),
         expected_mandatory_variables,
         expected_optional_variables,
         get_promoted_names=True,
@@ -129,6 +129,7 @@ def _test_problem(
     """Tests get_unconnected_inputs for provided problem"""
 
     problem.setup()
+    problem.final_setup()
 
     mandatory, optional = get_unconnected_input_names(problem, promoted_names=get_promoted_names)
     assert set(mandatory) == expected_missing_mandatory_variables

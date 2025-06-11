@@ -370,6 +370,7 @@ def list_variables(
     conf._set_configuration_modifier(_PROBLEM_CONFIGURATOR)
     problem = conf.get_problem()
     problem.setup()
+    problem.final_setup()
 
     # Extracting inputs and outputs
     variables = VariableList.from_problem(problem)
