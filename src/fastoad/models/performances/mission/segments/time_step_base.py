@@ -178,7 +178,7 @@ class AbstractTimeStepFlightSegment(
                 and last_point_to_target * previous_point_to_target < 0.0
             ):
                 # Target has been exceeded. Let's look for the exact time step using root_scalar.
-                def replace_last_point(time_step):
+                def replace_last_point(time_step, last_point_to_target):
                     """
                     Replaces last point of flight_points.
 
@@ -193,18 +193,29 @@ class AbstractTimeStepFlightSegment(
                         time_step = time_step.item()
                     del flight_points[-1]
                     self._add_new_flight_point(flight_points, time_step)
-                    return self.get_distance_to_target(flight_points, target)
-
-                rtol = tol
-                while np.abs(last_point_to_target) > tol:
-                    rtol *= 0.1
-                    root_scalar(
-                        replace_last_point,
-                        x0=self.time_step,
-                        x1=self.time_step / 2.0,
-                        rtol=rtol,
+                    return self.get_distance_to_target(flight_points, target) / abs(
+                        last_point_to_target
                     )
-                    last_point_to_target = self.get_distance_to_target(flight_points, target)
+
+                root_results = root_scalar(
+                    replace_last_point,
+                    args=(last_point_to_target,),
+                    x0=self.time_step,
+                    x1=self.time_step / 2.0,
+                    xtol=tol / 10,
+                )
+
+                if not root_results.converged:
+                    # We are having problem determining the time at which target is reached.
+                    # Let's issue a warning but continue the segment computation.
+                    _LOGGER.warning(
+                        'Target time step cannot be determined in "%s".'
+                        "Please review the segment settings.",
+                        self.name,
+                    )
+
+                last_point_to_target = self.get_distance_to_target(flight_points, target)
+
             elif (
                 np.abs(last_point_to_target) > np.abs(previous_point_to_target)
                 # If self.target.CL is defined, it means that we look for an optimal altitude and
