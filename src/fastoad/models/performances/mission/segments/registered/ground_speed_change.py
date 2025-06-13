@@ -37,6 +37,8 @@ class GroundSpeedChangeSegment(AbstractGroundSegment):
             return target.true_airspeed - flight_points[-1].true_airspeed
         if target.equivalent_airspeed is not None:
             return target.equivalent_airspeed - flight_points[-1].equivalent_airspeed
+        if target.calibrated_airspeed is not None:
+            return target.calibrated_airspeed - flight_points[-1].calibrated_airspeed
         if target.mach is not None:
             return target.mach - flight_points[-1].mach
 
