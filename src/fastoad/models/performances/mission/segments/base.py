@@ -302,6 +302,10 @@ class AbstractFlightSegment(IFlightPart, ABC):
         """
         Computes consistent values between TAS, EAS and Mach, assuming one of them is defined.
         """
+
+        # make sure flight_point is scalarized before completing speeds
+        flight_point.scalarize()
+
         atm = self._get_atmosphere_point(flight_point.altitude)
 
         if flight_point.true_airspeed is None:
