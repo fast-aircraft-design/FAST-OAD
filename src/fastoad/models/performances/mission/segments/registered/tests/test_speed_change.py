@@ -88,6 +88,37 @@ def test_acceleration_to_EAS(polar):
     run()
 
 
+def test_acceleration_to_CAS(polar):
+    propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
+
+    segment = SpeedChangeSegment(
+        target=FlightPoint(calibrated_airspeed=250.0),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        thrust_rate=1.0,
+        time_step=0.2,
+    )
+
+    def run():
+        flight_points = segment.compute_from(
+            FlightPoint(altitude=1000.0, true_airspeed=150.0, mass=70000.0)
+        )
+
+        last_point = flight_points.iloc[-1]
+        # Note: reference values are obtained by running the process with 0.01s as time step
+        assert_allclose(last_point.time, 125.51, rtol=1e-2)
+        assert_allclose(last_point.altitude, 1000.0)
+        assert_allclose(last_point.mach, 0.7744, atol=1e-5)
+        assert_allclose(last_point.mass, 69874.4901, rtol=1e-4)
+        assert_allclose(last_point.ground_distance, 26144.5799, rtol=1e-3)
+
+    run()
+
+    # A second call is done to ensure first run did not modify anything (like target definition)
+    run()
+
+
 def test_acceleration_to_mach(polar):
     propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
