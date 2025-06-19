@@ -92,7 +92,14 @@ def test_variables(with_dummy_plugin_2):
     variables["a"] = {"value": 42.0}
     assert variables["a"].value == 42.0
 
-    # .update()
+
+def test_variable_list_update():
+    a_var = Variable("a", val=42.0)
+    b_var = Variable("b", val=1.0)
+    n_var = Variable("n", val=np.array(np.nan))
+
+    variables = VariableList([a_var, b_var])
+
     assert len(variables) == 2
     assert list(variables.names()) == ["a", "b"]
     variables.update([n_var], add_variables=False)  # does nothing
@@ -125,6 +132,27 @@ def test_variables(with_dummy_plugin_2):
     assert len(variables) == 3
     assert list(variables.names()) == ["a", "b", "n"]
     assert variables["n"].description == "new description"
+
+    # We test the update of I/O status
+    for var in variables:
+        var.is_input = True
+    variables.update(
+        [Variable("n", is_input=False, desc="unused description")],
+        update_only_value_and_units=True,
+    )
+    assert len(variables) == 3
+    assert list(variables.names()) == ["a", "b", "n"]
+    assert variables["n"].is_input is True
+    assert variables["n"].description == "new description"
+
+    variables.update(
+        [Variable("n", is_input=False, desc="used description")],
+        update_only_value_and_units=False,
+    )
+    assert len(variables) == 3
+    assert list(variables.names()) == ["a", "b", "n"]
+    assert variables["n"].is_input is False
+    assert variables["n"].description == "used description"
 
 
 def test_ivc_from_to_variables():

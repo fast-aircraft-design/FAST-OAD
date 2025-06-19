@@ -140,9 +140,12 @@ def gen_source_data_file(source_data_file, from_package, source, force):
 @click.argument("source_data_file", nargs=1, required=False)
 @overwrite_option
 @click.option(
+    "--include_outputs", is_flag=True, help="To be used to have output variables in generated file."
+)
+@click.option(
     "--legacy", is_flag=True, help="To be used if the source data XML file is in legacy format."
 )
-def gen_inputs(conf_file, source_data_file, force, legacy):
+def gen_inputs(conf_file, source_data_file, force, include_outputs, legacy):
     """
     Generate the input file (specified in the configuration file) with needed variables.
 
@@ -168,6 +171,7 @@ def gen_inputs(conf_file, source_data_file, force, legacy):
         source_data_path=source_data_file,
         source_data_path_schema=schema,
         overwrite=force,
+        write_output_variables=include_outputs,
     )
 
 
