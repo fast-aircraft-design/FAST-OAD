@@ -32,7 +32,7 @@ from ..exceptions import (
 )
 
 DATA_FOLDER_PATH = Path(__file__).parent / "data"
-RESULTS_FOLDER_PATH = Path(__file__).parent / "results"
+RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
 CONFIGURATION_FILE_PATH = DATA_FOLDER_PATH / "sellar.yml"
 
 
