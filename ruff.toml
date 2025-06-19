@@ -14,18 +14,43 @@ select = [
     "FA",  # Check if a type is used in the module that can be rewritten using PEP 563.
     "PTH", # A plugin for flake8 finding use of functions that can be replaced by pathlib module.
     "RUF", # Ruff-specific rules.
+    "C4",  # Catch incorrect use of comprehensions, dict, list, etc.
+    "A",   # Detect shadowed builtins.
+    "COM", # Detect missing trailing comma (usually is implemented in the ruff formatter).
+    "ISC", # Good use of string concatenation.
+    "ERA", # Find large commented-out code.
+    "PD",  # Provides opinionated linting for pandas code.
+    "SIM", # flake8-simplify.
+    "ICN", # Use common import conventions eg. no import numpy as nump.
+    "NPY", # Some numpy-specific things.
+    "PL",  # Pylint checks for errors, enforces a coding standard, looks for code smells, and can make suggestions about how the code could be refactored
+    "S",   # Bandit: automated security testing built right into your workflow.
+    "N",   # Enforce PEP8 naming convention.
+    "E",   # pycodestyle is a tool to check your Python code against some of the style conventions in PEP 8.
+    # "ANN", # Enforce function annotations.
+    # "D",   # Pydocstyle is a static analysis tool for checking compliance with Python docstring conventions.
+    # "DOC", # Pydoclint (still in preview so not yet active).
     "E4",
     "E7",
     "E9",
 ]
 
 # No rules are ignored by default. Specify rule codes here to suppress them.
-ignore = []
+ignore = [
+    "ANN002", # No type annotation for *args 
+    "ANN003", # No type annotation for *kwargs 
+    "ANN204", # No type annotation on "special" methods, like __init__ 
+    "N806",   # Checks for the use of non-lowercase variable names in functions.
+    "D105",   # Missing docstring in magic method
+    "D212",   #Multi-line docstring summary should start at the first line
+]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.
 fixable = ["ALL"]
 
-unfixable = []
+unfixable = [
+    "D", # Dont fix docstyle
+]
 
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
@@ -34,7 +59,46 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 # We prefer clarity over efficency in notebook examples
 "*.ipynb" = ["RET504"]
 "*/fastoad/notebooks/*" = ["RET504"]
+# Tests
+"tests/*" = [
+    "PLR0913", # Too many arguments in function definition
+    "PLR0915", # Too many statements
+    "PLR2004", # Enabling magic value to be used in test comparison
+    "S101",    # Enable assert in tests
+    "ANN",     # No annotation on tests
+    "D",       # No doc in tests
+]
+"*/test*.py" = [
+    "PLR0913", # Too many arguments in function definition
+    "PLR0915", # Too many statements
+    "PLR2004", # Enabling magic value to be used in test comparison
+    "S101",    # Enable assert in tests
+    "ANN",     # No annotation on tests
+    "D",       # No doc in tests
+]
 
 [lint.isort] # Add optional configurations for import organization
 case-sensitive = true
 relative-imports-order = "closest-to-furthest"
+
+[lint.pylint] # Add optional configurations for pylint
+max-args = 8
+
+[lint.pep8-naming] # A list of names (or patterns) to ignore when considering pep8-naming violations. Supports glob patterns.
+ignore-names = [
+    "*MTOW*",
+    "*TOW*",
+    "*OWE*",
+    "*2D*",
+    "*3D*",
+    "*AR*",
+    "*CL*",
+    "*CD*",
+    "*TAS*",
+    "*EAS*",
+    "*IAS*",
+    "*CAS*",
+    "*Mach*",
+    "*MPI*",
+    "I_*",
+]
