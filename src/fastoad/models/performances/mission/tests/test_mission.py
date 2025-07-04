@@ -27,7 +27,7 @@ def test_mission(low_speed_polar, high_speed_polar, propulsion):
     first_route_distance = 2.0e6
     second_route_distance = 5.0e5
 
-    kwargs = dict(propulsion=propulsion, reference_area=120.0)
+    kwargs = {"propulsion": propulsion, "reference_area": 120.0}
 
     taxi_out = TaxiPhase(  # This phase is here to test when mission do not start with route
         time=300.0,
@@ -120,7 +120,8 @@ def test_mission(low_speed_polar, high_speed_polar, propulsion):
 
     flight_points = mission_1.compute_from(start)
 
-    # plot_flight(flight_points, "test_ranged_flight.png")
+    # Useful for debugging
+    # plot_flight(flight_points, "test_ranged_flight.png")  # noqa: ERA001
 
     assert_allclose(
         flight_points.iloc[-1].ground_distance,
@@ -145,7 +146,8 @@ def test_mission(low_speed_polar, high_speed_polar, propulsion):
 
     flight_points = mission_2.compute_from(start)
 
-    # plot_flight(flight_points, "test_ranged_flight.png")
+    # Useful for debugging
+    # plot_flight(flight_points, "test_ranged_flight.png")  # noqa: ERA001
 
     assert_allclose(
         flight_points.iloc[-1].ground_distance,

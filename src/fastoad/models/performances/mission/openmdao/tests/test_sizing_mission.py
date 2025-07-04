@@ -24,6 +24,8 @@ from ..mission import OMMission
 
 RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
 
+# ruff:noqa ERA001
+
 
 @pytest.fixture(scope="module")
 def cleanup():
@@ -71,6 +73,7 @@ def test_sizing_mission(cleanup, with_dummy_plugin_2):
         ),
         ivc,
     )
+    # Useful for debugging
     # import pandas as pd
     #
     # plot_flight(

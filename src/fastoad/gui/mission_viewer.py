@@ -101,7 +101,6 @@ class MissionViewer:
 
         return display(toolbar, self._output_widget)  # UI
 
-    # pylint: disable=unused-argument # change has to be there for observe() to work
     def _show_plot(self, change=None, layout_dict=None, *, layout_overwrite=False, **kwargs):
         """
         Updates and shows the plots
@@ -124,9 +123,7 @@ class MissionViewer:
             for mission_name in self.missions:
                 if fig is None:
                     fig = go.Figure()
-                # pylint: disable=invalid-name # that's a common naming
                 x = self.missions[mission_name][x_name]
-                # pylint: disable=invalid-name # that's a common naming
                 y = self.missions[mission_name][y_name]
 
                 scatter = go.Scatter(x=x, y=y, mode="lines", name=mission_name)

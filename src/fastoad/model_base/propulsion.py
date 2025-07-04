@@ -70,13 +70,14 @@ class IPropulsion(ABC):
               defined one between :code:`thrust_rate` and :code:`thrust` (if both are provided,
               :code:`thrust_rate` will be used)
 
-            - if :code:`thrust_is_regulated` is :code:`True` or :code:`False` (i.e., not a sequence),
-              the considered input will be taken accordingly, and should of course be defined.
+            - if :code:`thrust_is_regulated` is :code:`True` or :code:`False` (i.e., not a
+              sequence), the considered input will be taken accordingly, and should of course
+              be defined.
 
-            - if there are several flight points, :code:`thrust_is_regulated` is a sequence or array,
-              :code:`thrust_rate` and :code:`thrust` should be provided and have the same shape as
-              :code:`thrust_is_regulated:code:`. The method will consider for each element which input
-              will be used according to :code:`thrust_is_regulated`.
+            - if there are several flight points, :code:`thrust_is_regulated` is a sequence or
+              array, :code:`thrust_rate` and :code:`thrust` should be provided and have the same
+              shape as :code:`thrust_is_regulated:code:`. The method will consider for each element
+              which input will be used according to :code:`thrust_is_regulated`.
 
 
         :param flight_points: FlightPoint or DataFrame instance

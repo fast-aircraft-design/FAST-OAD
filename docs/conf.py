@@ -55,7 +55,7 @@ def setup(app):
 
 # -- Project information -----------------------------------------------------
 project = "FAST-OAD"
-copyright = "2025, ONERA & ISAE-SUPAERO"
+copyright = "2025, ONERA & ISAE-SUPAERO"  # noqa: A001 copyright is a keyword for the sphinx setup
 
 # -- General configuration ---------------------------------------------------
 

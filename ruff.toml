@@ -16,7 +16,6 @@ select = [
     "RUF", # Ruff-specific rules.
     "C4",  # Catch incorrect use of comprehensions, dict, list, etc.
     "A",   # Detect shadowed builtins.
-    "COM", # Detect missing trailing comma (usually is implemented in the ruff formatter).
     "ISC", # Good use of string concatenation.
     "ERA", # Find large commented-out code.
     "PD",  # Provides opinionated linting for pandas code.
@@ -42,7 +41,9 @@ ignore = [
     "ANN204", # No type annotation on "special" methods, like __init__ 
     "N806",   # Checks for the use of non-lowercase variable names in functions.
     "D105",   # Missing docstring in magic method
-    "D212",   #Multi-line docstring summary should start at the first line
+    "D212",   # Multi-line docstring summary should start at the first line
+    "PD901",  # df is ok as a name
+    "PD002",  # We want to use inplace for pandas
 ]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.
@@ -56,15 +57,24 @@ unfixable = [
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
 [lint.per-file-ignores]
-# We prefer clarity over efficency in notebook examples
-"*.ipynb" = ["RET504"]
-"*/fastoad/notebooks/*" = ["RET504"]
+
+"*.ipynb" = [
+    "RET504", # We prefer clarity over efficency in notebook examples
+    "E501",   # no long line check
+    "ERA001", # no check for commented code
+]
+"*/fastoad/notebooks/*" = [
+    "RET504", # We prefer clarity over efficency in notebook examples
+    "E501",   # no long line check
+    "ERA001", # no check for commented code
+]
 # Tests
 "tests/*" = [
     "PLR0913", # Too many arguments in function definition
     "PLR0915", # Too many statements
     "PLR2004", # Enabling magic value to be used in test comparison
     "S101",    # Enable assert in tests
+    "PD901",   # Avoid using the generic variable name `df` for DataFrames
     "ANN",     # No annotation on tests
     "D",       # No doc in tests
 ]
@@ -73,6 +83,7 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
     "PLR0915", # Too many statements
     "PLR2004", # Enabling magic value to be used in test comparison
     "S101",    # Enable assert in tests
+    "PD901",   # Avoid using the generic variable name `df` for DataFrames
     "ANN",     # No annotation on tests
     "D",       # No doc in tests
 ]

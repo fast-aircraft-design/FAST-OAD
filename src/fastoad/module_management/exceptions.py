@@ -73,7 +73,8 @@ class FastIncompatibleServiceClassError(FastError):
         :param base_class: the unmatched interface
         """
         super().__init__(
-            f'Trying to register {registered_class!s} as service "{service_id}" but it does not inherit from {base_class!s}'
+            f'Trying to register {registered_class!s} as service "{service_id}" but it does not '
+            f"inherit from {base_class!s}"
         )
         self.registered_class = registered_class
         self.service_id = service_id
@@ -105,7 +106,8 @@ class FastTooManySubmodelsError(FastError):
         :param candidates:
         """
         super().__init__(
-            f'Submodel requirement "{service_id}" needs a choice among following candidates: {candidates}'
+            f'Submodel requirement "{service_id}" needs a choice among following '
+            f"candidates: {candidates}"
         )
         self.service_id = service_id
         self.candidates = candidates

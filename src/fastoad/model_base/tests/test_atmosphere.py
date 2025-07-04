@@ -157,7 +157,8 @@ def test_speed_conversions():
         [270, 266.0652, 150.4692],
         [400, 394.1707, 222.9173],
     ]
-    # expected_CAS = [  # currently unused
+    # ruff:noqa ERA001
+    # expected_CAS = [  # currently unused TODO erase it
     #     [100.0, 98.5799, 56.3313],
     #     [200.0, 197.3624, 116.1973],
     #     [270, 161.8971, 266.6984],

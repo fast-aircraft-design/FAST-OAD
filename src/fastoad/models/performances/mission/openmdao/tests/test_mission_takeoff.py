@@ -36,8 +36,9 @@ def cleanup():
 
 
 def plot_flight(flight_points, fig_filename):
-    from matplotlib import pyplot as plt
-    from matplotlib.ticker import MultipleLocator
+    # This function is used only for debug, so lazy imports are accepted
+    from matplotlib import pyplot as plt  # noqa: PLC0415
+    from matplotlib.ticker import MultipleLocator  # noqa: PLC0415
 
     plt.figure(figsize=(12, 12))
     ax1 = plt.subplot(2, 1, 1)
@@ -111,7 +112,8 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
         ),
         ivc,
     )
-    # plot_flight(problem.model.component.flight_points, "test_mission.png")
+    # Useful for debugging
+    # plot_flight(problem.model.component.flight_points, "test_mission.png")  # noqa: ERA001
     take_off_distance = problem[
         "data:mission:operational_wo_gnd_effect:takeoff_wo_gnd_effect:distance"
     ]
@@ -156,7 +158,8 @@ def test_ground_effect(cleanup, with_dummy_plugin_2):
         ),
         ivc,
     )
-    # plot_flight(problem.model.component.flight_points, "test_mission.png")
+    # Useful for debugging
+    # plot_flight(problem.model.component.flight_points, "test_mission.png")  # noqa: ERA001
     take_off_distance = problem["data:mission:operational:takeoff:distance"]
     assert_allclose(take_off_distance, 1762, atol=1.0)
     assert_allclose(problem["data:mission:operational:takeoff:fuel"], 122.1, atol=1e-1)
@@ -188,7 +191,8 @@ def test_start_stop(cleanup, with_dummy_plugin_2):
         ),
         ivc,
     )
-    # plot_flight(problem.model.component.flight_points, "test_mission.png")
+    # Useful for debugging
+    # plot_flight(problem.model.component.flight_points, "test_mission.png")  # noqa: ERA001
     start_stop_distance = problem["data:mission:start_stop_mission:start_stop:distance"]
     assert_allclose(start_stop_distance, 1659, atol=1.0)
     assert_allclose(problem["data:mission:start_stop_mission:start_stop:duration"], 42.8, atol=1e-1)

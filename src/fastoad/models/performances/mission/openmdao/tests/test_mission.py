@@ -36,8 +36,9 @@ def cleanup():
 
 
 def plot_flight(flight_points, fig_filename):
-    from matplotlib import pyplot as plt
-    from matplotlib.ticker import MultipleLocator
+    # This function is used only for debug, so lazy imports are accepted
+    from matplotlib import pyplot as plt  # noqa: PLC0415
+    from matplotlib.ticker import MultipleLocator  # noqa: PLC0415
 
     plt.figure(figsize=(12, 12))
     ax1 = plt.subplot(2, 1, 1)
@@ -108,7 +109,8 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
         ),
         ivc,
     )
-    # plot_flight(problem.model.component.flight_points, "test_mission.png")
+    # Useful for debugging
+    # plot_flight(problem.model.component.flight_points, "test_mission.png")  # noqa: ERA001
 
     # Note: tested value are obtained by asking 1 meter of accuracy for distance routes
     assert_allclose(problem["data:mission:operational:taxi_out:fuel"], 100.0, atol=1.0)
@@ -160,8 +162,8 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
 
 def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
     input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
-    vars = DataFile(input_file_path)
-    ivc = vars.to_ivc()
+    variables = DataFile(input_file_path)
+    ivc = variables.to_ivc()
     ivc.add_output("data:mission:operational:ramp_weight", 70100.0, units="kg")
 
     problem = run_system(
@@ -177,7 +179,8 @@ def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
         ),
         ivc,
     )
-    # plot_flight(problem.model.component.flight_points, "test_mission_component_breguet.png")
+    # Useful for debugging
+    # plot_flight(problem.model.component.flight_points, "test_mission_component_breguet.png")  # noqa: E501, ERA001
     assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6256.0, atol=1.0)
 
     assert_allclose(problem["data:mission:operational:taxi_out:fuel"], 100.0, atol=1.0)
@@ -265,9 +268,9 @@ def test_mission_group_breguet_without_fuel_adjustment(cleanup, with_dummy_plugi
 
 def test_mission_group_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
     input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
-    vars = DataFile(input_file_path)
-    del vars["data:mission:operational:TOW"]
-    ivc = vars.to_ivc()
+    variables = DataFile(input_file_path)
+    del variables["data:mission:operational:TOW"]
+    ivc = variables.to_ivc()
 
     problem = run_system(
         OMMission(
@@ -312,9 +315,9 @@ def test_mission_group_breguet_with_fuel_adjustment(cleanup, with_dummy_plugin_2
     # Also checking behavior when is_sizing is True
 
     input_file_path = DATA_FOLDER_PATH / "test_breguet.xml"
-    vars = DataFile(input_file_path)
-    del vars["data:mission:operational:ramp_weight"]
-    ivc = vars.to_ivc()
+    variables = DataFile(input_file_path)
+    del variables["data:mission:operational:ramp_weight"]
+    ivc = variables.to_ivc()
 
     problem = run_system(
         OMMission(
@@ -357,8 +360,8 @@ def test_mission_group_breguet_with_fuel_adjustment(cleanup, with_dummy_plugin_2
 
 def test_mission_group_with_fuel_objective(cleanup, with_dummy_plugin_2):
     input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
-    vars = DataFile(input_file_path)
-    ivc = vars.to_ivc()
+    variables = DataFile(input_file_path)
+    ivc = variables.to_ivc()
 
     problem = run_system(
         OMMission(
@@ -395,10 +398,10 @@ def test_mission_group_with_fuel_objective(cleanup, with_dummy_plugin_2):
 
 def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
     input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
-    vars = DataFile(input_file_path)
+    variables = DataFile(input_file_path)
 
     # Activate CL limitation during cruise and climb
-    vars["data:mission:operational:max_CL"].value = 0.45
+    variables["data:mission:operational:max_CL"].value = 0.45
 
     problem = run_system(
         AdvancedMissionComp(
@@ -411,7 +414,7 @@ def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
             ),
             reference_area_variable="data:geometry:aircraft:reference_area",
         ),
-        vars,
+        variables,
     )
 
     flight_points = problem.model.component.flight_points
@@ -419,17 +422,18 @@ def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
     CL_end_climb = climb_points.CL.iloc[-1]
     altitude_end_climb = climb_points.altitude.iloc[-1]
 
-    # check CL and flight level, CL is lower than 0.45 because the climb phase stops at the closest flight level.
+    # check CL and flight level, CL is lower than 0.45 because the climb phase stops at
+    # the closest flight level.
     assert_allclose(CL_end_climb, 0.445, atol=1e-3)
     assert_allclose(altitude_end_climb, 9753.6, atol=1e-1)
 
     # Now check climbing cruise with constant CL
-    vars.add_var("data:mission:operational_optimal:max_CL", val=0.45)
-    vars.add_var("data:mission:operational_optimal:taxi_out:thrust_rate", val=0.3)
-    vars.add_var("data:mission:operational_optimal:taxi_out:duration", val=300, units="s")
-    vars.add_var("data:mission:operational_optimal:takeoff:fuel", val=100, units="kg")
-    vars.add_var("data:mission:operational_optimal:takeoff:V2", val=70, units="m/s")
-    vars.add_var("data:mission:operational_optimal:TOW", val=70000, units="kg")
+    variables.add_var("data:mission:operational_optimal:max_CL", val=0.45)
+    variables.add_var("data:mission:operational_optimal:taxi_out:thrust_rate", val=0.3)
+    variables.add_var("data:mission:operational_optimal:taxi_out:duration", val=300, units="s")
+    variables.add_var("data:mission:operational_optimal:takeoff:fuel", val=100, units="kg")
+    variables.add_var("data:mission:operational_optimal:takeoff:V2", val=70, units="m/s")
+    variables.add_var("data:mission:operational_optimal:TOW", val=70000, units="kg")
 
     problem = run_system(
         AdvancedMissionComp(
@@ -442,7 +446,7 @@ def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
             ),
             reference_area_variable="data:geometry:aircraft:reference_area",
         ),
-        vars,
+        variables,
     )
 
     flight_points = problem.model.component.flight_points

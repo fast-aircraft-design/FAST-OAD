@@ -59,14 +59,11 @@ def wing_geometry_plot(
     mean_aerodynamic_chord = variables["data:geometry:wing:MAC:length"].value[0]
     mac25_x_position = variables["data:geometry:wing:MAC:at25percent:x"].value[0]
     distance_root_mac_chords = variables["data:geometry:wing:MAC:leading_edge:x:local"].value[0]
-    # pylint: disable=invalid-name # that's a common naming
     y = np.array(
         [0, wing_root_y, wing_kink_y, wing_tip_y, wing_tip_y, wing_kink_y, wing_root_y, 0, 0]
     )
-    # pylint: disable=invalid-name # that's a common naming
     y = np.concatenate((-y, y))
 
-    # pylint: disable=invalid-name # that's a common naming
     x = np.array(
         [
             0,
@@ -82,7 +79,6 @@ def wing_geometry_plot(
     )
 
     x = x + mac25_x_position - 0.25 * mean_aerodynamic_chord - distance_root_mac_chords
-    # pylint: disable=invalid-name # that's a common naming
     x = np.concatenate((x, x))
 
     if fig is None:
@@ -92,7 +88,7 @@ def wing_geometry_plot(
 
     fig.add_trace(scatter)
 
-    fig.layout = go.Layout(yaxis=dict(scaleanchor="x", scaleratio=1))
+    fig.layout = go.Layout(yaxis={"scaleanchor": "x", "scaleratio": 1})
 
     fig = go.FigureWidget(fig)
 
@@ -204,14 +200,10 @@ def aircraft_geometry_plot(
     x_wing = x_wing + wing_25mac_x - 0.25 * wing_mac_length - local_wing_mac_le_x
     x_ht = x_ht + wing_25mac_x + ht_distance_from_wing - local_ht_25mac_x
 
-    # pylint: disable=invalid-name # that's a common naming
     x = np.concatenate((x_fuselage, x_wing, x_ht))
-    # pylint: disable=invalid-name # that's a common naming
     y = np.concatenate((y_fuselage, y_wing, y_ht))
 
-    # pylint: disable=invalid-name # that's a common naming
     y = np.concatenate((-y, y))
-    # pylint: disable=invalid-name # that's a common naming
     x = np.concatenate((x, x))
 
     if fig is None:
@@ -221,7 +213,7 @@ def aircraft_geometry_plot(
 
     fig.add_trace(scatter)
 
-    fig.layout = go.Layout(yaxis=dict(scaleanchor="x", scaleratio=1))
+    fig.layout = go.Layout(yaxis={"scaleanchor": "x", "scaleratio": 1})
 
     fig = go.FigureWidget(fig)
 
@@ -247,14 +239,13 @@ def drag_polar_plot(
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
-    # pylint: disable=invalid-name # that's a common naming
     cd = np.asarray(variables["data:aerodynamics:aircraft:cruise:CD"].value)
-    # pylint: disable=invalid-name # that's a common naming
     cl = np.asarray(variables["data:aerodynamics:aircraft:cruise:CL"].value)
 
     # TODO: remove filtering one models provide proper bounds
-    cd_short = cd[cd <= 2.0]
-    cl_short = cl[cd <= 2.0]
+    CD_UPPER = 2.0
+    cd_short = cd[cd <= CD_UPPER]
+    cl_short = cl[cd <= CD_UPPER]
 
     if fig is None:
         fig = go.Figure()
@@ -301,7 +292,6 @@ def mass_breakdown_bar_plot(
         "data:weight:aircraft:sizing_onboard_fuel_at_input_weight": "kg",
     }
 
-    # pylint: disable=unbalanced-tuple-unpacking # It is balanced for the parameters provided
     mtow, owe, payload, fuel_mission = _get_variable_values_with_new_units(
         variables, var_names_and_new_units
     )
@@ -416,7 +406,7 @@ def _get_TOW_sunburst_plot(variables: VariableList, input_mass_name, mission_nam
         if mission_tow_var not in variables.names():  # Check if the provided mission_name exists
             raise ValueError(
                 f"The provided mission_name {mission_name} does not correspond to an existing "
-                + "mission. The available mission(s) are: {missions_set}."
+                "mission. The available mission(s) are: {missions_set}."
             )
         payload_var_name = f"data:mission:{mission_name}:payload"
         if payload_var_name not in variables.names():  # If mission_name is a sizing mission
@@ -485,7 +475,7 @@ def _get_OWE_sunburst_plot(variables: VariableList):
     sub_categories_parent = []
     for variable in variables.names():
         name_split = variable.split(":")
-        if isinstance(name_split, list) and len(name_split) >= 5:
+        if isinstance(name_split, list) and len(name_split) >= 5:  # noqa: PLR2004
             parent_name = name_split[2]
             if parent_name in categories_names and name_split[-1] == "mass":
                 variable_name = "_".join(name_split[3:-1])
@@ -563,7 +553,7 @@ def payload_range_plot(
         x=convert_units(range_, "m", "NM"),
         y=convert_units(payload, "kg", "t"),
         mode="lines+markers",
-        line=dict(color="black", width=3),
+        line={"color": "black", "width": 3},
         showlegend=False,
         name=name,
     )
@@ -576,7 +566,7 @@ def payload_range_plot(
         x=convert_units(range_mask, "m", "NM"),
         y=convert_units(payload_mask, "kg", "t"),
         mode="lines",
-        line=dict(color="#E5ECF6", width=3),
+        line={"color": "#E5ECF6", "width": 3},
         showlegend=False,
         name=name,
         fill="toself",
@@ -616,13 +606,13 @@ def payload_range_plot(
                 x=x,
                 y=y,
                 z=z,
-                contours=dict(start=min_z, end=max_z, size=(max_z - min_z) / 20),
-                colorbar=dict(
-                    title=f"{variable_of_interest_legend} [{variable_of_interest_unit}]",
-                    titleside="right",
-                    titlefont=dict(size=15, family="Arial, sans-serif"),
-                    tickformat=".1e",
-                ),
+                contours={"start": min_z, "end": max_z, "size": (max_z - min_z) / 20},
+                colorbar={
+                    "title": f"{variable_of_interest_legend} [{variable_of_interest_unit}]",
+                    "titleside": "right",
+                    "titlefont": {"size": 15, "family": "Arial, sans-serif"},
+                    "tickformat": ".1e",
+                },
                 colorscale="RdBu_r",
                 contours_coloring="heatmap",
             )
@@ -682,21 +672,24 @@ def _data_weight_decomposition(variables: VariableList, owe=None):
     owe_subcategory_names = []
     for variable in variables.names():
         name_split = variable.split(":")
-        if isinstance(name_split, list) and len(name_split) == 4:
-            if (
+        if (
+            isinstance(name_split, list)
+            and len(name_split) == 4  # noqa: PLR2004
+            and (
                 name_split[0] + name_split[1] + name_split[3] == "dataweightmass"
                 and "aircraft" not in name_split[2]
-            ):
-                category_values.append(
-                    convert_units(variables[variable].value[0], variables[variable].units, "kg")
+            )
+        ):
+            category_values.append(
+                convert_units(variables[variable].value[0], variables[variable].units, "kg")
+            )
+            category_names.append(name_split[2])
+            if owe:
+                owe_subcategory_names.append(
+                    _get_sunburst_mass_label(
+                        name_split[2], variables[variable].value[0], parent_value=owe
+                    ),
                 )
-                category_names.append(name_split[2])
-                if owe:
-                    owe_subcategory_names.append(
-                        _get_sunburst_mass_label(
-                            name_split[2], variables[variable].value[0], parent_value=owe
-                        ),
-                    )
     if owe:
         result = category_values, category_names, owe_subcategory_names
     else:

@@ -41,7 +41,7 @@ from . import api
 NOTEBOOK_FOLDER_NAME = "FAST-OAD_notebooks"
 
 
-@click.group(context_settings=dict(help_option_names=["-h", "--help"]))
+@click.group(context_settings={"help_option_names": ["-h", "--help"]})
 @click.version_option(fastoad.__version__, "-v", "--version")
 def fast_oad():
     """FAST-OAD main program"""

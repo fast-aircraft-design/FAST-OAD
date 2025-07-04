@@ -714,7 +714,7 @@ def test_descent_to_fixed_EAS_at_constant_mach(polar):
         reference_area=100.0,
         polar=polar,
         thrust_rate=0.1,
-        # time_step=5.0, # we use default time step
+        # time_step=5.0, # we use default time step  # noqa: ERA001
     )
 
     def run():

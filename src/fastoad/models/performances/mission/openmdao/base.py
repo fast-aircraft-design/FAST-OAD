@@ -31,7 +31,6 @@ from fastoad.models.performances.mission.openmdao import resources
 from fastoad.models.performances.mission.openmdao.mission_wrapper import MissionWrapper
 
 
-# pylint: disable=too-few-public-methods
 class NeedsOWE(System, metaclass=ABCMeta):
     """To be inherited when Operating Weight Empty variable is used."""
 
@@ -45,7 +44,6 @@ class NeedsOWE(System, metaclass=ABCMeta):
         )
 
 
-# pylint: disable=too-few-public-methods
 class NeedsMTOW(System, metaclass=ABCMeta):
     """To be inherited when Max TakeOff Weight variable is used."""
 
@@ -59,7 +57,6 @@ class NeedsMTOW(System, metaclass=ABCMeta):
         )
 
 
-# pylint: disable=too-few-public-methods
 class NeedsMFW(System, metaclass=ABCMeta):
     """To be inherited when Max Fuel Weight variable is used."""
 

@@ -366,15 +366,15 @@ def test_get_reserve(custom_segment_class):
     )
 
     flight_points = pd.DataFrame(
-        dict(
-            mass=[70000, 65000, 55000, 45000],
-            name=[
+        {
+            "mass": [70000, 65000, 55000, 45000],
+            "name": [
                 "data:mission:sizing:main:start",
                 "data:mission:sizing:main:climb",
                 "data:mission:sizing:other:start",
                 "data:mission:sizing:other:climb",
             ],
-        )
+        }
     )
     assert_allclose(mission_builder.get_reserve(flight_points, "sizing"), 5000 * 0.03)
 

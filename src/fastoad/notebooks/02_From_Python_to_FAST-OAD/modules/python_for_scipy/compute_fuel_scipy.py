@@ -8,8 +8,8 @@ def compute_fuel_scipy(
     x, wing_loading, cruise_altitude, cruise_speed, mission_range, payload, tsfc
 ):
     """
-    Gather all the module main functions in the program main function that will compute the fuel consumed for the given
-    MTOW
+    Gather all the module main functions in the program main function that will compute the fuel
+    consumed for the given MTOW
 
     :param x: Tuple containing the Old Max Take-Off Weight, in kg and the aspect ration with no unit
     :param wing_loading: Wing loading, in kg/m2

@@ -145,7 +145,7 @@ class AbstractTimeStepFlightSegment(
     def get_next_alpha(
         self,
         previous_point: FlightPoint,
-        time_step: float,  # pylint: disable=unused-argument
+        time_step: float,
     ) -> float:
         """
         Determine the next angle of attack.

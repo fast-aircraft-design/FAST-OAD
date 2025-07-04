@@ -5,7 +5,8 @@ from fastoad.model_base.atmosphere import Atmosphere
 
 def compute_l_d(cruise_altitude, cruise_speed, cd0, k, mtow, wing_area):
     """
-    Computes the lift to drag ratio considering a lift equilibrium in cruise and a simple quadratic model
+    Computes the lift to drag ratio considering a lift equilibrium in cruise and a simple quadratic
+    model
 
     :param cruise_altitude: Cruise altitude, in m
     :param cruise_speed: Cruise speed, in m/s
