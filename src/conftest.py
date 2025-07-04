@@ -33,6 +33,8 @@ if sys.version_info >= (3, 10):
 else:
     import importlib_metadata
 
+import contextlib
+
 from fastoad.module_management._plugins import MODEL_PLUGIN_ID, FastoadLoader
 
 
@@ -42,9 +44,12 @@ def no_xfoil_skip(request, xfoil_path):
     Use @pytest.mark.skip_if_no_xfoil() before a test to skip it if xfoil_path
     fixture returns None and OS is not Windows.
     """
-    if request.node.get_closest_marker("skip_if_no_xfoil"):
-        if xfoil_path is None and system() != "Windows":
-            pytest.skip("No XFOIL executable available")
+    if (
+        request.node.get_closest_marker("skip_if_no_xfoil")
+        and (xfoil_path is None)
+        and (system() != "Windows")
+    ):
+        pytest.skip("No XFOIL executable available")
 
 
 @pytest.fixture
@@ -311,7 +316,7 @@ def _teardown():
 # Monkey-patching using wrapt module ###########################################
 
 
-def _BypassEntryPointReading_enabled():
+def _BypassEntryPointReading_enabled():  # noqa: N802 more readable with camelcase
     return BypassEntryPointReading.active
 
 
@@ -329,7 +334,7 @@ class BypassEntryPointReading:
 importlib_metadata.entry_points = BypassEntryPointReading()(importlib_metadata.entry_points)
 
 
-def _MakeEntryPointMutable_enabled():
+def _MakeEntryPointMutable_enabled():  # noqa: N802 more readable with camelcase
     return MakeEntryPointMutable.active
 
 
@@ -342,10 +347,8 @@ class MakeEntryPointMutable:
 
     @wrapt.decorator(enabled=_MakeEntryPointMutable_enabled)
     def __call__(self, wrapped, instance, args, kwargs):
-        try:
+        with contextlib.suppress(AttributeError):
             delattr(wrapped, "__setattr__")
-        except AttributeError:
-            pass
         return wrapped(*args, **kwargs)
 
 

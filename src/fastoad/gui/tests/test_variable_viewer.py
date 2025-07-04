@@ -38,7 +38,6 @@ def test_variable_reader_display():
     """
     filename = DATA_FOLDER_PATH / "problem_outputs.xml"
 
-    # pylint: disable=invalid-name # that's a common naming
     df = VariableViewer()
     df.load(filename)
 

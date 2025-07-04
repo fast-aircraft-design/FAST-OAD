@@ -41,7 +41,7 @@ class VariableIO:
     def __init__(
         self,
         data_source: str | PathLike | IO | None,
-        formatter: IVariableIOFormatter = None,
+        formatter: IVariableIOFormatter | None = None,
     ):
         if isinstance(data_source, (str, PathLike)):
             data_source = as_path(data_source)
@@ -57,7 +57,7 @@ class VariableIO:
         return self._formatter
 
     @formatter.setter
-    def formatter(self, formatter: IVariableIOFormatter):
+    def formatter(self, formatter: IVariableIOFormatter | None):
         self._formatter = formatter if formatter else VariableXmlStandardFormatter()
 
     def read(self, only: list[str] | None = None, ignore: list[str] | None = None) -> VariableList:
@@ -159,7 +159,7 @@ class DataFile(VariableList):
     def __init__(
         self,
         data_source: str | PathLike | IO | list | None = None,
-        formatter: IVariableIOFormatter = None,
+        formatter: IVariableIOFormatter | None = None,
         load_data: bool = True,  # noqa: FBT001, FBT002 no breaking changes in API functions
     ):
         """
@@ -227,7 +227,7 @@ class DataFile(VariableList):
     def save_as(
         self,
         file_path: str | PathLike,
-        formatter: IVariableIOFormatter = None,
+        formatter: IVariableIOFormatter | None = None,
         overwrite=False,  # noqa: FBT002 no breaking changes in API functions
     ):
         """

@@ -34,6 +34,8 @@ OUTPUT = "OUT"
 NA = "N/A"
 TAG_ALL = "--ALL--"
 
+# ruff:noqa PD901 df is ok as a name here
+
 
 class VariableViewer:
     """
@@ -174,7 +176,6 @@ class VariableViewer:
             dataframe[column_to_attribute.keys()].rename(columns=column_to_attribute)
         )
 
-    # pylint: disable=invalid-name # df is a common naming for dataframes
     @staticmethod
     def _df_to_sheet(df: pd.DataFrame) -> sh.Sheet:
         """
@@ -214,7 +215,6 @@ class VariableViewer:
         """
         return sh.to_dataframe(sheet)
 
-    # pylint: disable=unused-argument  # args has to be there for observe() to work
     def _update_df(self, change=None):
         """
         Updates the stored DataFrame with respect to the actual values of the Sheet.
@@ -222,7 +222,7 @@ class VariableViewer:
         """
         df = self._sheet_to_df(self._sheet)
         for i in df.index:
-            self.dataframe.loc[int(i), :] = df.loc[i, :].values
+            self.dataframe.loc[int(i), :] = df.loc[i, :].to_numpy()
 
     def _render_sheet(self) -> display:
         """
@@ -236,7 +236,6 @@ class VariableViewer:
         self._filter_widgets.append(w)
         return self._render_ui()
 
-    # pylint: disable=unused-argument  # args has to be there for observe() to work
     def _update_items(self, change=None):
         """
         Updates the filter_widgets with respect to higher level filter_widgets values.
@@ -261,17 +260,15 @@ class VariableViewer:
                         self._filter_widgets.append(widget)
                     else:
                         if (TAG_ALL not in modules_item) and (
-                            len(modules_item) > 1 or var_name in self.dataframe["Name"].values
+                            len(modules_item) > 1 or var_name in self.dataframe["Name"].to_numpy()
                         ):
                             modules_item.insert(0, TAG_ALL)
                         self._filter_widgets[i].options = modules_item
-                else:
-                    if i < len(self._filter_widgets):
-                        self._filter_widgets.pop(i)
+                elif i < len(self._filter_widgets):
+                    self._filter_widgets.pop(i)
             else:
                 break
 
-    # pylint: disable=unused-argument  # args has to be there for observe() to work
     def _update_variable_selector(self, change=None):
         """
         Updates the variable selector with respect to the
@@ -350,7 +347,6 @@ class VariableViewer:
         for cell in self._sheet.cells:
             cell.observe(self._update_df, "value")
 
-    # pylint: disable=unused-argument  # args has to be there for observe() to work
     def _render_ui(self, change=None) -> display:
         """
         Renders the dropdown menus for the variable selector and the corresponding
@@ -423,10 +419,7 @@ class VariableViewer:
             var_io_type = TAG_ALL
         path = ""
         for _ in modules:
-            if modules[-1] == TAG_ALL:
-                path = ":".join(modules[:-1])
-            else:
-                path = ":".join(modules)
+            path = ":".join(modules[:-1]) if modules[-1] == TAG_ALL else ":".join(modules)
         path_filter = df.Name.str.startswith(path)
         io_filter = pd.Series(
             [True] * len(df) if var_io_type == TAG_ALL else df["I/O"] == var_io_type
