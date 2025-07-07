@@ -94,6 +94,7 @@ mpi4py = [
 ]
 
 # Extras ---------------------------------------------------------------
+pytest-xdist = "^3.6.1"
 [tool.poetry.extras]
 # Activated with:
 #    poetry install -E mpi
@@ -180,7 +181,7 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 # Pytest settings ==============================================================
 [tool.pytest.ini_options]
 minversion = "8.0"
-addopts = "--cov-report term-missing --cov-report html --verbose"
+addopts = "-n auto --dist=loadfile --cov-report term-missing --cov-report html --verbose"
 testpaths = ["src"]
 norecursedirs = ["dist", "build", ".tox", ".ipynb_checkpoints"]
 markers = ["mpi: marks tests that use MPI"]

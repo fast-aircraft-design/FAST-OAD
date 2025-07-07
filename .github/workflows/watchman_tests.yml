@@ -52,7 +52,7 @@ jobs:
 
       - name: Unit tests
         run: |
-          pytest --no-cov src | tee pytest.log
+          pytest -n 0 --no-cov src | tee pytest.log 
           awk 'BEGIN{pr=0};/warnings summary/{pr=1};pr==1' pytest.log > warnings.log  # The warning summary is put in a dedicated file.
         shell: bash
 

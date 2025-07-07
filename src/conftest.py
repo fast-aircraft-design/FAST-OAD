@@ -228,7 +228,7 @@ def with_dummy_plugin_distribution_1_and_3():
 
 
 @pytest.fixture
-def with_dummy_plugins():
+def with_dummy_plugins(scope="module"):
     """
     Reduces plugin list to:
         - dummy-dist-1 with plugins test_plugin_1 and test_plugin_4
