@@ -17,6 +17,7 @@ Basis for registering and retrieving services
 import gc
 import logging
 import re
+import traceback
 from os import PathLike
 from typing import Any, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union
 
@@ -34,7 +35,9 @@ from .exceptions import (
 from .._utils.files import as_path
 from .._utils.resource_management.contents import PackageReader
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(
+    ""
+)  # Using the root logger here just because we want less verbose outputs
 """Logger for this module"""
 
 T = TypeVar("T")
@@ -102,8 +105,13 @@ class BundleLoader:
                 "Installed bundle %s (ID %s )", bundle.get_symbolic_name(), bundle.get_bundle_id()
             )
             bundle.start()
-        for _f in failed:
-            _LOGGER.warning("Failed to import module %s", _f)
+        if failed:
+            _LOGGER.warning("=" * 80)
+            _LOGGER.warning("!!  FAST-OAD MODULE IMPORT FAILURE RECAP")
+            _LOGGER.warning("-" * 80)
+            for module_name in sorted(failed):
+                _LOGGER.warning("  - %s", module_name)
+            _LOGGER.warning("=" * 80)
 
         return bundles, failed
 
@@ -361,7 +369,11 @@ class BundleLoader:
         package = PackageReader(package_name)
         if package.has_error or not package.exists:
             failed.add(package_name)
+            _LOGGER.warning("=" * 80)
+            _LOGGER.warning("    %s", package_name)
+            _LOGGER.warning("-" * 80)
         elif package.is_package:
+            header_printed = False  # to print error header once per package
             # It is a package, let's explore it.
             for item in package.contents:
                 item_package = ".".join([package_name, item])
@@ -371,8 +383,19 @@ class BundleLoader:
                         try:
                             bundle = self.context.install_bundle(item_package[:-3])
                             bundles.add(bundle)
-                        except BundleException:
-                            failed.add(package_name)
+                        except BundleException as e:
+                            failed.add(item_package[:-3])
+                            if not header_printed:
+                                _LOGGER.warning("=" * 80)
+                                _LOGGER.warning("    %s", package_name)
+                                _LOGGER.warning("-" * 80)
+                                header_printed = True
+                            _LOGGER.warning(
+                                "\n!! Exception: %s\n\n  >> Full error traceback:\n%s",
+                                e,
+                                traceback.format_exc(),
+                            )
+                            _LOGGER.warning("-" * 80 + "\n")
                 else:
                     sub_bundles, sub_failed = self._install_python_package(item_package)
                     bundles.update(sub_bundles)
