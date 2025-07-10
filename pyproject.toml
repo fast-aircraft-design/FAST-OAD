@@ -92,6 +92,7 @@ importlib-metadata = { version = "^4.2", python = "<3.10" }
 mpi4py = [
     { version = "^4.0.2", optional = true },
 ]
+rich = "^14.0.0"
 
 # Extras ---------------------------------------------------------------
 [tool.poetry.extras]
