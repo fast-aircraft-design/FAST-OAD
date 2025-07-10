@@ -17,7 +17,6 @@ Basis for registering and retrieving services
 import gc
 import logging
 import re
-import traceback
 from os import PathLike
 from typing import Any, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union
 
@@ -27,6 +26,10 @@ from pelix.framework import Bundle, BundleContext, Framework, FrameworkFactory
 from pelix.internals.registry import ServiceReference
 from pelix.ipopo.constants import SERVICE_IPOPO, use_ipopo
 from pelix.ipopo.decorators import ComponentFactory, Property, Provides
+from rich import box
+from rich.console import Console
+from rich.logging import RichHandler
+from rich.table import Table
 
 from .exceptions import (
     FastBundleLoaderDuplicateFactoryError,
@@ -35,9 +38,26 @@ from .exceptions import (
 from .._utils.files import as_path
 from .._utils.resource_management.contents import PackageReader
 
-_LOGGER = logging.getLogger(
-    ""
-)  # Using the root logger here just because we want less verbose outputs
+_LOGGER = logging.getLogger(__name__)
+_LOGGER.propagate = False
+_LOGGER.setLevel(logging.WARNING)
+
+# Create RichHandler with custom formatter (only message)
+rich_handler = RichHandler(
+    rich_tracebacks=True,
+    markup=True,
+    show_path=False,
+    tracebacks_show_locals=False,
+    show_time=False,
+    show_level=False,
+)
+formatter = logging.Formatter("%(message)s")  # no date, no level, no prefix
+rich_handler.setFormatter(formatter)
+
+# Attach handler only to this _LOGGER
+_LOGGER.addHandler(rich_handler)
+console = Console()
+
 """Logger for this module"""
 
 T = TypeVar("T")
@@ -106,12 +126,7 @@ class BundleLoader:
             )
             bundle.start()
         if failed:
-            _LOGGER.warning("=" * 80)
-            _LOGGER.warning("!!  FAST-OAD MODULE IMPORT FAILURE RECAP")
-            _LOGGER.warning("-" * 80)
-            for module_name in sorted(failed):
-                _LOGGER.warning("  - %s", module_name)
-            _LOGGER.warning("=" * 80)
+            self._log_failed_modules(failed)
 
         return bundles, failed
 
@@ -361,7 +376,7 @@ class BundleLoader:
 
         :param package_name:
         :return: A 2-tuple, with the list of installed bundles and the list
-                 of failed modules names
+                of failed modules names
         """
         bundles = set()
         failed = set()
@@ -369,16 +384,16 @@ class BundleLoader:
         package = PackageReader(package_name)
         if package.has_error or not package.exists:
             failed.add(package_name)
-            _LOGGER.warning("=" * 80)
-            _LOGGER.warning("    %s", package_name)
-            _LOGGER.warning("-" * 80)
+            _LOGGER.warning(f"Failed to load package: {package_name}")
+            self._styled_rule(f"[bold red]ERROR: {package_name}[/bold red]")
         elif package.is_package:
             header_printed = False  # to print error header once per package
-            # It is a package, let's explore it.
+
             for item in package.contents:
                 item_package = ".".join([package_name, item])
+
                 if "." in item:
-                    # A file. Considered only if it is a Python file. Ignored otherwise.
+                    # It's a file
                     if item.endswith(".py"):
                         try:
                             bundle = self.context.install_bundle(item_package[:-3])
@@ -386,22 +401,45 @@ class BundleLoader:
                         except BundleException as e:
                             failed.add(item_package[:-3])
                             if not header_printed:
-                                _LOGGER.warning("=" * 80)
-                                _LOGGER.warning("    %s", package_name)
-                                _LOGGER.warning("-" * 80)
+                                _LOGGER.warning(f"Failed to load package: {package_name}")
+                                self._styled_rule(f"[bold red]ERROR: {package_name}[/bold red]")
                                 header_printed = True
-                            _LOGGER.warning(
-                                "\n!! Exception: %s\n\n  >> Full error traceback:\n%s",
-                                e,
-                                traceback.format_exc(),
-                            )
-                            _LOGGER.warning("-" * 80 + "\n")
+                            _LOGGER.warning(f"{e}\nDetailed traceback:", exc_info=True)
+                            self._styled_rule(first_newline=False)
+
                 else:
+                    # It's a subpackage
                     sub_bundles, sub_failed = self._install_python_package(item_package)
                     bundles.update(sub_bundles)
                     failed.update(sub_failed)
 
         return bundles, failed
+
+    @staticmethod
+    def _log_failed_modules(failed_modules: list[str]):
+        table = Table(
+            title="[bold red]FAST-OAD MODULE IMPORT FAILURE RECAP[/bold red]",
+            show_header=True,
+            header_style="bold red",
+            box=box.SIMPLE,
+            expand=True,
+        )
+
+        table.add_column("Failed Module", style="bold red")
+
+        for module in sorted(failed_modules):
+            table.add_row(module)
+
+        # Let Rich render the table cleanly to terminal
+        console.print()
+        console.print(table)
+
+    @staticmethod
+    def _styled_rule(title: str = "", first_newline=True):
+        if first_newline:
+            console.print()
+        console.rule(title, style="bright_black")
+        console.print()
 
     @staticmethod
     def _fieldify(name: str) -> str:
