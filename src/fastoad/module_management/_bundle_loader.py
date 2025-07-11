@@ -15,9 +15,11 @@ Basis for registering and retrieving services
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import gc
+import importlib
 import logging
 import re
 from os import PathLike
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union
 
 import pelix
@@ -370,7 +372,7 @@ class BundleLoader:
         references = self.framework.find_service_references(service_name, ldap_filter)
         return references
 
-    def _install_python_package(self, package_name: str) -> Tuple[Set[Bundle], Set[str]]:
+    def _install_python_package(self, package_name: str) -> Tuple[Set[Bundle], dict[str, str]]:
         """
         Recursively loads indicated package and its submodules/subpackages.
 
@@ -380,27 +382,28 @@ class BundleLoader:
             - Dict of failed module names and their full paths
         """
         bundles = set()
-        failed = dict()  # {module_name: full_path}
+        failed = {}  # dict {module_name: full_path}
 
         package = PackageReader(package_name)
 
-        # Use "." to get the root path of the package/module itself
-        with package.path(".") as path_obj:
-            root_package_path = path_obj.resolve().as_posix()
-        root_package_path = root_package_path[
-            : root_package_path.rfind("/") + 1
-        ]  # Strip out the name of the package
+        root_package_path = "<unknown>"
+        spec = importlib.util.find_spec(package_name)
+        if spec and spec.origin:
+            root_package_path = str(Path(spec.origin).parent)
 
         if package.has_error or not package.exists:
             failed[package_name] = root_package_path
-            _LOGGER.warning(f"Failed to load package: {package_name}")
+            _LOGGER.warning("Failed to load package: %s", package_name)
             self._styled_rule(f"[bold red]ERROR: {package_name}[/bold red]")
+            return bundles, failed  # Abort recursion early for broken package
+
         elif package.is_package:
+            # It is a package, let's explore it.
             header_printed = False  # Ensure the error header is printed only once per package
             for item in package.contents:
                 # Get the bundle name and path
                 item_package = f"{package_name}.{item}"  # Qualified name
-                item_path = f"{root_package_path}{item}"  # Full path to the file or folder
+                item_path = f"{root_package_path}/{item}"  # Full path to the file or folder
 
                 if "." in item:
                     # A file. Considered only if it is a Python file. Ignored otherwise.
@@ -411,10 +414,10 @@ class BundleLoader:
                         except BundleException as e:
                             failed[item_package[:-3]] = item_path
                             if not header_printed:
-                                _LOGGER.warning(f"Failed to load package: {package_name}")
+                                _LOGGER.warning("Failed to load package: %s", package_name)
                                 self._styled_rule(f"[bold red]ERROR: {package_name}[/bold red]")
                                 header_printed = True
-                            _LOGGER.warning(f"{e}\nDetailed traceback:", exc_info=True)
+                            _LOGGER.warning("%s\nDetailed traceback:", e, exc_info=True)
                             self._styled_rule(first_newline=False)
                 else:
                     # It's a subpackage. Recurse.
