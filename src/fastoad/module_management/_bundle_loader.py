@@ -379,11 +379,14 @@ class BundleLoader:
                 of failed modules names
         """
         bundles = set()
-        failed = set()
+        failed = dict()
 
         package = PackageReader(package_name)
+        root_package_path = package.path(package_name).args[0].resolve().as_posix()
+        root_package_path = root_package_path[: root_package_path.rfind("/") + 1]
         if package.has_error or not package.exists:
             failed.add(package_name)
+            failed[package_name] = root_package_path
             _LOGGER.warning(f"Failed to load package: {package_name}")
             self._styled_rule(f"[bold red]ERROR: {package_name}[/bold red]")
         elif package.is_package:
@@ -391,15 +394,16 @@ class BundleLoader:
 
             for item in package.contents:
                 item_package = ".".join([package_name, item])
+                item_path = ".".join([root_package_path, item])
 
                 if "." in item:
-                    # It's a file
+                    # A file. Considered only if it is a Python file. Ignored otherwise.
                     if item.endswith(".py"):
                         try:
                             bundle = self.context.install_bundle(item_package[:-3])
                             bundles.add(bundle)
                         except BundleException as e:
-                            failed.add(item_package[:-3])
+                            failed[item_package[:-3]] = item_path
                             if not header_printed:
                                 _LOGGER.warning(f"Failed to load package: {package_name}")
                                 self._styled_rule(f"[bold red]ERROR: {package_name}[/bold red]")
@@ -416,19 +420,20 @@ class BundleLoader:
         return bundles, failed
 
     @staticmethod
-    def _log_failed_modules(failed_modules: list[str]):
+    def _log_failed_modules(failed_modules: list[dict[str, str]]):
         table = Table(
             title="[bold red]FAST-OAD MODULE IMPORT FAILURE RECAP[/bold red]",
             show_header=True,
             header_style="bold red",
-            box=box.SIMPLE,
+            box=box.HORIZONTALS,
             expand=True,
         )
 
-        table.add_column("Failed Module", style="bold red")
+        table.add_column("Failed Module", overflow="fold")
+        table.add_column("Full path", overflow="fold")
 
-        for module in sorted(failed_modules):
-            table.add_row(module)
+        for module, path in failed_modules.items():
+            table.add_row(module, path)
 
         # Let Rich render the table cleanly to terminal
         console.print()
