@@ -38,12 +38,13 @@ from .exceptions import (
 from .._utils.files import as_path
 from .._utils.resource_management.contents import PackageReader
 
+_CONSOLE = Console()
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.propagate = False
 _LOGGER.setLevel(logging.WARNING)
 
 # Create RichHandler with custom formatter (only message)
-rich_handler = RichHandler(
+_rich_handler = RichHandler(
     rich_tracebacks=True,
     markup=True,
     show_path=False,
@@ -51,12 +52,11 @@ rich_handler = RichHandler(
     show_time=False,
     show_level=False,
 )
-formatter = logging.Formatter("%(message)s")  # no date, no level, no prefix
-rich_handler.setFormatter(formatter)
+_formatter = logging.Formatter("%(message)s")  # no date, no level, no prefix
+_rich_handler.setFormatter(_formatter)
 
 # Attach handler only to this _LOGGER
-_LOGGER.addHandler(rich_handler)
-console = Console()
+_LOGGER.addHandler(_rich_handler)
 
 """Logger for this module"""
 
@@ -372,35 +372,41 @@ class BundleLoader:
 
     def _install_python_package(self, package_name: str) -> Tuple[Set[Bundle], Set[str]]:
         """
-        Recursively loads indicated package.
+        Recursively loads indicated package and its submodules/subpackages.
 
-        :param package_name:
-        :return: A 2-tuple, with the list of installed bundles and the list
-                of failed modules names
+        :param package_name: Name of the Python package or module to load
+        :return: A 2-tuple:
+            - Set of successfully installed Bundle objects
+            - Dict of failed module names and their full paths
         """
         bundles = set()
-        failed = dict()
+        failed = dict()  # {module_name: full_path}
 
         package = PackageReader(package_name)
-        root_package_path = package.path(package_name).args[0].resolve().as_posix()
-        root_package_path = root_package_path[: root_package_path.rfind("/") + 1]
+
+        # Use "." to get the root path of the package/module itself
+        with package.path(".") as path_obj:
+            root_package_path = path_obj.resolve().as_posix()
+        root_package_path = root_package_path[
+            : root_package_path.rfind("/") + 1
+        ]  # Strip out the name of the package
+
         if package.has_error or not package.exists:
-            failed.add(package_name)
             failed[package_name] = root_package_path
             _LOGGER.warning(f"Failed to load package: {package_name}")
             self._styled_rule(f"[bold red]ERROR: {package_name}[/bold red]")
         elif package.is_package:
-            header_printed = False  # to print error header once per package
-
+            header_printed = False  # Ensure the error header is printed only once per package
             for item in package.contents:
-                item_package = ".".join([package_name, item])
-                item_path = ".".join([root_package_path, item])
+                # Get the bundle name and path
+                item_package = f"{package_name}.{item}"  # Qualified name
+                item_path = f"{root_package_path}{item}"  # Full path to the file or folder
 
                 if "." in item:
                     # A file. Considered only if it is a Python file. Ignored otherwise.
                     if item.endswith(".py"):
                         try:
-                            bundle = self.context.install_bundle(item_package[:-3])
+                            bundle = self.context.install_bundle(item_package[:-3])  # Remove .py
                             bundles.add(bundle)
                         except BundleException as e:
                             failed[item_package[:-3]] = item_path
@@ -410,9 +416,8 @@ class BundleLoader:
                                 header_printed = True
                             _LOGGER.warning(f"{e}\nDetailed traceback:", exc_info=True)
                             self._styled_rule(first_newline=False)
-
                 else:
-                    # It's a subpackage
+                    # It's a subpackage. Recurse.
                     sub_bundles, sub_failed = self._install_python_package(item_package)
                     bundles.update(sub_bundles)
                     failed.update(sub_failed)
@@ -436,15 +441,15 @@ class BundleLoader:
             table.add_row(module, path)
 
         # Let Rich render the table cleanly to terminal
-        console.print()
-        console.print(table)
+        _CONSOLE.print()
+        _CONSOLE.print(table)
 
     @staticmethod
     def _styled_rule(title: str = "", first_newline=True):
         if first_newline:
-            console.print()
-        console.rule(title, style="bright_black")
-        console.print()
+            _CONSOLE.print()
+        _CONSOLE.rule(title, style="bright_black")
+        _CONSOLE.print()
 
     @staticmethod
     def _fieldify(name: str) -> str:
