@@ -386,6 +386,8 @@ class BundleLoader:
 
         package = PackageReader(package_name)
 
+        # Fallback root path used when importlib cannot locate the package filesystem path,
+        # e.g., if the package is missing or in an unusual environment.
         root_package_path = "<unknown>"
         spec = importlib.util.find_spec(package_name)
         if spec and spec.origin:
