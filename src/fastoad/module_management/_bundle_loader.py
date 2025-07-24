@@ -128,7 +128,21 @@ class BundleLoader:
             )
             bundle.start()
         if failed:
-            self._log_failed_modules(failed)
+            # For some failure, the failed object can be returned as a set rather than a dict which
+            # will prevent proper logging of the failures.
+            if isinstance(failed, set):
+                reformatted_failed = {}
+                for failed_package in failed:
+                    path_to_failed_package = (
+                        as_path(folder_path).as_posix()
+                        + "/"
+                        + "/".join(failed_package.split(".")[1:])
+                        + ".py"
+                    )
+                    reformatted_failed[failed_package] = path_to_failed_package
+                self._log_failed_modules(reformatted_failed)
+            else:
+                self._log_failed_modules(failed)
 
         return bundles, failed
 
@@ -302,6 +316,11 @@ class BundleLoader:
                 )
             except TypeError as exc:
                 raise FastBundleLoaderUnknownFactoryNameError(factory_name) from exc
+                # context = exc.__context__
+                # if isinstance(context, AssertionError):
+                #     test = 1.0
+                # else:
+                #     raise FastBundleLoaderUnknownFactoryNameError(factory_name) from exc
 
     def clean_memory(self):
         """
@@ -442,6 +461,7 @@ class BundleLoader:
         table.add_column("Failed Module", overflow="fold")
         table.add_column("Full path", overflow="fold")
 
+        print(failed_modules)
         for module, path in failed_modules.items():
             table.add_row(module, path)
 
