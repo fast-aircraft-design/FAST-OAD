@@ -316,11 +316,6 @@ class BundleLoader:
                 )
             except TypeError as exc:
                 raise FastBundleLoaderUnknownFactoryNameError(factory_name) from exc
-                # context = exc.__context__
-                # if isinstance(context, AssertionError):
-                #     test = 1.0
-                # else:
-                #     raise FastBundleLoaderUnknownFactoryNameError(factory_name) from exc
 
     def clean_memory(self):
         """
@@ -461,7 +456,6 @@ class BundleLoader:
         table.add_column("Failed Module", overflow="fold")
         table.add_column("Full path", overflow="fold")
 
-        print(failed_modules)
         for module, path in failed_modules.items():
             table.add_row(module, path)
 
