@@ -43,6 +43,13 @@ class FastBundleLoaderUnknownFactoryNameError(FastError):
         self.factory_name = factory_name
 
 
+class FastBundleLoaderUnavailableFactoryError(FastError):
+    """
+    Raised when trying to instantiate a component from a known factory but which is unavailable for
+    instantiation.
+    """
+
+
 class FastBadSystemOptionError(FastError):
     """
     Raised when some option name is not conform to OpenMDAO system definition.

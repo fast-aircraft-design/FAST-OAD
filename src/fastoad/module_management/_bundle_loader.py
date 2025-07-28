@@ -35,6 +35,7 @@ from rich.table import Table
 
 from .exceptions import (
     FastBundleLoaderDuplicateFactoryError,
+    FastBundleLoaderUnavailableFactoryError,
     FastBundleLoaderUnknownFactoryNameError,
 )
 from .._utils.files import as_path
@@ -314,7 +315,11 @@ class BundleLoader:
                     factory_name, self._get_instance_name(factory_name), properties
                 )
             except TypeError as exc:
-                raise FastBundleLoaderUnknownFactoryNameError(factory_name) from exc
+                context = exc.__context__
+                if isinstance(context, FastBundleLoaderUnavailableFactoryError):
+                    raise context from exc
+                else:
+                    raise FastBundleLoaderUnknownFactoryNameError(factory_name) from exc
 
     def clean_memory(self):
         """
