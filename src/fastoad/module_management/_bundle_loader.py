@@ -120,7 +120,20 @@ class BundleLoader:
         if is_package:
             bundles, failed = self._install_python_package(folder_path)
         else:
-            bundles, failed = self.framework.install_package(as_path(folder_path).as_posix(), True)
+            bundles, unformatted_failed = self.framework.install_package(
+                as_path(folder_path).as_posix(), True
+            )
+            # For some failure, the failed object can be returned as a set rather than a dict which
+            # will prevent proper logging of the failures.
+            failed = {}
+            for failed_package in unformatted_failed:
+                path_to_failed_package = (
+                    as_path(folder_path).as_posix()
+                    + "/"
+                    + "/".join(failed_package.split(".")[1:])
+                    + ".py"
+                )
+                failed[failed_package] = path_to_failed_package
 
         for bundle in bundles:
             _LOGGER.info(

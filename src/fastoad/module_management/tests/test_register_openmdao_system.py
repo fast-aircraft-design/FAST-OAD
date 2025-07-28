@@ -184,3 +184,13 @@ def test_sellar(load):
 
     fastoad_problem.run_driver()
     assert classical_problem["f"] == fastoad_problem["f"]  # both problems have run
+
+
+def test_un_registrable_module(load):
+    """
+    Tests the case where modules can't be registered and are not recognized are package. Ensures
+    it returns no errors other than a FastBundleLoaderUnknownFactoryNameError
+    """
+
+    with pytest.raises(FastBundleLoaderUnknownFactoryNameError):
+        RegisterOpenMDAOSystem.get_system("module_management_test.sellar.disc4")
