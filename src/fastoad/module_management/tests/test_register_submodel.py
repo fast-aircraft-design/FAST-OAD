@@ -18,6 +18,7 @@ import pytest
 
 from .._bundle_loader import BundleLoader
 from ..exceptions import (
+    FastBundleLoaderUnavailableFactoryError,
     FastNoSubmodelFoundError,
     FastTooManySubmodelsError,
     FastUnknownSubmodelError,
@@ -84,4 +85,18 @@ def test_get_submodel_deactivation(load):
     assert obj.__class__.__name__ == "UniqueSubmodelForRequirement1"
 
     with pytest.raises(FastTooManySubmodelsError):
+        _ = RegisterSubmodel.get_submodel("requirement.2")
+
+
+def test_unavailable_submodel(load):
+    # This model exists AND is available
+    RegisterSubmodel.active_models["requirement.2"] = "req.2.submodel.B"
+    _ = RegisterSubmodel.get_submodel("requirement.2")
+
+    # This model exists, but is unavailable
+    assert "req.2.submodel.C" in BundleLoader().get_factory_names("requirement.2")
+
+    RegisterSubmodel.active_models["requirement.2"] = "req.2.submodel.C"
+
+    with pytest.raises(FastBundleLoaderUnavailableFactoryError):
         _ = RegisterSubmodel.get_submodel("requirement.2")
