@@ -318,8 +318,7 @@ class BundleLoader:
                 context = exc.__context__
                 if isinstance(context, FastBundleLoaderUnavailableFactoryError):
                     raise context from exc
-                else:
-                    raise FastBundleLoaderUnknownFactoryNameError(factory_name) from exc
+                raise FastBundleLoaderUnknownFactoryNameError(factory_name) from exc
 
     def clean_memory(self):
         """
