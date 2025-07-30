@@ -1,7 +1,7 @@
 # Poetry settings ==============================================================
 [tool.poetry]
 name = "FAST-OAD-core"
-version = "1.8.0" # This version number is overwritten by GitHub packaging workflow but setting this version here will allow installation of CS25 models in development mode
+version = "1.8.3" # This version number is overwritten by GitHub packaging workflow but setting this version here will allow installation of CS25 models in development mode
 description = "FAST-OAD is a framework for performing rapid Overall Aircraft Design"
 readme = "README.md"
 authors = [
