@@ -46,7 +46,9 @@ class FastBundleLoaderUnknownFactoryNameError(FastError):
 class FastBundleLoaderUnavailableFactoryError(FastError):
     """
     Raised when trying to instantiate a component from a known factory but which is unavailable for
-    instantiation.
+    instantiation. Can be used for a component that requires a package which is not installed by
+    default (either because it is an extra dependency or a private package) or for a component that
+    needs credentials to access private database.
     """
 
 

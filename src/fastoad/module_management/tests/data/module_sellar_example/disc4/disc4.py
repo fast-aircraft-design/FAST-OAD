@@ -23,20 +23,8 @@ class RegisteredDisc4(om.ExplicitComponent):
     """Disc 4 which can be registered but can be used"""
 
     def setup(self):
-        self.add_input("y2", val=1.0)
-
-        self.add_output("y4", val=67.0)
-
-    def setup_partials(self):
-        self.declare_partials("*", "*", method="fd")
+        pass
 
     # pylint: disable=invalid-name
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        """
-        Evaluates the equation
-        y4 = y2 * 67.0
-        """
-
-        y2 = inputs["y2"]
-
-        outputs["y4"] = y2 * 67.0
+        pass

@@ -89,6 +89,12 @@ def test_get_submodel_deactivation(load):
 
 
 def test_unavailable_submodel(load):
+    """
+    Tests the mechanism for unavailable submodel. Unavailable submodel are submodels that are
+    recognized but not expected to be usable unless certain conditions are met, for instance they
+    won't work unless some optional dependencies are installed. It should raise a different error
+    than when the submodel is not recognized.
+    """
     # This model exists AND is available
     RegisterSubmodel.active_models["requirement.2"] = "req.2.submodel.B"
     _ = RegisterSubmodel.get_submodel("requirement.2")

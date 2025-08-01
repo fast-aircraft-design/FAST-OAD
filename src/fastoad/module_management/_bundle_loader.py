@@ -308,6 +308,7 @@ class BundleLoader:
         :param properties: Initial properties of the component instance
         :return: the component instance
         :raise FastBundleLoaderUnknownFactoryNameError: unknown factory name
+        :raise FastBundleLoaderUnavailableFactoryError: unavailable factory
         """
         with use_ipopo(self.context) as ipopo:
             try:

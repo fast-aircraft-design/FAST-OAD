@@ -32,20 +32,8 @@ class RegisteredDisc3(om.ExplicitComponent):
         )
 
     def setup(self):
-        self.add_input("y2", val=1.0)
-
-        self.add_output("y3", val=2.0)
-
-    def setup_partials(self):
-        self.declare_partials("*", "*", method="fd")
+        pass
 
     # pylint: disable=invalid-name
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        """
-        Evaluates the equation
-        y3 = y2 ** 0.42
-        """
-
-        y2 = inputs["y2"]
-
-        outputs["y3"] = y2**0.42
+        pass
