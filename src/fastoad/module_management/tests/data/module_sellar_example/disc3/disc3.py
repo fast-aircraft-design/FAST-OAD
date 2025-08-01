@@ -1,5 +1,6 @@
+"""Sellar discipline 3"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2021 ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,30 +14,26 @@
 
 import openmdao.api as om
 
+from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.exceptions import FastBundleLoaderUnavailableFactoryError
-from fastoad.module_management.service_registry import RegisterSubmodel
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 
 
-@RegisterSubmodel("requirement.1", "req.1.submodel")
-class UniqueSubmodelForRequirement1(om.ExplicitComponent):
-    pass
+@RegisterOpenMDAOSystem("module_management_test.sellar.disc3", domain=ModelDomain.GEOMETRY)
+class RegisteredDisc3(om.ExplicitComponent):
+    """Disc 3 which can be registered but can't be used except certain conditions"""
 
-
-@RegisterSubmodel("requirement.2", "req.2.submodel.A")
-class SubmodelAForRequirement2(om.ExplicitComponent):
-    pass
-
-
-@RegisterSubmodel("requirement.2", "req.2.submodel.B")
-class SubmodelBForRequirement2(om.ExplicitComponent):
-    pass
-
-
-@RegisterSubmodel("requirement.2", "req.2.submodel.C")
-class SubmodelCForRequirement2(om.ExplicitComponent):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
         raise FastBundleLoaderUnavailableFactoryError(
-            "This submodel will only be available when pigs will fly"
+            "This module is only available on days that don't end in 'day' and on the 30th of "
+            "February"
         )
+
+    def setup(self):
+        pass
+
+    # pylint: disable=invalid-name
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        pass

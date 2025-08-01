@@ -35,6 +35,7 @@ from rich.table import Table
 
 from .exceptions import (
     FastBundleLoaderDuplicateFactoryError,
+    FastBundleLoaderUnavailableFactoryError,
     FastBundleLoaderUnknownFactoryNameError,
 )
 from .._utils.files import as_path
@@ -307,6 +308,7 @@ class BundleLoader:
         :param properties: Initial properties of the component instance
         :return: the component instance
         :raise FastBundleLoaderUnknownFactoryNameError: unknown factory name
+        :raise FastBundleLoaderUnavailableFactoryError: unavailable factory
         """
         with use_ipopo(self.context) as ipopo:
             try:
@@ -314,6 +316,9 @@ class BundleLoader:
                     factory_name, self._get_instance_name(factory_name), properties
                 )
             except TypeError as exc:
+                context = exc.__context__
+                if isinstance(context, FastBundleLoaderUnavailableFactoryError):
+                    raise context from exc
                 raise FastBundleLoaderUnknownFactoryNameError(factory_name) from exc
 
     def clean_memory(self):
