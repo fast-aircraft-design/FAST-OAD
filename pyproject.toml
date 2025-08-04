@@ -123,6 +123,11 @@ nbstripout = "^0.6.0"
 ruff = "0.6.9"
 
 
+# Poetry plugins ==================================================
+[tool.poetry.requires-plugins]
+poetry-plugin-export = ">=1.9" # Used for the poetry export hook in pre-commit
+
+
 # Dynamic versioning settings ==================================================
 # poetry-dynamic-versioning has to be installed in the same environment as
 # Poetry (normally outside your project environment).
