@@ -34,7 +34,7 @@ jobs:
           mpi: ${{ (runner.os == 'Windows') && 'microsoftmpi' || 'openmpi' }} # openmpi and microsoftmpi are the only MPI implementations that works
 
       - name: Install poetry
-        run: pipx install poetry==${{ vars.POETRY_VERSION }}
+        run: pipx install poetry==2.1.3
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
