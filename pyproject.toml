@@ -61,10 +61,7 @@ ipopo = [
 ]
 ipywidgets = ">=7.7.0, <9"
 ipysheet = ">=0.5.0, <1"
-plotly = [
-    { version = "^5", python = "<3.12" },
-    { version = "^5.19", python = "^3.12" }
-]
+plotly = "^6.2.0"
 wop = "^2.2.0"
 lxml = [
     { version = ">=4.6.5, <6", python = "<3.11" },
@@ -95,6 +92,7 @@ mpi4py = [
 rich = "^14.0.0"
 
 # Extras ---------------------------------------------------------------
+anywidget = "^0.9.18"
 [tool.poetry.extras]
 # Activated with:
 #    poetry install -E mpi
