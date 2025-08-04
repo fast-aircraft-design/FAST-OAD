@@ -92,6 +92,7 @@ mpi4py = [
 rich = "^14.0.0"
 
 # Extras ---------------------------------------------------------------
+anywidget = "^0.9.18"
 [tool.poetry.extras]
 # Activated with:
 #    poetry install -E mpi
