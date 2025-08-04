@@ -22,7 +22,11 @@ import pytest
 from .data.module_sellar_example.disc2.disc2 import RegisteredDisc2
 from .._bundle_loader import BundleLoader
 from ..constants import SERVICE_OPENMDAO_SYSTEM, ModelDomain
-from ..exceptions import FastBadSystemOptionError, FastBundleLoaderUnknownFactoryNameError
+from ..exceptions import (
+    FastBadSystemOptionError,
+    FastBundleLoaderUnavailableFactoryError,
+    FastBundleLoaderUnknownFactoryNameError,
+)
 from ..service_registry import RegisterOpenMDAOSystem
 from ..._utils.sellar.sellar_base import BasicSellarModel, BasicSellarProblem, ISellarFactory
 from ...openmdao.variables import Variable
@@ -194,3 +198,22 @@ def test_un_registrable_module(load):
 
     with pytest.raises(FastBundleLoaderUnknownFactoryNameError):
         RegisterOpenMDAOSystem.get_system("module_management_test.sellar.disc4")
+
+
+def test_unavailable_system():
+    """
+    Tests that FAST-OAD can do the difference between unrecognized package and unusable one (they
+    are recognized but can't be used because of missing requirements, for instance an optional
+    dependency is required)
+    """
+
+    RegisterOpenMDAOSystem.explore_folder(DATA_FOLDER_PATH / "module_sellar_example")
+    services = BundleLoader().get_factory_names(SERVICE_OPENMDAO_SYSTEM)
+
+    # Check that disc_3 is recognized but not disc_4
+    assert "module_management_test.sellar.disc3" in services
+    assert "module_management_test.sellar.disc4" not in services
+
+    # Check that disc_3 is not available
+    with pytest.raises(FastBundleLoaderUnavailableFactoryError):
+        RegisterOpenMDAOSystem.get_system("module_management_test.sellar.disc3")
