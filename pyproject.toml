@@ -13,6 +13,11 @@ authors = [
     {name = "Christophe DAVID", email = "christophe.david@onera.fr"},
     {name = "Scott DELBECQ", email = "Scott.DELBECQ@isae-supaero.fr"}
 ]
+maintainers = [
+    { name = "Florent LUTZ", email = "Florent.LUTZ2@isae-supaero.fr" },
+    { name = "Eric NGUYEN VAN", email = "Eric.Nguyen_Van@onera.fr" },
+    { name = "Enrico STRAGIOTTI", email = "enrico.stragiotti@onera.fr" },
+]
 requires-python = ">=3.9,<3.13"
 dynamic = ["version"] # Needed to use poetry-dynamic-versioning
 classifiers = [
