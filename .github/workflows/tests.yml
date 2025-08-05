@@ -50,7 +50,7 @@ jobs:
           virtualenvs-path: .venv
           installer-parallel: true
 
-      - name: Load cached venv 
+      - name: Load cached venv # Copied from https://github.com/snok/install-poetry/blob/d526ede1e27960b7b181a5ac53044f552afdaa38/README.md
       # load cached venv if cache exists
         id: cached-poetry-dependencies
         uses: actions/cache@v4
