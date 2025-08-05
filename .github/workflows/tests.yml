@@ -41,8 +41,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'poetry'
+          
       - name: Activate environment and install dependencies
         run: |
+          python -m poetry env use $(which python) # Without that macos latest fallback to the last python installed
           poetry install -E mpi
 
       - name: Check with Ruff
