@@ -52,7 +52,7 @@ dependencies = [
     "aenum>=3.1.0,<4",
     "jupyterlab>=3.4.7,<4; python_version<'3.12'",
     "jupyterlab>=4.2,<5; python_version>='3.12'",
-    "stdatm>=0.4.2",
+    "stdatm>=0.4.2,<1",
     "Deprecated>=1.2.13,<2",
     "click>=8.0.3,<9",
     "pyDOE3>=1.0.0,<2",
