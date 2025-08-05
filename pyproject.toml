@@ -19,23 +19,7 @@ maintainers = [
     { name = "Enrico STRAGIOTTI", email = "enrico.stragiotti@onera.fr" },
 ]
 requires-python = ">=3.9,<3.13"
-dynamic = ["version"] # Needed to use poetry-dynamic-versioning
-classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Environment :: Console", 
-    "Intended Audience :: Science/Research",
-    "Intended Audience :: Education",
-    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-    "Natural Language :: English",
-    "Operating System :: Microsoft :: Windows",
-    "Operating System :: POSIX :: Linux",
-    "Operating System :: MacOS",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11", 
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Scientific/Engineering :: Physics"
-]
+dynamic = ["version","classifiers"] # Needed to use poetry-dynamic-versioning
 
 # User dependencies ------------------------------------------------------------
 dependencies = [
@@ -104,6 +88,24 @@ packages = [
     { include = "fastoad", from = "src" },
 ]
 exclude = ["**/tests/**"]
+
+#  Suitable classifiers based on python requirement and license are not automatically added if classifiers are statically defined in the project section
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console", 
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Natural Language :: English",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11", 
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Physics"
+]
 
 # Development dependencies -----------------------------------------------------
 # Development dependencies using Poetry groups instead of [project.optional-dependencies]
