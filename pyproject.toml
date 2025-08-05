@@ -86,6 +86,7 @@ mpi = ["mpi4py>=4.0.2,<5"]
 
 [project.urls]
 homepage = "https://github.com/fast-aircraft-design/FAST-OAD"
+documentation = "https://fast-oad.readthedocs.io/en/stable/"
 
 # Entry points -----------------------------------------------------------------
 [project.scripts]
