@@ -12,6 +12,9 @@ on:
 jobs:
   tests:
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
     if: ${{ !contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]') }}
     strategy:
       matrix:
@@ -32,22 +35,35 @@ jobs:
         uses: mpi4py/setup-mpi@v1
         with:
           mpi: ${{ (runner.os == 'Windows') && 'microsoftmpi' || 'openmpi' }} # openmpi and microsoftmpi are the only MPI implementations that works
-
+      
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'poetry'
 
-      - name: Install Poetry with pipx
-        run: |
-          python -m pip install --upgrade pipx
-          pipx install poetry==2.1.3
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 2.1.3
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          virtualenvs-path: .venv
+          installer-parallel: true
 
-      - name: Activate environment and install dependencies
-        run: |
-          poetry env use $(which python)  # Without that macos latest fallback to the last python installed
-          poetry install -E mpi
+      - name: Load cached venv 
+      # load cached venv if cache exists
+        id: cached-poetry-dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies # Heavy dependencies (cached) - only runs on cache miss
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install -E mpi --no-interaction --no-root
+
+      - name: Install library # Light project install (always runs) - runs every time
+        run: poetry install -E mpi --no-interaction
 
       - name: Check with Ruff
         run: |
