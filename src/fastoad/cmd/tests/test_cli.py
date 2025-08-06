@@ -453,6 +453,7 @@ def test_eval(cleanup):
                 "gen_inputs",
                 (DATA_FOLDER_PATH / "sellar.yml").as_posix(),
                 (DATA_FOLDER_PATH / "inputs.xml").as_posix(),
+                "-f",
             ],
         )
         assert not result_1.exception
@@ -473,6 +474,7 @@ def test_optim(cleanup):
                 "gen_inputs",
                 (DATA_FOLDER_PATH / "sellar.yml").as_posix(),
                 (DATA_FOLDER_PATH / "inputs.xml").as_posix(),
+                "-f",
             ],
         )
         assert not result_1.exception
