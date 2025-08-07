@@ -95,7 +95,7 @@ class CalcRunner:
             configuration.make_local(calculation_folder)
             if input_values:
                 input_data = DataFile(configuration.input_file_path)
-                input_data.update(input_values)
+                input_data.update(input_values, merge_metadata=True)
                 input_data.save()
 
         problem = configuration.get_problem(read_inputs=True)
