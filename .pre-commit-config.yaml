@@ -12,6 +12,25 @@ repos:
         verbose: true
   - repo: local
     hooks:
+      - id: license-headers-fix
+        name: License headers (auto-fix)
+        entry: python devutils/license-upgrade.py
+        language: python
+        files: '^(src|tests|devutils|docs)/.*\.py$'
+        additional_dependencies: 
+          - "git+https://github.com/Lucas-C/pre-commit-hooks.git@v1.5.5"
+        require_serial: true
+      
+      - id: license-headers-check  
+        name: License headers (check-only)
+        entry: python devutils/license-upgrade.py --check
+        language: python
+        files: '^(src|tests|devutils|docs)/.*\.py$'
+        stages: [manual]
+        additional_dependencies: 
+          - "git+https://github.com/Lucas-C/pre-commit-hooks.git@v1.5.5"
+        require_serial: true
+        
       # Ruff hooks are copied from https://github.com/astral-sh/ruff-pre-commit, but specifying
       # a local repo ensures using locked version of Ruff in Poetry.
       - id: ruff
@@ -41,21 +60,3 @@ repos:
         types: [ jupyter ]
         require_serial: true
 
-      - id: license-headers-fix
-        name: License headers (auto-fix)
-        entry: python devutils/license-upgrade.py
-        language: python
-        files: '^(src|tests|devutils|docs)/.*\.py$'
-        additional_dependencies: 
-          - "git+https://github.com/Lucas-C/pre-commit-hooks.git@v1.5.5"
-        require_serial: true
-      
-      - id: license-headers-check  
-        name: License headers (check-only)
-        entry: python devutils/license-upgrade.py --check
-        language: python
-        files: '^(src|tests|devutils|docs)/.*\.py$'
-        stages: [manual]
-        additional_dependencies: 
-          - "git+https://github.com/Lucas-C/pre-commit-hooks.git@v1.5.5"
-        require_serial: true
