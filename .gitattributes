@@ -1,0 +1,3 @@
+# Mark poetry.lock as generated so GitHub collapses it and excludes from diff stats
+poetry.lock linguist-generated=true
+docs/requirements.txt linguist-generated=true

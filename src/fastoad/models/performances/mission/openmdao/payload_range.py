@@ -1,16 +1,18 @@
+# This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
+# Copyright (c) 2025 ONERA & ISAE-SUPAERO
+# FAST-OAD is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Payload-Range diagram computation."""
-#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023 ONERA & ISAE-SUPAERO
-#  FAST is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or
-#  (at your option) any later version.
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#  You should have received a copy of the GNU General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass
 from typing import Dict
@@ -205,12 +207,12 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
         for i in range(2):
             self.connect(
                 self._contour_names.range,
-                f"mux_grid.range_{nb_grid_points+i}",
+                f"mux_grid.range_{nb_grid_points + i}",
                 src_indices=[i + 1],
             )
             self.connect(
                 self._contour_names.duration,
-                f"mux_grid.duration_{nb_grid_points+i}",
+                f"mux_grid.duration_{nb_grid_points + i}",
                 src_indices=om.slicer[i + 1],
             )
 
