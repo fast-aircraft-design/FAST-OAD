@@ -77,9 +77,9 @@ def test_runs(cleanup):
     print()
     print_memory_state("start")
 
-    count = 2
+    count = 5
     for i in range(count):
-        print(f"RUN {i+1}/{count}")
+        print(f"RUN {i + 1}/{count}")
         run_problem()
 
     print_memory_state("Before garbage collector")
@@ -91,5 +91,5 @@ def test_runs(cleanup):
     for stat in stats[:10]:
         print(stat)
 
-    assert final_memory < 5
+    assert final_memory < 1
     tracemalloc.stop()
