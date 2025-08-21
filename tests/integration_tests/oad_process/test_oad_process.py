@@ -1,6 +1,7 @@
 """
 Test module for Overall Aircraft Design process
 """
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -52,7 +53,7 @@ def test_oad_process(cleanup):
 
     ref_inputs = pth.join(DATA_FOLDER_PATH, "CeRAS01_legacy.xml")
     problem = configurator.get_problem()
-    problem.write_needed_inputs(ref_inputs)
+    problem.write_needed_inputs(ref_inputs, write_outputs=True)
     problem.read_inputs()
 
     problem.setup()
@@ -146,7 +147,7 @@ def run_non_regression_test(
 
     # Generation of inputs ----------------------------------------
     ref_inputs = pth.join(DATA_FOLDER_PATH, legacy_result_file)
-    configurator.write_needed_inputs(ref_inputs)
+    configurator.write_needed_inputs(ref_inputs, write_outputs=True)
 
     # Get problem with inputs -------------------------------------
     problem = configurator.get_problem(read_inputs=True)
@@ -209,7 +210,9 @@ def test_api_eval_breguet(cleanup):
     # Generation of inputs ----------------------------------------------------
     # We get the same inputs as in tutorial notebook
     source_xml = pth.join(DATA_FOLDER_PATH, "CeRAS01_notebooks.xml")
-    oad.generate_inputs(configuration_file_path, source_xml, overwrite=True)
+    oad.generate_inputs(
+        configuration_file_path, source_xml, overwrite=True, write_output_variables=True
+    )
 
     # Run model ---------------------------------------------------------------
     problem = oad.evaluate_problem(configuration_file_path, True)

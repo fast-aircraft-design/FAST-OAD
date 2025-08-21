@@ -22,10 +22,10 @@ from click.testing import CliRunner
 from fastoad.cmd.cli import NOTEBOOK_FOLDER_NAME, fast_oad
 
 DATA_FOLDER_PATH = Path(__file__).parent / "data"
-RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
+RESULTS_FOLDER_PATH = Path(__file__).parent / "results"
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def cleanup():
     shutil.rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
     RESULTS_FOLDER_PATH.mkdir(parents=True)
@@ -453,6 +453,7 @@ def test_eval(cleanup):
                 "gen_inputs",
                 (DATA_FOLDER_PATH / "sellar.yml").as_posix(),
                 (DATA_FOLDER_PATH / "inputs.xml").as_posix(),
+                "--include_outputs",
             ],
         )
         assert not result_1.exception
