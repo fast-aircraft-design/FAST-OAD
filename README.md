@@ -53,7 +53,7 @@ FAST-OAD operates using a plugin system to provide additional sizing model for d
 > impact on PythonAPI). See [this issue](https://github.com/fast-aircraft-design/FAST-OAD/issues/425)
 > for details and fix.
 
-Detailed explanation on the plugin system and how to transform custom modules in a plugin can be found in [in the documentation](https://fast-oad.readthedocs.io/en/stable/documentation/custom_modules/add_plugin.html). A [GitHub template](https://github.com/fast-aircraft-design/FAST-OAD_plugin_template) is also available.
+Can’t find the models you need for your project? No problem, you can code them yourself! Detailed explanation on the plugin system and how to transform custom modules in a plugin can be found in [in the documentation](https://fast-oad.readthedocs.io/en/stable/documentation/custom_modules/add_plugin.html). A [GitHub template](https://github.com/fast-aircraft-design/FAST-OAD_plugin_template) with all the information you need to start developing your own FAST-OAD models is also available.
 
 ⏩ Want to try quickly?
 ----------------------
