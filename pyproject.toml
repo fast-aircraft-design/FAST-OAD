@@ -84,7 +84,7 @@ bundled = "fastoad"
 # Poetry settings ==============================================================
 [tool.poetry]
 requires-poetry = ">=2.0" # You should upgrade poetry to v2 using 'pipx upgrade poetry'
-version = "1.8.3"  # This version number is overwritten by GitHub packaging workflow but setting this version here will allow installation of CS25 models in development mode
+version = "1.8.4"  # This version number is overwritten by GitHub packaging workflow but setting this version here will allow installation of CS25 models in development mode
 packages = [
     { include = "fastoad", from = "src" },
 ]
