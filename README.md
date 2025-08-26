@@ -31,6 +31,12 @@ also adding/removing/developing models to match the need of your study.
 
 More details can be found in the [official documentation](https://fast-oad.readthedocs.io/).
 
+FAST-OAD operates using a plugin system to provide additional sizing model for different categories of aircraft. The following plugins are currently available in open-source:
++ [FAST-OAD_CS25](https://github.com/fast-aircraft-design/FAST-OAD_CS25): a plugin containing models to perform the sizing of CS-25/FAR-25 aircraft with emphasis on the SMR segment
++ [RTA](https://github.com/fast-aircraft-design/RTA): a variation of the FAST-OAD_CS25 which focuses on Regional Transport Aircraft
++ [FAST-OAD-GA](https://github.com/supaero-aircraft-design/FAST-GA): a plugin containing models for the sizing of General Aviation aircraft with conventional propulsive systems.
++ [FAST-OAD_CS23-HE](https://github.com/florentLutz/FAST-OAD-CS23-HE): a variation of FAST-OAD-GA to allow for the sizing of all- and hybrid-electric configuration.
+
 > **Important notice:**
 >
 > Since version 1.3.0, FAST-OAD models for commercial transport aircraft have moved in 
@@ -47,14 +53,16 @@ More details can be found in the [official documentation](https://fast-oad.readt
 > impact on PythonAPI). See [this issue](https://github.com/fast-aircraft-design/FAST-OAD/issues/425)
 > for details and fix.
 
-Want to try quickly?
---------------------
+Detailed explanation on the plugin system and how to transform custom modules in a plugin can be found in [in the documentation](https://fast-oad.readthedocs.io/en/stable/documentation/custom_modules/add_plugin.html). A [GitHub template](https://github.com/fast-aircraft-design/FAST-OAD_plugin_template) is also available.
+
+⏩ Want to try quickly?
+----------------------
 You can run FAST-OAD tutorials **without installation** using our
 [Binder-hosted Jupyter notebooks](https://mybinder.org/v2/gh/fast-aircraft-design/FAST-OAD.git/latest-release?filepath=src%2Ffastoad%2Fnotebooks).
 
 
-Install
--------
+✈️ Install
+----------
 
 **Prerequisite**:FAST-OAD needs at least **Python 3.9.0**.
 
@@ -79,3 +87,8 @@ or, if you want the minimum installation without the CS25-related models:
 ``` {.bash}
 $ pip install --upgrade fast-oad-core
 ```
+
+✨ Contributing
+---------------
+
+Contributions are welcome ! If you want to report a bug or request new features, feel free to drop an issue. For issue pertaining to the framework itself, use the following [link](https://github.com/fast-aircraft-design/FAST-OAD/issues/new/choose). For issues that have to do with the models, make sure to report it in the repository of the affected plugin. In any case, make sure to check the [recommended practices](https://github.com/fast-aircraft-design/FAST-OAD/wiki/Good-practices).
