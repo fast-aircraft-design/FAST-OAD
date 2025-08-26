@@ -91,4 +91,4 @@ $ pip install --upgrade fast-oad-core
 ✨ Contributing
 ---------------
 
-Contributions are welcome ! If you want to report a bug or request new features, feel free to drop an issue. For issue pertaining to the framework itself, use the following [link](https://github.com/fast-aircraft-design/FAST-OAD/issues/new/choose). For issues that have to do with the models, make sure to report it in the repository of the affected plugin. In any case, make sure to check the [recommended practices](https://github.com/fast-aircraft-design/FAST-OAD/wiki/Good-practices).
+Contributions are welcome! If you want to report a bug or request new features, feel free to drop an issue. For issue pertaining to the framework itself, use the following [link](https://github.com/fast-aircraft-design/FAST-OAD/issues/new/choose). For issues that have to do with the models, make sure to report it in the repository of the affected plugin. In any case, make sure to check the [recommended practices](https://github.com/fast-aircraft-design/FAST-OAD/wiki/Good-practices).
