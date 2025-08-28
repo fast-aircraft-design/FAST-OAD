@@ -36,6 +36,7 @@ FAST-OAD operates using a plugin system to provide additional sizing model for d
 + [RTA](https://github.com/fast-aircraft-design/RTA): a variation of the FAST-OAD_CS25 which focuses on Regional Transport Aircraft
 + [FAST-OAD-GA](https://github.com/supaero-aircraft-design/FAST-GA): a plugin containing models for the sizing of General Aviation aircraft with conventional propulsive systems.
 + [FAST-OAD_CS23-HE](https://github.com/florentLutz/FAST-OAD-CS23-HE): a variation of FAST-OAD-GA to allow for the sizing of all- and hybrid-electric configuration.
++ [FAST-UAV](https://github.com/SizingLab/FAST-UAV): a plugin containing models for the sizing of Unmanned Aerial Vehicles
 
 > **Important notice:**
 >
