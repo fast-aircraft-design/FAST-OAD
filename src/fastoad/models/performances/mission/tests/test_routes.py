@@ -37,7 +37,7 @@ def cleanup():
 def test_ranged_route(low_speed_polar, high_speed_polar, propulsion, cleanup):
     total_distance = 2.0e6
 
-    kwargs = dict(propulsion=propulsion, reference_area=120.0)
+    kwargs = {"propulsion": propulsion, "reference_area": 120.0}
     initial_climb = InitialClimbPhase(
         **kwargs, polar=low_speed_polar, thrust_rate=1.0, name="initial_climb", time_step=0.2
     )
@@ -79,7 +79,8 @@ def test_ranged_route(low_speed_polar, high_speed_polar, propulsion, cleanup):
     )
     flight_points = flight_calculator.compute_from(start)
 
-    # plot_flight(flight_points, "test_ranged_flight.png", RESULTS_FOLDER_PATH)
+    # Useful for debugging
+    # plot_flight(flight_points, "test_ranged_flight.png", RESULTS_FOLDER_PATH)  # noqa: ERA001
 
     assert_allclose(
         flight_points.iloc[-1].ground_distance,

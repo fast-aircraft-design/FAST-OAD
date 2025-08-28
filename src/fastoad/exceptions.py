@@ -46,7 +46,7 @@ class FastUnknownEngineSettingError(FastError):
     """
 
 
-class FastUnexpectedKeywordArgument(FastError):
+class FastUnexpectedKeywordArgumentError(FastError):
     """
     Raised when an instantiation is done with an incorrect keyword argument.
     """

@@ -64,7 +64,7 @@ class DistributionNameDict(AbstractNormalizedDict):
     """
 
     @staticmethod
-    def normalize(dist_name: str | None):  # pylint: disable=arguments-differ
+    def normalize(dist_name: str | None):
         """
         Returns a normalized distribution name for PEP-426-compliant comparison of distribution
         names.
@@ -343,13 +343,13 @@ class DistributionPluginDefinition(dict):
         )
         conf_files = [item.name for item in self.get_configuration_file_list()]
         source_data_files = [item.name for item in self.get_source_data_file_list()]
-        return dict(
-            installed_package=self.dist_name,
-            has_models=has_models,
-            has_notebooks=has_notebooks,
-            configurations=sorted(conf_files),
-            source_data_files=sorted(source_data_files),
-        )
+        return {
+            "installed_package": self.dist_name,
+            "has_models": has_models,
+            "has_notebooks": has_notebooks,
+            "configurations": sorted(conf_files),
+            "source_data_files": sorted(source_data_files),
+        }
 
 
 class FastoadLoader(BundleLoader):

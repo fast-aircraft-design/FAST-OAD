@@ -481,12 +481,7 @@ class RegisterSubmodel(_RegisterOpenMDAOService):
 
             submodel_id = submodel_ids[0]
 
-        if submodel_id:
-            instance = super().get_system(submodel_id, options)
-        else:
-            instance = om.Group()
-
-        return instance
+        return super().get_system(submodel_id, options) if submodel_id else om.Group()  # istance
 
     @classmethod
     def cancel_submodel_deactivations(cls):

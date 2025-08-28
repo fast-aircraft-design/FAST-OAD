@@ -12,22 +12,22 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastoad.exceptions import FastError, FastUnexpectedKeywordArgument
+from fastoad.exceptions import FastError, FastUnexpectedKeywordArgumentError
 
 
-class FastFlightSegmentUnexpectedKeywordArgument(FastUnexpectedKeywordArgument):
+class FastFlightSegmentUnexpectedKeywordArgumentError(FastUnexpectedKeywordArgumentError):
     """
     Raised when a segment is instantiated with an incorrect keyword argument.
     """
 
 
-class FastFlightPointUnexpectedKeywordArgument(FastUnexpectedKeywordArgument):
+class FastFlightPointUnexpectedKeywordArgumentError(FastUnexpectedKeywordArgumentError):
     """
     Raised when a FlightPoint is instantiated with an incorrect keyword argument.
     """
 
 
-class FastFlightSegmentIncompleteFlightPoint(FastError):
+class FastFlightSegmentIncompleteFlightPointError(FastError):
     """
     Raised when a segment computation encounters a FlightPoint instance without needed parameters.
     """

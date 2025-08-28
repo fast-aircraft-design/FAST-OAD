@@ -86,9 +86,9 @@ class MacroSegmentBase(FlightSequence):
             }
             segment_kwargs = {
                 name: value
-                for name, value in dict(
-                    (cls_field.name, getattr(self, cls_field.name)) for cls_field in fields(self)
-                ).items()
+                for name, value in {
+                    cls_field.name: getattr(self, cls_field.name) for cls_field in fields(self)
+                }.items()
                 if name in segment_field_names
             }
             segment_kwargs["target"] = FlightPoint()

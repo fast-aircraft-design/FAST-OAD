@@ -22,13 +22,13 @@ class FastXPathEvalError(FastError):
     """
 
 
-class FastXpathTranslatorInconsistentLists(FastError):
+class FastXpathTranslatorInconsistentListsError(FastError):
     """
     Raised when list of variable names and list of XPaths have not the same length
     """
 
 
-class FastXpathTranslatorDuplicates(FastError):
+class FastXpathTranslatorDuplicatesError(FastError):
     """
     Raised when list of variable names or list of XPaths have duplicate entries
     """

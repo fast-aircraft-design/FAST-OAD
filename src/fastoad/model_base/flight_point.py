@@ -141,11 +141,9 @@ class FlightPoint:
         default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor()}
     )
 
-    # pylint: disable=invalid-name
     #: Lift coefficient.
     CL: float = field(default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="-")})
 
-    # pylint: disable=invalid-name
     #: Drag coefficient.
     CD: float = field(default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="-")})
 

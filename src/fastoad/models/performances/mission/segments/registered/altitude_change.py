@@ -21,7 +21,9 @@ import pandas as pd
 from scipy.constants import foot, g
 
 from fastoad.model_base import FlightPoint
-from fastoad.models.performances.mission.exceptions import FastFlightSegmentIncompleteFlightPoint
+from fastoad.models.performances.mission.exceptions import (
+    FastFlightSegmentIncompleteFlightPointError,
+)
 from fastoad.models.performances.mission.segments.base import (
     RegisterSegment,
 )
@@ -81,11 +83,11 @@ class AltitudeChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightS
     _original_target_altitude: str | None = field(default=None, init=False)
 
     #: Using this value will tell to target the altitude with max lift/drag ratio.
-    OPTIMAL_ALTITUDE = "optimal_altitude"  # pylint: disable=invalid-name # used as constant
+    OPTIMAL_ALTITUDE = "optimal_altitude"  # used as constant
 
     #: Using this value will tell to target the nearest flight level to altitude
     #: with max lift/drag ratio.
-    OPTIMAL_FLIGHT_LEVEL = "optimal_flight_level"  # pylint: disable=invalid-name # used as constant
+    OPTIMAL_FLIGHT_LEVEL = "optimal_flight_level"  # used as constant
 
     def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
         if target.altitude is not None:
@@ -148,7 +150,7 @@ class AltitudeChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightS
                 distance_to_target = target.mach - current.mach
 
         if distance_to_target is None:
-            raise FastFlightSegmentIncompleteFlightPoint(
+            raise FastFlightSegmentIncompleteFlightPointError(
                 "No valid target definition for altitude change."
             )
         return distance_to_target

@@ -130,12 +130,12 @@ def test_ivc_from_to_variables():
     """
     Tests VariableList.to_ivc() and VariableList.from_ivc()
     """
-    vars = VariableList()
-    vars["a"] = {"value": 5}
-    vars["b"] = {"value": 2.5, "units": "m"}
-    vars["c"] = {"value": -3.2, "units": "kg/s", "desc": "some test"}
+    variables = VariableList()
+    variables["a"] = {"value": 5}
+    variables["b"] = {"value": 2.5, "units": "m"}
+    variables["c"] = {"value": -3.2, "units": "kg/s", "desc": "some test"}
 
-    ivc = vars.to_ivc()
+    ivc = variables.to_ivc()
     problem = om.Problem(reports=False)
     problem.model.add_subsystem("ivc", ivc, promotes=["*"])
     problem.setup()
@@ -144,10 +144,10 @@ def test_ivc_from_to_variables():
     assert problem.get_val("b", units="cm") == 250
     assert problem.get_val("c", units="kg/ms") == -0.0032
 
-    ivc = vars.to_ivc()
-    new_vars = VariableList.from_ivc(ivc)
-    assert vars.names() == new_vars.names()
-    for var, new_var in zip(vars, new_vars):
+    ivc = variables.to_ivc()
+    new_variables = VariableList.from_ivc(ivc)
+    assert variables.names() == new_variables.names()
+    for var, new_var in zip(variables, new_variables):
         assert var == new_var
 
 
@@ -155,13 +155,13 @@ def test_df_from_to_variables():
     """
     Tests VariableList.to_dataframe() and VariableList.from_dataframe()
     """
-    vars = VariableList()
-    vars["a"] = {"val": 5}
-    vars["b"] = {"val": np.array([1.0, 2.0, 3.0]), "units": "m"}
-    vars["c"] = {"val": [1.0, 2.0, 3.0], "units": "kg/s", "desc": "some test"}
-    vars["d"] = {"val": "my value is a string"}
+    variables = VariableList()
+    variables["a"] = {"val": 5}
+    variables["b"] = {"val": np.array([1.0, 2.0, 3.0]), "units": "m"}
+    variables["c"] = {"val": [1.0, 2.0, 3.0], "units": "kg/s", "desc": "some test"}
+    variables["d"] = {"val": "my value is a string"}
 
-    df = vars.to_dataframe()
+    df = variables.to_dataframe()
     assert np.all(df["name"] == ["a", "b", "c", "d"])
     assert np.all(
         df["val"]
@@ -170,51 +170,53 @@ def test_df_from_to_variables():
     assert np.all(df["units"].to_list() == [None, "m", "kg/s", None])
     assert np.all(df["desc"].to_list() == ["", "", "some test", ""])
 
-    new_vars = VariableList.from_dataframe(df)
+    new_variables = VariableList.from_dataframe(df)
 
-    assert vars.names() == new_vars.names()
-    for var, new_var in zip(vars, new_vars):
+    assert variables.names() == new_variables.names()
+    for var, new_var in zip(variables, new_variables):
         assert var == new_var
 
 
-def _compare_variable_lists(vars: list[Variable], expected_vars: list[Variable]):
+def _compare_variable_lists(variables: list[Variable], expected_variables: list[Variable]):
     def sort_key(v):
         return v.name
 
-    vars.sort(key=sort_key)
-    expected_vars.sort(key=sort_key)
-    assert vars == expected_vars
+    variables.sort(key=sort_key)
+    expected_variables.sort(key=sort_key)
+    assert variables == expected_variables
 
     # is_input is willingly ignored when checking equality of variables, but here, we want to
     # test it.
-    vars_dict = {var.name: var.is_input for var in vars}
-    expected_vars_dict = {var.name: var.is_input for var in expected_vars}
-    assert vars_dict == expected_vars_dict
+    variables_dict = {var.name: var.is_input for var in variables}
+    expected_variables_dict = {var.name: var.is_input for var in expected_variables}
+    assert variables_dict == expected_variables_dict
 
-    vars_dict = {var.name: var.description for var in vars}
-    expected_vars_dict = {var.name: var.description for var in expected_vars}
-    assert vars_dict == expected_vars_dict
+    variables_dict = {var.name: var.description for var in variables}
+    expected_variables_dict = {var.name: var.description for var in expected_variables}
+    assert variables_dict == expected_variables_dict
 
 
 def test_get_variables_from_problem_with_an_explicit_component():
     problem = om.Problem(reports=False)
     problem.model.add_subsystem("disc1", Disc1(), promotes=["*"])
 
-    vars_before_setup = VariableList.from_problem(
+    variables_before_setup = VariableList.from_problem(
         problem, use_initial_values=False, get_promoted_names=True
     )
     problem.setup()
-    vars = VariableList.from_problem(problem, use_initial_values=False, get_promoted_names=True)
-    assert vars_before_setup == vars
+    variables = VariableList.from_problem(
+        problem, use_initial_values=False, get_promoted_names=True
+    )
+    assert variables_before_setup == variables
 
-    expected_vars = [
+    expected_variables = [
         Variable(name="x", val=np.array([np.nan]), units=None, desc="input x", is_input=True),
         Variable(name="y2", val=np.array([1.0]), units=None, is_input=True, desc="variable y2"),
         Variable(name="z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(name="y1", val=np.array([1.0]), units=None, is_input=False, desc="variable y1"),
     ]
 
-    _compare_variable_lists(vars, expected_vars)
+    _compare_variable_lists(variables, expected_variables)
 
 
 def test_get_variables_from_problem_with_a_group():
@@ -222,14 +224,16 @@ def test_get_variables_from_problem_with_a_group():
     group.add_subsystem("disc1", Disc1(), promotes=["*"])
     group.add_subsystem("disc2", Disc2(), promotes=["*"])
     problem = om.Problem(group, reports=False)
-    vars_before_setup = VariableList.from_problem(
+    variables_before_setup = VariableList.from_problem(
         problem, use_initial_values=False, get_promoted_names=True
     )
     problem.setup()
-    vars = VariableList.from_problem(problem, use_initial_values=False, get_promoted_names=True)
-    assert vars_before_setup == vars
+    variables = VariableList.from_problem(
+        problem, use_initial_values=False, get_promoted_names=True
+    )
+    assert variables_before_setup == variables
 
-    expected_vars = [
+    expected_variables = [
         Variable(name="x", val=np.array([np.nan]), units=None, is_input=True, desc="input x"),
         Variable(name="y1", val=np.array([1.0]), units=None, is_input=False, desc="variable y1"),
         Variable(name="y2", val=np.array([1.0]), units=None, is_input=False, desc="variable y2"),
@@ -238,7 +242,7 @@ def test_get_variables_from_problem_with_a_group():
         ),
     ]
 
-    _compare_variable_lists(vars, expected_vars)
+    _compare_variable_lists(variables, expected_variables)
 
 
 def test_get_variables_from_problem_sellar_with_promotion_without_computation():
@@ -257,7 +261,7 @@ def test_get_variables_from_problem_sellar_with_promotion_without_computation():
         problem.setup()
         problem.final_setup()
 
-    expected_vars_promoted = [
+    expected_variables_promoted = [
         Variable(name="x", val=np.array([1.0]), units="Pa", is_input=True, desc="input x"),
         Variable(
             name="z", val=np.array([5.0, 2.0]), units="m**2", is_input=True, desc="variable z"
@@ -268,7 +272,7 @@ def test_get_variables_from_problem_sellar_with_promotion_without_computation():
         Variable(name="g2", val=np.array([1.0]), units=None, is_input=False),
         Variable(name="f", val=np.array([1.0]), units=None, is_input=False),
     ]
-    expected_vars_non_promoted = [
+    expected_variables_non_promoted = [
         Variable(name="indeps.x", val=np.array([1.0]), units="Pa", is_input=True),
         Variable(name="indeps.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(name="disc1.x", val=np.array([np.nan]), units=None, is_input=True, desc="input x"),
@@ -295,18 +299,24 @@ def test_get_variables_from_problem_sellar_with_promotion_without_computation():
         Variable(name="constraint2.g2", val=np.array([1.0]), units=None, is_input=False),
     ]
 
-    vars = VariableList.from_problem(problem, use_initial_values=True, get_promoted_names=True)
-    _compare_variable_lists(vars, expected_vars_promoted)
+    variables = VariableList.from_problem(problem, use_initial_values=True, get_promoted_names=True)
+    _compare_variable_lists(variables, expected_variables_promoted)
 
-    vars = VariableList.from_problem(problem, use_initial_values=True, get_promoted_names=False)
-    _compare_variable_lists(vars, expected_vars_non_promoted)
+    variables = VariableList.from_problem(
+        problem, use_initial_values=True, get_promoted_names=False
+    )
+    _compare_variable_lists(variables, expected_variables_non_promoted)
 
     # use_initial_values=False should have no effect while problem has not been run
-    vars = VariableList.from_problem(problem, use_initial_values=False, get_promoted_names=True)
-    _compare_variable_lists(vars, expected_vars_promoted)
+    variables = VariableList.from_problem(
+        problem, use_initial_values=False, get_promoted_names=True
+    )
+    _compare_variable_lists(variables, expected_variables_promoted)
 
-    vars = VariableList.from_problem(problem, use_initial_values=False, get_promoted_names=False)
-    _compare_variable_lists(vars, expected_vars_non_promoted)
+    variables = VariableList.from_problem(
+        problem, use_initial_values=False, get_promoted_names=False
+    )
+    _compare_variable_lists(variables, expected_variables_non_promoted)
 
 
 def test_get_variables_from_problem_sellar_with_promotion_with_computation():
@@ -325,7 +335,7 @@ def test_get_variables_from_problem_sellar_with_promotion_with_computation():
         problem.setup()
         problem.final_setup()
 
-    expected_vars_promoted_initial = [
+    expected_variables_promoted_initial = [
         Variable(name="x", val=np.array([1.0]), units="Pa", is_input=True, desc="input x"),
         Variable(
             name="z", val=np.array([5.0, 2.0]), units="m**2", is_input=True, desc="variable z"
@@ -336,7 +346,7 @@ def test_get_variables_from_problem_sellar_with_promotion_with_computation():
         Variable(name="g2", val=np.array([1.0]), units=None, is_input=False),
         Variable(name="f", val=np.array([1.0]), units=None, is_input=False),
     ]
-    expected_vars_promoted_computed = [
+    expected_variables_promoted_computed = [
         Variable(name="x", val=np.array([1.0]), units="Pa", is_input=True, desc="input x"),
         Variable(
             name="z", val=np.array([5.0, 2.0]), units="m**2", is_input=True, desc="variable z"
@@ -351,7 +361,7 @@ def test_get_variables_from_problem_sellar_with_promotion_with_computation():
         Variable(name="g1", val=np.array([-22.42830237]), units=None, is_input=False),
         Variable(name="g2", val=np.array([-11.94151185]), units=None, is_input=False),
     ]
-    expected_vars_non_promoted_initial = [
+    expected_variables_non_promoted_initial = [
         Variable(name="indeps.x", val=np.array([1.0]), units="Pa", is_input=True),
         Variable(name="indeps.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(name="disc1.x", val=np.array([np.nan]), units=None, is_input=True, desc="input x"),
@@ -377,7 +387,7 @@ def test_get_variables_from_problem_sellar_with_promotion_with_computation():
         Variable(name="constraint2.y2", val=np.array([1.0]), units=None, is_input=True),
         Variable(name="constraint2.g2", val=np.array([1.0]), units=None, is_input=False),
     ]
-    expected_vars_non_promoted_computed = [
+    expected_variables_non_promoted_computed = [
         Variable(name="indeps.x", val=np.array([1.0]), units="Pa", is_input=True),
         Variable(name="indeps.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(name="disc1.x", val=np.array([1.0]), units=None, is_input=True, desc="input x"),
@@ -414,17 +424,23 @@ def test_get_variables_from_problem_sellar_with_promotion_with_computation():
 
     problem.run_model()
 
-    vars = VariableList.from_problem(problem, use_initial_values=True, get_promoted_names=True)
-    _compare_variable_lists(vars, expected_vars_promoted_initial)
+    variables = VariableList.from_problem(problem, use_initial_values=True, get_promoted_names=True)
+    _compare_variable_lists(variables, expected_variables_promoted_initial)
 
-    vars = VariableList.from_problem(problem, use_initial_values=True, get_promoted_names=False)
-    _compare_variable_lists(vars, expected_vars_non_promoted_initial)
+    variables = VariableList.from_problem(
+        problem, use_initial_values=True, get_promoted_names=False
+    )
+    _compare_variable_lists(variables, expected_variables_non_promoted_initial)
 
-    vars = VariableList.from_problem(problem, use_initial_values=False, get_promoted_names=True)
-    _compare_variable_lists(vars, expected_vars_promoted_computed)
+    variables = VariableList.from_problem(
+        problem, use_initial_values=False, get_promoted_names=True
+    )
+    _compare_variable_lists(variables, expected_variables_promoted_computed)
 
-    vars = VariableList.from_problem(problem, use_initial_values=False, get_promoted_names=False)
-    _compare_variable_lists(vars, expected_vars_non_promoted_computed)
+    variables = VariableList.from_problem(
+        problem, use_initial_values=False, get_promoted_names=False
+    )
+    _compare_variable_lists(variables, expected_variables_non_promoted_computed)
 
 
 def test_get_variables_from_problem_sellar_without_promotion_without_computation():
@@ -447,7 +463,7 @@ def test_get_variables_from_problem_sellar_without_promotion_without_computation
     problem.setup()
     problem.final_setup()
 
-    expected_vars_initial = [
+    expected_variables_initial = [
         Variable(name="indeps.x", val=np.array([1.0]), is_input=True),
         Variable(name="indeps.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(name="disc1.x", val=np.array([np.nan]), units=None, is_input=True, desc="input x"),
@@ -474,36 +490,36 @@ def test_get_variables_from_problem_sellar_without_promotion_without_computation
         Variable(name="constraint2.g2", val=np.array([1.0]), units=None, is_input=False),
     ]
 
-    vars = VariableList.from_problem(
+    variables = VariableList.from_problem(
         problem, use_initial_values=True, get_promoted_names=True, promoted_only=True
     )
-    _compare_variable_lists(vars, [])
+    _compare_variable_lists(variables, [])
 
-    vars = VariableList.from_problem(
+    variables = VariableList.from_problem(
         problem, use_initial_values=True, get_promoted_names=True, promoted_only=False
     )
-    _compare_variable_lists(vars, expected_vars_initial)
+    _compare_variable_lists(variables, expected_variables_initial)
 
-    vars = VariableList.from_problem(
+    variables = VariableList.from_problem(
         problem, use_initial_values=True, get_promoted_names=False, promoted_only=False
     )
-    _compare_variable_lists(vars, expected_vars_initial)
+    _compare_variable_lists(variables, expected_variables_initial)
 
     # use_initial_values=False should have no effect while problem has not been run
-    vars = VariableList.from_problem(
+    variables = VariableList.from_problem(
         problem, use_initial_values=False, get_promoted_names=True, promoted_only=True
     )
-    _compare_variable_lists(vars, [])
+    _compare_variable_lists(variables, [])
 
-    vars = VariableList.from_problem(
+    variables = VariableList.from_problem(
         problem, use_initial_values=False, get_promoted_names=True, promoted_only=False
     )
-    _compare_variable_lists(vars, expected_vars_initial)
+    _compare_variable_lists(variables, expected_variables_initial)
 
-    vars = VariableList.from_problem(
+    variables = VariableList.from_problem(
         problem, use_initial_values=False, get_promoted_names=False, promoted_only=False
     )
-    _compare_variable_lists(vars, expected_vars_initial)
+    _compare_variable_lists(variables, expected_variables_initial)
 
 
 def test_get_variables_from_problem_sellar_without_promotion_with_computation():
@@ -525,7 +541,7 @@ def test_get_variables_from_problem_sellar_without_promotion_with_computation():
     problem = om.Problem(group, reports=False)
     problem.setup()
 
-    expected_vars_initial = [
+    expected_variables_initial = [
         Variable(name="indeps.x", val=np.array([1.0]), is_input=True),
         Variable(name="indeps.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(name="disc1.x", val=np.array([np.nan]), units=None, is_input=True, desc="input x"),
@@ -551,7 +567,7 @@ def test_get_variables_from_problem_sellar_without_promotion_with_computation():
         Variable(name="constraint2.y2", val=np.array([1.0]), units=None, is_input=True),
         Variable(name="constraint2.g2", val=np.array([1.0]), units=None, is_input=False),
     ]
-    expected_vars_computed = [
+    expected_variables_computed = [
         Variable(name="indeps.x", val=np.array([1.0]), is_input=True),
         Variable(name="indeps.z", val=np.array([5.0, 2.0]), units="m**2", is_input=True),
         Variable(name="disc1.x", val=np.array([1.0]), units=None, is_input=True, desc="input x"),
@@ -587,30 +603,30 @@ def test_get_variables_from_problem_sellar_without_promotion_with_computation():
     ]
     problem.run_model()
 
-    vars = VariableList.from_problem(
+    variables = VariableList.from_problem(
         problem, use_initial_values=True, get_promoted_names=True, promoted_only=True
     )
-    _compare_variable_lists(vars, [])
+    _compare_variable_lists(variables, [])
 
-    vars = VariableList.from_problem(
+    variables = VariableList.from_problem(
         problem, use_initial_values=True, get_promoted_names=True, promoted_only=False
     )
-    _compare_variable_lists(vars, expected_vars_initial)
+    _compare_variable_lists(variables, expected_variables_initial)
 
-    vars = VariableList.from_problem(
+    variables = VariableList.from_problem(
         problem, use_initial_values=True, get_promoted_names=False, promoted_only=False
     )
-    _compare_variable_lists(vars, expected_vars_initial)
+    _compare_variable_lists(variables, expected_variables_initial)
 
-    vars = VariableList.from_problem(
+    variables = VariableList.from_problem(
         problem, use_initial_values=False, get_promoted_names=True, promoted_only=False
     )
-    _compare_variable_lists(vars, expected_vars_computed)
+    _compare_variable_lists(variables, expected_variables_computed)
 
-    vars = VariableList.from_problem(
+    variables = VariableList.from_problem(
         problem, use_initial_values=False, get_promoted_names=False, promoted_only=False
     )
-    _compare_variable_lists(vars, expected_vars_computed)
+    _compare_variable_lists(variables, expected_variables_computed)
 
 
 pytestmark = pytest.mark.filterwarnings(
@@ -621,26 +637,27 @@ pytestmark = pytest.mark.filterwarnings(
 
 def _test_and_check_from_unconnected_inputs(
     problem: om.Problem,
-    expected_mandatory_vars: list[Variable],
-    expected_optional_vars: list[Variable],
+    expected_mandatory_variables: list[Variable],
+    expected_optional_variables: list[Variable],
 ):
     problem.setup()
     problem.final_setup()
-    vars = VariableList.from_unconnected_inputs(problem, with_optional_inputs=False)
-    assert set(vars) == set(expected_mandatory_vars)
+    variables = VariableList.from_unconnected_inputs(problem, with_optional_inputs=False)
+    assert set(variables) == set(expected_mandatory_variables)
 
-    vars_dict = {var.name: var.description for var in vars}
-    expected_vars_dict = {var.name: var.description for var in expected_mandatory_vars}
-    assert vars_dict == expected_vars_dict
+    variables_dict = {var.name: var.description for var in variables}
+    expected_variables_dict = {var.name: var.description for var in expected_mandatory_variables}
+    assert variables_dict == expected_variables_dict
 
-    vars = VariableList.from_unconnected_inputs(problem, with_optional_inputs=True)
-    assert set(vars) == set(expected_mandatory_vars + expected_optional_vars)
+    variables = VariableList.from_unconnected_inputs(problem, with_optional_inputs=True)
+    assert set(variables) == set(expected_mandatory_variables + expected_optional_variables)
 
-    vars_dict = {var.name: var.description for var in vars}
-    expected_vars_dict = {
-        var.name: var.description for var in (expected_mandatory_vars + expected_optional_vars)
+    variables_dict = {var.name: var.description for var in variables}
+    expected_variables_dict = {
+        var.name: var.description
+        for var in (expected_mandatory_variables + expected_optional_variables)
     }
-    assert vars_dict == expected_vars_dict
+    assert variables_dict == expected_variables_dict
 
 
 def test_variables_from_unconnected_inputs_with_an_explicit_component():
@@ -648,7 +665,7 @@ def test_variables_from_unconnected_inputs_with_an_explicit_component():
     group.add_subsystem("disc1", Disc1(), promotes=["*"])
     problem = om.Problem(group, reports=False)
 
-    expected_mandatory_vars = [
+    expected_mandatory_variables = [
         Variable(
             name="x",
             val=np.array([np.nan]),
@@ -658,7 +675,7 @@ def test_variables_from_unconnected_inputs_with_an_explicit_component():
             desc="input x",
         )
     ]
-    expected_optional_vars = [
+    expected_optional_variables = [
         Variable(name="z", val=np.array([5.0, 2.0]), units="m**2", is_input=True, prom_name="z"),
         Variable(
             name="y2",
@@ -670,7 +687,7 @@ def test_variables_from_unconnected_inputs_with_an_explicit_component():
         ),
     ]
     _test_and_check_from_unconnected_inputs(
-        problem, expected_mandatory_vars, expected_optional_vars
+        problem, expected_mandatory_variables, expected_optional_variables
     )
 
 
@@ -680,7 +697,7 @@ def test_variables_from_unconnected_inputs_with_a_group(cleanup):
     group.add_subsystem("disc2", Disc2(), promotes=["*"])
     problem = om.Problem(group, reports=False)
 
-    expected_mandatory_vars = [
+    expected_mandatory_variables = [
         Variable(
             name="x",
             val=np.array([np.nan]),
@@ -690,7 +707,7 @@ def test_variables_from_unconnected_inputs_with_a_group(cleanup):
             desc="input x",
         )
     ]
-    expected_optional_vars = [
+    expected_optional_variables = [
         Variable(
             name="z",
             val=np.array([5.0, 2.0]),
@@ -701,7 +718,7 @@ def test_variables_from_unconnected_inputs_with_a_group(cleanup):
         )
     ]
     _test_and_check_from_unconnected_inputs(
-        problem, expected_mandatory_vars, expected_optional_vars
+        problem, expected_mandatory_variables, expected_optional_variables
     )
 
 
@@ -715,7 +732,7 @@ def test_variables_from_unconnected_inputs_with_sellar_problem(cleanup):
     group.add_subsystem("constaint2", FunctionG2(), promotes=["*"])
     problem = om.Problem(group, reports=False)
 
-    expected_mandatory_vars = [
+    expected_mandatory_variables = [
         Variable(
             name="x",
             val=np.array([np.nan]),
@@ -732,7 +749,7 @@ def test_variables_from_unconnected_inputs_with_sellar_problem(cleanup):
     # is provided in Disc2. We test here that if the kwarg "with_optional_inputs" is true the
     # description of the variable is updated.
 
-    expected_optional_vars = [
+    expected_optional_variables = [
         Variable(
             name="z",
             value=np.array([np.nan, np.nan]),
@@ -743,7 +760,7 @@ def test_variables_from_unconnected_inputs_with_sellar_problem(cleanup):
         )
     ]
     _test_and_check_from_unconnected_inputs(
-        problem, expected_mandatory_vars, expected_optional_vars
+        problem, expected_mandatory_variables, expected_optional_variables
     )
 
 
@@ -766,95 +783,97 @@ def test_get_variables_from_problem_sellar_with_promotion_and_connect():
     group.connect("disc2.y2", "y2")
 
     problem = om.Problem(group, reports=False)
-    vars_before_setup = VariableList.from_problem(
+    variables_before_setup = VariableList.from_problem(
         problem, use_initial_values=False, get_promoted_names=True
     )
     problem.setup()
     problem.final_setup()
-    vars = VariableList.from_problem(problem, use_initial_values=False, get_promoted_names=True)
-    assert vars_before_setup == vars
+    variables = VariableList.from_problem(
+        problem, use_initial_values=False, get_promoted_names=True
+    )
+    assert variables_before_setup == variables
 
     # x should be an output
-    assert not vars["x"].is_input
+    assert not variables["x"].is_input
     # y1 and y2 should be outputs
-    assert not vars["y1"].is_input
-    assert not vars["y2"].is_input
+    assert not variables["y1"].is_input
+    assert not variables["y2"].is_input
     # f, g1 and g2 should be outputs
-    assert not vars["f"].is_input
-    assert not vars["g1"].is_input
-    assert not vars["g2"].is_input
+    assert not variables["f"].is_input
+    assert not variables["g1"].is_input
+    assert not variables["g2"].is_input
     # indep:x and z as indeps should be inputs
-    assert vars["indep:x"].is_input
-    assert vars["z"].is_input
+    assert variables["indep:x"].is_input
+    assert variables["z"].is_input
 
     # Test for io_status
     # Check that all variables are returned
-    vars = VariableList.from_problem(
+    variables = VariableList.from_problem(
         problem, use_initial_values=False, get_promoted_names=True, io_status="all"
     )
 
-    assert "y1" in vars.names()
-    assert "y2" in vars.names()
-    assert "f" in vars.names()
-    assert "g1" in vars.names()
-    assert "g2" in vars.names()
-    assert "x" in vars.names()
-    assert "indep:x" in vars.names()
-    assert "z" in vars.names()
+    assert "y1" in variables.names()
+    assert "y2" in variables.names()
+    assert "f" in variables.names()
+    assert "g1" in variables.names()
+    assert "g2" in variables.names()
+    assert "x" in variables.names()
+    assert "indep:x" in variables.names()
+    assert "z" in variables.names()
 
     # Check that only inputs are returned
-    vars = VariableList.from_problem(
+    variables = VariableList.from_problem(
         problem, use_initial_values=False, get_promoted_names=True, io_status="inputs"
     )
 
-    assert "y1" not in vars.names()
-    assert "y2" not in vars.names()
-    assert "f" not in vars.names()
-    assert "g1" not in vars.names()
-    assert "g2" not in vars.names()
-    assert "indep:x" in vars.names()
-    assert "z" in vars.names()
+    assert "y1" not in variables.names()
+    assert "y2" not in variables.names()
+    assert "f" not in variables.names()
+    assert "g1" not in variables.names()
+    assert "g2" not in variables.names()
+    assert "indep:x" in variables.names()
+    assert "z" in variables.names()
 
     # Check that only outputs are returned
-    vars = VariableList.from_problem(
+    variables = VariableList.from_problem(
         problem, use_initial_values=False, get_promoted_names=True, io_status="outputs"
     )
 
-    assert "y1" in vars.names()
-    assert "y2" in vars.names()
-    assert "f" in vars.names()
-    assert "g1" in vars.names()
-    assert "g2" in vars.names()
-    assert "x" in vars.names()
-    assert "indep:x" not in vars.names()
-    assert "z" not in vars.names()
+    assert "y1" in variables.names()
+    assert "y2" in variables.names()
+    assert "f" in variables.names()
+    assert "g1" in variables.names()
+    assert "g2" in variables.names()
+    assert "x" in variables.names()
+    assert "indep:x" not in variables.names()
+    assert "z" not in variables.names()
 
 
 def test_get_val():
-    vars = VariableList()
-    vars["bar"] = {"value": 1.0, "units": "m"}
-    vars["baq"] = {"value": np.array([1.0])}
-    vars["foo"] = {"value": 1.0, "units": "m**2"}
-    vars["baz"] = {"value": [1.0, 2.0], "units": "m"}
-    vars["bat"] = {"value": (1.0, 2.0), "units": "m"}
-    vars["qux"] = {"value": np.array([1.0, 2.0]), "units": "m"}
-    vars["quux"] = {"value": [[1.0, 2.0], [2.0, 3.0]], "units": "m"}
-    data = vars["bar"].get_val()
+    variables = VariableList()
+    variables["bar"] = {"value": 1.0, "units": "m"}
+    variables["baq"] = {"value": np.array([1.0])}
+    variables["foo"] = {"value": 1.0, "units": "m**2"}
+    variables["baz"] = {"value": [1.0, 2.0], "units": "m"}
+    variables["bat"] = {"value": (1.0, 2.0), "units": "m"}
+    variables["qux"] = {"value": np.array([1.0, 2.0]), "units": "m"}
+    variables["quux"] = {"value": [[1.0, 2.0], [2.0, 3.0]], "units": "m"}
+    data = variables["bar"].get_val()
     assert not isinstance(data, list) and not isinstance(data, np.ndarray)
     assert_allclose(data, 1, rtol=1e-3, atol=1e-5)
     units = "km"
-    data = vars["bar"].get_val(new_units=units)
+    data = variables["bar"].get_val(new_units=units)
     assert_allclose(data, 1e-3, rtol=1e-3, atol=1e-5)
-    data = vars["baq"].get_val()
+    data = variables["baq"].get_val()
     assert not isinstance(data, list) and not isinstance(data, np.ndarray)
     assert_allclose(data, 1, rtol=1e-3, atol=1e-5)
     with pytest.raises(TypeError):
-        data = vars["foo"].get_val(new_units=units)
-    data = vars["baz"].get_val(new_units=units)
+        data = variables["foo"].get_val(new_units=units)
+    data = variables["baz"].get_val(new_units=units)
     assert_allclose(data, [1e-3, 2e-3], rtol=1e-3, atol=1e-5)
-    data = vars["bat"].get_val(new_units=units)
+    data = variables["bat"].get_val(new_units=units)
     assert_allclose(data, [1e-3, 2e-3], rtol=1e-3, atol=1e-5)
-    data = vars["qux"].get_val(new_units=units)
+    data = variables["qux"].get_val(new_units=units)
     assert_allclose(data, [1e-3, 2e-3], rtol=1e-3, atol=1e-5)
-    data = vars["quux"].get_val(new_units=units)
+    data = variables["quux"].get_val(new_units=units)
     assert_allclose(data, [[1e-3, 2e-3], [2e-3, 3e-3]], rtol=1e-3, atol=1e-5)

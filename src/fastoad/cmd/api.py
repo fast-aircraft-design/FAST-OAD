@@ -397,32 +397,32 @@ def list_variables(
                 out,
             )
         make_parent_dir(out)
-        out_file = Path(out).open("w", encoding="utf-8")
-    else:
-        if out == sys.stdout and InteractiveShell.initialized() and not force_text_output:
-            display(HTML(variables_df.to_html(index=False)))
-            return None
+        with Path(out).open("w", encoding="utf-8") as out_file:
+            if tablefmt == "var_desc":
+                content = _generate_var_desc_format(variables_df)
+            else:
+                content = _generate_table_format(variables_df, tablefmt=tablefmt)
+            out_file.write(content)
+            _LOGGER.info("Output list written in %s", out)
+        return out
 
-        # Here we continue with text output
-        out_file = out
+    if out == sys.stdout and InteractiveShell.initialized() and not force_text_output:
+        display(HTML(variables_df.to_html(index=False)))
+        return None
 
+    # Here we continue with text output
     if tablefmt == "var_desc":
         content = _generate_var_desc_format(variables_df)
     else:
         content = _generate_table_format(variables_df, tablefmt=tablefmt)
 
-    out_file.write(content)
-
-    if isinstance(out, str):
-        out_file.close()
-        _LOGGER.info("Output list written in %s", out)
-        return out
+    out.write(content)
 
     return None
 
 
 def _generate_var_desc_format(variables_df):
-    kwargs = dict(columns=["NAME", "DESCRIPTION"], sep="|", index=False, header=False)
+    kwargs = {"columns": ["NAME", "DESCRIPTION"], "sep": "|", "index": False, "header": False}
     if Version(pd.__version__) < Version("1.5"):
         kwargs["line_terminator"] = "\n"
     else:
@@ -442,7 +442,7 @@ def _generate_table_format(variables_df, tablefmt="grid"):
     return content + "\n"
 
 
-def list_modules(
+def list_modules(  # noqa: PLR0912 Here is ok to have a more complex function
     source_path: list[str | PathLike] | str | PathLike | None = None,
     out: str | PathLike | TextIO | None = None,
     overwrite: bool = False,  # noqa: FBT001, FBT002 no breaking changes in API functions
@@ -482,7 +482,7 @@ def list_modules(
             raise FileNotFoundError(f"Could not find {source_path}")
     elif isinstance(source_path, Iterable):
         for folder_path in source_path:
-            folder_path = as_path(folder_path)
+            folder_path = as_path(folder_path)  # noqa: PLW2901
             if not folder_path.is_dir():
                 _LOGGER.warning("SKIPPED %s: folder does not exist.", folder_path)
             else:
@@ -490,10 +490,7 @@ def list_modules(
     elif source_path is not None:
         raise RuntimeError("Unexpected type for source_path")
 
-    if verbose:
-        cell_list = _get_detailed_system_list()
-    else:
-        cell_list = _get_simple_system_list()
+    cell_list = _get_detailed_system_list() if verbose else _get_simple_system_list()
 
     if isinstance(out, (str, PathLike)):
         out = as_path(out).absolute()
@@ -502,28 +499,27 @@ def list_modules(
                 f"File {out} not written because it already exists. Use overwrite=True to bypass.",
                 out,
             )
-
         make_parent_dir(out)
-        out_file = Path(out).open("w", encoding="utf-8")
-    else:
-        if (
-            out == sys.stdout
-            and InteractiveShell.initialized()
-            and not force_text_output
-            and not verbose
-        ):
-            display(HTML(tabulate(cell_list, tablefmt="html")))
-            return None
 
-        out_file = out
+        with Path(out).open("w", encoding="utf-8") as out_file:
+            out_file.write(tabulate(cell_list, tablefmt="grid"))
+            out_file.write("\n")
 
-    out_file.write(tabulate(cell_list, tablefmt="grid"))
-    out_file.write("\n")
-
-    if isinstance(out, str):
-        out_file.close()
         _LOGGER.info("System list written in %s", out)
         return out
+
+    if (
+        out == sys.stdout
+        and InteractiveShell.initialized()
+        and not force_text_output
+        and not verbose
+    ):
+        display(HTML(tabulate(cell_list, tablefmt="html")))
+        return None
+
+    # Fallback: write to provided file-like object (stdout or custom stream)
+    out.write(tabulate(cell_list, tablefmt="grid"))
+    out.write("\n")
 
     return None
 

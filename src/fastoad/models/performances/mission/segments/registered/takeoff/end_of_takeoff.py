@@ -15,7 +15,9 @@
 from dataclasses import dataclass
 
 from fastoad.model_base import FlightPoint
-from fastoad.models.performances.mission.exceptions import FastFlightSegmentIncompleteFlightPoint
+from fastoad.models.performances.mission.exceptions import (
+    FastFlightSegmentIncompleteFlightPointError,
+)
 from fastoad.models.performances.mission.segments.base import RegisterSegment
 from fastoad.models.performances.mission.segments.time_step_base import AbstractTakeOffSegment
 
@@ -63,7 +65,7 @@ class EndOfTakeoffSegment(AbstractTakeOffSegment):
         if target.altitude is not None:
             return target.altitude - current.altitude
 
-        raise FastFlightSegmentIncompleteFlightPoint(
+        raise FastFlightSegmentIncompleteFlightPointError(
             "No valid target definition for altitude change."
         )
 

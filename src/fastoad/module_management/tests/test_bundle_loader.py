@@ -121,7 +121,7 @@ def test_install_packages_on_faulty_install(delete_framework):
     loader = BundleLoader()
 
     # Create the buggy numpy install
-    import sys
+    import sys  # noqa: PLC0415 # import should stay here
 
     sys.modules["numpy.random.mtrand"].__path__ = None
 

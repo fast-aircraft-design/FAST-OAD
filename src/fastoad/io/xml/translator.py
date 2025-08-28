@@ -22,8 +22,8 @@ from typing import IO
 import numpy as np
 
 from fastoad.io.xml.exceptions import (
-    FastXpathTranslatorDuplicates,
-    FastXpathTranslatorInconsistentLists,
+    FastXpathTranslatorDuplicatesError,
+    FastXpathTranslatorInconsistentListsError,
     FastXpathTranslatorVariableError,
     FastXpathTranslatorXPathError,
 )
@@ -60,21 +60,22 @@ class VarXpathTranslator:
         :param xpaths: List of XML Paths
         """
         if len(variable_names) != len(xpaths):
-            raise FastXpathTranslatorInconsistentLists(
-                f"lists var_names and xpaths have not the same length ({len(variable_names)} and {len(xpaths)})"
+            raise FastXpathTranslatorInconsistentListsError(
+                f"lists var_names and xpaths have not the same length ({len(variable_names)} "
+                f"and {len(xpaths)})"
             )
 
         # check duplicate variable names
         dupe_vars = self._get_duplicates(variable_names)
         if dupe_vars:
-            raise FastXpathTranslatorDuplicates(
+            raise FastXpathTranslatorDuplicatesError(
                 f"Following variable names are provided more than once: {dupe_vars}", dupe_vars
             )
 
         # check duplicate XPaths
         dupe_xpaths = self._get_duplicates(xpaths)
         if dupe_xpaths:
-            raise FastXpathTranslatorDuplicates(
+            raise FastXpathTranslatorDuplicatesError(
                 f"Following variable names are provided more than once: {dupe_xpaths}",
                 dupe_xpaths,
             )

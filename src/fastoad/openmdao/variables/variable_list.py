@@ -16,6 +16,7 @@ Class for managing a list of OpenMDAO variables.
 
 from __future__ import annotations
 
+import contextlib
 from collections.abc import Iterable, Mapping
 from copy import deepcopy
 
@@ -75,6 +76,14 @@ class VariableList(list):
         print( 'var/2' in vars_A.names() )
     """
 
+    # We override __eq__, so we must explicitly set __hash__ = None.
+    # This makes the class unhashable, which is the correct behavior for mutable types.
+    # It prevents inconsistent behavior when using VariableList in sets or as dict keys.
+    # See: https://docs.astral.sh/ruff/rules/eq-without-hash/
+    # Even though we inherit from list (which is unhashable),
+    # overriding __eq__ disables the inherited __hash__.
+    __hash__ = None
+
     def names(self) -> list[str]:
         """
         :return: names of variables
@@ -87,7 +96,7 @@ class VariableList(list):
         """
         keys = list(self[0].metadata.keys())
         for var in self:
-            keys = [key for key in var.metadata.keys() if key in keys]
+            keys = [key for key in var.metadata if key in keys]
         return keys
 
     def append(self, var: Variable) -> None:
@@ -213,7 +222,6 @@ class VariableList(list):
         for name, metadata in ivc.get_io_metadata(
             metadata_keys=["val", "units", "upper", "lower"]
         ).items():
-            metadata = metadata.copy()
             value = metadata.pop("val")
             value = cls._as_list_or_item(value)
             metadata.update({"val": value})
@@ -226,10 +234,8 @@ class VariableList(list):
         value = np.asarray(value)
         if np.size(value) == 1:
             value = value.item()
-            try:
+            with contextlib.suppress(TypeError, ValueError):
                 value = float(value)
-            except (TypeError, ValueError):
-                pass
             return value
 
         return value.tolist()
@@ -245,10 +251,10 @@ class VariableList(list):
         :param df: a DataFrame instance
         :return: a VariableList instance
         """
-        column_names = [name for name in df.columns]
+        column_names = list(df.columns)
 
         def _get_variable(row):
-            var_as_dict = {key: val for key, val in zip(column_names, row)}
+            var_as_dict = dict(zip(column_names, row))
             # TODO: make this more generic
             for key, val in var_as_dict.items():
                 if key in ["val", "initial_value", "lower", "upper"]:
@@ -257,7 +263,7 @@ class VariableList(list):
                     pass
             return Variable(**var_as_dict)
 
-        return cls([_get_variable(row) for row in df[column_names].values])
+        return cls([_get_variable(row) for row in df[column_names].to_numpy()])
 
     @classmethod
     def from_problem(
@@ -313,14 +319,12 @@ class VariableList(list):
         # behaviour when actually running the problem.
         if not use_initial_values and problem.model.iter_count > 0:
             for variable in variables:
-                try:
-                    # Maybe useless, but we force units to ensure it is consistent
+                # Maybe useless, but we force units to ensure it is consistent
+                with contextlib.suppress(RuntimeError):
                     variable.value = problem.get_val(variable.name, units=variable.units)
-                except RuntimeError:
                     # In case problem is incompletely set, problem.get_val() will fail.
                     # In such case, falling back to the method for initial values
                     # should be enough.
-                    pass
 
         return variables
 

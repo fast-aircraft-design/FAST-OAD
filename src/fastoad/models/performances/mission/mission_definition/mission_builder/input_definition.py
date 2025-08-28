@@ -20,6 +20,7 @@ from numbers import Number
 
 import numpy as np
 from openmdao import api as om
+from openmdao.vectors.vector import Vector
 
 from fastoad._utils.arrays import scalarize
 from fastoad.model_base import FlightPoint
@@ -172,7 +173,7 @@ class InputDefinition:
                 # We authorize colons next to "~", but we do as they were not present.
                 var_name = var_name.replace(":~", "~").replace("~:", "~")
                 parts = var_name.replace(":~", "~").split("~")
-                if len(parts) > 2:
+                if len(parts) > 2:  # noqa: PLR2004
                     # Hidden feature for now: using a double tilda (~~) will trigger
                     # a replacement by the mission name only
                     # (useful for backward compatibility since we need to provide
@@ -198,7 +199,7 @@ class InputDefinition:
         else:
             self._variable_name = None
 
-    def set_variable_value(self, inputs: Mapping):
+    def set_variable_value(self, inputs: Mapping | Vector):
         """
         Sets numerical value from OpenMDAO inputs.
 
@@ -208,8 +209,8 @@ class InputDefinition:
         """
         if self.variable_name:
             value = scalarize(
-                # Note: OpenMDAO `inputs` object has no `get()` method, so we need to do this:
-                inputs[self.variable_name] if self.variable_name in inputs else self.default_value
+                # Note: OpenMDAO `Vector` object has no `get()` method, so we need to do this:
+                inputs[self.variable_name] if self.variable_name in inputs else self.default_value  # noqa: SIM401
             )
 
             if self._use_opposite:

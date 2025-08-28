@@ -47,7 +47,8 @@ def test_mission_run(cleanup, with_dummy_plugin_2):
         ),
         ivc,
     )
-    # plot_flight(problem.model.component.flight_points, "test_mission.png")
+    # Useful for debugging
+    # plot_flight(problem.model.component.flight_points, "test_mission.png")  # noqa: ERA001
 
     # Note: tested value are obtained by asking 1 meter of accuracy for distance routes
 

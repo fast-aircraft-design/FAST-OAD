@@ -14,7 +14,6 @@
 from __future__ import annotations
 
 from dataclasses import InitVar, dataclass, field
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -26,6 +25,7 @@ from fastoad.model_base import FlightPoint
 from fastoad.model_base.datacls import MANDATORY_FIELD
 from fastoad.model_base.propulsion import FuelEngineSet, IPropulsion
 from fastoad.models.performances.mission.base import FlightSequence
+from tests.dummy_plugins.dist_2.dummy_plugin_2.models.subpackage.dummy_engine import DummyEngine
 
 from ..polar import Polar
 from ..segments.registered.altitude_change import AltitudeChangeSegment
@@ -35,8 +35,6 @@ from ..segments.registered.taxi import TaxiSegment
 
 @pytest.fixture(scope="module")
 def propulsion():
-    from tests.dummy_plugins.dist_2.dummy_plugin_2.models.subpackage.dummy_engine import DummyEngine
-
     return FuelEngineSet(DummyEngine(1.0e5, 1.0e-4), 2)
 
 
@@ -64,52 +62,6 @@ def print_dataframe(df, max_rows=20):
     ):
         print()
         print(df)
-
-
-def plot_flight(flight_points, fig_filename, results_folder_path):
-    """Utility for plotting mission profile."""
-    from matplotlib import pyplot as plt
-    from matplotlib.ticker import MultipleLocator
-
-    plt.figure(figsize=(12, 12))
-    ax1 = plt.subplot(2, 1, 1)
-    plt.plot(flight_points.ground_distance / 1000.0, flight_points.altitude / foot, "o-")
-    plt.xlabel("distance [km]")
-    plt.ylabel("altitude [ft]")
-    ax1.xaxis.set_minor_locator(MultipleLocator(50))
-    ax1.yaxis.set_minor_locator(MultipleLocator(500))
-    plt.grid(which="major", color="k")
-    plt.grid(which="minor")
-
-    ax2 = plt.subplot(2, 1, 2)
-    lines = []
-    lines += plt.plot(
-        flight_points.ground_distance / 1000.0, flight_points.true_airspeed, "b-", label="TAS [m/s]"
-    )
-    lines += plt.plot(
-        flight_points.ground_distance / 1000.0,
-        flight_points.equivalent_airspeed / knot,
-        "g--",
-        label="EAS [kt]",
-    )
-    plt.xlabel("distance [km]")
-    plt.ylabel("speed")
-    ax2.xaxis.set_minor_locator(MultipleLocator(50))
-    ax2.yaxis.set_minor_locator(MultipleLocator(5))
-    plt.grid(which="major", color="k")
-    plt.grid(which="minor")
-
-    plt.twinx(ax2)
-    lines += plt.plot(
-        flight_points.ground_distance / 1000.0, flight_points.mach, "r.-", label="Mach"
-    )
-    plt.ylabel("Mach")
-
-    labels = [line.get_label() for line in lines]
-    plt.legend(lines, labels, loc=0)
-
-    plt.savefig(Path(results_folder_path, fig_filename))
-    plt.close()
 
 
 # We define here in Python the flight phases that feed the test of RangedRoute ===========

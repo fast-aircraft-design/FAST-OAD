@@ -64,8 +64,8 @@ def convert_xml(file_path: str, translator: VarXpathTranslator):
     :param translator:
     """
     reader = VariableIO(file_path, formatter=VariableXmlBaseFormatter(translator))
-    vars = reader.read()
-    VariableIO(file_path).write(vars)
+    variables = reader.read()
+    VariableIO(file_path).write(variables)
 
 
 def replace_var_names(file_path, var_names_match):

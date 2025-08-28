@@ -13,6 +13,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import logging
 from os import PathLike
 
@@ -29,6 +30,8 @@ from ..polar import Polar
 from ..segments.registered.cruise import BreguetCruiseSegment
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
+
+DUMMY_MAX_LOD = 10.0  # Used as initial LoD in _get_initial_polar()
 
 
 class MissionComp(om.ExplicitComponent, BaseMissionComp):
@@ -64,10 +67,8 @@ class MissionComp(om.ExplicitComponent, BaseMissionComp):
             self.mission_name
         )
 
-        try:
+        with contextlib.suppress(ValueError):
             self.add_input(self.options["reference_area_variable"], np.nan, units="m**2")
-        except ValueError:
-            pass
 
         # Global mission outputs
         self.add_output(
@@ -224,8 +225,8 @@ class AdvancedMissionComp(MissionComp):
         """
         At computation start, polar may be irrelevant and give a very low lift/drag ratio.
 
-        In that case, this method returns a fake polar that has 10.0 as max lift drag ratio.
-        Otherwise, the actual cruise polar is returned.
+        In that case, this method returns a fake polar that has DUMMY_MAX_LOD as max lift drag
+        ratio. Otherwise, the actual cruise polar is returned.
         """
         high_speed_polar = Polar(
             inputs["data:aerodynamics:aircraft:cruise:CL"],
@@ -235,13 +236,13 @@ class AdvancedMissionComp(MissionComp):
         try:
             if (
                 high_speed_polar.optimal_cl / high_speed_polar.cd(high_speed_polar.optimal_cl)
-                < 10.0
+                < DUMMY_MAX_LOD
             ):
                 use_minimum_l_d_ratio = True
         except ZeroDivisionError:
             use_minimum_l_d_ratio = True
         if use_minimum_l_d_ratio:
-            # We replace by a polar that has at least 10.0 as max L/D ratio
+            # We replace by a polar that has at least DUMMY_MAX_LOD as max L/D ratio
             high_speed_polar = Polar(np.array([0.0, 0.5, 1.0]), np.array([0.1, 0.05, 1.0]))
 
         return high_speed_polar
