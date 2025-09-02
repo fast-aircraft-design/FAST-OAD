@@ -138,6 +138,15 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
     assert_allclose(
         problem["data:mission:operational:main_route:cruise:distance"], 3392590.0, atol=500.0
     )
+    assert_allclose(
+        problem["data:mission:operational:main_route:cruise:initial_altitude"], 10972.8, atol=1
+    )
+    assert_allclose(
+        problem["data:mission:operational:main_route:cruise:final_altitude"], 10972.8, atol=1.0
+    )
+    assert_allclose(
+        problem["data:mission:operational:main_route:cruise:average_altitude"], 10972.8, atol=1.0
+    )
 
     assert_allclose(
         problem["data:mission:operational:main_route:descent:duration"], 1424.0, atol=10.0
@@ -457,15 +466,27 @@ def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
         flight_points["name"] == "operational_optimal:main_route_optimal:cruise"
     ]
     CL_end_climb = climb_points.CL.iloc[-1]
-    altitude_end_climb = climb_points.altitude.iloc[-1]
-    altitude_end_cruise = cruise_points.altitude.iloc[-1]
     CL_end_cruise = cruise_points.CL.iloc[-1]
 
     # Check CL and altitude for a climbing cruise at constant CL.
     assert_allclose(CL_end_climb, 0.45, atol=1e-3)
     assert_allclose(CL_end_cruise, 0.45, atol=1e-3)
-    assert_allclose(altitude_end_climb, 9821.85, atol=1e-1)
-    assert_allclose(altitude_end_cruise, 10343.68, atol=1e-1)
+
+    assert_allclose(
+        problem["data:mission:operational_optimal:main_route_optimal:cruise:initial_altitude"],
+        9821.8,
+        atol=1,
+    )
+    assert_allclose(
+        problem["data:mission:operational_optimal:main_route_optimal:cruise:final_altitude"],
+        10343.0,
+        atol=1.0,
+    )
+    assert_allclose(
+        problem["data:mission:operational_optimal:main_route_optimal:cruise:average_altitude"],
+        10082.4,
+        atol=1.0,
+    )
 
 
 def test_mission_group_without_route(cleanup, with_dummy_plugin_2):
