@@ -130,6 +130,10 @@ class FlightPoint:
         default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="m/s")}
     )
 
+    #: Calibrated airspeed (CAS) in m/s.
+    calibrated_airspeed: float = field(
+        default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="m/s")}
+    )
     #: Mach number.
     mach: float = field(default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="-")})
 

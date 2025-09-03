@@ -12,6 +12,9 @@ on:
 jobs:
   tests:
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
     if: ${{ !contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]') }}
     strategy:
       matrix:
@@ -32,19 +35,35 @@ jobs:
         uses: mpi4py/setup-mpi@v1
         with:
           mpi: ${{ (runner.os == 'Windows') && 'microsoftmpi' || 'openmpi' }} # openmpi and microsoftmpi are the only MPI implementations that works
-
-      - name: Install poetry
-        run: pipx install poetry==${{ vars.POETRY_VERSION }}
-
+      
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'poetry'
-      - name: Activate environment and install dependencies
-        run: |
-          poetry env use ${{ matrix.python-version }}
-          poetry install -E mpi
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 2.1.3
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          virtualenvs-path: .venv
+          installer-parallel: true
+
+      - name: Load cached venv # Copied from https://github.com/snok/install-poetry/blob/d526ede1e27960b7b181a5ac53044f552afdaa38/README.md
+      # load cached venv if cache exists
+        id: cached-poetry-dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies # Heavy dependencies (cached) - only runs on cache miss
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install -E mpi --no-interaction --no-root
+
+      - name: Install library # Light project install (always runs) - runs every time
+        run: poetry install -E mpi --no-interaction
 
       - name: Check with Ruff
         run: |
