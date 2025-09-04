@@ -1,15 +1,16 @@
-#  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2024 ONERA & ISAE-SUPAERO
-#  FAST is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or
-#  (at your option) any later version.
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#  You should have received a copy of the GNU General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
+# Copyright (c) 2025 ONERA & ISAE-SUPAERO
+# FAST-OAD is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
 from os import PathLike
@@ -106,7 +107,7 @@ class MissionComp(om.ExplicitComponent, BaseMissionComp):
     def _postprocess_flight_points(self, flight_points):
         flight_points = flight_points.copy()  # local copy for renaming columns before CSV export
         rename_dict = {
-            field_name: f"{field_name}{' ['+unit+']' if unit else ''}"
+            field_name: f"{field_name}{' [' + unit + ']' if unit else ''}"
             for field_name, unit in FlightPoint.get_units().items()
         }
         flight_points.rename(columns=rename_dict, inplace=True)
