@@ -277,7 +277,7 @@ def test_update_with_no_init_metadata_and_merge_metadata():
     assert "tag2" in test_var_list_with_fill["var1"].metadata["tags"]
 
     # Test a variable list with multiple variables
-    var1 = Variable("var1", val=10.0, units="m", desc="Description for var1")
+    var1 = Variable("var1", val=10.0, tags={"tag1", "tag2"}, units="m", desc="Description for var1")
     var2 = Variable("var2", val=20.0, units="kg", desc="Description for var2")
     var_list = VariableList([var1, var2])
 
@@ -291,6 +291,7 @@ def test_update_with_no_init_metadata_and_merge_metadata():
     # Check results
     assert var_list["var1"].value == 15.0
     assert var_list["var1"].units == "ft"
+    assert var_list["var1"].metadata["tags"] == {"tag1", "tag2"}  # Preserved
     assert var_list["var1"].description == "Description for var1"  # Preserved
 
     assert var_list["var2"].value == 25.0

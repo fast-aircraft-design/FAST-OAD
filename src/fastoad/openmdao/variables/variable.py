@@ -81,7 +81,9 @@ class Variable(Hashable):
      - a description exists in FAST-OAD internal data for the variable name
     Then, the internal description will be returned by :meth:`description`
 
-    :param kwargs: the attributes of the variable, as keyword arguments
+    :param name: the name of the variable
+    :param init_metadata: if True, applies default values for metadata keys not provided in kwargs
+    :param kwargs: the OpenMDAO metadata of the variable, as keyword arguments
     """
 
     # Will store content of description files
@@ -93,7 +95,7 @@ class Variable(Hashable):
     # Default metadata
     _base_metadata = {}
 
-    def __init__(self, name, **kwargs):
+    def __init__(self, name: str, *, init_metadata: bool = True, **kwargs):
         super().__init__()
 
         self.name = name
@@ -103,7 +105,6 @@ class Variable(Hashable):
         """ Dictionary for metadata of the variable """
 
         # Initialize class attributes once at first instantiation -------------
-        init_metadata = kwargs.pop("init_metadata", True)
         if init_metadata:
             if not self._base_metadata:
                 # Get variable base metadata from an ExplicitComponent

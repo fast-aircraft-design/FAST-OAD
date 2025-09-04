@@ -124,10 +124,12 @@ class VariableList(list):
               add_variables==True
 
         The merge_metadata parameter controls how metadata is handled when replacing variables:
-            - if merge_metadata=False (default): The variable is completely overwritten with the
-              new one, and all previous metadata is lost (except for descriptions as noted above)
-            - if merge_metadata=True: Only the metadata explicitly provided in the new variable
-              is updated, while all other metadata from the original variable is preserved
+            - if merge_metadata=False (default): The original variable is completely overwritten
+            with the new one, and all previous metadata is lost (except for the description as noted
+            above).
+            - if merge_metadata=True: The metadata present in the original variable and absent from
+            the new variable will be conserved. All other metadata will be overwritten by the ones
+            in the new variable.
 
         :param other_var_list: source for new Variable data
         :param add_variables: if True, unknown variables are also added
