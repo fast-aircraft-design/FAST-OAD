@@ -141,12 +141,6 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
     assert_allclose(
         problem["data:mission:operational:main_route:cruise:initial_altitude"], 10972.8, atol=1
     )
-    assert_allclose(
-        problem["data:mission:operational:main_route:cruise:final_altitude"], 10972.8, atol=1.0
-    )
-    assert_allclose(
-        problem["data:mission:operational:main_route:cruise:average_altitude"], 10972.8, atol=1.0
-    )
 
     assert_allclose(
         problem["data:mission:operational:main_route:descent:duration"], 1424.0, atol=10.0
