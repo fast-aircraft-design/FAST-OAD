@@ -139,10 +139,6 @@ class MissionWrapper(MissionBuilder):
                 outputs[name_root + ":distance"] = end.ground_distance - start.ground_distance
             if name_root + ":initial_altitude" in outputs:
                 outputs[name_root + ":initial_altitude"] = start.altitude
-            if name_root + ":final_altitude" in outputs:
-                outputs[name_root + ":final_altitude"] = end.altitude
-            if name_root + ":average_altitude" in outputs:
-                outputs[name_root + ":average_altitude"] = (start.altitude + end.altitude) / 2
 
         flight_points = mission.compute_from(start_flight_point)
         flight_points.loc[0, "name"] = flight_points.loc[1, "name"]
@@ -247,11 +243,6 @@ class MissionWrapper(MissionBuilder):
         )
         if "cruise" in name_root:
             output_definition[name_root + ":initial_altitude"] = (
-                "m",
-                "the initial cruise altitude",
-            )
-            output_definition[name_root + ":final_altitude"] = ("m", "the final cruise altitude")
-            output_definition[name_root + ":average_altitude"] = (
                 "m",
                 "the initial cruise altitude",
             )
