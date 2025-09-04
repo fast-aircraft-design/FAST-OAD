@@ -160,7 +160,9 @@ class ClimbAndCruiseSegment(CruiseSegment):
                 if cruise_altitude > self.maximum_flight_level * 100.0 * foot:
                     break
                 if self.maximum_CL is not None:
-                    if self.check_next_flightlevel_CLmax(cruise_altitude, start):
+                    if self.check_next_flight_level_maximum_lift_coefficient(
+                        cruise_altitude, start
+                    ):
                         break
 
                 new_results = self._climb_to_altitude_and_cruise(
@@ -211,7 +213,7 @@ class ClimbAndCruiseSegment(CruiseSegment):
 
         return pd.concat([climb_points, cruise_points]).reset_index(drop=True)
 
-    def check_next_flightlevel_CLmax(
+    def check_next_flight_level_maximum_lift_coefficient(
         self, altitude_next_flight_level: float, flight_point: FlightPoint
     ) -> bool:
         """
@@ -229,10 +231,7 @@ class ClimbAndCruiseSegment(CruiseSegment):
 
         self.complete_flight_point(next_level_flight_point)
 
-        if next_level_flight_point.CL > self.maximum_CL:
-            return True
-        else:
-            return False
+        return bool(next_level_flight_point.CL > self.maximum_CL)
 
 
 @RegisterSegment("breguet")
