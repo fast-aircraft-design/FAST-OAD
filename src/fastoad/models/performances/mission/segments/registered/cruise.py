@@ -159,8 +159,9 @@ class ClimbAndCruiseSegment(CruiseSegment):
                 cruise_altitude = get_closest_flight_level(cruise_altitude + 1.0e-3)
                 if cruise_altitude > self.maximum_flight_level * 100.0 * foot:
                     break
-                if self.check_next_flightlevel_CLmax(cruise_altitude, start):
-                    break
+                if self.maximum_CL is not None:
+                    if self.check_next_flightlevel_CLmax(cruise_altitude, start):
+                        break
 
                 new_results = self._climb_to_altitude_and_cruise(
                     start, cruise_altitude, climb_segment, cruise_segment
