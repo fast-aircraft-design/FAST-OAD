@@ -34,6 +34,7 @@ class _FieldDescriptor:
 
     is_cumulative: Optional[bool] = False
     unit: Optional[str] = None
+    is_output: Optional[bool] = False
 
 
 @dataclass
@@ -296,6 +297,15 @@ class FlightPoint:
         Returns None if field not found.
         """
         return cls._get_field_descriptor(field_name).is_cumulative
+
+    @classmethod
+    def is_output(cls, field_name) -> Optional[bool]:
+        """
+        Tells if asked field is output.
+
+        Returns None if field not found.
+        """
+        return cls._get_field_descriptor(field_name).is_output
 
     @classmethod
     def create(cls, data: Mapping) -> "FlightPoint":
