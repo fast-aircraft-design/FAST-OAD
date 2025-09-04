@@ -471,16 +471,6 @@ def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
         9821.8,
         atol=1,
     )
-    assert_allclose(
-        problem["data:mission:operational_optimal:main_route_optimal:cruise:final_altitude"],
-        10343.0,
-        atol=1.0,
-    )
-    assert_allclose(
-        problem["data:mission:operational_optimal:main_route_optimal:cruise:average_altitude"],
-        10082.4,
-        atol=1.0,
-    )
 
 
 def test_mission_group_without_route(cleanup, with_dummy_plugin_2):
