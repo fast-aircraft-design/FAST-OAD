@@ -214,7 +214,7 @@ class ClimbAndCruiseSegment(CruiseSegment):
         self, altitude_next_flight_level: float, flight_point: FlightPoint
     ) -> bool:
         """
-        Returns true if the CL at the next flight point is higher than the maximum_CL
+        Returns true if the CL at the next flight level is higher than the maximum_CL
 
         :param altitude_next_flight_level: the altitude of the next flight level in m
         :param flight_point: the current flight point
