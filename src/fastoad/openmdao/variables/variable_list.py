@@ -110,7 +110,9 @@ class VariableList(list):
         """
         self.append(Variable(name, **kwargs))
 
-    def update(self, other_var_list: list, add_variables: bool = True):
+    def update(
+        self, other_var_list: list, add_variables: bool = True, merge_metadata: bool = False
+    ):
         """
         Uses variables in other_var_list to update the current VariableList instance.
 
@@ -121,16 +123,29 @@ class VariableList(list):
             - if not, Variable instance from other_var_list will be added only if
               add_variables==True
 
+        The merge_metadata parameter controls how metadata is handled when replacing variables:
+            - if merge_metadata=False (default): The original variable is completely overwritten
+            with the new one, and all previous metadata is lost (except for the description as noted
+            above).
+            - if merge_metadata=True: The metadata present in the original variable and absent from
+            the new variable will be conserved. All other metadata will be overwritten by the ones
+            in the new variable.
+
         :param other_var_list: source for new Variable data
         :param add_variables: if True, unknown variables are also added
+        :param merge_metadata: if True, preserves existing metadata for keys not present in the
+                               new variable
         """
 
         for var in other_var_list:
             if add_variables or var.name in self.names():
-                # To avoid to lose variables description when the variable list is updated with a
-                # list without descriptions (issue # 319)
-                if var.name in self.names() and self[var.name].description and not var.description:
-                    var.description = self[var.name].description
+                if var.name in self.names():
+                    existing_var = self[var.name]
+                    if existing_var.description and not var.description:
+                        # Preserve existing description if the new one is missing (issue #319)
+                        var.description = existing_var.description
+                    if merge_metadata:
+                        var.update_missing_metadata(existing_var)
                 self.append(deepcopy(var))
 
     def to_ivc(self) -> om.IndepVarComp:
