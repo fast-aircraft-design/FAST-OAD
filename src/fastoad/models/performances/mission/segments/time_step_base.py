@@ -208,7 +208,7 @@ class AbstractTimeStepFlightSegment(
                     # We are having problem determining the time at which target is reached.
                     # Let's issue a warning but continue the segment computation.
                     _LOGGER.warning(
-                        'Target time step cannot be determined in "%s".'
+                        'Target time step cannot be determined in "%s". '
                         "Please review the segment settings.",
                         self.name,
                     )
@@ -223,7 +223,7 @@ class AbstractTimeStepFlightSegment(
             ):
                 # We get further from target. Let's stop without this point.
                 _LOGGER.warning(
-                    'Target cannot be reached in "%s". Segment computation interrupted.'
+                    'Target cannot be reached in "%s". Segment computation interrupted. '
                     "Please review the segment settings, especially thrust_rate.",
                     self.name,
                 )
