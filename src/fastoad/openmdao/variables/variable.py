@@ -348,8 +348,9 @@ class Variable(Hashable):
 
         # Let's also ignore unimportant keys
         for key in METADATA_TO_IGNORE:
-            my_metadata.pop(key, default=None)
-            other_metadata.pop(key, default=None)
+            default_value = None
+            my_metadata.pop(key, default_value)
+            other_metadata.pop(key, default_value)
 
         return (
             isinstance(other, Variable)
