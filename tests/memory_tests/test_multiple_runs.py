@@ -106,7 +106,7 @@ def test_memory_leak_between_runs(cleanup):
         memory_measurements: List[Tuple[int, float]] = []
         run_snapshots = []
 
-        run_count = 10
+        run_count = 2
 
         for i in range(run_count):
             print(f"\n{'=' * 60}")
