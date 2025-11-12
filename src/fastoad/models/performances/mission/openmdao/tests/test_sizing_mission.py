@@ -24,8 +24,6 @@ from ..mission import OMMission
 
 RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
 
-# ruff:noqa ERA001
-
 
 @pytest.fixture(scope="module")
 def cleanup():
@@ -74,12 +72,11 @@ def test_sizing_mission(cleanup, with_dummy_plugin_2):
         ivc,
     )
     # Useful for debugging
-    # import pandas as pd
+    # import pandas as pd # noqa: ERA001
     #
     # plot_flight(
-    #     pd.read_csv(RESULTS_FOLDER_PATH / "sizing_mission.csv"),
-    #     RESULTS_FOLDER_PATH / "sizing_mission.png",
-    # )
+    #     pd.read_csv(RESULTS_FOLDER_PATH / "sizing_mission.csv"), # noqa: ERA001
+    #     RESULTS_FOLDER_PATH / "sizing_mission.png")
 
     assert_allclose(problem["data:mission:sizing:taxi_out:fuel"], 351.0, atol=1)
     assert_allclose(problem["data:mission:sizing:taxi_out:duration"], 500.0, atol=1)

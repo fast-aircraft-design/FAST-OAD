@@ -208,10 +208,11 @@ class InputDefinition:
         :param inputs:
         """
         if self.variable_name:
-            value = scalarize(
-                # Note: OpenMDAO `Vector` object has no `get()` method, so we need to do this:
-                inputs[self.variable_name] if self.variable_name in inputs else self.default_value  # noqa: SIM401
-            )
+            # Note: OpenMDAO `Vector` object has no `get()` method, so we need to do this:
+            if self.variable_name in inputs:
+                value = scalarize(inputs[self.variable_name])
+            else:
+                value = scalarize(self.default_value)
 
             if self._use_opposite:
                 self.input_value = -value
