@@ -92,7 +92,7 @@ class RangedRoute(FlightSequence):
         for segment in climb_segments:
             for speed_param in ["true_airspeed", "equivalent_airspeed", "mach"]:
                 speed_value = getattr(segment.target, speed_param)
-                if speed_value and speed_value != AbstractFlightSegment.CONSTANT_VALUE:
+                if speed_value and speed_value != AbstractFlightSegment.constant_value_name:
                     return speed_param, speed_value
 
         return None

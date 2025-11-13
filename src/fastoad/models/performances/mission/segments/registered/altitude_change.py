@@ -112,10 +112,10 @@ class AltitudeChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightS
                 self.interrupt_if_getting_further_from_target = True
 
         atm = self._get_atmosphere_point(start.altitude)
-        if target.equivalent_airspeed == self.CONSTANT_VALUE:
+        if target.equivalent_airspeed == self.constant_value_name:
             atm.equivalent_airspeed = start.equivalent_airspeed
             start.true_airspeed = atm.true_airspeed
-        elif target.mach == self.CONSTANT_VALUE:
+        elif target.mach == self.constant_value_name:
             atm.mach = start.mach
             start.true_airspeed = atm.true_airspeed
 
@@ -142,11 +142,14 @@ class AltitudeChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightS
 
             if target.altitude is not None:
                 distance_to_target = target.altitude - current.altitude
-            elif target.true_airspeed and target.true_airspeed != self.CONSTANT_VALUE:
+            elif target.true_airspeed and target.true_airspeed != self.constant_value_name:
                 distance_to_target = target.true_airspeed - current.true_airspeed
-            elif target.equivalent_airspeed and target.equivalent_airspeed != self.CONSTANT_VALUE:
+            elif (
+                target.equivalent_airspeed
+                and target.equivalent_airspeed != self.constant_value_name
+            ):
                 distance_to_target = target.equivalent_airspeed - current.equivalent_airspeed
-            elif target.mach is not None and target.mach != self.CONSTANT_VALUE:
+            elif target.mach is not None and target.mach != self.constant_value_name:
                 distance_to_target = target.mach - current.mach
 
         if distance_to_target is None:
@@ -163,7 +166,7 @@ class AltitudeChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightS
         # Optimal altitude is based on a target Mach number, though target speed
         # may be specified as TAS or EAS. If so, Mach number has to be computed
         # for target altitude and speed.
-        # First, as target speed is expected to be set to self.CONSTANT_VALUE for one
+        # First, as target speed is expected to be set to self.constant_value_name for one
         # parameter. Let's get the real value from start point.
         target_speed = copy(target)
         for speed_param in ["true_airspeed", "equivalent_airspeed", "mach"]:

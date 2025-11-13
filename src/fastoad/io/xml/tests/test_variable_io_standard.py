@@ -212,8 +212,8 @@ def test_basic_xml_partial_read_and_write_from_variables(cleanup):
         "constants:k5",
         "constants:k8",
     ]
-    new_variables2 = xml_read.read(only=ok_variables)
-    _check_basic_variables(new_variables2)
+    new_variables_2 = xml_read.read(only=ok_variables)
+    _check_basic_variables(new_variables_2)
 
     # Check partial writing with 'ignore'
     varok_filename = result_folder / "with_bad_var.xml"

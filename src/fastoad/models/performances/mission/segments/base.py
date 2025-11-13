@@ -128,7 +128,7 @@ class AbstractFlightSegment(IFlightPart, ABC):
     #: A FlightPoint instance that provides parameter values that should all be reached at the
     #: end of :meth:`~fastoad.models.performances.mission.segments.base.FlightSegment.compute_from`.
     #: Possible parameters depend on the current segment. A parameter can also be set to
-    #: :attr:`~fastoad.models.performances.mission.segments.base.FlightSegment.CONSTANT_VALUE`
+    #: :attr:`~fastoad.models.performances.mission.segments.base.FlightSegment.constant_value_name`
     #: to tell that initial value should be kept during all segment.
     target: FlightPoint = MANDATORY_FIELD
 
@@ -139,7 +139,7 @@ class AbstractFlightSegment(IFlightPart, ABC):
     isa_offset: float = 0.0
 
     #: Using this value will tell to keep the associated parameter constant.
-    CONSTANT_VALUE = "constant"
+    constant_value_name = "constant"
 
     # To be noted: this one is not a dataclass field, but an actual class attribute
     _attribute_units: ClassVar[dict] = {"reference_area": "m**2", "time_step": "s"}

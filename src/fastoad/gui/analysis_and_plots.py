@@ -243,9 +243,9 @@ def drag_polar_plot(
     cl = np.asarray(variables["data:aerodynamics:aircraft:cruise:CL"].value)
 
     # TODO: remove filtering one models provide proper bounds
-    CD_UPPER = 2.0
-    cd_short = cd[cd <= CD_UPPER]
-    cl_short = cl[cd <= CD_UPPER]
+    cutoff_cd = 2.0
+    cd_short = cd[cd <= cutoff_cd]
+    cl_short = cl[cd <= cutoff_cd]
 
     if fig is None:
         fig = go.Figure()
