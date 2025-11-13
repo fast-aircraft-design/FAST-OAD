@@ -606,15 +606,15 @@ def payload_range_plot(
                 x=x,
                 y=y,
                 z=z,
-                contours=dict(start=min_z, end=max_z, size=(max_z - min_z) / 20),
-                colorbar=dict(
-                    title=dict(
-                        text=f"{variable_of_interest_legend} [{variable_of_interest_unit}]",
-                        side="right",
-                        font=dict(size=15, family="Arial, sans-serif"),
-                    ),
-                    tickformat=".1e",
-                ),
+                contours={"start": min_z, "end": max_z, "size": (max_z - min_z) / 20},
+                colorbar={
+                    "title": {
+                        "text": f"{variable_of_interest_legend} [{variable_of_interest_unit}]",
+                        "side": "right",
+                        "font": {"size": 15, "family": "Arial, sans-serif"},
+                    },
+                    "tickformat": ".1e",
+                },
                 colorscale="RdBu_r",
                 contours_coloring="heatmap",
             )

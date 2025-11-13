@@ -128,7 +128,10 @@ def test_variables(with_dummy_plugin_2):
 
 
 def test_variable_update_missing_metadata():
-    """Test that Variable.update_missing_metadata only adds missing metadata keys without modifying existing ones."""
+    """
+    Test that Variable.update_missing_metadata only adds missing metadata keys without modifying
+    existing ones.
+    """
     # Create a source variable with several metadata items
     source_var = Variable(
         "source_var",
@@ -164,9 +167,9 @@ def test_variable_update_missing_metadata():
     assert original_var.metadata["upper"] == original_upper, "Upper bound should not change"
     assert original_var.metadata["ref"] == original_ref, "Ref should not change"
     assert "units" in original_var.metadata, "units should be added"
-    assert (
-        original_var.metadata["units"] == source_var.metadata["units"]
-    ), "Units should match source"
+    assert original_var.metadata["units"] == source_var.metadata["units"], (
+        "Units should match source"
+    )
 
     # Create a variable with no metadata to update from
     empty_var = Variable("empty_var", val=5.0, init_metadata=False)

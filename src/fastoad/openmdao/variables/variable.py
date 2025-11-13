@@ -163,7 +163,9 @@ class Variable(Hashable):
 
     def update_missing_metadata(self, source_variable: Variable):
         """
-        Add metadata from source_variable to this variable, but only for keys that don't already exist.
+        Add metadata from source_variable to this variable, but only for keys that don't already
+        exist.
+
         This is used to fill in missing metadata while preserving existing values.
 
         :param source_variable: Source for additional metadata
@@ -354,12 +356,11 @@ class Variable(Hashable):
 
     def _set_default_shape(self):
         """Automatically sets shape if not set"""
-        if "shape" in self.metadata.keys():
-            if self.metadata["shape"] is None:
-                shape = np.shape(self.value)
-                if not shape:
-                    shape = (1,)
-                self.metadata["shape"] = shape
+        if "shape" in self.metadata and self.metadata["shape"] is None:
+            shape = np.shape(self.value)
+            if not shape:
+                shape = (1,)
+            self.metadata["shape"] = shape
 
     def __eq__(self, other):
         # same arrays with nan are declared non equals, so we need a workaround

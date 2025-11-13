@@ -386,7 +386,7 @@ class BundleLoader:
 
         return self.framework.find_service_references(service_name, ldap_filter)  # references
 
-    def _install_python_package(self, package_name: str) -> Tuple[Set[Bundle], dict[str, str]]:
+    def _install_python_package(self, package_name: str) -> tuple[set[Bundle], dict[str, str]]:
         """
         Recursively loads indicated package and its submodules/subpackages.
 
@@ -413,33 +413,32 @@ class BundleLoader:
             self._styled_rule(f"[bold red]ERROR: {package_name}[/bold red]")
             return bundles, failed  # Abort recursion early for broken package
 
-        elif package.is_package:
-            # It is a package, let's explore it.
-            header_printed = False  # Ensure the error header is printed only once per package
-            for item in package.contents:
-                # Get the bundle name and path
-                item_package = f"{package_name}.{item}"  # Qualified name
-                item_path = f"{root_package_path}/{item}"  # Full path to the file or folder
+        # It is a package, let's explore it.
+        header_printed = False  # Ensure the error header is printed only once per package
+        for item in package.contents:
+            # Get the bundle name and path
+            item_package = f"{package_name}.{item}"  # Qualified name
+            item_path = f"{root_package_path}/{item}"  # Full path to the file or folder
 
-                if "." in item:
-                    # A file. Considered only if it is a Python file. Ignored otherwise.
-                    if item.endswith(".py"):
-                        try:
-                            bundle = self.context.install_bundle(item_package[:-3])  # Remove .py
-                            bundles.add(bundle)
-                        except BundleException as e:
-                            failed[item_package[:-3]] = item_path
-                            if not header_printed:
-                                _LOGGER.warning("Failed to load package: %s", package_name)
-                                self._styled_rule(f"[bold red]ERROR: {package_name}[/bold red]")
-                                header_printed = True
-                            _LOGGER.warning("%s\nDetailed traceback:", e, exc_info=True)
-                            self._styled_rule(first_newline=False)
-                else:
-                    # It's a subpackage. Recurse.
-                    sub_bundles, sub_failed = self._install_python_package(item_package)
-                    bundles.update(sub_bundles)
-                    failed.update(sub_failed)
+            if "." in item:
+                # A file. Considered only if it is a Python file. Ignored otherwise.
+                if item.endswith(".py"):
+                    try:
+                        bundle = self.context.install_bundle(item_package[:-3])  # Remove .py
+                        bundles.add(bundle)
+                    except BundleException as e:
+                        failed[item_package[:-3]] = item_path
+                        if not header_printed:
+                            _LOGGER.warning("Failed to load package: %s", package_name)
+                            self._styled_rule(f"[bold red]ERROR: {package_name}[/bold red]")
+                            header_printed = True
+                        _LOGGER.warning("%s\nDetailed traceback:", e, exc_info=True)
+                        self._styled_rule(first_newline=False)
+            else:
+                # It's a subpackage. Recurse.
+                sub_bundles, sub_failed = self._install_python_package(item_package)
+                bundles.update(sub_bundles)
+                failed.update(sub_failed)
 
         return bundles, failed
 
@@ -464,7 +463,7 @@ class BundleLoader:
         _CONSOLE.print(table)
 
     @staticmethod
-    def _styled_rule(title: str = "", first_newline=True):
+    def _styled_rule(title: str = "", *, first_newline=True):
         if first_newline:
             _CONSOLE.print()
         _CONSOLE.rule(title, style="bright_black")
