@@ -26,6 +26,7 @@ select = [
     "S",   # Bandit: automated security testing built right into your workflow.
     "N",   # Enforce PEP8 naming convention.
     "E",   # pycodestyle is a tool to check your Python code against some of the style conventions in PEP 8.
+    "BLE", # Flake8 blind except.
     # "ANN", # Enforce function annotations.
     # "D",   # Pydocstyle is a static analysis tool for checking compliance with Python docstring conventions.
     # "DOC", # Pydoclint (still in preview so not yet active).

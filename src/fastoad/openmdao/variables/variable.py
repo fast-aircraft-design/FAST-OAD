@@ -201,7 +201,14 @@ class Variable(Hashable):
                 variable_descriptions = np.genfromtxt(
                     description_file, delimiter="||", dtype=str, autostrip=True
                 )
-            except Exception as exc:
+            except (OSError, ValueError, UnicodeDecodeError) as exc:
+                # We explicitly catch:
+                # - OSError: file not found, permission denied, or other I/O issues
+                # - ValueError: malformed file contents (e.g. inconsistent columns, bad delimiter)
+                # - UnicodeDecodeError: unexpected encoding while reading the file
+                #
+                # Other exceptions (e.g. TypeError, AttributeError) would indicate a programming
+                # error and should not be silently caught here.
                 # Reading the file is not mandatory, so let's just log the error.
                 _LOGGER.error(
                     "Could not read file %s in %s. Error log is:\n%s",

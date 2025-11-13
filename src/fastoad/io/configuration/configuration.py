@@ -499,7 +499,14 @@ class FASTOADProblemConfigurator:
                 if key.endswith(("solver", "driver")):
                     try:
                         value = self._om_eval(str(value))  # noqa: PLW2901
-                    except Exception as err:
+                    except (NameError, AttributeError, SyntaxError, ValueError) as err:
+                        # Expected failures during evaluation:
+                        # - NameError / AttributeError: references missing or not yet defined
+                        # - SyntaxError: malformed expression
+                        # - ValueError: invalid literal or conversion inside eval
+                        #
+                        # Other exceptions indicate an internal or environment problem and
+                        # should not be swallowed here.
                         raise FASTConfigurationBadOpenMDAOInstructionError(err, key, value)
 
                 # value is an option or an attribute
@@ -508,7 +515,11 @@ class FASTOADProblemConfigurator:
                         group.options[key] = value
                     else:
                         setattr(group, key, value)
-                except Exception as err:
+                except (KeyError, AttributeError, TypeError, ValueError) as err:
+                    # Typical parsing failures:
+                    # - KeyError: unknown option name
+                    # - AttributeError: attribute does not exist or is read-only
+                    # - TypeError / ValueError: invalid type or incompatible value
                     raise FASTConfigurationBadOpenMDAOInstructionError(err, key, value)
 
     def _make_option_path_values_absolute(self, options):
