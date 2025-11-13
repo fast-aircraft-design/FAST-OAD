@@ -201,7 +201,14 @@ class Variable(Hashable):
                 variable_descriptions = np.genfromtxt(
                     description_file, delimiter="||", dtype=str, autostrip=True
                 )
-            except Exception as exc:
+            except (OSError, ValueError, UnicodeDecodeError) as exc:
+                # We explicitly catch:
+                # - OSError: file not found, permission denied, or other I/O issues
+                # - ValueError: malformed file contents (e.g. inconsistent columns, bad delimiter)
+                # - UnicodeDecodeError: unexpected encoding while reading the file
+                #
+                # Other exceptions (e.g. TypeError, AttributeError) would indicate a programming
+                # error and should not be silently caught here.
                 # Reading the file is not mandatory, so let's just log the error.
                 _LOGGER.error(
                     "Could not read file %s in %s. Error log is:\n%s",
@@ -348,8 +355,9 @@ class Variable(Hashable):
 
         # Let's also ignore unimportant keys
         for key in METADATA_TO_IGNORE:
-            my_metadata.pop(key, default=None)
-            other_metadata.pop(key, default=None)
+            default_value = None
+            my_metadata.pop(key, default_value)
+            other_metadata.pop(key, default_value)
 
         return (
             isinstance(other, Variable)

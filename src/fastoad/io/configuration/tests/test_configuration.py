@@ -206,7 +206,10 @@ def test_problem_definition_with_xml_ref(cleanup, caplog):
 
 
 def test_problem_definition_with_xml_ref_with_indep(cleanup):
-    """Tests what happens when writing inputs of a problem with indeps using data from existing XML file"""
+    """
+    Tests what happens when writing inputs of a problem with indeps using data from existing XML
+    file
+    """
     for extension in ["toml", "yml"]:
         clear_openmdao_registry()
         conf = FASTOADProblemConfigurator(DATA_FOLDER_PATH / f"valid_sellar_with_indep.{extension}")
@@ -448,8 +451,8 @@ def test_imports_handling(added_sys_path):
 
     # Imports are done here to be sure the interpreter does not know
     # these paths when the code above is run.
-    from .data.to_be_imported.my_driver_1 import MyDriver1
-    from .data.to_be_imported.my_driver_2 import MyDriver2
+    from .data.to_be_imported.my_driver_1 import MyDriver1  # noqa: PLC0415
+    from .data.to_be_imported.my_driver_2 import MyDriver2  # noqa: PLC0415
 
     assert conf._imported_classes["MyDriver1"] == MyDriver1
     assert conf._imported_classes["MyDriver2"] == MyDriver2

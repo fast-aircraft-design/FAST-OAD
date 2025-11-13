@@ -21,7 +21,7 @@ from ..base import FlightSequence
 from ..segments.registered.mass_input import MassTargetSegment
 from ..segments.registered.taxi import TaxiSegment
 
-# ruff: noqa: RUF005
+# ruff: noqa: RUF005 In this test it is clearer with +
 
 
 def get_taxi_definition(propulsion, target_mass=None):

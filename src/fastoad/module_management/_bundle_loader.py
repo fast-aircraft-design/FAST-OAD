@@ -200,12 +200,12 @@ class BundleLoader:
                         )
                     else:
                         for prop_name, prop_value in properties.items():
-                            if prop_name not in factory_properties.keys():
+                            if prop_name not in factory_properties:
                                 to_be_kept = False
                                 break
                             factory_prop_value = factory_properties[prop_name]
                             if isinstance(prop_value, str):
-                                prop_value = prop_value.lower()
+                                prop_value = prop_value.lower()  # noqa: PLW2901
                                 factory_prop_value = factory_prop_value.lower()
                             if prop_value != factory_prop_value:
                                 to_be_kept = False
@@ -331,10 +331,7 @@ class BundleLoader:
 
         # Dev Note: simple wrapper for BundleContext.get_all_service_references()
 
-        if case_sensitive:
-            operator = "="
-        else:
-            operator = "~="
+        operator = "=" if case_sensitive else "~="
 
         if not properties:
             ldap_filter = None

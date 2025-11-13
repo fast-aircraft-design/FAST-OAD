@@ -21,7 +21,9 @@ import pandas as pd
 from scipy.constants import foot, g
 
 from fastoad.model_base import FlightPoint
-from fastoad.models.performances.mission.exceptions import FastFlightSegmentIncompleteFlightPoint
+from fastoad.models.performances.mission.exceptions import (
+    FastFlightSegmentIncompleteFlightPointError,
+)
 from fastoad.models.performances.mission.segments.base import (
     RegisterSegment,
 )
@@ -81,11 +83,11 @@ class AltitudeChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightS
     _original_target_altitude: str | None = field(default=None, init=False)
 
     #: Using this value will tell to target the altitude with max lift/drag ratio.
-    OPTIMAL_ALTITUDE = "optimal_altitude"  # pylint: disable=invalid-name # used as constant
+    OPTIMAL_ALTITUDE = "optimal_altitude"  # used as constant
 
     #: Using this value will tell to target the nearest flight level to altitude
     #: with max lift/drag ratio.
-    OPTIMAL_FLIGHT_LEVEL = "optimal_flight_level"  # pylint: disable=invalid-name # used as constant
+    OPTIMAL_FLIGHT_LEVEL = "optimal_flight_level"  # used as constant
 
     def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
         if target.altitude is not None:
@@ -110,10 +112,10 @@ class AltitudeChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightS
                 self.interrupt_if_getting_further_from_target = True
 
         atm = self._get_atmosphere_point(start.altitude)
-        if target.equivalent_airspeed == self.CONSTANT_VALUE:
+        if target.equivalent_airspeed == self.constant_value_name:
             atm.equivalent_airspeed = start.equivalent_airspeed
             start.true_airspeed = atm.true_airspeed
-        elif target.mach == self.CONSTANT_VALUE:
+        elif target.mach == self.constant_value_name:
             atm.mach = start.mach
             start.true_airspeed = atm.true_airspeed
 
@@ -140,15 +142,18 @@ class AltitudeChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightS
 
             if target.altitude is not None:
                 distance_to_target = target.altitude - current.altitude
-            elif target.true_airspeed and target.true_airspeed != self.CONSTANT_VALUE:
+            elif target.true_airspeed and target.true_airspeed != self.constant_value_name:
                 distance_to_target = target.true_airspeed - current.true_airspeed
-            elif target.equivalent_airspeed and target.equivalent_airspeed != self.CONSTANT_VALUE:
+            elif (
+                target.equivalent_airspeed
+                and target.equivalent_airspeed != self.constant_value_name
+            ):
                 distance_to_target = target.equivalent_airspeed - current.equivalent_airspeed
-            elif target.mach is not None and target.mach != self.CONSTANT_VALUE:
+            elif target.mach is not None and target.mach != self.constant_value_name:
                 distance_to_target = target.mach - current.mach
 
         if distance_to_target is None:
-            raise FastFlightSegmentIncompleteFlightPoint(
+            raise FastFlightSegmentIncompleteFlightPointError(
                 "No valid target definition for altitude change."
             )
         return distance_to_target
@@ -161,7 +166,7 @@ class AltitudeChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightS
         # Optimal altitude is based on a target Mach number, though target speed
         # may be specified as TAS or EAS. If so, Mach number has to be computed
         # for target altitude and speed.
-        # First, as target speed is expected to be set to self.CONSTANT_VALUE for one
+        # First, as target speed is expected to be set to self.constant_value_name for one
         # parameter. Let's get the real value from start point.
         target_speed = copy(target)
         for speed_param in ["true_airspeed", "equivalent_airspeed", "mach"]:

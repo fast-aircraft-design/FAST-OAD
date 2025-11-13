@@ -35,7 +35,7 @@ from fastoad.io.configuration.configuration import (
 )
 from fastoad.openmdao.variables import Variable, VariableList
 
-from .exceptions import FastMissingFile
+from .exceptions import FastMissingFileError
 
 pd.set_option("display.max_rows", None)
 
@@ -93,7 +93,9 @@ class OptimizationViewer:
             input_variables = DataFile(self.problem_configuration.input_file_path)
         else:
             # TODO: generate the input file by default ?
-            raise FastMissingFile("Please generate input file before using the optimization viewer")
+            raise FastMissingFileError(
+                "Please generate input file before using the optimization viewer"
+            )
 
         if Path(self.problem_configuration.output_file_path).is_file():
             self._MISSING_OUTPUT_FILE = False
@@ -255,7 +257,6 @@ class OptimizationViewer:
             self.dataframe[column_to_attribute.keys()].rename(columns=column_to_attribute)
         )
 
-    # pylint: disable=invalid-name # df is a common naming for dataframes
     def _df_to_sheet(self, df: pd.DataFrame) -> sh.Sheet:
         """
         Transforms a pandas DataFrame into a ipysheet Sheet.
@@ -273,10 +274,8 @@ class OptimizationViewer:
             read_only_cells = ["Name", "Unit", "Description", "Value"]
 
             style = self._cell_styling(df)
-            row_idx = 0
-            for r in rows:
-                col_idx = 0
-                for c in columns:
+            for row_idx, r in enumerate(rows):
+                for col_idx, c in enumerate(columns):
                     value = df.loc[r, c]
                     if c in read_only_cells:
                         read_only = True
@@ -303,8 +302,6 @@ class OptimizationViewer:
                             style=style[(r, c)],
                         )
                     )
-                    col_idx += 1
-                row_idx += 1
             sheet = sh.Sheet(
                 rows=len(rows),
                 columns=len(columns),
@@ -328,7 +325,7 @@ class OptimizationViewer:
         """
         return sh.to_dataframe(sheet)
 
-    # pylint: disable=unused-argument  # args has to be there for observe() to work
+    # change has to be there for observe() to work
     def _update_df(self, change=None):
         """
         Updates the stored DataFrame with respect to the actual values of the Sheet.
@@ -428,7 +425,7 @@ class OptimizationViewer:
             cell.observe(self._update_df, "value")
             cell.observe(self._update_style, "value")
 
-    # pylint: disable=unused-argument  # args has to be there for observe() to work
+    # change has to be there for observe() to work
     def _render_ui(self, change=None) -> display:
         """
         Renders the dropdown menus for the variable selector and the corresponding
@@ -473,33 +470,31 @@ class OptimizationViewer:
                 s = df.loc[r]
                 is_active = pd.Series(data=False, index=s.index)
                 is_violated = pd.Series(data=False, index=s.index)
-                if "Lower" in s:
+                if ("Lower" in s) and (s.loc["Lower"] is not None):
                     # Constraints might only have a upper bound
-                    if s.loc["Lower"] is not None:
-                        if np.all(s.loc["Lower"] + threshold >= s.loc["Value"]) & np.all(
-                            s.loc["Value"] >= s.loc["Lower"] - threshold
-                        ):
-                            is_active["Lower"] = True
-                            is_active["Value"] = True
-                        elif np.all(s.loc["Value"] < s.loc["Lower"] - threshold):
-                            is_violated["Lower"] = True
-                            is_violated["Value"] = True
-                        else:
-                            pass
+                    if np.all(s.loc["Lower"] + threshold >= s.loc["Value"]) & np.all(
+                        s.loc["Value"] >= s.loc["Lower"] - threshold
+                    ):
+                        is_active["Lower"] = True
+                        is_active["Value"] = True
+                    elif np.all(s.loc["Value"] < s.loc["Lower"] - threshold):
+                        is_violated["Lower"] = True
+                        is_violated["Value"] = True
+                    else:
+                        pass
 
-                if "Upper" in s:
+                if ("Upper" in s) and (s.loc["Upper"] is not None):
                     # Constraints might only have a lower bound
-                    if s.loc["Upper"] is not None:
-                        if np.all(s.loc["Upper"] + threshold >= s.loc["Value"]) & np.all(
-                            s.loc["Value"] >= s.loc["Upper"] - threshold
-                        ):
-                            is_active["Upper"] = True
-                            is_active["Value"] = True
-                        elif np.all(s.loc["Value"] > s.loc["Upper"] + threshold):
-                            is_violated["Upper"] = True
-                            is_violated["Value"] = True
-                        else:
-                            pass
+                    if np.all(s.loc["Upper"] + threshold >= s.loc["Value"]) & np.all(
+                        s.loc["Value"] >= s.loc["Upper"] - threshold
+                    ):
+                        is_active["Upper"] = True
+                        is_active["Value"] = True
+                    elif np.all(s.loc["Value"] > s.loc["Upper"] + threshold):
+                        is_violated["Upper"] = True
+                        is_violated["Value"] = True
+                    else:
+                        pass
 
                 yellow = ["yellow" if v else None for v in is_active]
                 red = ["red" if v else None for v in is_violated]

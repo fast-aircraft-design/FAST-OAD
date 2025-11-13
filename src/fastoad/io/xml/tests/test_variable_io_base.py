@@ -35,7 +35,7 @@ def cleanup():
     shutil.rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
-def _check_basic_vars(outputs: VariableList):
+def _check_basic_variables(outputs: VariableList):
     """Checks that provided IndepVarComp instance matches content of data/custom.xml file"""
 
     assert len(outputs) == 5
@@ -82,14 +82,14 @@ def test_custom_xml_read_and_write_from_ivc(cleanup):
     translator = VarXpathTranslator(variable_names=var_names, xpaths=xpaths)
     xml_read = VariableIO(file_path, formatter=VariableXmlBaseFormatter(translator))
     var_list = xml_read.read()
-    _check_basic_vars(var_list)
+    _check_basic_variables(var_list)
 
     # test with a non-exhaustive translation table (missing variable name in the translator)
     # we expect that the variable is not included in the ivc
     file_path = DATA_FOLDER_PATH / "custom_additional_var.xml"
     xml_read = VariableIO(file_path, formatter=VariableXmlBaseFormatter(translator))
     var_list = xml_read.read()
-    _check_basic_vars(var_list)
+    _check_basic_variables(var_list)
 
     # test with setting a translation with an additional var not present in the xml
     file_path = DATA_FOLDER_PATH / "custom.xml"
@@ -102,7 +102,7 @@ def test_custom_xml_read_and_write_from_ivc(cleanup):
         ),
     )
     var_list = xml_read.read()
-    _check_basic_vars(var_list)
+    _check_basic_variables(var_list)
 
     # Check using text file object --------------------
     with Path.open(file_path) as text_file_io:
@@ -127,7 +127,7 @@ def test_custom_xml_read_and_write_from_ivc(cleanup):
     translator.set(var_names, xpaths)
     xml_check = VariableIO(new_filename, formatter=VariableXmlBaseFormatter(translator))
     new_ivc = xml_check.read()
-    _check_basic_vars(new_ivc)
+    _check_basic_variables(new_ivc)
 
 
 def test_custom_xml_read_and_write_with_translation_table(cleanup):
@@ -142,12 +142,12 @@ def test_custom_xml_read_and_write_with_translation_table(cleanup):
     filename = DATA_FOLDER_PATH / "custom.xml"
     translator = VarXpathTranslator(source=DATA_FOLDER_PATH / "custom_translation.txt")
     xml_read = VariableIO(filename, formatter=VariableXmlBaseFormatter(translator))
-    vars = xml_read.read()
-    _check_basic_vars(vars)
+    variables = xml_read.read()
+    _check_basic_variables(variables)
 
     new_filename = result_folder / "custom.xml"
     xml_write = VariableIO(new_filename, formatter=VariableXmlBaseFormatter(translator))
-    xml_write.write(vars)
+    xml_write.write(variables)
 
 
 def test_custom_xml_read_and_write_with_only_or_ignore(cleanup):

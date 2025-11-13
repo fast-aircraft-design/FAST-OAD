@@ -435,7 +435,7 @@ class MissionBuilder:
         for key, value in part_kwargs.items():
             if key == POLAR_TAG:
                 modifier_kwargs = deepcopy(value.get("modifier"))
-                value = Polar(
+                new_value = Polar(
                     cl=value["CL"].value,
                     cd=value["CD"].value,
                     alpha=value["alpha"].value if "alpha" in value else None,
@@ -455,10 +455,14 @@ class MissionBuilder:
                     relative_fields = [
                         param.parameter_name for param in value.values() if param.is_relative
                     ]
-                    value = FlightPoint(**target_parameters)
-                    value.set_as_relative(relative_fields)
+                    new_value = FlightPoint(**target_parameters)
+                    new_value.set_as_relative(relative_fields)
+                else:
+                    new_value = value
+            else:
+                new_value = value
 
-            part_kwargs[key] = value
+            part_kwargs[key] = new_value
 
         self._replace_input_definitions_by_values(part_kwargs)
 

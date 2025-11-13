@@ -29,7 +29,7 @@ from lxml.etree import (
     XPathEvalError,
     _Comment,
     _Element,
-)  # pylint: disable=protected-access  # Useful for type hinting
+)  # Useful for type hinting
 from openmdao.vectors.vector import Vector
 
 from fastoad._utils.files import make_parent_dir

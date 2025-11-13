@@ -65,7 +65,7 @@ class PackageReader:
                 else:
                     # Here we assume non-existence
                     self.exists = False
-            except Exception:  # pylint: disable = W0703
+            except Exception:  # noqa: BLE001 We catch any error raised while loading or inspecting user code.
                 # Here we catch any Python error that may happen when reading the loaded code.
                 # Thus, we ensure to not break the application if a module is incorrectly written.
                 self.has_error = True

@@ -12,6 +12,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import contextlib
 import itertools
 
 import numpy as np
@@ -46,11 +47,10 @@ def get_problem_variables(
     if not problem._metadata or problem._metadata["setup_status"] < _SetupStatus.POST_SETUP:
         problem = get_mpi_safe_problem_copy(problem)
         problem.setup()
-    try:  # This block will execute only if openMDAO >= 3.38
+    with contextlib.suppress(AttributeError):
+        # This block will execute only if openMDAO >= 3.38
         # TODO clean this code once versions < 3.38 are deprecated
         problem.set_setup_status(_SetupStatus.POST_SETUP2)
-    except AttributeError:
-        pass
 
     # Get inputs and outputs
     metadata_keys = (

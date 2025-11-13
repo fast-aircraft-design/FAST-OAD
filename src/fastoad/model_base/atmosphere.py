@@ -60,7 +60,6 @@ class Atmosphere:
         >>> viscosities = atm.kinematic_viscosity # viscosities for all defined altitudes
     """
 
-    # pylint: disable=too-many-instance-attributes  # Needed for avoiding redoing computations
     def __init__(
         self,
         altitude: float | Sequence[float],

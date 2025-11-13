@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+import contextlib
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass, field
@@ -28,7 +29,7 @@ from fastoad.model_base import FlightPoint
 from fastoad.model_base.datacls import MANDATORY_FIELD
 
 from ..base import IFlightPart, RegisterElement
-from ..exceptions import FastFlightSegmentIncompleteFlightPoint
+from ..exceptions import FastFlightSegmentIncompleteFlightPointError
 
 
 class RegisterSegment(RegisterElement, base_class=IFlightPart):
@@ -127,7 +128,7 @@ class AbstractFlightSegment(IFlightPart, ABC):
     #: A FlightPoint instance that provides parameter values that should all be reached at the
     #: end of :meth:`~fastoad.models.performances.mission.segments.base.FlightSegment.compute_from`.
     #: Possible parameters depend on the current segment. A parameter can also be set to
-    #: :attr:`~fastoad.models.performances.mission.segments.base.FlightSegment.CONSTANT_VALUE`
+    #: :attr:`~fastoad.models.performances.mission.segments.base.FlightSegment.constant_value_name`
     #: to tell that initial value should be kept during all segment.
     target: FlightPoint = MANDATORY_FIELD
 
@@ -138,10 +139,10 @@ class AbstractFlightSegment(IFlightPart, ABC):
     isa_offset: float = 0.0
 
     #: Using this value will tell to keep the associated parameter constant.
-    CONSTANT_VALUE = "constant"  # pylint: disable=invalid-name # used as constant
+    constant_value_name = "constant"
 
     # To be noted: this one is not a dataclass field, but an actual class attribute
-    _attribute_units: ClassVar[dict] = dict(reference_area="m**2", time_step="s")
+    _attribute_units: ClassVar[dict] = {"reference_area": "m**2", "time_step": "s"}
 
     @abstractmethod
     def compute_from_start_to_target(self, start, target) -> pd.DataFrame:
@@ -206,10 +207,8 @@ class AbstractFlightSegment(IFlightPart, ABC):
         start_copy = deepcopy(start)
 
         if start_copy.altitude is not None:
-            try:
+            with contextlib.suppress(FastFlightSegmentIncompleteFlightPointError):
                 self.complete_flight_point(start_copy)
-            except FastFlightSegmentIncompleteFlightPoint:
-                pass
         start_copy.scalarize()
         start_copy.isa_offset = self.isa_offset
 
@@ -310,7 +309,7 @@ class AbstractFlightSegment(IFlightPart, ABC):
             elif flight_point.equivalent_airspeed is not None:
                 atm.equivalent_airspeed = flight_point.equivalent_airspeed
             elif raise_error_on_missing_speeds:
-                raise FastFlightSegmentIncompleteFlightPoint(
+                raise FastFlightSegmentIncompleteFlightPointError(
                     "Flight point should be defined for true_airspeed, "
                     "equivalent_airspeed, or mach."
                 )

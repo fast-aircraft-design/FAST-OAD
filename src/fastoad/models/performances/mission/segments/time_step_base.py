@@ -145,7 +145,7 @@ class AbstractTimeStepFlightSegment(
     def get_next_alpha(
         self,
         previous_point: FlightPoint,
-        time_step: float,  # pylint: disable=unused-argument
+        time_step: float,
     ) -> float:
         """
         Determine the next angle of attack.
@@ -257,11 +257,11 @@ class AbstractTimeStepFlightSegment(
         next_point.alpha = self.get_next_alpha(previous, time_step)
         self._compute_next_altitude(next_point, previous)
 
-        if self.target.true_airspeed == self.CONSTANT_VALUE:
+        if self.target.true_airspeed == self.constant_value_name:
             next_point.true_airspeed = previous.true_airspeed
-        elif self.target.equivalent_airspeed == self.CONSTANT_VALUE:
+        elif self.target.equivalent_airspeed == self.constant_value_name:
             next_point.equivalent_airspeed = start.equivalent_airspeed
-        elif self.target.mach == self.CONSTANT_VALUE:
+        elif self.target.mach == self.constant_value_name:
             next_point.mach = start.mach
         else:
             next_point.true_airspeed = previous.true_airspeed + time_step * previous.acceleration
@@ -378,7 +378,7 @@ class AbstractRegulatedThrustSegment(AbstractTimeStepFlightSegment, ABC):
 
     def __post_init__(self):
         super().__post_init__()
-        self.target.mach = self.CONSTANT_VALUE
+        self.target.mach = self.constant_value_name
 
     def compute_propulsion(self, flight_point: FlightPoint):
         flight_point.thrust = flight_point.drag

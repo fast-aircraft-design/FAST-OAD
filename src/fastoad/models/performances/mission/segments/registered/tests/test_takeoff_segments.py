@@ -208,11 +208,11 @@ def test_takeoff(polar, polar_modifier):
         reference_area=120.0,
         polar=polar,
         polar_modifier=polar_modifier,
-        # engine_setting=EngineSetting.CLIMB,   # using default value
+        # engine_setting=EngineSetting.CLIMB,   # using default value  # noqa: ERA001
         rotation_equivalent_airspeed=75.0,
         rotation_rate=0.05,
         rotation_alpha_limit=0.1,
-        # thrust_rate=1.0,                      # using default value
+        # thrust_rate=1.0,                      # using default value  # noqa: ERA001
         time_step=0.2,
     )
 

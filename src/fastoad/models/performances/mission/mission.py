@@ -75,7 +75,7 @@ class Mission(FlightSequence):
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         if self.target_fuel_consumption is None:
             self._flight_points = super().compute_from(start)
-            self._flight_points.loc[self._flight_points.name.isnull(), "name"] = ""
+            self._flight_points.loc[self._flight_points.name.isna(), "name"] = ""
             self._compute_reserve(self._flight_points)
         else:
             self._solve_cruise_distance(start)
@@ -152,7 +152,7 @@ class Mission(FlightSequence):
         """
         self.first_route.cruise_distance = cruise_distance
         flight_points = super().compute_from(start)
-        flight_points.loc[flight_points.name.isnull(), "name"] = ""
+        flight_points.loc[flight_points.name.isna(), "name"] = ""
         self._compute_reserve(flight_points)
         self._flight_points = flight_points
         return self.target_fuel_consumption - self.consumed_fuel

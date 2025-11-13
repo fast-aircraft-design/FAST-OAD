@@ -84,7 +84,7 @@ def test_non_regression_mission_only(cleanup):
         "CeRAS01_legacy_mission_only_result.xml",
         "non_regression_mission_only",
         use_xfoil=False,
-        vars_to_check=["data:mission:sizing:needed_block_fuel"],
+        variables_to_check=["data:mission:sizing:needed_block_fuel"],
         specific_tolerance=1.0e-2,
         global_tolerance=10.0e-2,
         check_weight_perfo_loop=False,
@@ -114,7 +114,7 @@ def run_non_regression_test(
     result_dir,
     xfoil_path=None,
     global_tolerance=1e-2,
-    vars_to_check=None,
+    variables_to_check=None,
     specific_tolerance=5.0e-3,
     *,
     use_xfoil=False,
@@ -126,9 +126,10 @@ def run_non_regression_test(
     :param legacy_result_file: reference data for inputs and outputs
     :param result_dir: relative name, folder will be in RESULTS_FOLDER_PATH
     :param xfoil_path: used if use_xfoil==True
-    :param vars_to_check: variables that will be concerned by specific_tolerance
+    :param variables_to_check: variables that will be concerned by specific_tolerance
     :param specific_tolerance: test will fail if absolute relative error between computed and
-                               reference values is beyond this value for variables in vars_to_check
+                               reference values is beyond this value for variables
+                               in variables_to_check
     :param global_tolerance: test will fail if absolute relative error between computed and
                              reference values is beyond this value for ANY variable
     :param use_xfoil: if True, XFOIL computation will be activated
@@ -192,8 +193,8 @@ def run_non_regression_test(
     print(df.sort_values(by=["abs_rel_delta"]))
 
     assert_allclose(df.value, df.ref_value, rtol=global_tolerance, atol=1.0e-9)
-    if vars_to_check is not None:
-        for name in vars_to_check:
+    if variables_to_check is not None:
+        for name in variables_to_check:
             row = df.loc[df.name == name]
             assert_allclose(row.value, row.ref_value, rtol=specific_tolerance, atol=1.0e-9)
 

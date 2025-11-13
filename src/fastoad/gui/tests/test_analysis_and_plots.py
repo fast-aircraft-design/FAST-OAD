@@ -149,15 +149,19 @@ def test_mass_breakdown_sun_plot_specific_mission():
 
     # Plot 1
     # Specific mission plot
-    f = mass_breakdown_sun_plot(filename, mission_name=mission_1)
-    # f.show()
+    mass_breakdown_sun_plot(filename, mission_name=mission_1)
+    # Debug
+    # f = mass_breakdown_sun_plot(filename, mission_name=mission_1)  # noqa: ERA001
+    # f.show()  # noqa: ERA001
 
     mission_2 = "MTOW_mission"
 
     # Plot 2
     # Specific mission plot (sizing mission)
-    f = mass_breakdown_sun_plot(filename, mission_name=mission_2)  # noqa: F841
-    # f.show()
+    mass_breakdown_sun_plot(filename, mission_name=mission_2)
+    # Debug
+    # f = mass_breakdown_sun_plot(filename, mission_name=mission_2)  # noqa: ERA001
+    # f.show()  # noqa: ERA001
 
     mission_3 = "not_a_mission_name"
 

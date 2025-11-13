@@ -194,7 +194,7 @@ class FASTOADProblemConfigurator:
 
         # Issue a simple warning for unknown keys at root level
         for key in self._data:
-            if key not in json_schema["properties"].keys():
+            if key not in json_schema["properties"]:
                 _LOGGER.warning('Configuration file: "%s" is not a FAST-OAD key.', key)
 
         # Looking for modules to register
@@ -276,7 +276,7 @@ class FASTOADProblemConfigurator:
         """
         subpart = {}
         for key, value in optimization_definition.items():
-            subpart[key] = [value for _, value in optimization_definition[key].items()]
+            subpart[key] = [val for _, val in value.items()]
         subpart = {"optimization": subpart}
         self._data.update(subpart)
 
@@ -463,15 +463,13 @@ class FASTOADProblemConfigurator:
             _LOGGER.error(log_err)
             raise log_err
 
-    def _parse_problem_table(self, group: om.Group, table: dict):
+    def _parse_problem_table(self, group: om.Group, table: dict):  # noqa: PLR0912
         """
         Feeds provided *group*, using definition in provided TOML *table*.
 
         :param group:
         :param table:
         """
-        # assert isinstance(table, dict), "table should be a dictionary"
-
         for key, value in table.items():
             if isinstance(value, dict):  # value defines a sub-component
                 if KEY_COMPONENT_ID in value:
@@ -500,8 +498,16 @@ class FASTOADProblemConfigurator:
                 # value may have to be literally interpreted
                 if key.endswith(("solver", "driver")):
                     try:
-                        value = self._om_eval(str(value))
-                    except Exception as err:
+                        value = self._om_eval(str(value))  # noqa: PLW2901
+                    except (NameError, AttributeError, SyntaxError, ValueError, KeyError) as err:
+                        # Expected failures during evaluation:
+                        # - NameError / AttributeError: references missing or not yet defined
+                        # - SyntaxError: malformed expression
+                        # - ValueError: invalid literal or conversion inside eval
+                        # - KeyError: user type error
+                        #
+                        # Other exceptions indicate an internal or environment problem and
+                        # should not be swallowed here.
                         raise FASTConfigurationBadOpenMDAOInstructionError(err, key, value)
 
                 # value is an option or an attribute
@@ -510,7 +516,11 @@ class FASTOADProblemConfigurator:
                         group.options[key] = value
                     else:
                         setattr(group, key, value)
-                except Exception as err:
+                except (KeyError, AttributeError, TypeError, ValueError) as err:
+                    # Typical parsing failures:
+                    # - KeyError: unknown option name
+                    # - AttributeError: attribute does not exist or is read-only
+                    # - TypeError / ValueError: invalid type or incompatible value
                     raise FASTConfigurationBadOpenMDAOInstructionError(err, key, value)
 
     def _make_option_path_values_absolute(self, options):
@@ -600,7 +610,7 @@ class FASTOADProblemConfigurator:
             raise ValueError(
                 "No double underscore allowed in evaluated string for security reasons"
             )
-        return eval(string_to_eval, {"__builtins__": {}}, {"om": om, **self._imported_classes})
+        return eval(string_to_eval, {"__builtins__": {}}, {"om": om, **self._imported_classes})  # noqa: S307
 
 
 class _IDictSerializer(ABC):
