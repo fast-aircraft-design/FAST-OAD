@@ -180,16 +180,14 @@ def test_memory_leak_between_runs(cleanup):
             )
 
         # Cross-run memory leak detection
-        if len(memory_measurements) >= 2:
-            print("\nMemory leak analysis:")
-            positive_diffs = [
-                diff for _, diff in memory_measurements if diff > 0.1
-            ]  # Only significant positive diffs
-            if len(positive_diffs) >= 2:
-                avg_increase = sum(positive_diffs) / len(positive_diffs)
-                print(f"  Average memory increase per run: {avg_increase:.3f} MiB")
-                if avg_increase > MEMORY_DIFF_THRESHOLD * 0.5:
-                    print("  WARNING: Potential memory leak detected - consistent growth pattern")
+        print("\nMemory leak analysis:")
+        positive_diffs = [
+            diff for _, diff in memory_measurements if diff > 0.1
+        ]  # Only significant positive diffs
+        avg_increase = sum(positive_diffs) / len(positive_diffs)
+        print(f"  Average memory increase per run: {avg_increase:.3f} MiB")
+        if avg_increase > MEMORY_DIFF_THRESHOLD * 0.5:
+            print("  WARNING: Potential memory leak detected - consistent growth pattern")
 
         max_diff = max([mem for _, mem in memory_measurements])
 
