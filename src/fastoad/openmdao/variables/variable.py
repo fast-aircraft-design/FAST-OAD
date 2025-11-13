@@ -83,7 +83,9 @@ class Variable(Hashable):
      - a description exists in FAST-OAD internal data for the variable name
     Then, the internal description will be returned by :meth:`description`
 
-    :param kwargs: the attributes of the variable, as keyword arguments
+    :param name: the name of the variable
+    :param init_metadata: if True, applies default values for metadata keys not provided in kwargs
+    :param kwargs: the OpenMDAO metadata of the variable, as keyword arguments
     """
 
     # Will store content of description files
@@ -95,7 +97,7 @@ class Variable(Hashable):
     # Default metadata
     _base_metadata: ClassVar[dict] = {}
 
-    def __init__(self, name, **kwargs):
+    def __init__(self, name: str, *, init_metadata: bool = True, **kwargs):
         super().__init__()
 
         self.name = name
@@ -105,21 +107,22 @@ class Variable(Hashable):
         """ Dictionary for metadata of the variable """
 
         # Initialize class attributes once at first instantiation -------------
-        if not self._base_metadata:
-            # Get variable base metadata from an ExplicitComponent
-            comp = om.ExplicitComponent()
-            # get attributes
-            metadata = comp.add_output(name="a")
+        if init_metadata:
+            if not self._base_metadata:
+                # Get variable base metadata from an ExplicitComponent
+                comp = om.ExplicitComponent()
+                # get attributes
+                metadata = comp.add_output(name="a")
 
-            self.__class__._base_metadata = metadata
-            self.__class__._base_metadata["val"] = 1.0
-            self.__class__._base_metadata["tags"] = set()
-            self.__class__._base_metadata["shape"] = None
-        # Done with class attributes ------------------------------------------
+                self.__class__._base_metadata = metadata
+                self.__class__._base_metadata["val"] = 1.0
+                self.__class__._base_metadata["tags"] = set()
+                self.__class__._base_metadata["shape"] = None
+            self.metadata = self.__class__._base_metadata.copy()
+            # Done with class attributes ------------------------------------------
 
         # Feed self.metadata with kwargs, but remove first attributes with "Unavailable" as
         # value, which is a value that can be provided by OpenMDAO.
-        self.metadata = self.__class__._base_metadata.copy()
         self.metadata.update(
             {
                 key: value
@@ -157,6 +160,17 @@ class Variable(Hashable):
         if new_units:
             return scalarize(convert_units(np.asarray(self.value), self.units, new_units))
         return scalarize(self.value)
+
+    def update_missing_metadata(self, source_variable: Variable):
+        """
+        Add metadata from source_variable to this variable, but only for keys that don't already exist.
+        This is used to fill in missing metadata while preserving existing values.
+
+        :param source_variable: Source for additional metadata
+        """
+        for key, value in source_variable.metadata.items():
+            if key not in self.metadata:  # Only add missing keys
+                self.metadata[key] = value
 
     @classmethod
     def read_variable_descriptions(
@@ -340,11 +354,12 @@ class Variable(Hashable):
 
     def _set_default_shape(self):
         """Automatically sets shape if not set"""
-        if self.metadata["shape"] is None:
-            shape = np.shape(self.value)
-            if not shape:
-                shape = (1,)
-            self.metadata["shape"] = shape
+        if "shape" in self.metadata.keys():
+            if self.metadata["shape"] is None:
+                shape = np.shape(self.value)
+                if not shape:
+                    shape = (1,)
+                self.metadata["shape"] = shape
 
     def __eq__(self, other):
         # same arrays with nan are declared non equals, so we need a workaround

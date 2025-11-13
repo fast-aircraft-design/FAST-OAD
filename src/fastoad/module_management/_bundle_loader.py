@@ -17,9 +17,11 @@ Basis for registering and retrieving services
 from __future__ import annotations
 
 import gc
+import importlib
 import logging
 import re
 from os import PathLike
+from pathlib import Path
 from typing import Any, TypeVar
 
 import pelix
@@ -28,15 +30,39 @@ from pelix.framework import Bundle, BundleContext, Framework, FrameworkFactory
 from pelix.internals.registry import ServiceReference
 from pelix.ipopo.constants import SERVICE_IPOPO, use_ipopo
 from pelix.ipopo.decorators import ComponentFactory, Property, Provides
+from rich import box
+from rich.console import Console
+from rich.logging import RichHandler
+from rich.table import Table
 
 from .exceptions import (
     FastBundleLoaderDuplicateFactoryError,
+    FastBundleLoaderUnavailableFactoryError,
     FastBundleLoaderUnknownFactoryNameError,
 )
 from .._utils.files import as_path
 from .._utils.resource_management.contents import PackageReader
 
+_CONSOLE = Console()
 _LOGGER = logging.getLogger(__name__)
+_LOGGER.propagate = False
+_LOGGER.setLevel(logging.WARNING)
+
+# Create RichHandler with custom formatter (only message)
+_rich_handler = RichHandler(
+    rich_tracebacks=True,
+    markup=True,
+    show_path=False,
+    tracebacks_show_locals=False,
+    show_time=False,
+    show_level=False,
+)
+_formatter = logging.Formatter("%(message)s")  # no date, no level, no prefix
+_rich_handler.setFormatter(_formatter)
+
+# Attach handler only to this _LOGGER
+_LOGGER.addHandler(_rich_handler)
+
 """Logger for this module"""
 
 T = TypeVar("T")
@@ -97,17 +123,28 @@ class BundleLoader:
         if is_package:
             bundles, failed = self._install_python_package(folder_path)
         else:
-            bundles, failed = self.framework.install_package(
+            bundles, unformatted_failed = self.framework.install_package(
                 as_path(folder_path).as_posix(), recursive=True
             )
+            # For some failure, the failed object can be returned as a set rather than a dict which
+            # will prevent proper logging of the failures.
+            failed = {}
+            for failed_package in unformatted_failed:
+                path_to_failed_package = (
+                    as_path(folder_path).as_posix()
+                    + "/"
+                    + "/".join(failed_package.split(".")[1:])
+                    + ".py"
+                )
+                failed[failed_package] = path_to_failed_package
 
         for bundle in bundles:
             _LOGGER.info(
                 "Installed bundle %s (ID %s )", bundle.get_symbolic_name(), bundle.get_bundle_id()
             )
             bundle.start()
-        for _f in failed:
-            _LOGGER.warning("Failed to import module %s", _f)
+        if failed:
+            self._log_failed_modules(failed)
 
         return bundles, failed
 
@@ -276,6 +313,7 @@ class BundleLoader:
         :param properties: Initial properties of the component instance
         :return: the component instance
         :raise FastBundleLoaderUnknownFactoryNameError: unknown factory name
+        :raise FastBundleLoaderUnavailableFactoryError: unavailable factory
         """
         with use_ipopo(self.context) as ipopo:
             try:
@@ -283,6 +321,9 @@ class BundleLoader:
                     factory_name, self._get_instance_name(factory_name), properties
                 )
             except TypeError as exc:
+                context = exc.__context__
+                if isinstance(context, FastBundleLoaderUnavailableFactoryError):
+                    raise context from exc
                 raise FastBundleLoaderUnknownFactoryNameError(factory_name) from exc
 
     def clean_memory(self):
@@ -345,38 +386,89 @@ class BundleLoader:
 
         return self.framework.find_service_references(service_name, ldap_filter)  # references
 
-    def _install_python_package(self, package_name: str) -> tuple[set[Bundle], set[str]]:
+    def _install_python_package(self, package_name: str) -> Tuple[Set[Bundle], dict[str, str]]:
         """
-        Recursively loads indicated package.
+        Recursively loads indicated package and its submodules/subpackages.
 
-        :param package_name:
-        :return: A 2-tuple, with the list of installed bundles and the list
-                 of failed modules names
+        :param package_name: Name of the Python package or module to load
+        :return: A 2-tuple:
+            - Set of successfully installed Bundle objects
+            - Dict of failed module names and their full paths
         """
         bundles = set()
-        failed = set()
+        failed = {}  # dict {module_name: full_path}
 
         package = PackageReader(package_name)
+
+        # Fallback root path used when importlib cannot locate the package filesystem path,
+        # e.g., if the package is missing or in an unusual environment.
+        root_package_path = "<unknown>"
+        spec = importlib.util.find_spec(package_name)
+        if spec and spec.origin:
+            root_package_path = str(Path(spec.origin).parent)
+
         if package.has_error or not package.exists:
-            failed.add(package_name)
+            failed[package_name] = root_package_path
+            _LOGGER.warning("Failed to load package: %s", package_name)
+            self._styled_rule(f"[bold red]ERROR: {package_name}[/bold red]")
+            return bundles, failed  # Abort recursion early for broken package
+
         elif package.is_package:
             # It is a package, let's explore it.
+            header_printed = False  # Ensure the error header is printed only once per package
             for item in package.contents:
-                item_package = ".".join([package_name, item])
+                # Get the bundle name and path
+                item_package = f"{package_name}.{item}"  # Qualified name
+                item_path = f"{root_package_path}/{item}"  # Full path to the file or folder
+
                 if "." in item:
                     # A file. Considered only if it is a Python file. Ignored otherwise.
                     if item.endswith(".py"):
                         try:
-                            bundle = self.context.install_bundle(item_package[:-3])
+                            bundle = self.context.install_bundle(item_package[:-3])  # Remove .py
                             bundles.add(bundle)
-                        except BundleException:
-                            failed.add(package_name)
+                        except BundleException as e:
+                            failed[item_package[:-3]] = item_path
+                            if not header_printed:
+                                _LOGGER.warning("Failed to load package: %s", package_name)
+                                self._styled_rule(f"[bold red]ERROR: {package_name}[/bold red]")
+                                header_printed = True
+                            _LOGGER.warning("%s\nDetailed traceback:", e, exc_info=True)
+                            self._styled_rule(first_newline=False)
                 else:
+                    # It's a subpackage. Recurse.
                     sub_bundles, sub_failed = self._install_python_package(item_package)
                     bundles.update(sub_bundles)
                     failed.update(sub_failed)
 
         return bundles, failed
+
+    @staticmethod
+    def _log_failed_modules(failed_modules: list[dict[str, str]]):
+        table = Table(
+            title="[bold red]FAST-OAD MODULE IMPORT FAILURE RECAP[/bold red]",
+            show_header=True,
+            header_style="bold red",
+            box=box.HORIZONTALS,
+            expand=True,
+        )
+
+        table.add_column("Failed Module", overflow="fold")
+        table.add_column("Full path", overflow="fold")
+
+        for module, path in failed_modules.items():
+            table.add_row(module, path)
+
+        # Let Rich render the table cleanly to terminal
+        _CONSOLE.print()
+        _CONSOLE.print(table)
+
+    @staticmethod
+    def _styled_rule(title: str = "", first_newline=True):
+        if first_newline:
+            _CONSOLE.print()
+        _CONSOLE.rule(title, style="bright_black")
+        _CONSOLE.print()
 
     @staticmethod
     def _fieldify(name: str) -> str:

@@ -1,11 +1,15 @@
 repos:
   - repo: https://github.com/python-poetry/poetry
-    rev: '1.8.3'
+    rev: '2.1.3'
     hooks:
       - id: poetry-check
-      - id: poetry-export
+  - repo: https://github.com/python-poetry/poetry-plugin-export
+    rev: '1.9.0'
+    hooks:
+      - id: poetry-export # Hooks copied from https://python-poetry.org/docs/pre-commit-hooks/#poetry-export
         args: [ "--with", "doc", "--without-hashes", "-o", "docs/requirements.txt", "-f", "requirements.txt" ]
         files: 'poetry.lock'
+        verbose: true
   - repo: local
     hooks:
       # Ruff hooks are copied from https://github.com/astral-sh/ruff-pre-commit, but specifying

@@ -2,6 +2,23 @@
 Changelog
 =========
 
+Version 1.8.4
+=============
+
+- Added:
+  - Deactivate OpenMDAO automatic reporting. (https://github.com/fast-aircraft-design/FAST-OAD/pull/627)
+  - Add loads as a valid FAST-OAD discipline. (https://github.com/fast-aircraft-design/FAST-OAD/pull/629)
+  - Add CAS in the mission log. (in https://github.com/fast-aircraft-design/FAST-OAD/pull/633 by @dimitris-glenis)
+  - Added more verbose logging for failed module import. (https://github.com/fast-aircraft-design/FAST-OAD/pull/639)
+  - Better handling of failed module logging. (https://github.com/fast-aircraft-design/FAST-OAD/pull/641)
+  - Better handling of optional module. (https://github.com/fast-aircraft-design/FAST-OAD/pull/642)
+  - Update plotly to v6. (https://github.com/fast-aircraft-design/FAST-OAD/pull/643)
+- Fixed:
+  - Add RunOnce solver as default for `run_system`. (https://github.com/fast-aircraft-design/FAST-OAD/pull/625)
+  - Fix inconsistent behaviour of the get_val method when not providing units of measure. (https://github.com/fast-aircraft-design/FAST-OAD/pull/616)
+  - Fix OpenMDAO incompatibility. (https://github.com/fast-aircraft-design/FAST-OAD/pull/619)
+  - Fix mission target calculation. (https://github.com/fast-aircraft-design/FAST-OAD/pull/628)
+
 Version 1.8.3
 =============
 

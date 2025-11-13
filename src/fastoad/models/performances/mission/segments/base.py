@@ -301,6 +301,10 @@ class AbstractFlightSegment(IFlightPart, ABC):
         """
         Computes consistent values between TAS, EAS and Mach, assuming one of them is defined.
         """
+
+        # make sure flight_point is scalarized before completing speeds
+        flight_point.scalarize()
+
         atm = self._get_atmosphere_point(flight_point.altitude)
 
         if flight_point.true_airspeed is None:
@@ -308,10 +312,12 @@ class AbstractFlightSegment(IFlightPart, ABC):
                 atm.mach = flight_point.mach
             elif flight_point.equivalent_airspeed is not None:
                 atm.equivalent_airspeed = flight_point.equivalent_airspeed
+            elif flight_point.calibrated_airspeed is not None:
+                atm.calibrated_airspeed = flight_point.calibrated_airspeed
             elif raise_error_on_missing_speeds:
                 raise FastFlightSegmentIncompleteFlightPointError(
                     "Flight point should be defined for true_airspeed, "
-                    "equivalent_airspeed, or mach."
+                    "equivalent_airspeed, calibrated_airspeed, or mach."
                 )
             else:
                 return False
@@ -321,6 +327,7 @@ class AbstractFlightSegment(IFlightPart, ABC):
 
         flight_point.mach = atm.mach
         flight_point.equivalent_airspeed = atm.equivalent_airspeed
+        flight_point.calibrated_airspeed = atm.calibrated_airspeed
         return True
 
     def _get_atmosphere_point(self, altitude: float) -> AtmosphereSI:
