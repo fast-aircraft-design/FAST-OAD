@@ -499,11 +499,12 @@ class FASTOADProblemConfigurator:
                 if key.endswith(("solver", "driver")):
                     try:
                         value = self._om_eval(str(value))  # noqa: PLW2901
-                    except (NameError, AttributeError, SyntaxError, ValueError) as err:
+                    except (NameError, AttributeError, SyntaxError, ValueError, KeyError) as err:
                         # Expected failures during evaluation:
                         # - NameError / AttributeError: references missing or not yet defined
                         # - SyntaxError: malformed expression
                         # - ValueError: invalid literal or conversion inside eval
+                        # - KeyError: user type error
                         #
                         # Other exceptions indicate an internal or environment problem and
                         # should not be swallowed here.
