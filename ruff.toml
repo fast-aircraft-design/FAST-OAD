@@ -43,7 +43,6 @@ ignore = [
     "N806",   # Checks for the use of non-lowercase variable names in functions.
     "D105",   # Missing docstring in magic method
     "D212",   # Multi-line docstring summary should start at the first line
-    "PD901",  # df is ok as a name
     "PD002",  # We want to use inplace for pandas
 ]
 
@@ -75,7 +74,6 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
     "PLR0915", # Too many statements
     "PLR2004", # Enabling magic value to be used in test comparison
     "S101",    # Enable assert in tests
-    "PD901",   # Avoid using the generic variable name `df` for DataFrames
     "ANN",     # No annotation on tests
     "D",       # No doc in tests
 ]
@@ -84,7 +82,6 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
     "PLR0915", # Too many statements
     "PLR2004", # Enabling magic value to be used in test comparison
     "S101",    # Enable assert in tests
-    "PD901",   # Avoid using the generic variable name `df` for DataFrames
     "ANN",     # No annotation on tests
     "D",       # No doc in tests
 ]

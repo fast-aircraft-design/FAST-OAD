@@ -34,8 +34,6 @@ OUTPUT = "OUT"
 NA = "N/A"
 TAG_ALL = "--ALL--"
 
-# ruff:noqa PD901 df is ok as a name here
-
 
 class VariableViewer:
     """
