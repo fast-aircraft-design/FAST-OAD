@@ -70,6 +70,10 @@ jobs:
           poetry run ruff check .           # Check coding rules
           poetry run ruff format --check .  # Check format and import sorting
         shell: bash
+        
+      - name: Run license headers check # Run the license check hook specifically
+        run: poetry run pre-commit run license-headers-check --all-files --hook-stage manual
+        shell: bash
       
       ## Tests without MPI
       # Runners that won't send coverage report are run without coverage overhead
