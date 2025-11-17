@@ -53,10 +53,14 @@ def get_top_memory_stats(
     snapshot1: tracemalloc.Snapshot, snapshot2: tracemalloc.Snapshot, limit: int = 5
 ):
     """Get top memory consuming lines between two snapshots"""
-    stats = snapshot2.compare_to(snapshot1, "lineno")
-    print(f"\nTop {limit} memory consuming lines:")
-    for i, stat in enumerate(stats[:limit]):
-        print(f"  {i + 1}. {stat}")
+    top_stats = snapshot2.compare_to(snapshot1, "lineno")
+    for j, stat in enumerate(top_stats[:limit]):  # Show top 'limit' changes
+        size_diff = om.convert_units(stat.size_diff, "byte", "Mibyte")  # Convert to MiB
+        print(f"  {j + 1}. {size_diff:+.3f} MiB | {stat.traceback.format()[-1].strip()}")
+        if j == 0 and abs(size_diff) > 1.0:  # Show full traceback for largest change
+            print("     Full traceback:")
+            for line in stat.traceback.format():
+                print(f"       {line.strip()}")
 
 
 def run_problem() -> None:
@@ -84,10 +88,7 @@ def run_problem() -> None:
     print_memory_state("After problem outputs")
 
     # Explicit cleanup attempts
-    try:
-        problem.cleanup()  # If available in OpenMDAO
-    except AttributeError:
-        pass
+    problem.cleanup()
 
     # Delete references
     del problem
@@ -135,14 +136,7 @@ def test_memory_leak_between_runs(cleanup):
 
             # Analyze memory changes for this specific run
             print(f"\nTop memory changes during run {i + 1}:")
-            top_stats = post_snapshot.compare_to(pre_snapshot, "lineno")
-            for j, stat in enumerate(top_stats[:5]):  # Show top 5 changes
-                size_diff = stat.size_diff / 1024 / 1024  # Convert to MiB
-                print(f"  {j + 1}. {size_diff:+.3f} MiB | {stat.traceback.format()[-1].strip()}")
-                if j == 0 and abs(size_diff) > 1.0:  # Show full traceback for largest change
-                    print("     Full traceback:")
-                    for line in stat.traceback.format():
-                        print(f"       {line.strip()}")
+            get_top_memory_stats(pre_snapshot, post_snapshot)
 
             # Check if this run exceeded positive threshold
             if run_memory_diff > MEMORY_DIFF_THRESHOLD:
@@ -170,14 +164,7 @@ def test_memory_leak_between_runs(cleanup):
         # Overall memory analysis from start to finish
         print("\nOverall top memory changes (start to finish):")
         final_snapshot = tracemalloc.take_snapshot()
-        overall_stats = final_snapshot.compare_to(snapshot_start, "lineno")
-        for i, stat in enumerate(overall_stats[:8]):
-            size_diff = stat.size_diff / 1024 / 1024
-            count_diff = stat.count_diff
-            print(
-                f"  {i + 1}. {size_diff:+.3f} MiB ({count_diff:+d} blocks) | "
-                f"{stat.traceback.format()[-1].strip()}"
-            )
+        get_top_memory_stats(snapshot_start, final_snapshot)
 
         # Cross-run memory leak detection
         print("\nMemory leak analysis:")
