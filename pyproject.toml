@@ -18,7 +18,7 @@ maintainers = [
     { name = "Eric NGUYEN VAN", email = "Eric.Nguyen_Van@onera.fr" },
     { name = "Enrico STRAGIOTTI", email = "enrico.stragiotti@onera.fr" },
 ]
-requires-python = ">=3.9,<3.14"
+requires-python = ">=3.10,<3.14"
 dynamic = ["version","classifiers"] # Needed to use poetry-dynamic-versioning
 
 # User dependencies ------------------------------------------------------------
@@ -102,7 +102,6 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
     "Operating System :: MacOS",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
