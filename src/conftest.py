@@ -18,7 +18,8 @@ Basic settings for tests
 # `pytest src` will run OK after a `pip install .`
 from __future__ import annotations
 
-import sys
+import contextlib
+import importlib.metadata as importlib_metadata
 from pathlib import Path
 from platform import system
 from shutil import which
@@ -27,13 +28,6 @@ from unittest.mock import Mock
 
 import pytest
 import wrapt
-
-if sys.version_info >= (3, 10):
-    import importlib.metadata as importlib_metadata
-else:
-    import importlib_metadata
-
-import contextlib
 
 from fastoad.module_management._plugins import MODEL_PLUGIN_ID, FastoadLoader
 

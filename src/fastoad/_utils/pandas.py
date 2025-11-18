@@ -16,7 +16,7 @@ Module for pandas-related operations
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 import pandas as pd
 from packaging.version import Version
