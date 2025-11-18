@@ -237,3 +237,23 @@ class InputDefinition:
 
     def __str__(self):
         return str(self.value)
+
+    def __eq__(self, other: "InputDefinition") -> bool:
+        return np.all(
+            [
+                self.parameter_name == other.parameter_name,
+                self.input_value == other.input_value,
+                self.input_unit == other.input_unit,
+                # default_value can be NaN, and this is why we need our own implementation
+                # of __eq__
+                np.array_equal(self.default_value, other.default_value, equal_nan=True),
+                self.is_relative == other.is_relative,
+                self.part_identifier == other.part_identifier,
+                self.output_unit == other.output_unit,
+                self.shape == other.shape,
+                self.shape_by_conn == other.shape_by_conn,
+                self.prefix == other.prefix,
+                self._variable_name == other._variable_name,
+                self._use_opposite == other._use_opposite,
+            ]
+        )
