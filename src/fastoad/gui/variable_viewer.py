@@ -23,7 +23,6 @@ import ipywidgets as widgets
 import pandas as pd
 from IPython.display import display
 
-from fastoad._utils.pandas import apply_map
 from fastoad.io import IVariableIOFormatter, VariableIO
 from fastoad.openmdao.variables import VariableList
 
@@ -391,7 +390,7 @@ class VariableViewer:
 
             return submodules[len(modules)]
 
-        submodules = apply_map(var_names, get_next_module)
+        submodules = pd.DataFrame.map(var_names, get_next_module)
 
         submodules = submodules[submodules.Name != ""]
 
