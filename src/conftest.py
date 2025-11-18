@@ -16,7 +16,6 @@ Basic settings for tests
 
 # Note: this file has to be put in src/, not in project root folder, to ensure that
 # `pytest src` will run OK after a `pip install .`
-from __future__ import annotations
 
 import contextlib
 import importlib.metadata as importlib_metadata

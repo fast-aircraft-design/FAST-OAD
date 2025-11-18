@@ -14,8 +14,6 @@ Classes for computation of routes (i.e. assemblies of climb, cruise and descent 
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 
 import numpy as np

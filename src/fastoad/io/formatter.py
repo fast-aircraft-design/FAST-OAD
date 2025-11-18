@@ -14,8 +14,6 @@ Base class for VariableIOFormatter objects.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from __future__ import annotations
-
 from abc import ABC, abstractmethod
 from os import PathLike
 from typing import IO
