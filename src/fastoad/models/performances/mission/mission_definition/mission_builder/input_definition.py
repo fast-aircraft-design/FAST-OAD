@@ -39,6 +39,11 @@ class InputDefinition:
         - provides information for OpenMDAO declaration
     """
 
+    # We override __eq__, so we must explicitly disable hashing.
+    # This class is mutable (values change after initialization),
+    # and hashable mutable objects break dict/set behavior.
+    __hash__ = None
+
     #: The parameter this input is defined for.
     parameter_name: str
 
@@ -238,7 +243,7 @@ class InputDefinition:
     def __str__(self):
         return str(self.value)
 
-    def __eq__(self, other: "InputDefinition") -> bool:
+    def __eq__(self, other: InputDefinition) -> bool:
         return np.all(
             [
                 self.parameter_name == other.parameter_name,
