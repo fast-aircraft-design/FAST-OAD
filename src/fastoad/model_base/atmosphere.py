@@ -14,8 +14,6 @@ Simple implementation of International Standard Atmosphere.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from __future__ import annotations
-
 from collections.abc import Sequence
 from numbers import Number
 

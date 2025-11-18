@@ -14,8 +14,6 @@ Base classes for mission-related OpenMDAO components.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from __future__ import annotations
-
 from abc import ABCMeta
 from enum import Enum
 from os import PathLike

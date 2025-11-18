@@ -15,8 +15,7 @@ Mission wrapper.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from __future__ import annotations
-
+from itertools import pairwise
 from os import PathLike
 
 import numpy as np
@@ -148,7 +147,7 @@ class MissionWrapper(MissionBuilder):
             grouped_points = flight_points.groupby("name2")
 
             part_names = pd.unique(flight_points.name2)
-            for part_name1, part_name2 in zip(part_names[:-1], part_names[1:]):
+            for part_name1, part_name2 in pairwise(part_names):
                 part1 = grouped_points.get_group(part_name1)
                 part2 = grouped_points.get_group(part_name2)
                 _compute_vars(

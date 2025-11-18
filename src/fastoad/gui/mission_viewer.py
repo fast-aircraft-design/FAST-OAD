@@ -15,8 +15,6 @@ Defines the analysis and plotting functions for postprocessing regarding the mis
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from __future__ import annotations
-
 from os import PathLike
 
 import ipywidgets as widgets

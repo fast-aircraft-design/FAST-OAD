@@ -14,15 +14,13 @@ Plugin system for declaration of FAST-OAD models.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from __future__ import annotations
-
+import importlib.metadata as importlib_metadata
 import logging
-import sys
 import warnings
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Callable
 
 import numpy as np
 
@@ -42,11 +40,6 @@ from .exceptions import (
 )
 from .._utils.dicts import AbstractNormalizedDict
 from .._utils.resource_management.contents import PackageReader
-
-if sys.version_info >= (3, 10):
-    import importlib.metadata as importlib_metadata
-else:
-    import importlib_metadata
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
