@@ -12,7 +12,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 
@@ -45,7 +45,10 @@ class TakeOffSequence(
 
     #: Angle of attack (in radians) where tail strike is expected. Default value
     #: is good for SMR aircraft.
-    rotation_alpha_limit: float = np.radians(13.5)
+    # Use default_factory to comply with Ruff rule RUF009:
+    # avoid calling functions like np.radians() directly in dataclass defaults,
+    # as they are evaluated at class definition time instead of instance creation.
+    rotation_alpha_limit: float = field(default_factory=lambda: np.radians(13.5))
 
     # Used time step for computing the takeoff part after rotation.
     end_time_step: float = 0.05

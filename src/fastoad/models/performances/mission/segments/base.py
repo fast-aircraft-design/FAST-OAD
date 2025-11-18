@@ -12,10 +12,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+import contextlib
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Optional, Type
+from typing import ClassVar
 
 import numpy as np
 import pandas as pd
@@ -26,7 +29,7 @@ from fastoad.model_base import FlightPoint
 from fastoad.model_base.datacls import MANDATORY_FIELD
 
 from ..base import IFlightPart, RegisterElement
-from ..exceptions import FastFlightSegmentIncompleteFlightPoint
+from ..exceptions import FastFlightSegmentIncompleteFlightPointError
 
 
 class RegisterSegment(RegisterElement, base_class=IFlightPart):
@@ -54,7 +57,7 @@ class SegmentDefinitions:
     """
 
     @classmethod
-    def add_segment(cls, segment_name: str, segment_class: Type[IFlightPart]):
+    def add_segment(cls, segment_name: str, segment_class: type[IFlightPart]):
         """
         Adds a segment definition.
 
@@ -64,7 +67,7 @@ class SegmentDefinitions:
         RegisterSegment(segment_name)(segment_class)
 
     @classmethod
-    def get_segment_class(cls, segment_name) -> Optional[Type["IFlightPart"]]:
+    def get_segment_class(cls, segment_name) -> type[IFlightPart] | None:
         """
         Provides the segment implementation for provided name.
 
@@ -125,7 +128,7 @@ class AbstractFlightSegment(IFlightPart, ABC):
     #: A FlightPoint instance that provides parameter values that should all be reached at the
     #: end of :meth:`~fastoad.models.performances.mission.segments.base.FlightSegment.compute_from`.
     #: Possible parameters depend on the current segment. A parameter can also be set to
-    #: :attr:`~fastoad.models.performances.mission.segments.base.FlightSegment.CONSTANT_VALUE`
+    #: :attr:`~fastoad.models.performances.mission.segments.base.FlightSegment.constant_value_name`
     #: to tell that initial value should be kept during all segment.
     target: FlightPoint = MANDATORY_FIELD
 
@@ -136,10 +139,10 @@ class AbstractFlightSegment(IFlightPart, ABC):
     isa_offset: float = 0.0
 
     #: Using this value will tell to keep the associated parameter constant.
-    CONSTANT_VALUE = "constant"  # pylint: disable=invalid-name # used as constant
+    constant_value_name = "constant"
 
     # To be noted: this one is not a dataclass field, but an actual class attribute
-    _attribute_units = dict(reference_area="m**2", time_step="s")
+    _attribute_units: ClassVar[dict] = {"reference_area": "m**2", "time_step": "s"}
 
     @abstractmethod
     def compute_from_start_to_target(self, start, target) -> pd.DataFrame:
@@ -204,10 +207,8 @@ class AbstractFlightSegment(IFlightPart, ABC):
         start_copy = deepcopy(start)
 
         if start_copy.altitude is not None:
-            try:
+            with contextlib.suppress(FastFlightSegmentIncompleteFlightPointError):
                 self.complete_flight_point(start_copy)
-            except FastFlightSegmentIncompleteFlightPoint:
-                pass
         start_copy.scalarize()
         start_copy.isa_offset = self.isa_offset
 
@@ -219,9 +220,7 @@ class AbstractFlightSegment(IFlightPart, ABC):
         if start_copy.ground_distance is None:
             start_copy.ground_distance = 0.0
 
-        flight_points = self.compute_from_start_to_target(start_copy, target_copy)
-
-        return flight_points
+        return self.compute_from_start_to_target(start_copy, target_copy)  # flight_points
 
     def complete_flight_point(self, flight_point: FlightPoint):
         """
@@ -269,8 +268,8 @@ class AbstractFlightSegment(IFlightPart, ABC):
     def consume_fuel(
         flight_point: FlightPoint,
         previous: FlightPoint,
-        fuel_consumption: float = None,
-        mass_ratio: float = None,
+        fuel_consumption: float | None = None,
+        mass_ratio: float | None = None,
     ):
         """
         This method should be used whenever fuel consumption has to be stored.
@@ -297,7 +296,7 @@ class AbstractFlightSegment(IFlightPart, ABC):
             flight_point.consumed_fuel += previous.mass - flight_point.mass
 
     def _complete_speed_values(
-        self, flight_point: FlightPoint, raise_error_on_missing_speeds=True
+        self, flight_point: FlightPoint, *, raise_error_on_missing_speeds=True
     ) -> bool:
         """
         Computes consistent values between TAS, EAS and Mach, assuming one of them is defined.
@@ -316,7 +315,7 @@ class AbstractFlightSegment(IFlightPart, ABC):
             elif flight_point.calibrated_airspeed is not None:
                 atm.calibrated_airspeed = flight_point.calibrated_airspeed
             elif raise_error_on_missing_speeds:
-                raise FastFlightSegmentIncompleteFlightPoint(
+                raise FastFlightSegmentIncompleteFlightPointError(
                     "Flight point should be defined for true_airspeed, "
                     "equivalent_airspeed, calibrated_airspeed, or mach."
                 )

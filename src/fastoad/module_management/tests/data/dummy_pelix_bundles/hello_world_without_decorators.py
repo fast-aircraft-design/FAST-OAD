@@ -21,7 +21,7 @@ from fastoad.module_management._bundle_loader import BundleLoader
 # Register factories without instantiating with our wrapping of iPOPO
 class OtherGreetings:
     def hello(self, name="World"):
-        return "Hello again, {0}!".format(name)
+        return f"Hello again, {name}!"
 
 
 BundleLoader().register_factory(
@@ -34,7 +34,7 @@ BundleLoader().register_factory(
 
 class OtherGreetings2:
     def hello(self, name="Universe"):
-        return "Hello again, {0}!".format(name)
+        return f"Hello again, {name}!"
 
 
 # This one provides a different service and tests registering without properties

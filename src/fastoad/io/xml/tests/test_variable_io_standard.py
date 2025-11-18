@@ -37,59 +37,59 @@ def cleanup():
     shutil.rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
 
 
-def _check_basic_vars(vars: VariableList):
+def _check_basic_variables(variables: VariableList):
     """Checks that provided IndepVarComp instance matches content of data/basic.xml file"""
 
     # Using pytest.approx for numerical reason, but also because it works even if sequence types
     # are different (lists, tuples, numpy arrays)
-    assert_allclose(780.3, vars["geometry:total_surface"].value)
-    assert vars["geometry:total_surface"].units == "m**2"
-    assert vars["geometry:total_surface"].description == "scalar 1"
+    assert_allclose(780.3, variables["geometry:total_surface"].value)
+    assert variables["geometry:total_surface"].units == "m**2"
+    assert variables["geometry:total_surface"].description == "scalar 1"
 
-    assert_allclose(42, vars["geometry:wing:span"].value)
-    assert vars["geometry:wing:span"].units == "m"
-    assert vars["geometry:wing:span"].description == "scalar 2"
+    assert_allclose(42, variables["geometry:wing:span"].value)
+    assert variables["geometry:wing:span"].units == "m"
+    assert variables["geometry:wing:span"].description == "scalar 2"
 
-    assert_allclose(9.8, vars["geometry:wing:aspect_ratio"].value)
-    assert vars["geometry:wing:aspect_ratio"].units is None
-    assert vars["geometry:wing:aspect_ratio"].description == ""
+    assert_allclose(9.8, variables["geometry:wing:aspect_ratio"].value)
+    assert variables["geometry:wing:aspect_ratio"].units is None
+    assert variables["geometry:wing:aspect_ratio"].description == ""
 
-    assert_allclose(40.0, vars["geometry:fuselage:length"].value)
-    assert vars["geometry:fuselage:length"].units == "m"
-    assert vars["geometry:fuselage:length"].description == ""
+    assert_allclose(40.0, variables["geometry:fuselage:length"].value)
+    assert variables["geometry:fuselage:length"].units == "m"
+    assert variables["geometry:fuselage:length"].description == ""
 
-    assert_allclose(-42.0, vars["constants"].value)
-    assert vars["constants"].units is None
-    assert vars["constants"].description == "value with children tags"
+    assert_allclose(-42.0, variables["constants"].value)
+    assert variables["constants"].units is None
+    assert variables["constants"].description == "value with children tags"
 
-    assert_allclose([1.0, 2.0, 3.0], vars["constants:k1"].value)
-    assert vars["constants:k1"].units == "kg"
-    assert vars["constants:k1"].description == ""
+    assert_allclose([1.0, 2.0, 3.0], variables["constants:k1"].value)
+    assert variables["constants:k1"].units == "kg"
+    assert variables["constants:k1"].description == ""
 
-    assert_allclose([10.0, 20.0], vars["constants:k2"].value)
-    assert vars["constants:k2"].units is None
-    assert vars["constants:k2"].description == ""
+    assert_allclose([10.0, 20.0], variables["constants:k2"].value)
+    assert variables["constants:k2"].units is None
+    assert variables["constants:k2"].description == ""
 
-    assert_allclose([100.0, 200.0, 300.0, 400.0], vars["constants:k3"].value)
-    assert vars["constants:k3"].units == "m/s"
-    assert vars["constants:k3"].description == "value list, space-separated"
+    assert_allclose([100.0, 200.0, 300.0, 400.0], variables["constants:k3"].value)
+    assert variables["constants:k3"].units == "m/s"
+    assert variables["constants:k3"].description == "value list, space-separated"
 
-    assert_allclose([-1, -2, -3], vars["constants:k4"].value)
-    assert vars["constants:k4"].units is None
-    assert vars["constants:k4"].description == "value list, brackets + comma-separated"
+    assert_allclose([-1, -2, -3], variables["constants:k4"].value)
+    assert variables["constants:k4"].units is None
+    assert variables["constants:k4"].description == "value list, brackets + comma-separated"
 
-    assert_allclose([100, 200, 400, 500, 600], vars["constants:k5"].value)
-    assert vars["constants:k5"].units is None
-    assert vars["constants:k5"].description == "value list, comma-separated"
+    assert_allclose([100, 200, 400, 500, 600], variables["constants:k5"].value)
+    assert variables["constants:k5"].units is None
+    assert variables["constants:k5"].description == "value list, comma-separated"
 
-    assert_allclose([[1e2, 3.4e5], [5.4e3, 2.1]], vars["constants:k8"].value)
-    assert vars["constants:k8"].units is None
-    assert vars["constants:k8"].description == "2D list"
+    assert_allclose([[1e2, 3.4e5], [5.4e3, 2.1]], variables["constants:k8"].value)
+    assert variables["constants:k8"].units is None
+    assert variables["constants:k8"].description == "2D list"
 
-    assert len(vars) == 11
+    assert len(variables) == 11
 
 
-def test_basic_xml_read_and_write_from_vars(cleanup):
+def test_basic_xml_read_and_write_from_variables(cleanup):
     """
     Tests the creation of an XML file from a VariableList instance
     """
@@ -130,14 +130,14 @@ def test_basic_xml_read_and_write_from_vars(cleanup):
     xml_check = VariableIO(file_path, formatter=VariableXmlStandardFormatter())
     xml_check.path_separator = ":"
     new_var_list = xml_check.read()
-    _check_basic_vars(new_var_list)
+    _check_basic_variables(new_var_list)
 
     # Check reading hand-made XML (with some format twists)
     file_path = DATA_FOLDER_PATH / "basic.xml"
     xml_read = VariableIO(file_path, formatter=VariableXmlStandardFormatter())
     xml_read.path_separator = ":"
     var_list = xml_read.read()
-    _check_basic_vars(var_list)
+    _check_basic_variables(var_list)
 
     # write it (with existing destination folder)
     new_file_path = result_folder / "basic.xml"
@@ -149,7 +149,7 @@ def test_basic_xml_read_and_write_from_vars(cleanup):
     xml_check = VariableIO(new_file_path, formatter=VariableXmlStandardFormatter())
     xml_check.path_separator = ":"
     new_var_list = xml_check.read()
-    _check_basic_vars(new_var_list)
+    _check_basic_variables(new_var_list)
 
     # try to write with bad separator
     xml_write.formatter.path_separator = "/"
@@ -157,17 +157,17 @@ def test_basic_xml_read_and_write_from_vars(cleanup):
         xml_write.write(var_list)
 
     # Check using text file object --------------------
-    with open(file_path) as text_file_io:
+    with Path.open(file_path) as text_file_io:
         var_list_2 = VariableIO(text_file_io, formatter=VariableXmlStandardFormatter()).read()
     assert var_list_2 == var_list
 
     # Check using binary file object --------------------
-    with open(file_path, "rb") as binary_file_io:
+    with Path.open(file_path, "rb") as binary_file_io:
         var_list_3 = VariableIO(binary_file_io, formatter=VariableXmlStandardFormatter()).read()
     assert var_list_3 == var_list
 
 
-def test_basic_xml_partial_read_and_write_from_vars(cleanup):
+def test_basic_xml_partial_read_and_write_from_variables(cleanup):
     """
     Tests the creation of an XML file from an IndepVarComp instance with only and ignore options
     """
@@ -176,16 +176,18 @@ def test_basic_xml_partial_read_and_write_from_vars(cleanup):
     # Read full IndepVarComp
     filename = DATA_FOLDER_PATH / "basic.xml"
     xml_read = VariableIO(filename, formatter=VariableXmlStandardFormatter())
-    vars = xml_read.read(ignore=["does_not_exist"])
-    _check_basic_vars(vars)
+    variables = xml_read.read(ignore=["does_not_exist"])
+    _check_basic_variables(variables)
 
     # Add something to ignore and write it
-    vars["should_be_ignored:pointless"] = {"value": 0.0}
-    vars["should_also_be_ignored"] = {"value": -10.0}
+    variables["should_be_ignored:pointless"] = {"value": 0.0}
+    variables["should_also_be_ignored"] = {"value": -10.0}
 
     badvar_filename = result_folder / "with_bad_var.xml"
     xml_write = VariableIO(badvar_filename, formatter=VariableXmlStandardFormatter())
-    xml_write.write(vars, ignore=["does_not_exist"])  # Check with non-existent var in ignore list
+    xml_write.write(
+        variables, ignore=["does_not_exist"]
+    )  # Check with non-existent var in ignore list
 
     tree = etree.parse(badvar_filename.as_posix())
     assert float(tree.xpath("should_be_ignored/pointless")[0].text.strip()) == 0.0
@@ -193,11 +195,11 @@ def test_basic_xml_partial_read_and_write_from_vars(cleanup):
 
     # Check partial reading with 'ignore'
     xml_read = VariableIO(badvar_filename, formatter=VariableXmlStandardFormatter())
-    new_vars = xml_read.read(ignore=["should_be_ignored:pointless", "should_also_be_ignored"])
-    _check_basic_vars(new_vars)
+    new_variables = xml_read.read(ignore=["should_be_ignored:pointless", "should_also_be_ignored"])
+    _check_basic_variables(new_variables)
 
     # Check partial reading with 'only'
-    ok_vars = [
+    ok_variables = [
         "geometry:total_surface",
         "geometry:wing:span",
         "geometry:wing:aspect_ratio",
@@ -210,23 +212,23 @@ def test_basic_xml_partial_read_and_write_from_vars(cleanup):
         "constants:k5",
         "constants:k8",
     ]
-    new_vars2 = xml_read.read(only=ok_vars)
-    _check_basic_vars(new_vars2)
+    new_variables_2 = xml_read.read(only=ok_variables)
+    _check_basic_variables(new_variables_2)
 
     # Check partial writing with 'ignore'
     varok_filename = result_folder / "with_bad_var.xml"
     xml_write = VariableIO(varok_filename, formatter=VariableXmlStandardFormatter())
-    xml_write.write(vars, ignore=["should_be_ignored:pointless", "should_also_be_ignored"])
+    xml_write.write(variables, ignore=["should_be_ignored:pointless", "should_also_be_ignored"])
 
     xml_read = VariableIO(varok_filename, formatter=VariableXmlStandardFormatter())
-    new_vars = xml_read.read()
-    _check_basic_vars(new_vars)
+    new_variables = xml_read.read()
+    _check_basic_variables(new_variables)
 
     # Check partial writing with 'only'
     varok2_filename = result_folder / "with_bad_var.xml"
     xml_write = VariableIO(varok2_filename, formatter=VariableXmlStandardFormatter())
-    xml_write.write(vars, only=ok_vars)
+    xml_write.write(variables, only=ok_variables)
 
     xml_read = VariableIO(varok2_filename, formatter=VariableXmlStandardFormatter())
-    new_vars = xml_read.read()
-    _check_basic_vars(new_vars)
+    new_variables = xml_read.read()
+    _check_basic_variables(new_variables)

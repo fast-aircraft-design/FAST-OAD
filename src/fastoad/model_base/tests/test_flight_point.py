@@ -43,7 +43,7 @@ def test_add_remove_field():
 
 
 def test_create():
-    df = pd.DataFrame(dict(time=[0.0, 1.0, 2.0], mach=[0.0, 0.02, 0.05]))
+    df = pd.DataFrame({"time": [0.0, 1.0, 2.0], "mach": [0.0, 0.02, 0.05]})
 
     flight_point = FlightPoint.create(df.iloc[1])
     assert flight_point.time == 1.0
@@ -51,7 +51,7 @@ def test_create():
 
 
 def test_create_list():
-    df = pd.DataFrame(dict(time=[0.0, 1.0, 2.0], mach=[0.0, 0.02, 0.05]))
+    df = pd.DataFrame({"time": [0.0, 1.0, 2.0], "mach": [0.0, 0.02, 0.05]})
 
     flight_points = FlightPoint.create_list(df)
     assert flight_points[0].time == 0.0

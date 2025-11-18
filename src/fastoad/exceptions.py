@@ -46,11 +46,11 @@ class FastUnknownEngineSettingError(FastError):
     """
 
 
-class FastUnexpectedKeywordArgument(FastError):
+class FastUnexpectedKeywordArgumentError(FastError):
     """
     Raised when an instantiation is done with an incorrect keyword argument.
     """
 
     def __init__(self, bad_keyword):
-        super().__init__("Unexpected keyword argument: %s" % bad_keyword)
+        super().__init__(f"Unexpected keyword argument: {bad_keyword}")
         self.bad_keyword = bad_keyword

@@ -23,7 +23,7 @@ from fastoad.cmd import api
 from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
 
 from .. import OptimizationViewer
-from ..exceptions import FastMissingFile
+from ..exceptions import FastMissingFileError
 
 DATA_FOLDER_PATH = Path(__file__).parent / "data"
 RESULTS_FOLDER_PATH = Path(__file__).parent / "results"
@@ -46,7 +46,7 @@ def test_optimization_viewer_load(cleanup):
     optim_viewer = OptimizationViewer()
 
     # No input file exists
-    with pytest.raises(FastMissingFile):
+    with pytest.raises(FastMissingFileError):
         optim_viewer.load(problem_configuration)
 
     api.generate_inputs(filename, DATA_FOLDER_PATH / "inputs.xml", overwrite=True)

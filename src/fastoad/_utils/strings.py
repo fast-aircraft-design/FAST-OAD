@@ -92,7 +92,7 @@ class FastCouldNotParseStringToArrayError(FastError):
         self.original_exception = original_exception
 
     def __str__(self):
-        msg = 'Could not parse "%s"' % self.text
+        msg = f'Could not parse "{self.text}"'
         if self.original_exception:
-            msg += ': got Error "%s"' % self.original_exception
+            msg += f': got Error "{self.original_exception}"'
         return msg

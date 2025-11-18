@@ -1,6 +1,7 @@
 """
 Defines the variable viewer for postprocessing
 """
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -13,9 +14,10 @@ Defines the variable viewer for postprocessing
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from __future__ import annotations
 
 from os import PathLike
-from typing import Dict, List, Set, Union
+from typing import ClassVar
 
 import ipysheet as sh
 import ipywidgets as widgets
@@ -51,7 +53,7 @@ class VariableViewer:
 
     # When getting a dataframe from a VariableList, the dictionary keys tell
     # what columns are kept and the values tell what name will be displayed.
-    _DEFAULT_COLUMN_RENAMING = {
+    _DEFAULT_COLUMN_RENAMING: ClassVar[dict] = {
         "name": "Name",
         "val": "Value",
         "units": "Unit",
@@ -84,7 +86,7 @@ class VariableViewer:
         # The complete user interface
         self._ui = None
 
-    def load(self, file_path: Union[str, PathLike], file_formatter: IVariableIOFormatter = None):
+    def load(self, file_path: str | PathLike, file_formatter: IVariableIOFormatter = None):
         """
         Loads the file and stores its data.
 
@@ -97,7 +99,7 @@ class VariableViewer:
         self.load_variables(VariableIO(file_path, file_formatter).read())
 
     def save(
-        self, file_path: Union[str, PathLike] = None, file_formatter: IVariableIOFormatter = None
+        self, file_path: str | PathLike | None = None, file_formatter: IVariableIOFormatter = None
     ):
         """
         Save the dataframe to the file.
@@ -123,7 +125,9 @@ class VariableViewer:
         self._create_io_selector()
         return self._render_sheet()
 
-    def load_variables(self, variables: VariableList, attribute_to_column: Dict[str, str] = None):
+    def load_variables(
+        self, variables: VariableList, attribute_to_column: dict[str, str] | None = None
+    ):
         """
         Loads provided variable list and replace current data set.
 
@@ -134,7 +138,7 @@ class VariableViewer:
         """
 
         if not attribute_to_column:
-            attribute_to_column = self._DEFAULT_COLUMN_RENAMING
+            attribute_to_column = VariableViewer._DEFAULT_COLUMN_RENAMING
 
         self.dataframe = (
             variables.to_dataframe()
@@ -147,7 +151,7 @@ class VariableViewer:
         self.dataframe.loc[self.dataframe["is_input"] == 0, "I/O"] = OUTPUT
         self.dataframe.drop(columns=["is_input"], inplace=True)
 
-    def get_variables(self, column_to_attribute: Dict[str, str] = None) -> VariableList:
+    def get_variables(self, column_to_attribute: dict[str, str] | None = None) -> VariableList:
         """
 
         :param column_to_attribute: dictionary keys tell what columns are kept and the values
@@ -157,7 +161,7 @@ class VariableViewer:
         """
         if not column_to_attribute:
             column_to_attribute = {
-                value: key for key, value in self._DEFAULT_COLUMN_RENAMING.items()
+                value: key for key, value in VariableViewer._DEFAULT_COLUMN_RENAMING.items()
             }
 
         dataframe = self.dataframe.copy()
@@ -166,12 +170,10 @@ class VariableViewer:
         dataframe.loc[dataframe["I/O"] == INPUT, "is_input"] = True
         dataframe.loc[dataframe["I/O"] == OUTPUT, "is_input"] = False
         dataframe.drop(columns=["I/O"], inplace=True)
-        variables = VariableList.from_dataframe(
+        return VariableList.from_dataframe(  # Variables
             dataframe[column_to_attribute.keys()].rename(columns=column_to_attribute)
         )
-        return variables
 
-    # pylint: disable=invalid-name # df is a common naming for dataframes
     @staticmethod
     def _df_to_sheet(df: pd.DataFrame) -> sh.Sheet:
         """
@@ -209,10 +211,8 @@ class VariableViewer:
         :param sheet: the ipysheet Sheet to be converted
         :return the equivalent pandas DataFrame
         """
-        df = sh.to_dataframe(sheet)
-        return df
+        return sh.to_dataframe(sheet)
 
-    # pylint: disable=unused-argument  # args has to be there for observe() to work
     def _update_df(self, change=None):
         """
         Updates the stored DataFrame with respect to the actual values of the Sheet.
@@ -220,7 +220,7 @@ class VariableViewer:
         """
         df = self._sheet_to_df(self._sheet)
         for i in df.index:
-            self.dataframe.loc[int(i), :] = df.loc[i, :].values
+            self.dataframe.loc[int(i), :] = df.loc[i, :].to_numpy()
 
     def _render_sheet(self) -> display:
         """
@@ -229,12 +229,11 @@ class VariableViewer:
         :return display of the user interface
         """
         self._filter_widgets = []
-        modules_item = [TAG_ALL] + sorted(self._find_submodules(self.dataframe))
+        modules_item = [TAG_ALL, *sorted(self._find_submodules(self.dataframe))]
         w = widgets.Dropdown(options=modules_item)
         self._filter_widgets.append(w)
         return self._render_ui()
 
-    # pylint: disable=unused-argument  # args has to be there for observe() to work
     def _update_items(self, change=None):
         """
         Updates the filter_widgets with respect to higher level filter_widgets values.
@@ -259,17 +258,15 @@ class VariableViewer:
                         self._filter_widgets.append(widget)
                     else:
                         if (TAG_ALL not in modules_item) and (
-                            len(modules_item) > 1 or var_name in self.dataframe["Name"].values
+                            len(modules_item) > 1 or var_name in self.dataframe["Name"].to_numpy()
                         ):
                             modules_item.insert(0, TAG_ALL)
                         self._filter_widgets[i].options = modules_item
-                else:
-                    if i < len(self._filter_widgets):
-                        self._filter_widgets.pop(i)
+                elif i < len(self._filter_widgets):
+                    self._filter_widgets.pop(i)
             else:
                 break
 
-    # pylint: disable=unused-argument  # args has to be there for observe() to work
     def _update_variable_selector(self, change=None):
         """
         Updates the variable selector with respect to the
@@ -348,7 +345,6 @@ class VariableViewer:
         for cell in self._sheet.cells:
             cell.observe(self._update_df, "value")
 
-    # pylint: disable=unused-argument  # args has to be there for observe() to work
     def _render_ui(self, change=None) -> display:
         """
         Renders the dropdown menus for the variable selector and the corresponding
@@ -372,7 +368,7 @@ class VariableViewer:
         return display(self._ui)
 
     @staticmethod
-    def _find_submodules(df: pd.DataFrame, modules: List[str] = None) -> Set[str]:
+    def _find_submodules(df: pd.DataFrame, modules: list[str] | None = None) -> set[str]:
         """
         Search for submodules at root or provided modules.
 
@@ -404,7 +400,7 @@ class VariableViewer:
 
     @staticmethod
     def _filter_variables(
-        df: pd.DataFrame, modules: List[str], var_io_type: str = None
+        df: pd.DataFrame, modules: list[str], var_io_type: str | None = None
     ) -> pd.DataFrame:
         """
         Returns a filtered dataframe with respect to a set of modules and variable type.
@@ -421,15 +417,10 @@ class VariableViewer:
             var_io_type = TAG_ALL
         path = ""
         for _ in modules:
-            if modules[-1] == TAG_ALL:
-                path = ":".join(modules[:-1])
-            else:
-                path = ":".join(modules)
+            path = ":".join(modules[:-1]) if modules[-1] == TAG_ALL else ":".join(modules)
         path_filter = df.Name.str.startswith(path)
         io_filter = pd.Series(
             [True] * len(df) if var_io_type == TAG_ALL else df["I/O"] == var_io_type
         )
 
-        filtered_df = df[path_filter & io_filter]
-
-        return filtered_df
+        return df[path_filter & io_filter]  # Filtered_df

@@ -13,10 +13,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from importlib.resources import as_file, files
 from os import PathLike
 from types import ModuleType
-from typing import List, TextIO, Union
+from typing import TextIO
 
 
 class PackageReader:
@@ -29,7 +31,7 @@ class PackageReader:
     :param package_name: Name of package to inspect.
     """
 
-    def __init__(self, package_name: Union[str, ModuleType]):
+    def __init__(self, package_name: str | ModuleType):
         """
         :param package_name:
         """
@@ -37,7 +39,7 @@ class PackageReader:
         self.exists = True
         self.is_module = False
         self.has_error = False
-        self._contents: List[str] = []
+        self._contents: list[str] = []
         self.package_name = package_name
 
     @property
@@ -63,13 +65,13 @@ class PackageReader:
                 else:
                     # Here we assume non-existence
                     self.exists = False
-            except Exception:  # pylint: disable = W0703
+            except Exception:  # noqa: BLE001 We catch any error raised while loading or inspecting user code.
                 # Here we catch any Python error that may happen when reading the loaded code.
                 # Thus, we ensure to not break the application if a module is incorrectly written.
                 self.has_error = True
 
     @property
-    def contents(self) -> List[str]:
+    def contents(self) -> list[str]:
         """
         The list.
         """
@@ -87,7 +89,7 @@ class PackageReader:
 
     def open_text(
         self,
-        resource: Union[str, PathLike],
+        resource: str | PathLike,
         encoding: str = "utf-8",
         errors: str = "strict",
     ) -> TextIO:
@@ -102,7 +104,7 @@ class PackageReader:
             errors=errors,
         )
 
-    def path(self, resource: Union[str, PathLike]):
+    def path(self, resource: str | PathLike):
         """
         Replaces legacy importlib.resources.path().
 

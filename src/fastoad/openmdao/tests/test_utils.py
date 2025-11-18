@@ -39,13 +39,13 @@ def test_get_unconnected_input_names_single_component_group():
         om.Problem(group, reports=False),
         expected_mandatory_variables,
         expected_optional_variables,
-        False,
+        get_promoted_names=False,
     )
     _test_problem(
         om.Problem(group, reports=False),
         expected_mandatory_variables,
         expected_optional_variables,
-        True,
+        get_promoted_names=True,
     )
 
 
@@ -63,13 +63,13 @@ def test_get_unconnected_input_names_one_component_and_ivc():
         om.Problem(group, reports=False),
         expected_mandatory_variables,
         expected_optional_variables,
-        False,
+        get_promoted_names=False,
     )
     _test_problem(
         om.Problem(group, reports=False),
         expected_mandatory_variables,
         expected_optional_variables,
-        True,
+        get_promoted_names=True,
     )
 
 
@@ -87,7 +87,7 @@ def test_get_unconnected_input_names_sellar_components():
         om.Problem(group, reports=False),
         expected_mandatory_variables,
         expected_optional_variables,
-        False,
+        get_promoted_names=False,
     )
 
     expected_mandatory_variables = {"z", "x"}
@@ -96,7 +96,7 @@ def test_get_unconnected_input_names_sellar_components():
         om.Problem(group, reports=False),
         expected_mandatory_variables,
         expected_optional_variables,
-        True,
+        get_promoted_names=True,
     )
 
 
@@ -107,7 +107,7 @@ def test_get_unconnected_input_names_full_sellar():
         om.Problem(SellarModel(), reports=False),
         expected_mandatory_variables,
         expected_optional_variables,
-        False,
+        get_promoted_names=False,
     )
     expected_mandatory_variables = {"z"}
     expected_optional_variables = set()
@@ -115,15 +115,16 @@ def test_get_unconnected_input_names_full_sellar():
         om.Problem(SellarModel(), reports=False),
         expected_mandatory_variables,
         expected_optional_variables,
-        True,
+        get_promoted_names=True,
     )
 
 
 def _test_problem(
-    problem,
-    expected_missing_mandatory_variables,
-    expected_missing_optional_variables,
-    get_promoted_names,
+    problem: om.Problem,
+    expected_missing_mandatory_variables: set,
+    expected_missing_optional_variables: set,
+    *,
+    get_promoted_names: bool,
 ):
     """Tests get_unconnected_inputs for provided problem"""
 

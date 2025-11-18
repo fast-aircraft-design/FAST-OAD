@@ -17,7 +17,7 @@ repos:
       - id: ruff
         name: ruff
         description: "Run 'ruff' for extremely fast Python linting"
-        entry: ruff check --force-exclude
+        entry: poetry run ruff check --force-exclude
         language: python
         types_or: [ python, pyi, jupyter ]
         args: [ ]
@@ -26,7 +26,7 @@ repos:
       - id: ruff-format
         name: ruff-format
         description: "Run 'ruff format' for extremely fast Python formatting"
-        entry: ruff format --force-exclude
+        entry: poetry run ruff format --force-exclude
         language: python
         types_or: [ python, pyi, jupyter ]
         args: [ ]

@@ -18,8 +18,8 @@ Replaces old names by new ones in all files of ./src and ./tests.
 
 import fileinput
 import os
-import os.path as pth
 import re
+from pathlib import Path
 
 import numpy as np
 
@@ -33,10 +33,10 @@ from fastoad.io.xml.translator import VarXpathTranslator
 from fastoad.io.xml.variable_io_standard import BasicVarXpathTranslator
 from tests import root_folder_path
 
-SRC_PATH = pth.join(root_folder_path, "src")
-TEST_PATH = pth.join(root_folder_path, "tests")
-NOTEBOOK_PATH = pth.join(root_folder_path, "notebooks")
-VAR_NAME_FILE = pth.join(pth.dirname(__file__), "rename_vars.txt")
+SRC_PATH = Path(root_folder_path) / "src"
+TEST_PATH = Path(root_folder_path) / "tests"
+NOTEBOOK_PATH = Path(root_folder_path) / "notebooks"
+VAR_NAME_FILE = Path(__file__).parent / "rename_vars.txt"
 
 
 def build_translator(var_names_match: np.ndarray) -> VarXpathTranslator:
@@ -64,8 +64,8 @@ def convert_xml(file_path: str, translator: VarXpathTranslator):
     :param translator:
     """
     reader = VariableIO(file_path, formatter=VariableXmlBaseFormatter(translator))
-    vars = reader.read()
-    VariableIO(file_path).write(vars)
+    variables = reader.read()
+    VariableIO(file_path).write(variables)
 
 
 def replace_var_names(file_path, var_names_match):
@@ -73,21 +73,22 @@ def replace_var_names(file_path, var_names_match):
     Modifies provided text file by modifying old OpenMDAO variable names
     to new ones.
 
-    :param file_path:
-    :param var_names_match:
+    :param file_path: Path to the file to be modified.
+    :param var_names_match: List of (old_name, new_name) tuples.
     """
-    (_, ext) = pth.splitext(file_path)
+    ext = Path(file_path).suffix  # Extract file extension using pathlib
+
     with fileinput.FileInput(file_path, inplace=True) as file:
         for line in file:
             modified_line = line
             for old_name, new_name in var_names_match:
                 if ext == ".py":
                     # Python file: replacement is done only between (double) quotes
-                    regex = r"""(?<=['"])\b%s\b(?=['"])""" % old_name
+                    regex = rf"""(?<=['"])\b{old_name}\b(?=['"])"""
                 else:
                     # other files: just ensuring it is not part of a larger variable name
                     # by avoiding having ':' before or after.
-                    regex = r"(?<!:)\b%s\b(?!:)" % old_name
+                    regex = rf"(?<!:)\b{old_name}\b(?!:)"
                 modified_line = re.sub(regex, new_name, modified_line)
             print(modified_line, end="")
 
@@ -132,14 +133,14 @@ if __name__ == "__main__":
         "src/fastoad/notebooks/tutorial/data/CeRAS01_baseline.xml",
     ]
     for xml_file_path in file_list:
-        print("processing %s" % xml_file_path)
-        convert_xml(pth.join(root_folder_path, xml_file_path), old_new_translator)
+        print(f"processing {xml_file_path}")
+        convert_xml(root_folder_path / xml_file_path, old_new_translator)
 
     # replace var names
     for root_path in [SRC_PATH, TEST_PATH, NOTEBOOK_PATH]:
         for dir_path, dir_names, file_names in os.walk(root_path):
             for filename in file_names:
-                _, ext = pth.splitext(filename)
+                ext = Path(filename).suffix
                 if ext not in [
                     ".xml",
                     ".pyc",
@@ -147,9 +148,9 @@ if __name__ == "__main__":
                     ".png",
                     "",
                 ]:  # avoid processing useless files
-                    file_path = pth.join(dir_path, filename)
-                    print("processing %s" % file_path)
+                    file_path = dir_path / filename
+                    print(f"processing {file_path}")
                     try:
                         replace_var_names(file_path, old_new_names)
                     except UnicodeDecodeError:
-                        print("SKIPPED %s" % file_path)
+                        print(f"SKIPPED {file_path}")

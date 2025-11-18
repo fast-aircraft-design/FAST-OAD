@@ -38,11 +38,10 @@ def _to_ordered_dict(item):
         for key, value in ordered_dict.items():
             ordered_dict[key] = _to_ordered_dict(value)
         return ordered_dict
-    else:
-        if isinstance(item, list):
-            for i, value in enumerate(item):
-                item[i] = _to_ordered_dict(value)
-        return item
+    if isinstance(item, list):
+        for i, value in enumerate(item):
+            item[i] = _to_ordered_dict(value)
+    return item
 
 
 def _get_expected_dict():

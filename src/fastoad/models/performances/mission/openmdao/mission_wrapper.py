@@ -15,8 +15,9 @@ Mission wrapper.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from os import PathLike
-from typing import Dict, Optional, Tuple, Union
 
 import numpy as np
 import openmdao.api as om
@@ -51,11 +52,11 @@ class MissionWrapper(MissionBuilder):
 
     def __init__(
         self,
-        mission_definition: Union[str, PathLike, MissionDefinition],
+        mission_definition: str | PathLike | MissionDefinition,
         *,
         propulsion: IPropulsion = None,
-        reference_area: float = None,
-        mission_name: Optional[str] = None,
+        reference_area: float | None = None,
+        mission_name: str | None = None,
         variable_prefix: str = "data:mission",
         force_all_block_fuel_usage: bool = False,
     ):
@@ -174,7 +175,7 @@ class MissionWrapper(MissionBuilder):
         """
         return f"{self.variable_prefix}:{self.mission_name}:reserve:fuel"
 
-    def _identify_outputs(self) -> Dict[str, Tuple[str, str]]:
+    def _identify_outputs(self) -> dict[str, tuple[str, str]]:
         """
         Builds names of OpenMDAO outputs from names of mission, route and phases.
 

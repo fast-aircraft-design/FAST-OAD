@@ -19,8 +19,8 @@ from pathlib import Path
 import pytest
 
 from ..exceptions import (
-    FastXpathTranslatorDuplicates,
-    FastXpathTranslatorInconsistentLists,
+    FastXpathTranslatorDuplicatesError,
+    FastXpathTranslatorInconsistentListsError,
     FastXpathTranslatorVariableError,
     FastXpathTranslatorXPathError,
 )
@@ -34,12 +34,12 @@ def test_translator_with_set():
 
     translator = VarXpathTranslator()
     indices = range(10)
-    var_list = ["var%i" % i for i in indices]
-    xpath_list = ["xpath%i" % i for i in indices]
+    var_list = [f"var{i}" for i in indices]
+    xpath_list = [f"xpath{i}" for i in indices]
 
     # test with lists of different lengths -> error
-    var_list2 = ["var0"] + var_list
-    with pytest.raises(FastXpathTranslatorInconsistentLists):
+    var_list2 = ["var0", *var_list]
+    with pytest.raises(FastXpathTranslatorInconsistentListsError):
         translator.set(var_list2, xpath_list)
 
     # test with duplicate var names -> error
@@ -47,7 +47,7 @@ def test_translator_with_set():
     other_xpaths = ["xpath42", "xpath404", "xpath0"]
     var_list3 = var_list + duplicate_vars
     xpath_list3 = xpath_list + other_xpaths
-    with pytest.raises(FastXpathTranslatorDuplicates) as exc_info:
+    with pytest.raises(FastXpathTranslatorDuplicatesError) as exc_info:
         translator.set(var_list3, xpath_list3)
     assert exc_info.value.args[1] == set(duplicate_vars)
 
@@ -56,7 +56,7 @@ def test_translator_with_set():
     duplicate_xpaths = ["xpath5", "xpath2"]
     var_list4 = var_list + other_vars
     xpath_list4 = xpath_list + duplicate_xpaths
-    with pytest.raises(FastXpathTranslatorDuplicates) as exc_info:
+    with pytest.raises(FastXpathTranslatorDuplicatesError) as exc_info:
         translator.set(var_list4, xpath_list4)
     assert exc_info.value.args[1] == set(duplicate_xpaths)
 
@@ -67,8 +67,8 @@ def test_translator_with_set():
     assert translator.xpaths == xpath_list
 
     for i in indices:
-        assert translator.get_xpath("var%i" % i) == "xpath%i" % i
-        assert translator.get_variable_name("xpath%i" % i) == "var%i" % i
+        assert translator.get_xpath(f"var{i}") == f"xpath{i}"
+        assert translator.get_variable_name(f"xpath{i}") == f"var{i}"
 
     with pytest.raises(FastXpathTranslatorVariableError) as exc_info:
         _ = translator.get_xpath("unknown_var")

@@ -14,8 +14,10 @@ Simple implementation of International Standard Atmosphere.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from collections.abc import Sequence
 from numbers import Number
-from typing import Sequence, Union
 
 import numpy as np
 from deprecated import deprecated
@@ -58,11 +60,11 @@ class Atmosphere:
         >>> viscosities = atm.kinematic_viscosity # viscosities for all defined altitudes
     """
 
-    # pylint: disable=too-many-instance-attributes  # Needed for avoiding redoing computations
     def __init__(
         self,
-        altitude: Union[float, Sequence[float]],
+        altitude: float | Sequence[float],
         delta_t: float = 0.0,
+        *,
         altitude_in_feet: bool = True,
     ):
         """
@@ -95,7 +97,7 @@ class Atmosphere:
         self._true_airspeed = None
         self._unitary_reynolds = None
 
-    def get_altitude(self, altitude_in_feet: bool = True) -> Union[float, Sequence[float]]:
+    def get_altitude(self, *, altitude_in_feet: bool = True) -> float | Sequence[float]:
         """
         :param altitude_in_feet: if True, altitude is returned in feet. Otherwise,
                                  it is returned in meters
@@ -106,16 +108,16 @@ class Atmosphere:
         return self._return_value(self._altitude)
 
     @property
-    def delta_t(self) -> Union[float, Sequence[float]]:
+    def delta_t(self) -> float | Sequence[float]:
         """Temperature increment applied to whole temperature profile."""
         return self._delta_t
 
     @delta_t.setter
-    def delta_t(self, value: Union[float, Sequence[float]]):
+    def delta_t(self, value: float | Sequence[float]):
         self._delta_t = np.asarray(value)
 
     @property
-    def temperature(self) -> Union[float, Sequence[float]]:
+    def temperature(self) -> float | Sequence[float]:
         """Temperature in K."""
         if self._temperature is None:
             self._temperature = np.zeros(self._altitude.shape)
@@ -126,7 +128,7 @@ class Atmosphere:
         return self._return_value(self._temperature)
 
     @property
-    def pressure(self) -> Union[float, Sequence[float]]:
+    def pressure(self) -> float | Sequence[float]:
         """Pressure in Pa."""
         if self._pressure is None:
             self._pressure = np.zeros(self._altitude.shape)
@@ -140,21 +142,21 @@ class Atmosphere:
         return self._return_value(self._pressure)
 
     @property
-    def density(self) -> Union[float, Sequence[float]]:
+    def density(self) -> float | Sequence[float]:
         """Density in kg/m3."""
         if self._density is None:
             self._density = self.pressure / AIR_GAS_CONSTANT / self.temperature
         return self._return_value(self._density)
 
     @property
-    def speed_of_sound(self) -> Union[float, Sequence[float]]:
+    def speed_of_sound(self) -> float | Sequence[float]:
         """Speed of sound in m/s."""
         if self._speed_of_sound is None:
             self._speed_of_sound = (1.4 * AIR_GAS_CONSTANT * self.temperature) ** 0.5
         return self._return_value(self._speed_of_sound)
 
     @property
-    def kinematic_viscosity(self) -> Union[float, Sequence[float]]:
+    def kinematic_viscosity(self) -> float | Sequence[float]:
         """Kinematic viscosity in m2/s."""
         if self._kinematic_viscosity is None:
             self._kinematic_viscosity = (
@@ -164,14 +166,14 @@ class Atmosphere:
         return self._return_value(self._kinematic_viscosity)
 
     @property
-    def mach(self) -> Union[float, Sequence[float]]:
+    def mach(self) -> float | Sequence[float]:
         """Mach number."""
         if self._mach is None and self.true_airspeed is not None:
             self._mach = self.true_airspeed / self.speed_of_sound
         return self._return_value(self._mach)
 
     @property
-    def true_airspeed(self) -> Union[float, Sequence[float]]:
+    def true_airspeed(self) -> float | Sequence[float]:
         """True airspeed (TAS) in m/s."""
         # Dev note: true_airspeed is the "hub". Other speed values will be calculated
         # from this true_airspeed.
@@ -188,7 +190,7 @@ class Atmosphere:
         return self._return_value(self._true_airspeed)
 
     @property
-    def equivalent_airspeed(self) -> Union[float, Sequence[float]]:
+    def equivalent_airspeed(self) -> float | Sequence[float]:
         """Equivalent airspeed (EAS) in m/s."""
         if self._equivalent_airspeed is None and self.true_airspeed is not None:
             sea_level = Atmosphere(0)
@@ -199,29 +201,29 @@ class Atmosphere:
         return self._return_value(self._equivalent_airspeed)
 
     @property
-    def unitary_reynolds(self) -> Union[float, Sequence[float]]:
+    def unitary_reynolds(self) -> float | Sequence[float]:
         """Unitary Reynolds number in 1/m."""
         if self._unitary_reynolds is None and self.true_airspeed is not None:
             self._unitary_reynolds = self.true_airspeed / self.kinematic_viscosity
         return self._return_value(self._unitary_reynolds)
 
     @mach.setter
-    def mach(self, value: Union[float, Sequence[float]]):
+    def mach(self, value: float | Sequence[float]):
         self._reset_speeds()
         self._mach = np.asarray(value)
 
     @true_airspeed.setter
-    def true_airspeed(self, value: Union[float, Sequence[float]]):
+    def true_airspeed(self, value: float | Sequence[float]):
         self._reset_speeds()
         self._true_airspeed = np.asarray(value)
 
     @equivalent_airspeed.setter
-    def equivalent_airspeed(self, value: Union[float, Sequence[float]]):
+    def equivalent_airspeed(self, value: float | Sequence[float]):
         self._reset_speeds()
         self._equivalent_airspeed = np.asarray(value)
 
     @unitary_reynolds.setter
-    def unitary_reynolds(self, value: Union[float, Sequence[float]]):
+    def unitary_reynolds(self, value: float | Sequence[float]):
         self._reset_speeds()
         self._unitary_reynolds = np.asarray(value)
 
@@ -253,7 +255,7 @@ class Atmosphere:
 class AtmosphereSI(Atmosphere):
     """Same as :class:`Atmosphere` except that altitudes are always in meters."""
 
-    def __init__(self, altitude: Union[float, Sequence[float]], delta_t: float = 0.0):
+    def __init__(self, altitude: float | Sequence[float], delta_t: float = 0.0):
         """
         :param altitude: altitude in meters
         :param delta_t: temperature increment (°C) applied to whole temperature profile

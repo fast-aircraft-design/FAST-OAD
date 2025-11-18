@@ -11,10 +11,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from collections.abc import Sequence
 from fnmatch import fnmatchcase
 from os import PathLike
 from pathlib import Path
-from typing import IO, List, Optional, Sequence, Union
+from typing import IO
 
 from fastoad.openmdao.variables import VariableList
 
@@ -37,8 +40,8 @@ class VariableIO:
 
     def __init__(
         self,
-        data_source: Optional[Union[str, PathLike, IO]],
-        formatter: IVariableIOFormatter = None,
+        data_source: str | PathLike | IO | None,
+        formatter: IVariableIOFormatter | None = None,
     ):
         if isinstance(data_source, (str, PathLike)):
             data_source = as_path(data_source)
@@ -54,10 +57,10 @@ class VariableIO:
         return self._formatter
 
     @formatter.setter
-    def formatter(self, formatter: IVariableIOFormatter):
+    def formatter(self, formatter: IVariableIOFormatter | None):
         self._formatter = formatter if formatter else VariableXmlStandardFormatter()
 
-    def read(self, only: List[str] = None, ignore: List[str] = None) -> Optional[VariableList]:
+    def read(self, only: list[str] | None = None, ignore: list[str] | None = None) -> VariableList:
         """
         Reads variables from provided data source.
 
@@ -75,10 +78,14 @@ class VariableIO:
             ) from FastError()
 
         variables = self.formatter.read_variables(self.data_source)
-        used_variables = self._filter_variables(variables, only=only, ignore=ignore)
-        return used_variables
+        return self._filter_variables(variables, only=only, ignore=ignore)  # used_variables
 
-    def write(self, variables: VariableList, only: List[str] = None, ignore: List[str] = None):
+    def write(
+        self,
+        variables: VariableList,
+        only: list[str] | None = None,
+        ignore: list[str] | None = None,
+    ):
         """
         Writes variables from provided VariableList instance.
 
@@ -94,13 +101,15 @@ class VariableIO:
 
         # Before writing, variables are sorted to have short paths first. With equal path length
         # alphanumeric order will be used.
-        used_variables.sort(key=lambda var: "%02i_%s" % (len(var.name.split(":")), var.name))
+        used_variables.sort(key=lambda var: f"{len(var.name.split(':')):02}_{var.name}")
 
         self.formatter.write_variables(self.data_source, used_variables)
 
     @staticmethod
     def _filter_variables(
-        variables: VariableList, only: Sequence[str] = None, ignore: Sequence[str] = None
+        variables: VariableList,
+        only: Sequence[str] | None = None,
+        ignore: Sequence[str] | None = None,
     ) -> VariableList:
         """
         filters the variables such that the ones in arg only are kept and the ones in
@@ -149,9 +158,9 @@ class DataFile(VariableList):
 
     def __init__(
         self,
-        data_source: Union[str, PathLike, IO, list] = None,
-        formatter: IVariableIOFormatter = None,
-        load_data: bool = True,
+        data_source: str | PathLike | IO | list | None = None,
+        formatter: IVariableIOFormatter | None = None,
+        load_data: bool = True,  # noqa: FBT001, FBT002 no breaking changes in API functions
     ):
         """
         If variable list is specified for data_source, :attr:`file_path` will have to be set before
@@ -217,18 +226,18 @@ class DataFile(VariableList):
 
     def save_as(
         self,
-        file_path: Union[str, PathLike],
-        overwrite=False,
-        formatter: IVariableIOFormatter = None,
+        file_path: str | PathLike,
+        formatter: IVariableIOFormatter | None = None,
+        overwrite=False,  # noqa: FBT002 no breaking changes in API functions
     ):
         """
         Sets the associated file path as specified and saves current state of variables.
 
         :param file_path:
-        :param overwrite: if specified file already exists and overwrite is False, an error is
-                          triggered.
         :param formatter: a class that determines the file format to be used. Defaults to FAST-OAD
                           native format. See :class:`VariableIO` for more information.
+        :param overwrite: if specified file already exists and overwrite is False, an error is
+                          triggered.
         """
         file_path = as_path(file_path)
         if not overwrite and file_path.exists():

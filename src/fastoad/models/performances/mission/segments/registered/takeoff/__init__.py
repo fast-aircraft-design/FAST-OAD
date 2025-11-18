@@ -16,9 +16,8 @@ Be sure to import this package before interpreting a mission input file.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
-# flake8: noqa
-
 # With these imports, importing only the current package ensures to have all
 # these segments available when interpreting a mission input file
 from . import end_of_takeoff, rotation, takeoff
+
+__all__ = ["end_of_takeoff", "rotation", "takeoff"]

@@ -14,9 +14,11 @@ Defines the variable viewer for postprocessing
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from math import isnan
 from pathlib import Path
-from typing import Dict
+from typing import ClassVar
 
 import ipysheet as sh
 import ipywidgets as widgets
@@ -33,7 +35,7 @@ from fastoad.io.configuration.configuration import (
 )
 from fastoad.openmdao.variables import Variable, VariableList
 
-from .exceptions import FastMissingFile
+from .exceptions import FastMissingFileError
 
 pd.set_option("display.max_rows", None)
 
@@ -45,7 +47,7 @@ class OptimizationViewer:
 
     # When getting a dataframe from a VariableList, the dictionary keys tell what columns
     #  are kept and values tell what name will be displayed.
-    _DEFAULT_COLUMN_RENAMING = {
+    _DEFAULT_COLUMN_RENAMING: ClassVar[dict] = {
         "type": "Type",
         "name": "Name",
         "initial_value": "Initial Value",
@@ -91,7 +93,9 @@ class OptimizationViewer:
             input_variables = DataFile(self.problem_configuration.input_file_path)
         else:
             # TODO: generate the input file by default ?
-            raise FastMissingFile("Please generate input file before using the optimization viewer")
+            raise FastMissingFileError(
+                "Please generate input file before using the optimization viewer"
+            )
 
         if Path(self.problem_configuration.output_file_path).is_file():
             self._MISSING_OUTPUT_FILE = False
@@ -176,7 +180,7 @@ class OptimizationViewer:
         conf.save()
 
     @staticmethod
-    def _update_optim_variable(variable: Variable, optim_definition: Dict):
+    def _update_optim_variable(variable: Variable, optim_definition: dict):
         """
         Updates optim_definition with metadata of provided variable.
 
@@ -215,7 +219,9 @@ class OptimizationViewer:
         self._create_save_load_buttons()
         return self._render_ui()
 
-    def load_variables(self, variables: VariableList, attribute_to_column: Dict[str, str] = None):
+    def load_variables(
+        self, variables: VariableList, attribute_to_column: dict[str, str] | None = None
+    ):
         """
         Loads provided variable list and replace current data set.
 
@@ -226,7 +232,7 @@ class OptimizationViewer:
         """
 
         if not attribute_to_column:
-            attribute_to_column = self._DEFAULT_COLUMN_RENAMING
+            attribute_to_column = OptimizationViewer._DEFAULT_COLUMN_RENAMING
 
         self.dataframe = (
             variables.to_dataframe()
@@ -234,7 +240,7 @@ class OptimizationViewer:
             .reset_index(drop=True)
         )
 
-    def get_variables(self, column_to_attribute: Dict[str, str] = None) -> VariableList:
+    def get_variables(self, column_to_attribute: dict[str, str] | None = None) -> VariableList:
         """
 
         :param column_to_attribute: dictionary keys tell what columns are kept and the values
@@ -244,14 +250,13 @@ class OptimizationViewer:
         """
         if not column_to_attribute:
             column_to_attribute = {
-                value: key for key, value in self._DEFAULT_COLUMN_RENAMING.items()
+                value: key for key, value in OptimizationViewer._DEFAULT_COLUMN_RENAMING.items()
             }
 
         return VariableList.from_dataframe(
             self.dataframe[column_to_attribute.keys()].rename(columns=column_to_attribute)
         )
 
-    # pylint: disable=invalid-name # df is a common naming for dataframes
     def _df_to_sheet(self, df: pd.DataFrame) -> sh.Sheet:
         """
         Transforms a pandas DataFrame into a ipysheet Sheet.
@@ -269,10 +274,8 @@ class OptimizationViewer:
             read_only_cells = ["Name", "Unit", "Description", "Value"]
 
             style = self._cell_styling(df)
-            row_idx = 0
-            for r in rows:
-                col_idx = 0
-                for c in columns:
+            for row_idx, r in enumerate(rows):
+                for col_idx, c in enumerate(columns):
                     value = df.loc[r, c]
                     if c in read_only_cells:
                         read_only = True
@@ -299,8 +302,6 @@ class OptimizationViewer:
                             style=style[(r, c)],
                         )
                     )
-                    col_idx += 1
-                row_idx += 1
             sheet = sh.Sheet(
                 rows=len(rows),
                 columns=len(columns),
@@ -322,10 +323,9 @@ class OptimizationViewer:
         :param sheet: the ipysheet Sheet to be converted
         :return: the equivalent pandas DataFrame
         """
-        df = sh.to_dataframe(sheet)
-        return df
+        return sh.to_dataframe(sheet)
 
-    # pylint: disable=unused-argument  # args has to be there for observe() to work
+    # change has to be there for observe() to work
     def _update_df(self, change=None):
         """
         Updates the stored DataFrame with respect to the actual values of the Sheet.
@@ -339,7 +339,7 @@ class OptimizationViewer:
 
         df = pd.concat(frames, sort=True)
         columns = {}
-        columns.update(self._DEFAULT_COLUMN_RENAMING)
+        columns.update(OptimizationViewer._DEFAULT_COLUMN_RENAMING)
         columns.pop("type")
 
         column_to_attribute = {value: key for key, value in columns.items()}
@@ -425,7 +425,7 @@ class OptimizationViewer:
             cell.observe(self._update_df, "value")
             cell.observe(self._update_style, "value")
 
-    # pylint: disable=unused-argument  # args has to be there for observe() to work
+    # change has to be there for observe() to work
     def _render_ui(self, change=None) -> display:
         """
         Renders the dropdown menus for the variable selector and the corresponding
@@ -455,7 +455,7 @@ class OptimizationViewer:
         return widgets.VBox([widgets.Label(value="Objectives"), self._objective_sheet])
 
     @staticmethod
-    def _cell_styling(df) -> Dict:
+    def _cell_styling(df) -> dict:
         """
         Returns bound activities in the form of cell style dictionary.
 
@@ -470,33 +470,31 @@ class OptimizationViewer:
                 s = df.loc[r]
                 is_active = pd.Series(data=False, index=s.index)
                 is_violated = pd.Series(data=False, index=s.index)
-                if "Lower" in s:
+                if ("Lower" in s) and (s.loc["Lower"] is not None):
                     # Constraints might only have a upper bound
-                    if s.loc["Lower"] is not None:
-                        if np.all(s.loc["Lower"] + threshold >= s.loc["Value"]) & np.all(
-                            s.loc["Value"] >= s.loc["Lower"] - threshold
-                        ):
-                            is_active["Lower"] = True
-                            is_active["Value"] = True
-                        elif np.all(s.loc["Value"] < s.loc["Lower"] - threshold):
-                            is_violated["Lower"] = True
-                            is_violated["Value"] = True
-                        else:
-                            pass
+                    if np.all(s.loc["Lower"] + threshold >= s.loc["Value"]) & np.all(
+                        s.loc["Value"] >= s.loc["Lower"] - threshold
+                    ):
+                        is_active["Lower"] = True
+                        is_active["Value"] = True
+                    elif np.all(s.loc["Value"] < s.loc["Lower"] - threshold):
+                        is_violated["Lower"] = True
+                        is_violated["Value"] = True
+                    else:
+                        pass
 
-                if "Upper" in s:
+                if ("Upper" in s) and (s.loc["Upper"] is not None):
                     # Constraints might only have a lower bound
-                    if s.loc["Upper"] is not None:
-                        if np.all(s.loc["Upper"] + threshold >= s.loc["Value"]) & np.all(
-                            s.loc["Value"] >= s.loc["Upper"] - threshold
-                        ):
-                            is_active["Upper"] = True
-                            is_active["Value"] = True
-                        elif np.all(s.loc["Value"] > s.loc["Upper"] + threshold):
-                            is_violated["Upper"] = True
-                            is_violated["Value"] = True
-                        else:
-                            pass
+                    if np.all(s.loc["Upper"] + threshold >= s.loc["Value"]) & np.all(
+                        s.loc["Value"] >= s.loc["Upper"] - threshold
+                    ):
+                        is_active["Upper"] = True
+                        is_active["Value"] = True
+                    elif np.all(s.loc["Value"] > s.loc["Upper"] + threshold):
+                        is_violated["Upper"] = True
+                        is_violated["Value"] = True
+                    else:
+                        pass
 
                 yellow = ["yellow" if v else None for v in is_active]
                 red = ["red" if v else None for v in is_violated]
@@ -509,10 +507,7 @@ class OptimizationViewer:
 
             return style
 
-        style = highlight_active_bounds(df, threshold=0.1)
-        # style.update(another_styling_method())
-
-        return style
+        return highlight_active_bounds(df, threshold=0.1)  # Style
 
     def _update_style(self, change=None):
         """

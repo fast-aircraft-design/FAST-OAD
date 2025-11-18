@@ -20,7 +20,7 @@ from scipy.constants import foot
 FLIGHT_LEVEL = 100 * foot
 
 
-def get_closest_flight_level(altitude, base_level=0, level_step=10, up_direction=True):
+def get_closest_flight_level(altitude, base_level=0, level_step=10, *, up_direction=True):
     """
     Computes the altitude (in meters) of a flight level close to provided altitude.
 
@@ -47,10 +47,7 @@ def get_closest_flight_level(altitude, base_level=0, level_step=10, up_direction
     :param up_direction: True if next flight level is upper. False if lower
     :return: the altitude in meters of the asked flight level.
     """
-    if up_direction:
-        func = np.ceil
-    else:
-        func = np.floor
+    func = np.ceil if up_direction else np.floor
 
     base_altitude = FLIGHT_LEVEL * base_level
     return base_altitude + FLIGHT_LEVEL * level_step * func(

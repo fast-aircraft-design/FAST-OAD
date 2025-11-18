@@ -131,7 +131,7 @@ sphinxcontrib-bibtex = "^2.6.3"
 [tool.poetry.group.lint.dependencies]
 pre-commit = "^3.5.0"
 nbstripout = "^0.6.0"
-ruff = "0.6.9"
+ruff = "0.14.4"
 
 
 # Poetry plugins ==================================================
@@ -153,32 +153,6 @@ style = "semver"
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
 build-backend = "poetry_dynamic_versioning.backend"
-
-
-# Ruff settings ================================================================
-[tool.ruff]
-line-length = 100
-target-version = "py39"
-extend-include = ["*.ipynb"]
-exclude = ["tests/dummy_plugins/"]
-
-[tool.ruff.lint.isort] # Add optional configurations for import organization
-case-sensitive = true
-relative-imports-order = "closest-to-furthest"
-
-[tool.ruff.lint]
-# Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`) codes by default.
-# Unlike Flake8, Ruff doesn't enable pycodestyle warnings (`W`) or
-# McCabe complexity (`C901`) by default. "I" is for isort rules.
-select = ["E4", "E7", "E9", "F", "I"]
-ignore = []
-
-# Allow fix for all enabled rules (when `--fix`) is provided.
-fixable = ["ALL"]
-unfixable = []
-
-# Allow unused variables when underscore-prefixed.
-dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
 
 # Pytest settings ==============================================================

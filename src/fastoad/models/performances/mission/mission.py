@@ -13,9 +13,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Optional
 
 import pandas as pd
 from scipy.optimize import root_scalar
@@ -36,19 +37,19 @@ class Mission(FlightSequence):
     """
 
     #: If not None, the mission will adjust the first
-    target_fuel_consumption: Optional[float] = None
+    target_fuel_consumption: float | None = None
 
-    reserve_ratio: Optional[float] = 0.0
-    reserve_base_route_name: Optional[str] = None
+    reserve_ratio: float | None = 0.0
+    reserve_base_route_name: str | None = None
 
     #: Accuracy on actual consumed fuel for the solver. In kg
     fuel_accuracy: float = 10.0
 
-    _flight_points: Optional[pd.DataFrame] = field(init=False, default=None)
-    _first_cruise_segment: Optional[CruiseSegment] = field(init=False, default=None)
+    _flight_points: pd.DataFrame | None = field(init=False, default=None)
+    _first_cruise_segment: CruiseSegment | None = field(init=False, default=None)
 
     @property
-    def consumed_fuel(self) -> Optional[float]:
+    def consumed_fuel(self) -> float | None:
         """Total consumed fuel for the whole mission (after launching :meth:`compute_from`)"""
         if self._flight_points is None:
             return None
@@ -60,9 +61,7 @@ class Mission(FlightSequence):
         """First route in the mission."""
         return self._get_first_route_in_sequence(self)
 
-    def _get_first_route_in_sequence(
-        self, flight_sequence: FlightSequence
-    ) -> Optional[RangedRoute]:
+    def _get_first_route_in_sequence(self, flight_sequence: FlightSequence) -> RangedRoute | None:
         for part in flight_sequence:
             if isinstance(part, RangedRoute):
                 return part
@@ -76,7 +75,7 @@ class Mission(FlightSequence):
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
         if self.target_fuel_consumption is None:
             self._flight_points = super().compute_from(start)
-            self._flight_points.loc[self._flight_points.name.isnull(), "name"] = ""
+            self._flight_points.loc[self._flight_points.name.isna(), "name"] = ""
             self._compute_reserve(self._flight_points)
         else:
             self._solve_cruise_distance(start)
@@ -93,7 +92,9 @@ class Mission(FlightSequence):
         return reserve_points.iloc[0].mass - reserve_points.iloc[-1].mass
 
     def _get_consumed_mass_in_route(self, route_name: str) -> float:
-        route = [part for part in self if part.name == route_name][0]
+        route = next(
+            part for part in self if part.name == route_name
+        )  # return only the first element
         route_idx = self.index(route)
         route_points = self.part_flight_points[route_idx]
         return route_points.mass.iloc[0] - route_points.mass.iloc[-1]
@@ -151,7 +152,7 @@ class Mission(FlightSequence):
         """
         self.first_route.cruise_distance = cruise_distance
         flight_points = super().compute_from(start)
-        flight_points.loc[flight_points.name.isnull(), "name"] = ""
+        flight_points.loc[flight_points.name.isna(), "name"] = ""
         self._compute_reserve(flight_points)
         self._flight_points = flight_points
         return self.target_fuel_consumption - self.consumed_fuel

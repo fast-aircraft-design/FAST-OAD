@@ -1,6 +1,7 @@
 """
 Defines the analysis and plotting functions for postprocessing
 """
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -13,9 +14,9 @@ Defines the analysis and plotting functions for postprocessing
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from __future__ import annotations
 
 from os import PathLike
-from typing import Dict, Union
 
 import numpy as np
 import plotly.express as px
@@ -29,9 +30,8 @@ from fastoad.openmdao.variables import Variable, VariableList
 COLS = px.colors.qualitative.Plotly
 
 
-# pylint: disable-msg=too-many-locals
 def wing_geometry_plot(
-    aircraft_file_path: Union[str, PathLike], name=None, fig=None, *, file_formatter=None
+    aircraft_file_path: str | PathLike, name=None, fig=None, *, file_formatter=None
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the top view of the wing.
@@ -59,14 +59,11 @@ def wing_geometry_plot(
     mean_aerodynamic_chord = variables["data:geometry:wing:MAC:length"].value[0]
     mac25_x_position = variables["data:geometry:wing:MAC:at25percent:x"].value[0]
     distance_root_mac_chords = variables["data:geometry:wing:MAC:leading_edge:x:local"].value[0]
-    # pylint: disable=invalid-name # that's a common naming
     y = np.array(
         [0, wing_root_y, wing_kink_y, wing_tip_y, wing_tip_y, wing_kink_y, wing_root_y, 0, 0]
     )
-    # pylint: disable=invalid-name # that's a common naming
     y = np.concatenate((-y, y))
 
-    # pylint: disable=invalid-name # that's a common naming
     x = np.array(
         [
             0,
@@ -82,7 +79,6 @@ def wing_geometry_plot(
     )
 
     x = x + mac25_x_position - 0.25 * mean_aerodynamic_chord - distance_root_mac_chords
-    # pylint: disable=invalid-name # that's a common naming
     x = np.concatenate((x, x))
 
     if fig is None:
@@ -92,7 +88,7 @@ def wing_geometry_plot(
 
     fig.add_trace(scatter)
 
-    fig.layout = go.Layout(yaxis=dict(scaleanchor="x", scaleratio=1))
+    fig.layout = go.Layout(yaxis={"scaleanchor": "x", "scaleratio": 1})
 
     fig = go.FigureWidget(fig)
 
@@ -101,9 +97,8 @@ def wing_geometry_plot(
     return fig
 
 
-# pylint: disable-msg=too-many-locals
 def aircraft_geometry_plot(
-    aircraft_file_path: Union[str, PathLike], name=None, fig=None, *, file_formatter=None
+    aircraft_file_path: str | PathLike, name=None, fig=None, *, file_formatter=None
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the top view of the wing.
@@ -205,14 +200,10 @@ def aircraft_geometry_plot(
     x_wing = x_wing + wing_25mac_x - 0.25 * wing_mac_length - local_wing_mac_le_x
     x_ht = x_ht + wing_25mac_x + ht_distance_from_wing - local_ht_25mac_x
 
-    # pylint: disable=invalid-name # that's a common naming
     x = np.concatenate((x_fuselage, x_wing, x_ht))
-    # pylint: disable=invalid-name # that's a common naming
     y = np.concatenate((y_fuselage, y_wing, y_ht))
 
-    # pylint: disable=invalid-name # that's a common naming
     y = np.concatenate((-y, y))
-    # pylint: disable=invalid-name # that's a common naming
     x = np.concatenate((x, x))
 
     if fig is None:
@@ -222,7 +213,7 @@ def aircraft_geometry_plot(
 
     fig.add_trace(scatter)
 
-    fig.layout = go.Layout(yaxis=dict(scaleanchor="x", scaleratio=1))
+    fig.layout = go.Layout(yaxis={"scaleanchor": "x", "scaleratio": 1})
 
     fig = go.FigureWidget(fig)
 
@@ -232,7 +223,7 @@ def aircraft_geometry_plot(
 
 
 def drag_polar_plot(
-    aircraft_file_path: Union[str, PathLike], name=None, fig=None, *, file_formatter=None
+    aircraft_file_path: str | PathLike, name=None, fig=None, *, file_formatter=None
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the aircraft drag polar.
@@ -248,14 +239,13 @@ def drag_polar_plot(
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
-    # pylint: disable=invalid-name # that's a common naming
     cd = np.asarray(variables["data:aerodynamics:aircraft:cruise:CD"].value)
-    # pylint: disable=invalid-name # that's a common naming
     cl = np.asarray(variables["data:aerodynamics:aircraft:cruise:CL"].value)
 
     # TODO: remove filtering one models provide proper bounds
-    cd_short = cd[cd <= 2.0]
-    cl_short = cl[cd <= 2.0]
+    cutoff_cd = 2.0
+    cd_short = cd[cd <= cutoff_cd]
+    cl_short = cl[cd <= cutoff_cd]
 
     if fig is None:
         fig = go.Figure()
@@ -272,7 +262,7 @@ def drag_polar_plot(
 
 
 def mass_breakdown_bar_plot(
-    aircraft_file_path: Union[str, PathLike],
+    aircraft_file_path: str | PathLike,
     name=None,
     fig=None,
     *,
@@ -302,7 +292,6 @@ def mass_breakdown_bar_plot(
         "data:weight:aircraft:sizing_onboard_fuel_at_input_weight": "kg",
     }
 
-    # pylint: disable=unbalanced-tuple-unpacking # It is balanced for the parameters provided
     mtow, owe, payload, fuel_mission = _get_variable_values_with_new_units(
         variables, var_names_and_new_units
     )
@@ -357,7 +346,7 @@ def mass_breakdown_bar_plot(
 
 
 def mass_breakdown_sun_plot(
-    aircraft_file_path: Union[str, PathLike],
+    aircraft_file_path: str | PathLike,
     *,
     file_formatter=None,
     input_mass_name="data:weight:aircraft:MTOW",
@@ -417,7 +406,7 @@ def _get_TOW_sunburst_plot(variables: VariableList, input_mass_name, mission_nam
         if mission_tow_var not in variables.names():  # Check if the provided mission_name exists
             raise ValueError(
                 f"The provided mission_name {mission_name} does not correspond to an existing "
-                + "mission. The available mission(s) are: {missions_set}."
+                "mission. The available mission(s) are: {missions_set}."
             )
         payload_var_name = f"data:mission:{mission_name}:payload"
         if payload_var_name not in variables.names():  # If mission_name is a sizing mission
@@ -486,7 +475,7 @@ def _get_OWE_sunburst_plot(variables: VariableList):
     sub_categories_parent = []
     for variable in variables.names():
         name_split = variable.split(":")
-        if isinstance(name_split, list) and len(name_split) >= 5:
+        if isinstance(name_split, list) and len(name_split) >= 5:  # noqa: PLR2004
             parent_name = name_split[2]
             if parent_name in categories_names and name_split[-1] == "mass":
                 variable_name = "_".join(name_split[3:-1])
@@ -530,11 +519,11 @@ def _get_sunburst_mass_label(quantity_name, value, parent_value=None, unit="kg")
 
 
 def payload_range_plot(
-    aircraft_file_path: Union[str, PathLike],
+    aircraft_file_path: str | PathLike,
     name="Payload-Range",
     mission_name="operational",
-    variable_of_interest: str = None,
-    variable_of_interest_legend: str = None,
+    variable_of_interest: str | None = None,
+    variable_of_interest_legend: str | None = None,
 ):
     """
     Returns a figure of the payload-range diagram.
@@ -564,7 +553,7 @@ def payload_range_plot(
         x=convert_units(range_, "m", "NM"),
         y=convert_units(payload, "kg", "t"),
         mode="lines+markers",
-        line=dict(color="black", width=3),
+        line={"color": "black", "width": 3},
         showlegend=False,
         name=name,
     )
@@ -577,7 +566,7 @@ def payload_range_plot(
         x=convert_units(range_mask, "m", "NM"),
         y=convert_units(payload_mask, "kg", "t"),
         mode="lines",
-        line=dict(color="#E5ECF6", width=3),
+        line={"color": "#E5ECF6", "width": 3},
         showlegend=False,
         name=name,
         fill="toself",
@@ -617,15 +606,15 @@ def payload_range_plot(
                 x=x,
                 y=y,
                 z=z,
-                contours=dict(start=min_z, end=max_z, size=(max_z - min_z) / 20),
-                colorbar=dict(
-                    title=dict(
-                        text=f"{variable_of_interest_legend} [{variable_of_interest_unit}]",
-                        side="right",
-                        font=dict(size=15, family="Arial, sans-serif"),
-                    ),
-                    tickformat=".1e",
-                ),
+                contours={"start": min_z, "end": max_z, "size": (max_z - min_z) / 20},
+                colorbar={
+                    "title": {
+                        "text": f"{variable_of_interest_legend} [{variable_of_interest_unit}]",
+                        "side": "right",
+                        "font": {"size": 15, "family": "Arial, sans-serif"},
+                    },
+                    "tickformat": ".1e",
+                },
                 colorscale="RdBu_r",
                 contours_coloring="heatmap",
             )
@@ -655,7 +644,7 @@ def _get_variable_value_with_new_units(variable: Variable, new_units):
 
 
 def _get_variable_values_with_new_units(
-    variables: VariableList, var_names_and_new_units: Dict[str, str]
+    variables: VariableList, var_names_and_new_units: dict[str, str]
 ):
     """
     Returns the value of the requested variable names with respect to their new units in the order
@@ -665,12 +654,10 @@ def _get_variable_values_with_new_units(
     :param var_names_and_new_units: dictionary of the variable names as keys and units as value
     :return: values of the requested variables with respect to their new units
     """
-    new_values = [
+    return [  # new_values
         _get_variable_value_with_new_units(variables[variable_name], unit)
         for variable_name, unit in var_names_and_new_units.items()
     ]
-
-    return new_values
 
 
 def _data_weight_decomposition(variables: VariableList, owe=None):
@@ -687,21 +674,24 @@ def _data_weight_decomposition(variables: VariableList, owe=None):
     owe_subcategory_names = []
     for variable in variables.names():
         name_split = variable.split(":")
-        if isinstance(name_split, list) and len(name_split) == 4:
-            if (
+        if (
+            isinstance(name_split, list)
+            and len(name_split) == 4  # noqa: PLR2004
+            and (
                 name_split[0] + name_split[1] + name_split[3] == "dataweightmass"
                 and "aircraft" not in name_split[2]
-            ):
-                category_values.append(
-                    convert_units(variables[variable].value[0], variables[variable].units, "kg")
+            )
+        ):
+            category_values.append(
+                convert_units(variables[variable].value[0], variables[variable].units, "kg")
+            )
+            category_names.append(name_split[2])
+            if owe:
+                owe_subcategory_names.append(
+                    _get_sunburst_mass_label(
+                        name_split[2], variables[variable].value[0], parent_value=owe
+                    ),
                 )
-                category_names.append(name_split[2])
-                if owe:
-                    owe_subcategory_names.append(
-                        _get_sunburst_mass_label(
-                            name_split[2], variables[variable].value[0], parent_value=owe
-                        ),
-                    )
     if owe:
         result = category_values, category_names, owe_subcategory_names
     else:

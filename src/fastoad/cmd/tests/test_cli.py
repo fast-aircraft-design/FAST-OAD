@@ -48,16 +48,16 @@ def test_plugin_info(with_dummy_plugins):
     assert result.exit_code == 0
 
     expected_info = pd.DataFrame(
-        dict(
-            installed_package=[f"dummy-dist-{i}" for i in [1, 2, 3]],
-            has_models=[False, True, True],
-            has_notebooks=[True, False, True],
-            configurations=[
+        {
+            "installed_package": [f"dummy-dist-{i}" for i in [1, 2, 3]],
+            "has_models": [False, True, True],
+            "has_notebooks": [True, False, True],
+            "configurations": [
                 ["dummy_conf_1-1.yml"],
                 ["dummy_conf_2-1.yml", "dummy_conf_3-1.yml", "dummy_conf_3-2.yaml"],
                 [],
             ],
-            source_data_files=[
+            "source_data_files": [
                 ["dummy_source_data_4-1.xml"],
                 [
                     "dummy_source_data_3-1.xml",
@@ -66,7 +66,7 @@ def test_plugin_info(with_dummy_plugins):
                 ],
                 [],
             ],
-        )
+        }
     )
     assert result.output == expected_info.to_markdown(index=False) + "\n"
 

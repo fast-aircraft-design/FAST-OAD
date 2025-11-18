@@ -1,4 +1,5 @@
 """Module for registering services."""
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -11,10 +12,11 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from __future__ import annotations
 
 from os import PathLike
 from types import MethodType
-from typing import Any, Dict, List, Optional, Type, TypeVar, Union
+from typing import Any, ClassVar, TypeVar
 
 import openmdao.api as om
 from openmdao.core.system import System
@@ -83,7 +85,7 @@ class RegisterService:
         self._id = provider_id
         self._desc = desc
 
-    def __call__(self, service_class: Type[T]) -> Type[T]:
+    def __call__(self, service_class: type[T]) -> type[T]:
         if not issubclass(service_class, self._base_class):
             raise FastIncompatibleServiceClassError(
                 service_class, self._service_id, self._base_class
@@ -93,7 +95,7 @@ class RegisterService:
             service_class, self._id, self._service_id, self.get_properties(service_class)
         )
 
-    def get_properties(self, service_class: Type[T]) -> dict:
+    def get_properties(self, service_class: type[T]) -> dict:
         """
         Override this method to modify the properties that will be associated to
         the registered service provider.
@@ -118,7 +120,7 @@ class RegisterService:
         FastoadLoader().explore_folder(folder_path)
 
     @classmethod
-    def get_provider_ids(cls, service_id: str) -> List[str]:
+    def get_provider_ids(cls, service_id: str) -> list[str]:
         """
         :param service_id:
         :return: the list of identifiers of providers of the service.
@@ -126,7 +128,7 @@ class RegisterService:
         return FastoadLoader().get_factory_names(service_id)
 
     @classmethod
-    def get_provider(cls, service_provider_id: str, options: dict = None) -> Any:
+    def get_provider(cls, service_provider_id: str, options: dict | None = None) -> Any:
         """
         Instantiates the desired service provider.
 
@@ -144,7 +146,7 @@ class RegisterService:
         return FastoadLoader().instantiate_component(service_provider_id, properties)
 
     @classmethod
-    def get_provider_description(cls, instance_or_id: Union[str, T]) -> str:
+    def get_provider_description(cls, instance_or_id: str | T) -> str:
         """
         :param instance_or_id: an identifier or an instance of a registered service provider
         :return: the description associated to given instance or identifier
@@ -156,7 +158,7 @@ class RegisterService:
         return description
 
     @classmethod
-    def get_provider_domain(cls, instance_or_id: Union[str, System]) -> ModelDomain:
+    def get_provider_domain(cls, instance_or_id: str | System) -> ModelDomain:
         """
         :param instance_or_id: an identifier or an instance of a registered service provider
         :return: the model domain associated to given instance or identifier
@@ -189,7 +191,7 @@ class _RegisterOpenMDAOService(RegisterService, base_class=System):
     or when instantiating the system with :class:`get_system`.
     """
 
-    def __init__(self, service_id: str, provider_id: str, desc=None, options: dict = None):
+    def __init__(self, service_id: str, provider_id: str, desc=None, options: dict | None = None):
         """
         :param service_id: the identifier of the provided service
         :param provider_id: the identifier of the service provider to register
@@ -199,12 +201,12 @@ class _RegisterOpenMDAOService(RegisterService, base_class=System):
         super().__init__(service_id, provider_id, desc)
         self._options = options
 
-    def get_properties(self, service_class: Type[T]) -> dict:
+    def get_properties(self, service_class: type[T]) -> dict:
         properties = super().get_properties(service_class)
         properties.update({OPTION_PROPERTY_NAME: self._options if self._options else {}})
         return properties
 
-    def __call__(self, service_class: Type[T]) -> Type[T]:
+    def __call__(self, service_class: type[T]) -> type[T]:
         # service_class.__module__ provides the name for the .py file, but
         # we want just the parent package name.
         package_name = ".".join(service_class.__module__.split(".")[:-1])
@@ -215,7 +217,7 @@ class _RegisterOpenMDAOService(RegisterService, base_class=System):
         return super().__call__(service_class)
 
     @classmethod
-    def explore_folder(cls, folder_path: Union[str, PathLike]):
+    def explore_folder(cls, folder_path: str | PathLike):
         """
         Explores provided folder and looks for service providers to register.
 
@@ -225,7 +227,7 @@ class _RegisterOpenMDAOService(RegisterService, base_class=System):
         super().explore_folder(folder_path)
 
     @classmethod
-    def get_system(cls, identifier: str, options: dict = None) -> System:
+    def get_system(cls, identifier: str, options: dict | None = None) -> System:
         """
         Specialized version of :meth:`RegisterSpecializedService.get_provider` that allows to
         define OpenMDAO options on-the-fly.
@@ -245,8 +247,7 @@ class _RegisterOpenMDAOService(RegisterService, base_class=System):
             if invalid_options:
                 raise FastBadSystemOptionError(identifier, invalid_options)
 
-        decorated_system = cls._option_decorator(system)
-        return decorated_system
+        return cls._option_decorator(system)  # decorated_system
 
     @staticmethod
     def _option_decorator(instance: System) -> System:
@@ -331,7 +332,7 @@ class RegisterSpecializedService(RegisterService):
 
     @classmethod
     def __init_subclass__(
-        cls, *, base_class: type = object, service_id: str = None, domain: ModelDomain = None
+        cls, *, base_class: type = object, service_id: str | None = None, domain: ModelDomain = None
     ):
         """
 
@@ -341,17 +342,17 @@ class RegisterSpecializedService(RegisterService):
         :param domain: a category that can be associated to the registered service
         """
 
-        super(RegisterSpecializedService, cls).__init_subclass__(base_class=base_class)
+        super().__init_subclass__(base_class=base_class)
 
         if service_id:
             cls.service_id = service_id
         else:
-            cls.service_id = "%s.%s" % (__name__, cls.__name__)
+            cls.service_id = f"{__name__}.{cls.__name__}"
 
         cls._domain = domain
 
     def __init__(
-        self, provider_id: str, desc=None, domain: ModelDomain = None, options: dict = None
+        self, provider_id: str, desc=None, domain: ModelDomain = None, options: dict | None = None
     ):
         """
         :param provider_id: the identifier of the service provider to register
@@ -364,7 +365,7 @@ class RegisterSpecializedService(RegisterService):
         if domain:
             self._domain = domain
 
-    def get_properties(self, service_class: Type[T]) -> dict:
+    def get_properties(self, service_class: type[T]) -> dict:
         properties = super().get_properties(service_class)
         properties.update(
             {
@@ -375,7 +376,7 @@ class RegisterSpecializedService(RegisterService):
         return properties
 
     @classmethod
-    def get_provider_ids(cls) -> List[str]:
+    def get_provider_ids(cls) -> list[str]:
         """
         :return: the list of identifiers of providers of the service.
         """
@@ -440,10 +441,10 @@ class RegisterSubmodel(_RegisterOpenMDAOService):
 
     #: Dictionary (key = service id, value=provider id) that defines submodels to
     #: be used for associated services.
-    active_models: Dict[str, Optional[str]] = {}
+    active_models: ClassVar[dict[str, str | None]] = {}
 
     @classmethod
-    def get_submodel(cls, service_id: str, options: dict = None):
+    def get_submodel(cls, service_id: str, options: dict | None = None):
         """
         Provides a submodel for the given service identifier.
 
@@ -480,12 +481,7 @@ class RegisterSubmodel(_RegisterOpenMDAOService):
 
             submodel_id = submodel_ids[0]
 
-        if submodel_id:
-            instance = super().get_system(submodel_id, options)
-        else:
-            instance = om.Group()
-
-        return instance
+        return super().get_system(submodel_id, options) if submodel_id else om.Group()  # istance
 
     @classmethod
     def cancel_submodel_deactivations(cls):

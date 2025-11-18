@@ -12,21 +12,17 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import gc
-import os.path as pth
 import tracemalloc
-from os import makedirs
+from pathlib import Path
 from shutil import rmtree
-from typing import List, Tuple
 
 import openmdao.api as om
 import pytest
 
 import fastoad.api as oad
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
-RESULTS_FOLDER_PATH = pth.join(
-    pth.dirname(__file__), "results", pth.splitext(pth.basename(__file__))[0]
-)
+DATA_FOLDER_PATH = Path(__file__).parent / "data"
+RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
 
 # Memory leak threshold in MiB
 MEMORY_DIFF_THRESHOLD = 20.0
@@ -37,7 +33,7 @@ FINAL_MEMORY_THRESHOLD = 20.0
 @pytest.fixture(scope="module")
 def cleanup():
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
-    makedirs(RESULTS_FOLDER_PATH)
+    RESULTS_FOLDER_PATH.mkdir(parents=True, exist_ok=True)
 
 
 def print_memory_state(tag: str) -> float:
@@ -65,13 +61,13 @@ def get_top_memory_stats(
 
 def run_problem() -> None:
     """Run a single FASTOAD problem instance"""
-    configurator = oad.FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "oad_process.yml"))
-    configurator.input_file_path = pth.join(RESULTS_FOLDER_PATH, "inputs.xml")
-    configurator.output_file_path = pth.join(RESULTS_FOLDER_PATH, "outputs.xml")
+    configurator = oad.FASTOADProblemConfigurator(DATA_FOLDER_PATH / "oad_process.yml")
+    configurator.input_file_path = RESULTS_FOLDER_PATH / "inputs.xml"
+    configurator.output_file_path = RESULTS_FOLDER_PATH / "outputs.xml"
 
     print_memory_state("After reading configuration file")
 
-    ref_inputs = pth.join(DATA_FOLDER_PATH, "CeRAS01.xml")
+    ref_inputs = DATA_FOLDER_PATH / "CeRAS01.xml"
     configurator.write_needed_inputs(ref_inputs)
     print_memory_state("After writing input file")
 
@@ -104,7 +100,7 @@ def test_memory_leak_between_runs(cleanup):
         print()
         baseline_memory = print_memory_state("Baseline")
 
-        memory_measurements: List[Tuple[int, float]] = []
+        memory_measurements: list[tuple[int, float]] = []
         run_snapshots = []
 
         run_count = 2
@@ -191,9 +187,9 @@ def test_memory_leak_between_runs(cleanup):
         )
 
         # Assert that final memory is reasonable
-        assert (
-            final_memory < FINAL_MEMORY_THRESHOLD
-        ), f"Final memory usage too high: {final_memory:.3f} MiB > {FINAL_MEMORY_THRESHOLD} MiB"
+        assert final_memory < FINAL_MEMORY_THRESHOLD, (
+            f"Final memory usage too high: {final_memory:.3f} MiB > {FINAL_MEMORY_THRESHOLD} MiB"
+        )
 
     finally:
         tracemalloc.stop()

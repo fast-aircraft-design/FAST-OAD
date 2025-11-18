@@ -13,8 +13,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from dataclasses import dataclass
-from typing import List
+from dataclasses import dataclass, field
 
 import numpy as np
 from numpy import cos, sin
@@ -40,14 +39,17 @@ class RotationSegment(AbstractGroundSegment):
 
     #: Rotation rate in radians/s, i.e. derivative of angle of attack.
     #: Default value is CS-25 specification.
-    rotation_rate: float = np.radians(3)
+    # Use default_factory to comply with Ruff rule RUF009:
+    # avoid calling functions like np.radians() directly in dataclass defaults,
+    # as they are evaluated at class definition time instead of instance creation.
+    rotation_rate: float = field(default_factory=lambda: np.radians(3))
 
     #: Angle of attack (in radians) where tail strike is expected. Default value
     #: is good for SMR aircraft.
-    alpha_limit: float = np.radians(13.5)
+    alpha_limit: float = field(default_factory=lambda: np.radians(13.5))
 
     def get_distance_to_target(
-        self, flight_points: List[FlightPoint], target: FlightPoint
+        self, flight_points: list[FlightPoint], target: FlightPoint
     ) -> float:
         # compute lift, including thrust projection, compare with weight
         current = flight_points[-1]

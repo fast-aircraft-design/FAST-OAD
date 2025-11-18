@@ -14,13 +14,15 @@ Basis for registering and retrieving services
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import gc
 import importlib
 import logging
 import re
 from os import PathLike
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union
+from typing import Any, TypeVar
 
 import pelix
 from pelix.constants import BundleException
@@ -103,8 +105,8 @@ class BundleLoader:
         return self.framework.get_bundle_context()
 
     def explore_folder(
-        self, folder_path: Union[str, PathLike], is_package: bool = False
-    ) -> Tuple[Set[Bundle], Set[str]]:
+        self, folder_path: str | PathLike, *, is_package: bool = False
+    ) -> tuple[set[Bundle], set[str]]:
         """
         Installs bundles found in *folder_path*.
 
@@ -122,7 +124,7 @@ class BundleLoader:
             bundles, failed = self._install_python_package(folder_path)
         else:
             bundles, unformatted_failed = self.framework.install_package(
-                as_path(folder_path).as_posix(), True
+                as_path(folder_path).as_posix(), recursive=True
             )
             # For some failure, the failed object can be returned as a set rather than a dict which
             # will prevent proper logging of the failures.
@@ -147,8 +149,8 @@ class BundleLoader:
         return bundles, failed
 
     def get_services(
-        self, service_name: str, properties: dict = None, case_sensitive: bool = False
-    ) -> Optional[list]:
+        self, service_name: str, properties: dict | None = None, *, case_sensitive: bool = False
+    ) -> list | None:
         """
         Returns the services that match *service_name* and provided
         *properties* (if provided).
@@ -159,7 +161,9 @@ class BundleLoader:
                                ignored
         :return: the list of service instances
         """
-        references = self._get_service_references(service_name, properties, case_sensitive)
+        references = self._get_service_references(
+            service_name, properties, case_sensitive=case_sensitive
+        )
         services = None
         if references is not None:
             services = [self.context.get_service(ref) for ref in references]
@@ -168,11 +172,11 @@ class BundleLoader:
 
     def register_factory(
         self,
-        component_class: Type[T],
+        component_class: type[T],
         factory_name: str,
-        service_names: Union[List[str], str],
-        properties: dict = None,
-    ) -> Type[T]:
+        service_names: list[str] | str,
+        properties: dict | None = None,
+    ) -> type[T]:
         """
         Registers provided class as iPOPO component factory.
 
@@ -193,13 +197,15 @@ class BundleLoader:
             for key, value in properties.items():
                 obj = Property(field="_" + self._fieldify(key), name=key, value=value)(obj)
 
-        factory = ComponentFactory(factory_name)(obj)
-
-        return factory
+        return ComponentFactory(factory_name)(obj)  # Factory
 
     def get_factory_names(
-        self, service_name: str = None, properties: dict = None, case_sensitive: bool = False
-    ) -> List[str]:
+        self,
+        service_name: str | None = None,
+        properties: dict | None = None,
+        *,
+        case_sensitive: bool = False,
+    ) -> list[str]:
         """
         Browses the available factory names to find what factories provide `service_name` (if
         provided) and match provided `properties` (if provided).
@@ -231,12 +237,12 @@ class BundleLoader:
                         )
                     else:
                         for prop_name, prop_value in properties.items():
-                            if prop_name not in factory_properties.keys():
+                            if prop_name not in factory_properties:
                                 to_be_kept = False
                                 break
                             factory_prop_value = factory_properties[prop_name]
                             if isinstance(prop_value, str):
-                                prop_value = prop_value.lower()
+                                prop_value = prop_value.lower()  # noqa: PLW2901
                                 factory_prop_value = factory_prop_value.lower()
                             if prop_value != factory_prop_value:
                                 to_be_kept = False
@@ -263,8 +269,7 @@ class BundleLoader:
         """
 
         details = self.get_factory_details(factory_name)
-        properties = details["properties"]
-        return properties
+        return details["properties"]  # Properties
 
     def get_factory_property(self, factory_name: str, property_name: str) -> Any:
         """
@@ -276,7 +281,7 @@ class BundleLoader:
         properties = self.get_factory_properties(factory_name)
         return properties.get(property_name)
 
-    def get_factory_details(self, factory_name: str) -> Dict[str, Any]:
+    def get_factory_details(self, factory_name: str) -> dict[str, Any]:
         """
         :param factory_name: name of the factory
         :return: factory details as in iPOPO
@@ -300,7 +305,7 @@ class BundleLoader:
         except AttributeError:
             return None
 
-    def instantiate_component(self, factory_name: str, properties: dict = None) -> Any:
+    def instantiate_component(self, factory_name: str, properties: dict | None = None) -> Any:
         """
         Instantiates a component from given factory
 
@@ -344,16 +349,16 @@ class BundleLoader:
             instances = ipopo.get_instances()
             instance_names = [i[0] for i in instances]
             i = 0
-            name = "%s_%i" % (base_name, i)
+            name = f"{base_name}_{i}"
             while name in instance_names:
                 i = i + 1
-                name = "%s_%i" % (base_name, i)
+                name = f"{base_name}_{i}"
 
             return name
 
     def _get_service_references(
-        self, service_name: str, properties: dict = None, case_sensitive: bool = False
-    ) -> Optional[List[ServiceReference]]:
+        self, service_name: str, properties: dict | None = None, *, case_sensitive: bool = False
+    ) -> list[ServiceReference] | None:
         """
         Returns the service references that match *service_name* and
         provided *properties* (if provided)
@@ -367,30 +372,21 @@ class BundleLoader:
 
         # Dev Note: simple wrapper for BundleContext.get_all_service_references()
 
-        if case_sensitive:
-            operator = "="
-        else:
-            operator = "~="
+        operator = "=" if case_sensitive else "~="
 
         if not properties:
             ldap_filter = None
         else:
             ldap_filter = (
                 "(&"
-                + "".join(
-                    [
-                        "({0}{1}{2})".format(key, operator, value)
-                        for key, value in properties.items()
-                    ]
-                )
+                + "".join([f"({key}{operator}{value})" for key, value in properties.items()])
                 + ")"
             )
             _LOGGER.debug(ldap_filter)
 
-        references = self.framework.find_service_references(service_name, ldap_filter)
-        return references
+        return self.framework.find_service_references(service_name, ldap_filter)  # references
 
-    def _install_python_package(self, package_name: str) -> Tuple[Set[Bundle], dict[str, str]]:
+    def _install_python_package(self, package_name: str) -> tuple[set[Bundle], dict[str, str]]:
         """
         Recursively loads indicated package and its submodules/subpackages.
 
@@ -417,33 +413,32 @@ class BundleLoader:
             self._styled_rule(f"[bold red]ERROR: {package_name}[/bold red]")
             return bundles, failed  # Abort recursion early for broken package
 
-        elif package.is_package:
-            # It is a package, let's explore it.
-            header_printed = False  # Ensure the error header is printed only once per package
-            for item in package.contents:
-                # Get the bundle name and path
-                item_package = f"{package_name}.{item}"  # Qualified name
-                item_path = f"{root_package_path}/{item}"  # Full path to the file or folder
+        # It is a package, let's explore it.
+        header_printed = False  # Ensure the error header is printed only once per package
+        for item in package.contents:
+            # Get the bundle name and path
+            item_package = f"{package_name}.{item}"  # Qualified name
+            item_path = f"{root_package_path}/{item}"  # Full path to the file or folder
 
-                if "." in item:
-                    # A file. Considered only if it is a Python file. Ignored otherwise.
-                    if item.endswith(".py"):
-                        try:
-                            bundle = self.context.install_bundle(item_package[:-3])  # Remove .py
-                            bundles.add(bundle)
-                        except BundleException as e:
-                            failed[item_package[:-3]] = item_path
-                            if not header_printed:
-                                _LOGGER.warning("Failed to load package: %s", package_name)
-                                self._styled_rule(f"[bold red]ERROR: {package_name}[/bold red]")
-                                header_printed = True
-                            _LOGGER.warning("%s\nDetailed traceback:", e, exc_info=True)
-                            self._styled_rule(first_newline=False)
-                else:
-                    # It's a subpackage. Recurse.
-                    sub_bundles, sub_failed = self._install_python_package(item_package)
-                    bundles.update(sub_bundles)
-                    failed.update(sub_failed)
+            if "." in item:
+                # A file. Considered only if it is a Python file. Ignored otherwise.
+                if item.endswith(".py"):
+                    try:
+                        bundle = self.context.install_bundle(item_package[:-3])  # Remove .py
+                        bundles.add(bundle)
+                    except BundleException as e:
+                        failed[item_package[:-3]] = item_path
+                        if not header_printed:
+                            _LOGGER.warning("Failed to load package: %s", package_name)
+                            self._styled_rule(f"[bold red]ERROR: {package_name}[/bold red]")
+                            header_printed = True
+                        _LOGGER.warning("%s\nDetailed traceback:", e, exc_info=True)
+                        self._styled_rule(first_newline=False)
+            else:
+                # It's a subpackage. Recurse.
+                sub_bundles, sub_failed = self._install_python_package(item_package)
+                bundles.update(sub_bundles)
+                failed.update(sub_failed)
 
         return bundles, failed
 
@@ -468,7 +463,7 @@ class BundleLoader:
         _CONSOLE.print(table)
 
     @staticmethod
-    def _styled_rule(title: str = "", first_newline=True):
+    def _styled_rule(title: str = "", *, first_newline=True):
         if first_newline:
             _CONSOLE.print()
         _CONSOLE.rule(title, style="bright_black")

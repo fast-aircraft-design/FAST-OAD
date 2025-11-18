@@ -11,6 +11,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+
 import pytest
 from numpy.testing import assert_allclose
 
@@ -19,6 +20,8 @@ from fastoad.model_base import FlightPoint
 from ..base import FlightSequence
 from ..segments.registered.mass_input import MassTargetSegment
 from ..segments.registered.taxi import TaxiSegment
+
+# ruff: noqa: RUF005 In this test it is clearer with +
 
 
 def get_taxi_definition(propulsion, target_mass=None):

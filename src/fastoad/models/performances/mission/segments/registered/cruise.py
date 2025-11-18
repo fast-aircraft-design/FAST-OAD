@@ -14,7 +14,6 @@
 
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import List
 
 import numpy as np
 import pandas as pd
@@ -51,14 +50,14 @@ class CruiseSegment(AbstractRegulatedThrustSegment, AbstractLiftFromWeightSegmen
         # Constant speed at constant altitude is necessarily constant Mach, but
         # subclasses can be at variable altitude, so Mach is considered constant
         # if no other constant speed parameter is set to "constant".
-        if AbstractTimeStepFlightSegment.CONSTANT_VALUE not in [
+        if AbstractTimeStepFlightSegment.constant_value_name not in [
             self.target.true_airspeed,
             self.target.equivalent_airspeed,
         ]:
-            self.target.mach = AbstractTimeStepFlightSegment.CONSTANT_VALUE
+            self.target.mach = AbstractTimeStepFlightSegment.constant_value_name
 
     def get_distance_to_target(
-        self, flight_points: List[FlightPoint], target: FlightPoint
+        self, flight_points: list[FlightPoint], target: FlightPoint
     ) -> float:
         current = flight_points[-1]
         return target.ground_distance - current.ground_distance
