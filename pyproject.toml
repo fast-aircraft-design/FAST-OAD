@@ -19,7 +19,6 @@ maintainers = [
     { name = "Enrico STRAGIOTTI", email = "enrico.stragiotti@onera.fr" },
 ]
 requires-python = ">=3.10,<3.14"
-requires-python = ">=3.10,<3.14"
 dynamic = ["version","classifiers"] # Needed to use poetry-dynamic-versioning
 
 # User dependencies ------------------------------------------------------------
@@ -36,8 +35,7 @@ dependencies = [
     "pandas>=1.5.3,<3; python_version=='3.11'",
     "pandas>=2.1.1,<3; python_version>='3.12'",
     "openmdao>=3.40,<3.42",
-    "ipopo>=1.0.0,<2; python_version<'3.10'",
-    "ipopo>=3.0.0,<4; python_version>='3.10'",
+    "ipopo>=3.0.0,<4",
     "ipywidgets>=7.7.0,<9",
     "ipysheet>=0.5.0,<1",
     "plotly>=6.2.0,<7",
