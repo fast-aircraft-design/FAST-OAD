@@ -2994,13 +2994,14 @@ files = [
 
 [[package]]
 name = "openmdao"
-version = "3.38.0"
+version = "3.41.0"
 description = "OpenMDAO framework infrastructure"
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "openmdao-3.38.0.tar.gz", hash = "sha256:9f95f20b9708907b8fc791177c3206d272b59524718f277315f1b376f8d12184"},
+    {file = "openmdao-3.41.0-py3-none-any.whl", hash = "sha256:7b0ced8500c6d713d9b92352316bd6ec85d311cc2383fbc05a6637ac2bd590cf"},
+    {file = "openmdao-3.41.0.tar.gz", hash = "sha256:5bf4ddb83b4737385c98546de5690326196dd39bd90d02656212d2ea2b7070b5"},
 ]
 
 [package.dependencies]
@@ -3008,17 +3009,17 @@ networkx = ">=2.0"
 numpy = "*"
 packaging = "*"
 requests = "*"
-scipy = "*"
+scipy = ">=1.12"
 
 [package.extras]
-all = ["aiounittest", "bokeh (>=2.4.0)", "colorama", "idna (>=3.7)", "ipympl", "ipyparallel", "jax (>=0.4.0)", "jaxlib (>=0.4.0)", "jinja2 (>=3.1.4)", "jupyter-book (==0.14)", "matplotlib", "notebook", "num2words", "numpydoc (>=1.1)", "panel", "parameterized", "playwright (>=1.20)", "pre-commit", "pycodestyle (>=2.4.0)", "pydocstyle (>=2.0.0)", "pydoe3", "sphinx-sitemap", "testflo (>=1.3.6)", "tqdm (>=4.66.3)", "websockets (>8)"]
-docs = ["idna (>=3.7)", "ipyparallel", "jinja2 (>=3.1.4)", "jupyter-book (==0.14)", "matplotlib", "numpydoc (>=1.1)", "sphinx-sitemap", "tqdm (>=4.66.3)"]
+all = ["aiounittest", "bokeh (>=3.4.0)", "colorama", "idna (>=3.7)", "ipympl", "ipyparallel", "jax (>=0.4.0)", "jaxlib (>=0.4.0)", "jinja2 (>=3.1.4)", "jupyter-book (>=1.0.3)", "matplotlib", "notebook", "num2words", "numpydoc (>=1.1)", "panel", "parameterized", "playwright (>=1.20)", "pre-commit", "pycodestyle (>=2.4.0)", "pydocstyle (>=2.0.0)", "pydoe3", "rich", "sphinx-sitemap", "testflo (>=1.3.6)", "tqdm (>=4.66.3)", "websockets (>8)"]
+docs = ["idna (>=3.7)", "ipyparallel", "jinja2 (>=3.1.4)", "jupyter-book (>=1.0.3)", "matplotlib", "numpydoc (>=1.1)", "sphinx-sitemap", "tqdm (>=4.66.3)"]
 doe = ["pydoe3"]
 jax = ["jax (>=0.4.0)", "jaxlib (>=0.4.0)"]
 notebooks = ["idna (>=3.7)", "ipympl", "notebook"]
 numba = ["numba"]
 test = ["aiounittest", "num2words", "numpydoc (>=1.1)", "parameterized", "playwright (>=1.20)", "pre-commit", "pycodestyle (>=2.4.0)", "pydocstyle (>=2.0.0)", "testflo (>=1.3.6)", "websockets (>8)"]
-visualization = ["bokeh (>=2.4.0)", "colorama", "matplotlib", "panel"]
+visualization = ["bokeh (>=3.4.0)", "colorama", "matplotlib", "panel", "rich"]
 
 [[package]]
 name = "openmdao-extensions"
@@ -5394,4 +5395,4 @@ mpi = ["mpi4py"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "0ce8c6615041c77e59c838e8758e1a9c7e5949dfd95b4f16b7716f5d574ccd12"
+content-hash = "057b45d1499c70ae81d88bafa433dbee610277667bc78b4c700796999699c644"
