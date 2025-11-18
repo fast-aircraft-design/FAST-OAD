@@ -18,7 +18,7 @@ maintainers = [
     { name = "Eric NGUYEN VAN", email = "Eric.Nguyen_Van@onera.fr" },
     { name = "Enrico STRAGIOTTI", email = "enrico.stragiotti@onera.fr" },
 ]
-requires-python = ">=3.9,<3.13"
+requires-python = ">=3.9,<3.14"
 dynamic = ["version","classifiers"] # Needed to use poetry-dynamic-versioning
 
 # User dependencies ------------------------------------------------------------
@@ -93,7 +93,7 @@ exclude = ["**/tests/**"]
 #  Suitable classifiers based on python requirement and license are not automatically added if classifiers are statically defined in the project section
 classifiers = [
     "Development Status :: 5 - Production/Stable",
-    "Environment :: Console", 
+    "Environment :: Console",
     "Intended Audience :: Science/Research",
     "Intended Audience :: Education",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
@@ -101,11 +101,13 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX :: Linux",
     "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11", 
+    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "Topic :: Scientific/Engineering :: Physics"
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Physics",
 ]
 
 # Development dependencies -----------------------------------------------------

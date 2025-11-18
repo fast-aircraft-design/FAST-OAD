@@ -18,7 +18,7 @@ jobs:
     if: ${{ !contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]') }}
     strategy:
       matrix:
-        python-version: [ "3.9", "3.10", "3.12" ]
+        python-version: [ "3.9", "3.11", "3.13" ]
         os: [ ubuntu-latest, windows-latest, macos-latest ]
         # Exceptions:
         # - Python 3.9 is on macos-13 but not macos-latest (macos-14-arm64)
@@ -46,17 +46,23 @@ jobs:
         with:
           version: 2.1.3
           virtualenvs-create: true
-          virtualenvs-in-project: true
-          virtualenvs-path: .venv
+          # virtualenvs-in-project: true # These should stay false iw we want to use caching
+          # virtualenvs-path: .venv
           installer-parallel: true
 
       - name: Load cached venv # Copied from https://github.com/snok/install-poetry/blob/d526ede1e27960b7b181a5ac53044f552afdaa38/README.md
       # load cached venv if cache exists
+      # restore-keys allow fallback cache hits when the exact key is not found.
+      # GitHub Actions will try to restore any cache whose key *starts with* the prefixes listed here.
+      # This helps reuse older venv caches for the same OS & Python version when poetry.lock changes slightly,
+      # instead of reinstalling all dependencies from scratch.
         id: cached-poetry-dependencies
         uses: actions/cache@v4
         with:
           path: .venv
-          key: venv-${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
+          key: venv-${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}
+          restore-keys: |
+            venv-${{ matrix.os }}-${{ matrix.python-version }}-
 
       - name: Install dependencies # Heavy dependencies (cached) - only runs on cache miss
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
