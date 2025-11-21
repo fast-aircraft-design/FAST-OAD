@@ -41,4 +41,8 @@ model:
 model_options:
   "*":
     use_inner_solvers: false
-
+    linear_solver_options:
+      iprint: 0
+    nonlinear_solver_options:
+      iprint: 0
+      maxiter: 2
