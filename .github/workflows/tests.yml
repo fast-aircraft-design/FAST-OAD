@@ -18,7 +18,7 @@ jobs:
     if: ${{ !contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]') }}
     strategy:
       matrix:
-        python-version: [ "3.10", "3.11", "3.13" ]
+        python-version: [ "3.10", "3.12", "3.13" ]
         os: [ ubuntu-latest, windows-latest, macos-latest ]
     timeout-minutes: 25
 
@@ -37,7 +37,7 @@ jobs:
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
-          version: 2.1.3
+          version: ${{ vars.POETRY_VERSION }}
           virtualenvs-create: true
           # virtualenvs-in-project: true # These should stay false iw we want to use caching
           # virtualenvs-path: .venv
