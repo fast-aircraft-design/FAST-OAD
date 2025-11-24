@@ -88,10 +88,9 @@ def test_problem_read_inputs_after_setup(cleanup):
     problem.setup()
 
     assert problem.get_val(name="x") == [2.0]  # Here x is set by integrated IVC
-    with pytest.raises((RuntimeError, KeyError)):
+    with pytest.raises(RuntimeError):
         # Several default values are defined for "z", thus OpenMDAO raises an error that
-        # will be solved only after run_model() (the final_setup() in it) has been used.
-        # In version >3.38, we have instead a KeyError, again solved by final_setup(). We
+        # will be solved only after run_model() (the final_setup() in it) has been used. We
         # cannot call however here the final_setup(), as we haven't yet read the inputs.
         _ = problem.get_val(name="z", units="m**2")
     problem.read_inputs()
