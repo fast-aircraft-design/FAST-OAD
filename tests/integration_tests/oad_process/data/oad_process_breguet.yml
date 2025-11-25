@@ -5,10 +5,6 @@ module_folders:
 input_file: ./oad_process_breguet_inputs.xml
 output_file: ./oad_process_breguet_outputs.xml
 
-model_options:
-  "*":
-    use_inner_solvers: false
-
 model:
   nonlinear_solver: om.NonlinearBlockGS(maxiter=100, atol=1e-2)
   linear_solver: om.DirectSolver()
@@ -16,6 +12,8 @@ model:
     id: fastoad.geometry.legacy
   weight:
     id: fastoad.weight.legacy
+  loads:
+    id: fastoad.loads.legacy
   mtow:
     id: fastoad.mass_performances.compute_MTOW
   aerodynamics:
@@ -29,6 +27,7 @@ model:
         out_file: ./flight_points.csv
         mission_file_path: ::sizing_breguet
         adjust_fuel: true
+        add_solver: false
         is_sizing: true
   hq:
     tail_sizing:
@@ -37,3 +36,13 @@ model:
       id: fastoad.handling_qualities.static_margin
   wing_area:
     id: fastoad.loop.wing_area
+
+
+model_options:
+  "*":
+    use_inner_solvers: false
+    linear_solver_options:
+      iprint: 0
+    nonlinear_solver_options:
+      iprint: 0
+      maxiter: 2
