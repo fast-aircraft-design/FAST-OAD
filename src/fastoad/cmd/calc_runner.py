@@ -117,6 +117,20 @@ class CalcRunner:
 
         return problem.write_outputs()  # output_data
 
+    @staticmethod
+    def _safe_run(runner, input_values, calculation_folder):
+        """Wrapper that catches exceptions and logs them instead of crashing."""
+        try:
+            return runner.run(input_values, calculation_folder)
+        except Exception as e:
+            _LOGGER.error(
+                'Computation failed for folder "%s": %s',
+                calculation_folder,
+                str(e),
+                exc_info=True,  # This logs the full traceback
+            )
+            return None  # Or return an error indicator
+
     def run_cases(
         self,
         input_list: list[VariableList],
@@ -169,8 +183,8 @@ class CalcRunner:
         pool_cls = _MPIPool if use_MPI else mp.Pool
 
         with pool_cls(max_workers) as pool:
-            pool.starmap(
-                CalcRunner.run,
+            results = pool.starmap(
+                CalcRunner._safe_run,  # Use the wrapper instead
                 self._calculation_inputs(
                     input_list, destination_folder, overwrite_subfolders=overwrite_subfolders
                 ),
@@ -178,6 +192,13 @@ class CalcRunner:
                 # chunksize=1 ensures all computations will be launched.
                 chunksize=1,
             )
+
+        # Optionally return results or count failures
+        failures = sum(1 for r in results if r is None)
+        if failures:
+            _LOGGER.warning("Completed with %d failures out of %d cases", failures, len(results))
+
+        return results
 
     def _calculation_inputs(
         self,
