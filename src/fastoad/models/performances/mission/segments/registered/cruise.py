@@ -126,7 +126,7 @@ class ClimbAndCruiseSegment(CruiseSegment):
                 if not key.startswith("_")
             }
             attr_dict["target"] = target
-            attr_dict["name"] = self.name
+            attr_dict["name"] = self.name + ":prepended_climb"
             climb_segment = AltitudeChangeSegment(**attr_dict)
         else:
             climb_segment = None
