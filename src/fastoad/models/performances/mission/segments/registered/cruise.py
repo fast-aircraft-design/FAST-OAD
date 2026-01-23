@@ -62,6 +62,9 @@ class CruiseSegment(AbstractRegulatedThrustSegment, AbstractLiftFromWeightSegmen
         ]:
             self.target.mach = AbstractTimeStepFlightSegment.constant_value_name
 
+        # In cruise segment, the slope angle is forced to 0
+        self._slope_angle = 0
+
     def get_distance_to_target(
         self, flight_points: list[FlightPoint], target: FlightPoint
     ) -> float:
