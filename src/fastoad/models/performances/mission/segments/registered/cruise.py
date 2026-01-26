@@ -123,10 +123,13 @@ class OptimalCruiseSegment(CruiseSegment):
             and abs(start.altitude - initial_altitude) > ALTITUDE_TOLERANCE
         ):
             _LOGGER.warning(
-                f"Optimal cruise segment '{self.name}' starting at altitude "
-                f"{start.altitude:.0f}m, but previous segment ended at {initial_altitude:.0f}m. "
-                f"This creates an instantaneous altitude change. Consider adding a climb segment "
-                f"before optimal cruise to reach the optimal altitude gradually."
+                "Optimal cruise segment '%s' starting at altitude "
+                "%.0fm, but previous segment ended at %.0fm. "
+                "This creates an instantaneous altitude change. Consider adding a climb segment "
+                "before optimal cruise to reach the optimal altitude gradually.",
+                self.name,
+                start.altitude,
+                initial_altitude,
             )
 
         self.complete_flight_point(start)
@@ -142,6 +145,20 @@ class OptimalCruiseSegment(CruiseSegment):
             optimal_altitude > altitude_cap or previous_point.altitude >= altitude_cap
         ):
             next_point.altitude = altitude_cap
+        elif previous_point.altitude > altitude_cap:
+            # Unexpected state: previous point is already above the cap.
+            # Maintain the previous altitude to avoid an artificial descent
+            # and issue a warning so this inconsistency can be investigated.
+            next_point.altitude = previous_point.altitude
+            _LOGGER.warning(
+                "Optimal cruise segment '%s' received altitude "
+                "%.0fm above configured cap %.0fm. Maintaining above-cap altitude for this "
+                "time step instead of snapping down to the cap. Consider reducing the target "
+                "altitude of the previous segment.",
+                self.name,
+                previous_point.altitude,
+                altitude_cap,
+            )
         else:
             next_point.altitude = optimal_altitude
 
@@ -195,6 +212,8 @@ class ClimbAndCruiseSegment(CruiseSegment):
             }
             attr_dict["target"] = target
             attr_dict["name"] = self.name + ":prepended_climb"
+            if self.maximum_CL is not None:
+                attr_dict["maximum_CL"] = self.maximum_CL
             climb_segment = AltitudeChangeSegment(**attr_dict)
         else:
             climb_segment = None
@@ -228,11 +247,8 @@ class ClimbAndCruiseSegment(CruiseSegment):
                 cruise_altitude = get_closest_flight_level(cruise_altitude + 1.0e-3)
                 if cruise_altitude > self.maximum_flight_level * 100.0 * foot:
                     break
-                if (
-                    self.maximum_CL is not None
-                    and self.check_next_flight_level_maximum_lift_coefficient(
-                        cruise_altitude, start
-                    )
+                if self.maximum_CL is not None and self.is_next_flight_level_exceeding_maximum_cl(
+                    cruise_altitude, start
                 ):
                     break
 
@@ -284,7 +300,7 @@ class ClimbAndCruiseSegment(CruiseSegment):
 
         return pd.concat([climb_points, cruise_points]).reset_index(drop=True)
 
-    def check_next_flight_level_maximum_lift_coefficient(
+    def is_next_flight_level_exceeding_maximum_cl(
         self, altitude_next_flight_level: float, flight_point: FlightPoint
     ) -> bool:
         """

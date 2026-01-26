@@ -471,6 +471,8 @@ def test_optimal_cruise_no_warning_with_small_discontinuity(polar, caplog):
     )
     optimal_alt = flight_points_initial.iloc[0].altitude
 
+    caplog.clear()
+
     # Start at nearly the same altitude (within 100m tolerance)
     with caplog.at_level(logging.WARNING):
         segment.compute_from(
