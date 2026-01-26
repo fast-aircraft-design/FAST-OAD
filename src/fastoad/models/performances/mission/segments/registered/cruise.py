@@ -126,6 +126,7 @@ class ClimbAndCruiseSegment(CruiseSegment):
                 if not key.startswith("_")
             }
             attr_dict["target"] = target
+            attr_dict["name"] = self.name + ":prepended_climb"
             climb_segment = AltitudeChangeSegment(**attr_dict)
         else:
             climb_segment = None
@@ -159,6 +160,11 @@ class ClimbAndCruiseSegment(CruiseSegment):
                 cruise_altitude = get_closest_flight_level(cruise_altitude + 1.0e-3)
                 if cruise_altitude > self.maximum_flight_level * 100.0 * foot:
                     break
+                if self.maximum_CL is not None:
+                    if self.check_next_flight_level_maximum_lift_coefficient(
+                        cruise_altitude, start
+                    ):
+                        break
 
                 new_results = self._climb_to_altitude_and_cruise(
                     start, cruise_altitude, climb_segment, cruise_segment
@@ -207,6 +213,26 @@ class ClimbAndCruiseSegment(CruiseSegment):
         cruise_points = cruise_segment.compute_from(cruise_start)
 
         return pd.concat([climb_points, cruise_points]).reset_index(drop=True)
+
+    def check_next_flight_level_maximum_lift_coefficient(
+        self, altitude_next_flight_level: float, flight_point: FlightPoint
+    ) -> bool:
+        """
+        Returns true if the CL at the next flight level is higher than the maximum_CL
+
+        :param altitude_next_flight_level: the altitude of the next flight level in m
+        :param flight_point: the current flight point
+        """
+
+        actual_flight_point = deepcopy(flight_point)
+        next_level_flight_point = FlightPoint()
+        next_level_flight_point.altitude = altitude_next_flight_level
+        next_level_flight_point.mach = actual_flight_point.mach
+        next_level_flight_point.mass = actual_flight_point.mass
+
+        self.complete_flight_point(next_level_flight_point)
+
+        return bool(next_level_flight_point.CL > self.maximum_CL)
 
 
 @RegisterSegment("breguet")

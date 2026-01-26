@@ -13,6 +13,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 from copy import copy
 from dataclasses import dataclass, field
 
@@ -31,6 +32,8 @@ from fastoad.models.performances.mission.segments.time_step_base import (
     AbstractManualThrustSegment,
 )
 from fastoad.models.performances.mission.util import get_closest_flight_level
+
+_LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 @RegisterSegment("altitude_change")
@@ -118,7 +121,29 @@ class AltitudeChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightS
             atm.mach = start.mach
             start.true_airspeed = atm.true_airspeed
 
-        return super().compute_from_start_to_target(start, target)
+        flight_points_df = super().compute_from_start_to_target(start, target)
+        if self.maximum_CL is not None:
+            if start.CL > self.maximum_CL:  # noqa: SIM300 False positive
+                # If CL of the starting point is above the max CL, we ignore the max CL.
+                _LOGGER.warning(
+                    'The first point in a segment of "%s" has a CL > maximum_CL. Ignoring the maximum_CL of %.2f.',
+                    self.name,
+                    self.maximum_CL,
+                )
+            elif (flight_points_df["CL"] > self.maximum_CL).any():
+                # We check that no point exceeded the maximum CL. If this is the case we change the
+                # objective from a fixed altitude/speed to the given CL max.
+                target.CL = self.maximum_CL
+                for speed_param in ["true_airspeed", "equivalent_airspeed", "mach"]:
+                    if not isinstance(
+                        getattr(target, speed_param), str
+                    ):  # costant speeds must stay constant
+                        setattr(target, speed_param, None)
+                target.altitude = None
+                # We revaluate the segment
+                flight_points_df = super().compute_from_start_to_target(start, target)
+
+        return flight_points_df
 
     def get_distance_to_target(
         self, flight_points: list[FlightPoint], target: FlightPoint
