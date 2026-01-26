@@ -23,6 +23,7 @@ from numpy import cos, sin
 from scipy.constants import g
 from scipy.optimize import root_scalar
 
+from fastoad._utils.arrays import scalarize
 from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.datacls import MANDATORY_FIELD
@@ -354,11 +355,13 @@ class AbstractTimeStepFlightSegment(
             optimal_air_density = (
                 2.0 * mass * g / (self.reference_area * true_airspeed**2 * CL_optimal)
             )
-            return (atm.density - optimal_air_density) * 100.0
+            return scalarize((atm.density - optimal_air_density) * 100.0)
 
-        return root_scalar(  # optimal_altitude
-            distance_to_optimum, x0=altitude_guess, x1=altitude_guess - 1000.0
-        ).root
+        return scalarize(
+            root_scalar(  # optimal_altitude
+                distance_to_optimum, x0=altitude_guess, x1=altitude_guess - 1000.0
+            ).root
+        )
 
 
 @dataclass
