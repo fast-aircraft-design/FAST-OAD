@@ -126,7 +126,8 @@ class AltitudeChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightS
             if start.CL > self.maximum_CL:  # noqa: SIM300 False positive
                 # If CL of the starting point is above the max CL, we ignore the max CL.
                 _LOGGER.warning(
-                    'The first point in a segment of "%s" has a CL > maximum_CL. Ignoring the maximum_CL of %.2f.',
+                    'The first point in a segment of "%s" has a CL > maximum_CL. Ignoring the '
+                    "maximum_CL of %.2f.",
                     self.name,
                     self.maximum_CL,
                 )
