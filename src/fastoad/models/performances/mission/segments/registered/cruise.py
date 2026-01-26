@@ -35,6 +35,9 @@ from ..time_step_base import (
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
+# Warn if there's an altitude discontinuity (tolerance accounts for fuel burn during climb)
+ALTITUDE_TOLERANCE = 100.0  # meters
+
 
 @dataclass
 class CruiseSegment(AbstractRegulatedThrustSegment, AbstractLiftFromWeightSegment):
@@ -120,8 +123,10 @@ class OptimalCruiseSegment(CruiseSegment):
             start.altitude = optimal_altitude
 
         # Warn if there's an altitude discontinuity (tolerance accounts for fuel burn during climb)
-        altitude_tolerance = 100.0  # meters
-        if abs(start.altitude - initial_altitude) > altitude_tolerance:
+        if (
+            initial_altitude is not None
+            and abs(start.altitude - initial_altitude) > ALTITUDE_TOLERANCE
+        ):
             _LOGGER.warning(
                 f"Optimal cruise segment '{self.name}' starting at altitude "
                 f"{start.altitude:.0f}m, but previous segment ended at {initial_altitude:.0f}m. "
