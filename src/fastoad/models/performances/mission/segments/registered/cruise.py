@@ -110,12 +110,7 @@ class OptimalCruiseSegment(CruiseSegment):
         optimal_altitude = self._get_optimal_altitude(start.mass, start.mach)
 
         # Compute altitude cap from maximum_altitude and maximum_flight_level (converted to meters)
-        altitude_caps = []
-        if self.maximum_altitude is not None:
-            altitude_caps.append(self.maximum_altitude)
-        if self.maximum_flight_level is not None:
-            altitude_caps.append(self.maximum_flight_level * 100.0 * foot)
-        altitude_cap = min(altitude_caps) if altitude_caps else None
+        altitude_cap = self._get_altitude_cap()
 
         if altitude_cap is not None and optimal_altitude > altitude_cap:
             start.altitude = altitude_cap
@@ -141,13 +136,7 @@ class OptimalCruiseSegment(CruiseSegment):
         optimal_altitude = self._get_optimal_altitude(
             next_point.mass, previous_point.mach, altitude_guess=previous_point.altitude
         )
-
-        altitude_caps = []
-        if self.maximum_altitude is not None:
-            altitude_caps.append(self.maximum_altitude)
-        if self.maximum_flight_level is not None:
-            altitude_caps.append(self.maximum_flight_level * 100.0 * foot)
-        altitude_cap = min(altitude_caps) if altitude_caps else None
+        altitude_cap = self._get_altitude_cap()
 
         if altitude_cap is not None and (
             optimal_altitude > altitude_cap or previous_point.altitude >= altitude_cap
@@ -155,6 +144,16 @@ class OptimalCruiseSegment(CruiseSegment):
             next_point.altitude = altitude_cap
         else:
             next_point.altitude = optimal_altitude
+
+    def _get_altitude_cap(
+        self,
+    ) -> float | None:
+        altitude_caps = []
+        if self.maximum_altitude is not None:
+            altitude_caps.append(self.maximum_altitude)
+        if self.maximum_flight_level is not None:
+            altitude_caps.append(self.maximum_flight_level * 100.0 * foot)
+        return min(altitude_caps) if altitude_caps else None
 
 
 @RegisterSegment("cruise")
