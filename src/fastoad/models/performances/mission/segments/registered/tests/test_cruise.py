@@ -21,6 +21,7 @@ from scipy.constants import foot
 from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import FuelEngineSet
+from fastoad.models.performances.mission.util import get_closest_flight_level
 
 from .conftest import DummyEngine, DummyUnpickableEngine
 from ..altitude_change import AltitudeChangeSegment
@@ -341,6 +342,51 @@ def test_climb_and_cruise_at_optimal_flight_level_with_start_at_exact_flight_lev
         assert_allclose(last_point.time, 42659.0, rtol=1e-3)
         assert_allclose(last_point.true_airspeed, 234.4, atol=0.1)
         assert_allclose(last_point.mass, 48987.0, rtol=1e-4)
+
+    run()
+
+    # A second call is done to ensure first run did not modify anything (like target definition)
+    run()
+
+
+def test_climb_and_cruise_respects_maximum_cl(polar):
+    propulsion = FuelEngineSet(DummyEngine(0.5e5, 3.0e-5), 2)
+    reference_area = 120.0
+    maximum_cl = 0.4
+
+    segment = ClimbAndCruiseSegment(
+        target=FlightPoint(
+            ground_distance=10.0e6, altitude=AltitudeChangeSegment.OPTIMAL_FLIGHT_LEVEL
+        ),
+        propulsion=propulsion,
+        reference_area=reference_area,
+        polar=polar,
+        climb_segment=AltitudeChangeSegment(
+            target=FlightPoint(),
+            propulsion=propulsion,
+            reference_area=reference_area,
+            polar=polar,
+            thrust_rate=0.9,
+        ),
+        maximum_CL=maximum_cl,
+    )
+
+    def run():
+        start = FlightPoint(mass=70000.0, altitude=8000.0, mach=0.78, ground_distance=1.0e6)
+        # First available cruise level at or above start altitude
+        initial_cruise_altitude = get_closest_flight_level(start.altitude - 1.0e-3)
+        next_flight_level = get_closest_flight_level(initial_cruise_altitude + 1.0e-3)
+
+        # Sanity check: next level would breach the imposed CL cap
+        assert segment.is_next_flight_level_exceeding_maximum_cl(next_flight_level, start)
+
+        flight_points = segment.compute_from(start)
+        last_point = flight_points.iloc[-1]
+
+        # Segment must stay at the lower level since the next one exceeds maximum_CL
+        assert_allclose(last_point.altitude, initial_cruise_altitude)
+        assert last_point.altitude < next_flight_level
+        assert flight_points.CL.max() <= maximum_cl + 1.0e-6
 
     run()
 
