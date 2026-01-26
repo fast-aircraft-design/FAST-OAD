@@ -138,7 +138,7 @@ class AltitudeChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightS
                 for speed_param in ["true_airspeed", "equivalent_airspeed", "mach"]:
                     if not isinstance(
                         getattr(target, speed_param), str
-                    ):  # costant speeds must stay constant
+                    ):  # constant speeds must stay constant
                         setattr(target, speed_param, None)
                 target.altitude = None
                 # We revaluate the segment
