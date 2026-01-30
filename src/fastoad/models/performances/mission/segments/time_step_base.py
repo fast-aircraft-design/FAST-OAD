@@ -23,6 +23,7 @@ from numpy import cos, sin
 from scipy.constants import g
 from scipy.optimize import root_scalar
 
+from fastoad._utils.arrays import scalarize
 from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.datacls import MANDATORY_FIELD
@@ -208,7 +209,7 @@ class AbstractTimeStepFlightSegment(
                     # We are having problem determining the time at which target is reached.
                     # Let's issue a warning but continue the segment computation.
                     _LOGGER.warning(
-                        'Target time step cannot be determined in "%s".'
+                        'Target time step cannot be determined in "%s". '
                         "Please review the segment settings.",
                         self.name,
                     )
@@ -223,7 +224,7 @@ class AbstractTimeStepFlightSegment(
             ):
                 # We get further from target. Let's stop without this point.
                 _LOGGER.warning(
-                    'Target cannot be reached in "%s". Segment computation interrupted.'
+                    'Target cannot be reached in "%s". Segment computation interrupted. '
                     "Please review the segment settings, especially thrust_rate.",
                     self.name,
                 )
@@ -354,11 +355,13 @@ class AbstractTimeStepFlightSegment(
             optimal_air_density = (
                 2.0 * mass * g / (self.reference_area * true_airspeed**2 * CL_optimal)
             )
-            return (atm.density - optimal_air_density) * 100.0
+            return scalarize((atm.density - optimal_air_density) * 100.0)
 
-        return root_scalar(  # optimal_altitude
-            distance_to_optimum, x0=altitude_guess, x1=altitude_guess - 1000.0
-        ).root
+        return scalarize(
+            root_scalar(  # optimal_altitude
+                distance_to_optimum, x0=altitude_guess, x1=altitude_guess - 1000.0
+            ).root
+        )
 
 
 @dataclass
