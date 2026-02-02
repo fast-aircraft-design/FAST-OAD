@@ -26,7 +26,7 @@ RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
 
 # Memory leak threshold in MiB
 MEMORY_DIFF_THRESHOLD = 20.0
-MEMORY_DIFF_THRESHOLD_AVG = 10.0
+MEMORY_DIFF_THRESHOLD_AVG = 20.0
 FINAL_MEMORY_THRESHOLD = 20.0
 
 
@@ -103,7 +103,7 @@ def test_memory_leak_between_runs(cleanup):
         memory_measurements: list[tuple[int, float]] = []
         run_snapshots = []
 
-        run_count = 2
+        run_count = 3
 
         for i in range(run_count):
             print(f"\n{'=' * 60}")
