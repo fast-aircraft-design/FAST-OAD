@@ -15,7 +15,7 @@ class ComputeFuelMass(om.ExplicitComponent):
         self.add_input(name="payload", units="kg", val=np.nan)
         self.add_input(name="mission_range", units="m", val=np.nan)
         self.add_input(name="tsfc", units="kg/N/s", val=np.nan)
-        self.add_input(name="l_d_ratio", val=np.nan)
+        self.add_input(name="l_d_ratio", val=np.nan, units="unitless")
         self.add_input(name="cruise_speed", units="m/s", val=np.nan)
 
         # Defining the output(s)
