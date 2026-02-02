@@ -10,11 +10,11 @@ class ComputeInducedDragCoefficient(om.ExplicitComponent):
     def setup(self):
         # Defining the input(s)
 
-        self.add_input(name="aspect_ratio", val=np.nan)
+        self.add_input(name="aspect_ratio", val=np.nan, units="unitless")
 
         # Defining the output(s)
 
-        self.add_output(name="induced_drag_coefficient")
+        self.add_output(name="induced_drag_coefficient", units="unitless")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         # Assigning the input to local variable for clarity
