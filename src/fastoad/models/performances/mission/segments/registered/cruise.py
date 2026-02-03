@@ -126,7 +126,7 @@ class OptimalCruiseSegment(CruiseSegment):
                 "Optimal cruise segment '%s' starting at altitude "
                 "%.0fm, but previous segment ended at %.0fm. "
                 "This creates an instantaneous altitude change. Consider adding a climb segment "
-                "before optimal cruise to reach the optimal altitude gradually.",
+                "with the keyword 'optimal_altitude' as target before optimal cruise to avoid discontinuity.",
                 self.name,
                 start.altitude,
                 initial_altitude,
