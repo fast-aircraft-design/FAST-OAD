@@ -19,8 +19,8 @@ class BasicFunctionG1(om.ExplicitComponent):
     """An OpenMDAO component to encapsulate Functions discipline"""
 
     def setup(self):
-        self.add_input("y1", val=1.0)
-        self.add_output("g1", val=1.0)
+        self.add_input("y1", val=1.0, units="unitless")
+        self.add_output("g1", val=1.0, units="unitless")
 
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
@@ -35,8 +35,8 @@ class BasicFunctionG2(om.ExplicitComponent):
     """An OpenMDAO component to encapsulate Functions discipline"""
 
     def setup(self):
-        self.add_input("y2", val=1.0, desc="")
-        self.add_output("g2", val=1.0, desc="")
+        self.add_input("y2", val=1.0, desc="", units="unitless")
+        self.add_output("g2", val=1.0, desc="", units="unitless")
 
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")

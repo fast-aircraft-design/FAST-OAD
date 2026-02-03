@@ -141,18 +141,31 @@ class BaseOMPropulsionComponent(om.ExplicitComponent, ABC):
     """
 
     def setup(self):
-        self.add_input("data:propulsion:mach", np.nan, shape_by_conn=True)
+        self.add_input("data:propulsion:mach", np.nan, shape_by_conn=True, units="unitless")
         self.add_input("data:propulsion:altitude", np.nan, shape_by_conn=True, units="m")
-        self.add_input("data:propulsion:engine_setting", np.nan, shape_by_conn=True)
-        self.add_input("data:propulsion:use_thrust_rate", np.nan, shape_by_conn=True)
-        self.add_input("data:propulsion:required_thrust_rate", np.nan, shape_by_conn=True)
+        self.add_input(
+            "data:propulsion:engine_setting", np.nan, shape_by_conn=True, units="unitless"
+        )
+        self.add_input(
+            "data:propulsion:use_thrust_rate", np.nan, shape_by_conn=True, units="unitless"
+        )
+        self.add_input(
+            "data:propulsion:required_thrust_rate",
+            np.nan,
+            shape_by_conn=True,
+            units="unitless",
+        )
         self.add_input("data:propulsion:required_thrust", np.nan, shape_by_conn=True, units="N")
 
         self.add_output(
             "data:propulsion:SFC", copy_shape="data:propulsion:mach", units="kg/s/N", ref=1e-4
         )
         self.add_output(
-            "data:propulsion:thrust_rate", copy_shape="data:propulsion:mach", lower=0.0, upper=1.0
+            "data:propulsion:thrust_rate",
+            copy_shape="data:propulsion:mach",
+            lower=0.0,
+            upper=1.0,
+            units="unitless",
         )
         self.add_output(
             "data:propulsion:thrust", copy_shape="data:propulsion:mach", units="N", ref=1e5

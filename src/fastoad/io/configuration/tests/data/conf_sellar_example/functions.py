@@ -48,14 +48,14 @@ class FunctionF(om.ExplicitComponent):
         self.options.declare("dummy_generic_option", types=str, default="")
 
     def setup(self):
-        self.add_input("x", val=2, desc="")
+        self.add_input("x", val=2, desc="", units="unitless")
         self.add_input(
             "z", val=[np.nan, np.nan], desc="", units="m**2"
         )  # NaN as default for testing connection check
-        self.add_input("yy1", val=1.0, desc="")
-        self.add_input("yy2", val=1.0, desc="")
+        self.add_input("yy1", val=1.0, desc="", units="unitless")
+        self.add_input("yy2", val=1.0, desc="", units="unitless")
 
-        self.add_output("f", val=1.0, desc="")
+        self.add_output("f", val=1.0, desc="", units="unitless")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -84,9 +84,9 @@ class FunctionFAlt(FunctionF):
     def setup(self):
         super().setup()
         if self.options["add_input_var"]:
-            self.add_input("bar", val=1.0, desc="")
+            self.add_input("bar", val=1.0, desc="", units="unitless")
 
-        self.add_output("baz", val=1.0)
+        self.add_output("baz", val=1.0, units="unitless")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         """Functions computation"""
@@ -107,9 +107,9 @@ class FunctionG1(om.ExplicitComponent):
     """An OpenMDAO component to encapsulate Functions discipline"""
 
     def setup(self):
-        self.add_input("yy1", val=1.0, desc="")
+        self.add_input("yy1", val=1.0, desc="", units="unitless")
 
-        self.add_output("g1", val=1.0, desc="")
+        self.add_output("g1", val=1.0, desc="", units="unitless")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -126,9 +126,9 @@ class FunctionG2(om.ExplicitComponent):
     """An OpenMDAO component to encapsulate Functions discipline"""
 
     def setup(self):
-        self.add_input("yy2", val=1.0, desc="")
+        self.add_input("yy2", val=1.0, desc="", units="unitless")
 
-        self.add_output("g2", val=1.0, desc="")
+        self.add_output("g2", val=1.0, desc="", units="unitless")
 
         self.declare_partials("*", "*", method="fd")
 
