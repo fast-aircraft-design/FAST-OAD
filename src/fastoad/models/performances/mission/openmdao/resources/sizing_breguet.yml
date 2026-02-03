@@ -42,7 +42,9 @@ phases:
       - segment: transition
         target:
           altitude: data:mission:sizing:main_route:cruise:altitude
-          mach: data:TLAR:cruise_mach
+          mach: 
+            value: data:TLAR:cruise_mach
+            unit: unitless
           delta_ground_distance:
             value: 250
             unit: km
@@ -54,7 +56,9 @@ phases:
       - segment: transition
         target:
           altitude: 0.
-          mach: 0.
+          mach: 
+            value: 0.
+            unit: unitless
           delta_ground_distance:
             value: 250
             unit: km
@@ -66,7 +70,9 @@ phases:
       - segment: transition
         target:
           altitude: 0.
-          mach: 0.
+          mach: 
+            value: 0.
+            unit: unitless
         reserve_mass_ratio:
           value: settings:mission:sizing:breguet:reserve:mass_ratio
           default: 0.06
