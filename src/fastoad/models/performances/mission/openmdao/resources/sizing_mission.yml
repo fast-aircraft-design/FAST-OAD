@@ -98,7 +98,9 @@ phases:
       - segment: altitude_change
         target:
           equivalent_airspeed: constant
-          mach: data:TLAR:cruise_mach
+          mach: 
+            value: data:TLAR:cruise_mach
+            unit: unitless
       - segment: altitude_change
         target:
           mach: constant
