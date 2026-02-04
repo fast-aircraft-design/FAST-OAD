@@ -85,7 +85,8 @@ class OptimalCruiseSegment(CruiseSegment):
     Important: The segment computes the optimal altitude at the start point and sets it
     immediately. If the previous segment ended at a different altitude, there will be an
     instantaneous altitude change (no climb segment). To avoid this "teleportation",
-    ensure a climb segment precedes this segment to reach the optimal cruise altitude.
+    Consider adding a climb segment with the keyword 'optimal_altitude' as target before
+    optimal cruise.
 
     Note: Maximum altitude enforcement is done in compute_from_start_to_target and
     _compute_next_altitude rather than overriding _check_values, since _check_values
@@ -144,24 +145,10 @@ class OptimalCruiseSegment(CruiseSegment):
         )
         altitude_cap = self._get_altitude_cap()
 
-        if altitude_cap is not None and (
-            optimal_altitude > altitude_cap or previous_point.altitude >= altitude_cap
+        if (altitude_cap is not None) and (
+            (optimal_altitude > altitude_cap) or (previous_point.altitude >= altitude_cap)
         ):
             next_point.altitude = altitude_cap
-        elif previous_point.altitude > altitude_cap:
-            # Unexpected state: previous point is already above the cap.
-            # Maintain the previous altitude to avoid an artificial descent
-            # and issue a warning so this inconsistency can be investigated.
-            next_point.altitude = previous_point.altitude
-            _LOGGER.warning(
-                "Optimal cruise segment '%s' received altitude "
-                "%.0fm above configured cap %.0fm. Maintaining above-cap altitude for this "
-                "time step instead of snapping down to the cap. Consider reducing the target "
-                "altitude of the previous segment.",
-                self.name,
-                previous_point.altitude,
-                altitude_cap,
-            )
         else:
             next_point.altitude = optimal_altitude
 
