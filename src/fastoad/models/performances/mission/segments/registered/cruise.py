@@ -92,17 +92,17 @@ class OptimalCruiseSegment(CruiseSegment):
     only validates but does not modify flight point values.
     """
 
-    #: Maximum allowed altitude in meters for the optimal cruise.
-    #: When the optimal altitude exceeds this value, the aircraft will stay at this
-    #: maximum altitude and `CL` will be reduced accordingly. If None, no meter-based
-    #: altitude cap is applied (only maximum_flight_level applies).
+    # Maximum allowed altitude in meters for the optimal cruise.
+    # When the optimal altitude exceeds this value, the aircraft will stay at this
+    # maximum altitude and `CL` will be reduced accordingly. If None, no meter-based
+    # altitude cap is applied (only maximum_flight_level applies).
     maximum_altitude: float | None = None
 
-    #: The maximum allowed flight level (i.e. multiple of 100 feet).
-    #: This sets an altitude cap at `maximum_flight_level * 100 ft`. When the optimal
-    #: altitude exceeds this limit, the aircraft will stay at the capped altitude
-    #: and `CL` will be reduced. Both this and maximum_altitude can be set; the
-    #: most restrictive (lowest) cap will be applied.
+    # The maximum allowed flight level (i.e. multiple of 100 feet).
+    # This sets an altitude cap at `maximum_flight_level * 100 ft`. When the optimal
+    # altitude exceeds this limit, the aircraft will stay at the capped altitude
+    # and `CL` will be reduced. Both this and maximum_altitude can be set; the
+    # most restrictive (lowest) cap will be applied.
     maximum_flight_level: float = 500.0
 
     def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
@@ -126,7 +126,8 @@ class OptimalCruiseSegment(CruiseSegment):
                 "Optimal cruise segment '%s' starting at altitude "
                 "%.0fm, but previous segment ended at %.0fm. "
                 "This creates an instantaneous altitude change. Consider adding a climb segment "
-                "with the keyword 'optimal_altitude' as target before optimal cruise to avoid discontinuity.",
+                "with the keyword 'optimal_altitude' as target before optimal cruise to avoid "
+                "discontinuity.",
                 self.name,
                 start.altitude,
                 initial_altitude,
@@ -196,11 +197,11 @@ class ClimbAndCruiseSegment(CruiseSegment):
     ensures minimum mass decrease, while being at most equal to :attr:`maximum_flight_level`.
     """
 
-    #: The AltitudeChangeSegment that can be used if a preliminary climb is needed (its target
-    #: will be ignored).
+    # The AltitudeChangeSegment that can be used if a preliminary climb is needed (its target
+    # will be ignored).
     climb_segment: AltitudeChangeSegment = None
 
-    #: The maximum allowed flight level (i.e. multiple of 100 feet).
+    # The maximum allowed flight level (i.e. multiple of 100 feet).
     maximum_flight_level: float = 500.0
 
     def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
@@ -331,12 +332,12 @@ class BreguetCruiseSegment(CruiseSegment):
     when FlightPoint.thrust is provided.
     """
 
-    #: if True, max lift/drag ratio will be used instead of the one computed with polar using
-    #: CL deduced from mass and altitude.
-    #: In this case, reference_area parameter will be unused
+    # if True, max lift/drag ratio will be used instead of the one computed with polar using
+    # CL deduced from mass and altitude.
+    # In this case, reference_area parameter will be unused
     use_max_lift_drag_ratio: bool = False
 
-    #: The reference area, in m**2. Used only if use_max_lift_drag_ratio is False.
+    # The reference area, in m**2. Used only if use_max_lift_drag_ratio is False.
     reference_area: float = 1.0
 
     def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
