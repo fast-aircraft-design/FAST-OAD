@@ -264,7 +264,7 @@ def test_climb_target_CL_at_fixed_mach(polar):
     run()
 
 
-def test_climb_start_cl_above_max_cl_returns_empty_df(polar, caplog):
+def test_climb_start_cl_above_max_cl_returns_start_point_only(polar, caplog):
     propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 
     segment = AltitudeChangeSegment(

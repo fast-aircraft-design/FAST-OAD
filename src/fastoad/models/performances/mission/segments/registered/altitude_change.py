@@ -81,7 +81,7 @@ class AltitudeChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightS
     #: The maximum allowed flight level (i.e. multiple of 100 feet).
     maximum_flight_level: float = 500.0
 
-    # To keep track of originally instructed target (used for "optimal_altitude" and so on)
+    #: To keep track of originally instructed target (used for "optimal_altitude" and so on)
     _original_target_altitude: str | None = field(default=None, init=False)
 
     #: Using this value will tell to target the altitude with max lift/drag ratio.
@@ -132,7 +132,9 @@ class AltitudeChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightS
                     self.maximum_CL,
                 )
                 target.altitude = start.altitude  # to avoid any processing
-                return super().compute_from_start_to_target(start, target)  # empty dataframe
+                return super().compute_from_start_to_target(
+                    start, target
+                )  # dataframe containing only the start point
 
             flight_points_df = super().compute_from_start_to_target(start, target)
             if (flight_points_df["CL"] > self.maximum_CL).any():

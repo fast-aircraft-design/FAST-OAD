@@ -542,7 +542,7 @@ def test_optimal_cruise_no_warning_with_small_discontinuity(polar, caplog):
 
     caplog.clear()
 
-    # Start at nearly the same altitude (within 100m tolerance)
+    # Start at nearly the same altitude (within 5m tolerance)
     with caplog.at_level(logging.WARNING):
         segment.compute_from(
             FlightPoint(
@@ -565,7 +565,7 @@ def test_optimal_cruise_no_warning_with_small_discontinuity(polar, caplog):
 
 def test_optimal_cruise_stays_at_altitude_cap_during_segment(polar):
     """Test that optimal cruise stays at capped altitude for all points if optimal altitude is
-    higher that the cap."""
+    higher than the cap."""
     propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
     segment = OptimalCruiseSegment(
