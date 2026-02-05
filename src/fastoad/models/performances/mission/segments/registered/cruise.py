@@ -177,7 +177,9 @@ class ClimbAndCruiseSegment(CruiseSegment):
 
     Target altitude can also be set to
     :attr:`~.altitude_change.AltitudeChangeSegment.OPTIMAL_FLIGHT_LEVEL`. In that case, the cruise
-    will be preceded by a climb segment and :attr:`climb_segment` must be set at instantiation.
+    will be preceded by a climb segment. The :attr:`climb_segment` is automatically populated
+    when this segment is used inside a route; it only needs to be explicitly set if you want to
+    modify the climb behavior or when using the class directly without a route.
 
     (Target ground distance will be achieved by the sum of ground distances
     covered during climb and cruise)
@@ -188,7 +190,10 @@ class ClimbAndCruiseSegment(CruiseSegment):
 
     #: The AltitudeChangeSegment that can be used if a preliminary climb is needed (its target
     #: will be ignored).
-    climb_segment: AltitudeChangeSegment = None
+    #: Note: When this segment is used inside a route, the climb_segment is automatically
+    #: populated. This attribute only needs to be explicitly set if you want to modify the
+    #: climb segment behavior or when using the class directly without a route.
+    climb_segment: AltitudeChangeSegment | None = None
 
     #: The maximum allowed flight level (i.e. multiple of 100 feet).
     maximum_flight_level: float = 500.0
@@ -217,10 +222,19 @@ class ClimbAndCruiseSegment(CruiseSegment):
             engine_setting=self.engine_setting,
         )
 
-        if (
-            self.target.altitude == AltitudeChangeSegment.OPTIMAL_FLIGHT_LEVEL
-            and climb_segment is not None
-        ):
+        if self.target.altitude == AltitudeChangeSegment.OPTIMAL_FLIGHT_LEVEL:
+            if climb_segment is None:
+                # When using mission files via RangedRoute, climb_segment is auto-populated.
+                # If not provided and we reach here, just treat as normal cruise at current
+                # altitude.
+                _LOGGER.warning(
+                    "Cruise segment '%s' has target altitude OPTIMAL_FLIGHT_LEVEL but no "
+                    "climb_segment is provided. Will cruise at current altitude instead. Consider"
+                    " inserting the cruise segment inside a route.",
+                    self.name if self.name is not None else "<unnamed>",
+                )
+                cruise_segment.target.altitude = None
+                return super().compute_from_start_to_target(start, target)
             cruise_segment.target.altitude = None
 
             # Go to the next flight level, or keep altitude if already at a flight level
@@ -251,7 +265,7 @@ class ClimbAndCruiseSegment(CruiseSegment):
                 if go_to_next_level:
                     results = new_results
 
-        elif target.altitude is not None:
+        elif target.altitude is not None and isinstance(target.altitude, (int, float)):
             results = self._climb_to_altitude_and_cruise(
                 start, target.altitude, climb_segment, cruise_segment
             )
@@ -264,7 +278,7 @@ class ClimbAndCruiseSegment(CruiseSegment):
     def _climb_to_altitude_and_cruise(
         start: FlightPoint,
         cruise_altitude: float,
-        climb_segment: AltitudeChangeSegment,
+        climb_segment: AltitudeChangeSegment | None,
         cruise_segment: CruiseSegment,
     ):
         """
@@ -347,7 +361,7 @@ class BreguetCruiseSegment(CruiseSegment):
         """
         Computes mass ratio between end and start of cruise
 
-        :param start: the initial flight point, defined for `CL`, `CD`, `mass` and`true_airspeed`
+        :param start: the initial flight point, defined for `CL`, `CD`, `mass` and `true_airspeed`
         :param cruise_distance: cruise distance in meters
         :return: (mass at end of cruise) / (mass at start of cruise)
         """
