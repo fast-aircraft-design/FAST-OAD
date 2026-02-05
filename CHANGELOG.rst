@@ -2,37 +2,60 @@
 Changelog
 =========
 
+Version 1.9.0
+=============
+
+- Added
+    - Add maximum cl and maximum altitude constraints in cruise, optimal_cruise, and altitude_change segments. (https://github.com/fast-aircraft-design/FAST-OAD/pull/666)
+    - Start to use Ruff for linting. (https://github.com/fast-aircraft-design/FAST-OAD/pull/634)
+    - Add linting rules in CI using Ruff. (https://github.com/fast-aircraft-design/FAST-OAD/pull/657)
+    - Add new rules in Ruff (UP RET FBT FA PTH). (https://github.com/fast-aircraft-design/FAST-OAD/pull/609)
+    - Migrate to poetry 2.x. (https://github.com/fast-aircraft-design/FAST-OAD/pull/646)
+    - Added plugin description, guidelines for contributors and ✨. (https://github.com/fast-aircraft-design/FAST-OAD/pull/651)
+    - Added compatibility with Python 3.13 (with poetry 2.x). (https://github.com/fast-aircraft-design/FAST-OAD/pull/649)
+    - Deprecate Python 3.9. (https://github.com/fast-aircraft-design/FAST-OAD/pull/658)
+    - Added compatibility with Python 3.14. (https://github.com/fast-aircraft-design/FAST-OAD/pull/661)
+
+- Modified
+    - Enhanced Variable Metadata Handling. (https://github.com/fast-aircraft-design/FAST-OAD/pull/622)
+    - Simplify dependencies of the project: Pandas. (https://github.com/fast-aircraft-design/FAST-OAD/pull/660)
+    - Update CI to use the organization variable POETRY_VERSION. (https://github.com/fast-aircraft-design/FAST-OAD/pull/662)
+    - Update minimum OpenMDAO version to version 3.40. (https://github.com/fast-aircraft-design/FAST-OAD/pull/659)
+
+- Fixed
+    - Fix watchman test, preparing to update the OpenMDAO bounds in master branch. (https://github.com/fast-aircraft-design/FAST-OAD/pull/656
+
 Version 1.8.4
 =============
 
 - Added:
-  - Deactivate OpenMDAO automatic reporting. (https://github.com/fast-aircraft-design/FAST-OAD/pull/627)
-  - Add loads as a valid FAST-OAD discipline. (https://github.com/fast-aircraft-design/FAST-OAD/pull/629)
-  - Add CAS in the mission log. (in https://github.com/fast-aircraft-design/FAST-OAD/pull/633 by @dimitris-glenis)
-  - Added more verbose logging for failed module import. (https://github.com/fast-aircraft-design/FAST-OAD/pull/639)
-  - Better handling of failed module logging. (https://github.com/fast-aircraft-design/FAST-OAD/pull/641)
-  - Better handling of optional module. (https://github.com/fast-aircraft-design/FAST-OAD/pull/642)
-  - Update plotly to v6. (https://github.com/fast-aircraft-design/FAST-OAD/pull/643)
+    - Deactivate OpenMDAO automatic reporting. (https://github.com/fast-aircraft-design/FAST-OAD/pull/627)
+    - Add loads as a valid FAST-OAD discipline. (https://github.com/fast-aircraft-design/FAST-OAD/pull/629)
+    - Add CAS in the mission log. (in https://github.com/fast-aircraft-design/FAST-OAD/pull/633 by @dimitris-glenis)
+    - Added more verbose logging for failed module import. (https://github.com/fast-aircraft-design/FAST-OAD/pull/639)
+    - Better handling of failed module logging. (https://github.com/fast-aircraft-design/FAST-OAD/pull/641)
+    - Better handling of optional module. (https://github.com/fast-aircraft-design/FAST-OAD/pull/642)
+    - Update plotly to v6. (https://github.com/fast-aircraft-design/FAST-OAD/pull/643)
 - Fixed:
-  - Add RunOnce solver as default for `run_system`. (https://github.com/fast-aircraft-design/FAST-OAD/pull/625)
-  - Fix inconsistent behaviour of the get_val method when not providing units of measure. (https://github.com/fast-aircraft-design/FAST-OAD/pull/616)
-  - Fix OpenMDAO incompatibility. (https://github.com/fast-aircraft-design/FAST-OAD/pull/619)
-  - Fix mission target calculation. (https://github.com/fast-aircraft-design/FAST-OAD/pull/628)
+    - Add RunOnce solver as default for `run_system`. (https://github.com/fast-aircraft-design/FAST-OAD/pull/625)
+    - Fix inconsistent behaviour of the get_val method when not providing units of measure. (https://github.com/fast-aircraft-design/FAST-OAD/pull/616)
+    - Fix OpenMDAO incompatibility. (https://github.com/fast-aircraft-design/FAST-OAD/pull/619)
+    - Fix mission target calculation. (https://github.com/fast-aircraft-design/FAST-OAD/pull/628)
 
 Version 1.8.3
 =============
 
 - Added:
-  - New github Pull Request template. (https://github.com/fast-aircraft-design/FAST-OAD/pull/585)
-  - Add sorting capability to imports using ruff. (https://github.com/fast-aircraft-design/FAST-OAD/pull/587)
-  - Allow non pickable object as propulsion component. (https://github.com/fast-aircraft-design/FAST-OAD/pull/588)
-  - Enhanced documentation for mission segment parameters. (https://github.com/fast-aircraft-design/FAST-OAD/pull/582)
+    - New github Pull Request template. (https://github.com/fast-aircraft-design/FAST-OAD/pull/585)
+    - Add sorting capability to imports using ruff. (https://github.com/fast-aircraft-design/FAST-OAD/pull/587)
+    - Allow non pickable object as propulsion component. (https://github.com/fast-aircraft-design/FAST-OAD/pull/588)
+    - Enhanced documentation for mission segment parameters. (https://github.com/fast-aircraft-design/FAST-OAD/pull/582)
 - Fixed:
-  - Remove Codecov plain text token in Github Action. (https://github.com/fast-aircraft-design/FAST-OAD/pull/591)
-  - Upgrade Github actions test to ubuntu-latest. (https://github.com/fast-aircraft-design/FAST-OAD/pull/602)
-  - Set a timeout limit on GitHub Action's pipeline. (https://github.com/fast-aircraft-design/FAST-OAD/pull/605)
+    - Remove Codecov plain text token in Github Action. (https://github.com/fast-aircraft-design/FAST-OAD/pull/591)
+    - Upgrade Github actions test to ubuntu-latest. (https://github.com/fast-aircraft-design/FAST-OAD/pull/602)
+    - Set a timeout limit on GitHub Action's pipeline. (https://github.com/fast-aircraft-design/FAST-OAD/pull/605)
 - Temporary fix:
-  - Freeze OpenMDAO version to <3.38. (https://github.com/fast-aircraft-design/FAST-OAD/pull/613)
+    - Freeze OpenMDAO version to <3.38. (https://github.com/fast-aircraft-design/FAST-OAD/pull/613)
 
 Version 1.8.2
 =============
