@@ -583,3 +583,39 @@ def test_optimal_cruise_stays_at_altitude_cap_during_segment(polar):
 
     # All points should be at the capped altitude
     assert_allclose(flight_points.altitude, 8000.0)
+
+
+def test_climb_and_cruise_optimal_flight_level_without_climb_segment(polar, caplog):
+    """Test that ClimbAndCruiseSegment logs a warning when OPTIMAL_FLIGHT_LEVEL is used
+    without an explicit climb_segment (which is NOT happening in mission files where it's
+    auto-populated when used inside a 'route')."""
+
+    propulsion = FuelEngineSet(DummyEngine(0.5e5, 3.0e-5), 2)
+    reference_area = 120.0
+
+    segment = ClimbAndCruiseSegment(
+        target=FlightPoint(
+            ground_distance=10.0e6, altitude=AltitudeChangeSegment.OPTIMAL_FLIGHT_LEVEL
+        ),
+        propulsion=propulsion,
+        reference_area=reference_area,
+        polar=polar,
+        engine_setting=EngineSetting.CRUISE,
+        climb_segment=None,  # Not providing climb_segment
+        name="test_cruise",
+    )
+
+    with caplog.at_level(logging.WARNING):
+        flight_points = segment.compute_from(
+            FlightPoint(mass=70000.0, altitude=8000.0, mach=0.78, ground_distance=1.0e6)
+        )
+
+    # Should log a warning about missing climb_segment
+    assert any(
+        "OPTIMAL_FLIGHT_LEVEL" in record.message and "climb_segment" in record.message
+        for record in caplog.records
+    )
+
+    # Should still compute cruise at the starting altitude
+    assert_allclose(flight_points.iloc[0].altitude, 8000.0)
+    assert_allclose(flight_points.iloc[-1].altitude, 8000.0)
