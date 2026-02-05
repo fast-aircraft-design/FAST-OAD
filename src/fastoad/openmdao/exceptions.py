@@ -14,8 +14,8 @@ Module for custom Exception classes linked to OpenMDAO
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from collections.abc import Iterable
 from os import PathLike
-from typing import Iterable
 
 from fastoad._utils.files import as_path
 from fastoad.exceptions import FastError
@@ -26,7 +26,7 @@ class FASTNanInInputsError(FastError):
 
     def __init__(self, input_file_path: [str, PathLike], nan_variable_names: Iterable[str]):
         self.input_file_path = as_path(input_file_path)
-        self.nan_variable_names = sorted(list(nan_variable_names))
+        self.nan_variable_names = sorted(nan_variable_names)
 
         msg = (
             f"NaN values found in inputs. Please check that {input_file_path} contains "

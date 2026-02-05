@@ -17,7 +17,6 @@ parameter.
 
 from abc import ABC, abstractmethod
 from dataclasses import fields
-from typing import List, Tuple
 
 from docutils import nodes
 from sphinx.util.docutils import SphinxDirective
@@ -39,7 +38,7 @@ class AbstractLinkList(SphinxDirective, ABC):
     header_text = None
 
     @abstractmethod
-    def get_text_and_targets(self) -> List[Tuple[str, str]]:
+    def get_text_and_targets(self) -> list[tuple[str, str]]:
         """
         :return: a list of tuples for future hyperlinks (displayed text, rst target)
         """
@@ -97,7 +96,7 @@ class ListSegmentsForAttribute(AbstractLinkList):
         attribute_name = self.content[0].strip()
 
         class_dict = RegisterSegment.get_classes()
-        segment_keywords = sorted(list(class_dict))
+        segment_keywords = sorted(class_dict)
 
         valid_keywords = [
             keyword for keyword in segment_keywords if hasattr(class_dict[keyword], attribute_name)
@@ -154,8 +153,9 @@ def check_targets(app, doctree):
             continue
 
         child_nodes = _generate_hyperlink_list(app, doctree, target_list)
-
-        directive_location += child_nodes
+        # Reassigning directive_location by appending children directly to the docutils node.
+        # This is intentional and required to inject generated content into the document tree.
+        directive_location += child_nodes  # noqa: PLW2901
 
 
 def _generate_hyperlink_list(app, doctree, target_list):

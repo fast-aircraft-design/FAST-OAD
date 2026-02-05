@@ -17,20 +17,16 @@ Basic settings for tests
 # Note: this file has to be put in src/, not in project root folder, to ensure that
 # `pytest src` will run OK after a `pip install .`
 
-import sys
+import contextlib
+import importlib.metadata as importlib_metadata
 from pathlib import Path
 from platform import system
 from shutil import which
-from typing import List, Optional
+from typing import ClassVar
 from unittest.mock import Mock
 
 import pytest
 import wrapt
-
-if sys.version_info >= (3, 10):
-    import importlib.metadata as importlib_metadata
-else:
-    import importlib_metadata
 
 from fastoad.module_management._plugins import MODEL_PLUGIN_ID, FastoadLoader
 
@@ -41,13 +37,16 @@ def no_xfoil_skip(request, xfoil_path):
     Use @pytest.mark.skip_if_no_xfoil() before a test to skip it if xfoil_path
     fixture returns None and OS is not Windows.
     """
-    if request.node.get_closest_marker("skip_if_no_xfoil"):
-        if xfoil_path is None and system() != "Windows":
-            pytest.skip("No XFOIL executable available")
+    if (
+        request.node.get_closest_marker("skip_if_no_xfoil")
+        and (xfoil_path is None)
+        and (system() != "Windows")
+    ):
+        pytest.skip("No XFOIL executable available")
 
 
 @pytest.fixture
-def xfoil_path() -> Optional[str]:
+def xfoil_path() -> str | None:
     """
     On a system that is not Windows, a XFOIL executable with name "xfoil" can
     be put in "<project_root>/tests/xfoil_exe/".
@@ -284,7 +283,7 @@ def with_dummy_plugins():
     _teardown()
 
 
-def _update_entry_map(new_plugin_entry_points: List[importlib_metadata.EntryPoint]):
+def _update_entry_map(new_plugin_entry_points: list[importlib_metadata.EntryPoint]):
     """
     Modified plugin entry_points of FAST-OAD distribution.
 
@@ -310,26 +309,25 @@ def _teardown():
 # Monkey-patching using wrapt module ###########################################
 
 
-def _BypassEntryPointReading_enabled():
+def _BypassEntryPointReading_enabled():  # noqa: N802 more readable with camelcase
     return BypassEntryPointReading.active
 
 
 class BypassEntryPointReading:
-    active = False
-    entry_points = []
+    active: bool = False
+    entry_points: ClassVar[list] = []
 
     @wrapt.decorator(enabled=_BypassEntryPointReading_enabled)
     def __call__(self, wrapped, instance, args, kwargs):
         if kwargs.get("group") == MODEL_PLUGIN_ID:
             return self.entry_points
-        else:
-            return wrapped(*args, **kwargs)
+        return wrapped(*args, **kwargs)
 
 
 importlib_metadata.entry_points = BypassEntryPointReading()(importlib_metadata.entry_points)
 
 
-def _MakeEntryPointMutable_enabled():
+def _MakeEntryPointMutable_enabled():  # noqa: N802 more readable with camelcase
     return MakeEntryPointMutable.active
 
 
@@ -342,10 +340,8 @@ class MakeEntryPointMutable:
 
     @wrapt.decorator(enabled=_MakeEntryPointMutable_enabled)
     def __call__(self, wrapped, instance, args, kwargs):
-        try:
+        with contextlib.suppress(AttributeError):
             delattr(wrapped, "__setattr__")
-        except AttributeError:
-            pass
         return wrapped(*args, **kwargs)
 
 

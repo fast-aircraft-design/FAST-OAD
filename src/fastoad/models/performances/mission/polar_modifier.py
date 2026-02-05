@@ -118,10 +118,8 @@ class GroundEffectRaymer(AbstractPolarModifier):
         )
 
         # Update polar interpolation
-        modified_polar = Polar(
+        return Polar(  # modified_polar
             polar.definition_cl,
             polar.definition_cd + cd_ground,
             polar.definition_alpha,
         )
-
-        return modified_polar

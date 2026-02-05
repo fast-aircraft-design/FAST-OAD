@@ -41,7 +41,7 @@ from . import api
 NOTEBOOK_FOLDER_NAME = "FAST-OAD_notebooks"
 
 
-@click.group(context_settings=dict(help_option_names=["-h", "--help"]))
+@click.group(context_settings={"help_option_names": ["-h", "--help"]})
 @click.version_option(fastoad.__version__, "-v", "--version")
 def fast_oad():
     """FAST-OAD main program"""
@@ -205,7 +205,7 @@ def list_modules(out_file, force, verbose, source_path):
     "table_format",
     default="grid",
     show_default=True,
-    help=f"format of the list. Available options are {['var_desc'] + tabulate.tabulate_formats}. "
+    help=f"format of the list. Available options are {['var_desc', *tabulate.tabulate_formats]}. "
     '"var_desc" is the variable_descriptions.txt format. Other formats are part of the '
     "tabulate package.",
 )

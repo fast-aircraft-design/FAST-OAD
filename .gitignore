@@ -65,3 +65,6 @@ venv*/
 
 # External tools
 /XFOIL
+
+# Local python version for pyenv
+.python-version

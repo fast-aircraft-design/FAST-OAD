@@ -22,7 +22,6 @@ from abc import ABC, abstractmethod
 from copy import deepcopy
 from dataclasses import InitVar, dataclass, field, fields
 from itertools import chain
-from typing import List, Tuple
 
 import numpy as np
 
@@ -69,8 +68,8 @@ class AbstractStructureBuilder(ABC):
 
     _structure: dict = field(default=None, init=False)
 
-    _input_definitions: List[InputDefinition] = field(default_factory=list, init=False)
-    _builders: List[Tuple["AbstractStructureBuilder", dict]] = field(
+    _input_definitions: list[InputDefinition] = field(default_factory=list, init=False)
+    _builders: list[tuple["AbstractStructureBuilder", dict]] = field(
         default_factory=list, init=False
     )
 
@@ -97,8 +96,8 @@ class AbstractStructureBuilder(ABC):
         self._builders = []  # Builders have been used and can be forgotten.
         return self._structure
 
-    def get_input_definitions(self) -> List[InputDefinition]:
-        """List of InputDefinition instances in the structure."""
+    def get_input_definitions(self) -> list[InputDefinition]:
+        """list of InputDefinition instances in the structure."""
         return self._input_definitions + list(
             chain(*[builder.get_input_definitions() for builder, _ in self._builders])
         )
@@ -154,7 +153,7 @@ class AbstractStructureBuilder(ABC):
     def _parse_inputs(
         self,
         structure,
-        input_definitions: List[InputDefinition],
+        input_definitions: list[InputDefinition],
         parent=None,
         part_identifier="",
         segment_class=None,
@@ -229,9 +228,15 @@ class AbstractStructureBuilder(ABC):
         """
         Here variables that are expected to be arrays or lists in the provided segment class are
         attributed the "shape_by_conn=True" property.
+        Check if a field in `segment_class` is a list or NumPy array.
         """
         segment_fields = [fld for fld in fields(segment_class) if fld.name == key]
-        return len(segment_fields) == 1 and issubclass(segment_fields[0].type, (list, np.ndarray))
+        try:
+            return len(segment_fields) == 1 and issubclass(
+                segment_fields[0].type, (list, np.ndarray)
+            )
+        except TypeError:
+            return len(segment_fields) == 1 and isinstance(segment_fields[0], (list, np.ndarray))
 
     def _process_polar(self, structure):
         """

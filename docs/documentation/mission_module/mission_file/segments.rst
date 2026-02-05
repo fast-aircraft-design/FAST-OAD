@@ -193,6 +193,11 @@ Typically, it ends when the target altitude is reached.
 But also, a target speed, or CL, can be set, while keeping another speed constant (e.g. climbing up to
 Mach 0.8 while keeping equivalent_airspeed constant).
 
+If :code:`maximum_CL` is provided, the segment will ensure no point exceeds this limit. If the
+starting point already exceeds :code:`maximum_CL`, the segment is skipped and a warning is issued.
+If the limit is exceeded during the segment, the target is adjusted to reach the maximum CL rather
+than the original altitude target (the climb stops when the maximum CL is reached).
+
 **Examples:**
 
 .. code-block:: yaml
@@ -267,6 +272,9 @@ guaranty an optimal fuel consumption for the whole cruise.
 It ends when the target ground distance is covered (including the distance covered during
 prepending climb, if any).
 
+If :code:`maximum_CL` is set, the segment will avoid selecting a higher flight level when it would
+exceed the maximum lift coefficient. The same limit is passed to the prepended climb segment.
+
 **Examples:**
 
 .. code-block:: yaml
@@ -308,9 +316,25 @@ climbs gradually to keep being at altitude of maximum lift/drag ratio.
 
 The :code:`optimal_cruise` segment can be realised at a constant lift coefficient using the parameter :code:`maximum_CL`.
 
+Two optional altitude caps can be set for this segment:
+
+* :code:`maximum_altitude` (in meters) caps the optimal cruise altitude.
+* :code:`maximum_flight_level` (in flight levels, i.e. multiples of 100 ft) caps the altitude to
+  :code:`maximum_flight_level * 100 ft`.
+
+If both are provided, the most restrictive (lowest) cap is applied. When a cap is active, the
+segment will stay at the capped altitude and reduce :code:`CL` accordingly.
+
 It assumed the segment actually starts at altitude of maximum lift/drag ratio or the altitude given by :code:`maximum_CL`, which can be
 achieved with an :ref:`segment-altitude-change` segment with :code:`optimal_altitude` as target
 altitude and :code:`maximum_CL` as parameter.
+
+.. warning::
+
+  The :code:`optimal_cruise` segment computes the optimal altitude at its start and applies it
+  immediately. If the previous segment ends at a different altitude, this creates an
+  instantaneous altitude change. To avoid this discontinuity, add a climb segment with
+  :code:`optimal_altitude` as target immediately before the :code:`optimal_cruise` segment.
 
 *The common way to optimize the fuel consumption for commercial aircraft is a step climb cruise.
 Such segment will be implemented in the future.*
@@ -323,6 +347,8 @@ Such segment will be implemented in the future.*
     polar: data:aerodynamics:aircraft:cruise    # High speed aerodynamic polar
     engine_setting: cruise
     maximum_CL: 0.6
+    maximum_altitude: 8000.0                    # meters (optional cap)
+    maximum_flight_level: 350.0                 # FL350 (optional cap)
     target:
       ground_distance:                          # Cruise for 2000 nautical miles
         value: 2000

@@ -26,7 +26,8 @@ class ComputeProfileDrag(om.ExplicitComponent):
         # Profile drag coefficient of the aircraft without the wings
         cd0_other = 0.022
 
-        # Constant linking the wing profile drag to its wet area, and by extension, its reference area
+        # Constant linking the wing profile drag to its wet area, and by extension, its reference
+        # area
         c = 0.0004
 
         # Computation of the profile drag

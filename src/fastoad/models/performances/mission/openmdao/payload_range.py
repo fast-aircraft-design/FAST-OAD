@@ -13,7 +13,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass
-from typing import Dict
 
 import numpy as np
 import openmdao.api as om
@@ -205,12 +204,12 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
         for i in range(2):
             self.connect(
                 self._contour_names.range,
-                f"mux_grid.range_{nb_grid_points+i}",
+                f"mux_grid.range_{nb_grid_points + i}",
                 src_indices=[i + 1],
             )
             self.connect(
                 self._contour_names.duration,
-                f"mux_grid.duration_{nb_grid_points+i}",
+                f"mux_grid.duration_{nb_grid_points + i}",
                 src_indices=om.slicer[i + 1],
             )
 
@@ -250,7 +249,7 @@ class PayloadRange(om.Group, BaseMissionComp, NeedsOWE, NeedsMTOW, NeedsMFW):
         return group
 
     def _add_mission_runs(
-        self, group: om.Group, nb_missions: int, input_var_connections: Dict[str, str], mux_name
+        self, group: om.Group, nb_missions: int, input_var_connections: dict[str, str], mux_name
     ):
         """Adds MissionRun components to the provided group."""
 
@@ -384,21 +383,19 @@ class PayloadRangeContourInputValues(
             - payload
             - inputs[self.options["OWE_variable"]].item()
         )
-        block_fuel_at_max_takeoff_weight = (
+        return (  # block_fuel_at_max_takeoff_weight
             fuel_at_takeoff
             + inputs[self.name_provider.CONSUMED_FUEL_BEFORE_INPUT_WEIGHT.value].item()
         )
-        return block_fuel_at_max_takeoff_weight
 
     def _calculate_takeoff_weight_at_max_fuel_weight(self, inputs, payload):
         fuel_at_takeoff = (
             inputs[self.options["MFW_variable"]].item()
             - inputs[self.name_provider.CONSUMED_FUEL_BEFORE_INPUT_WEIGHT.value].item()
         )
-        takeoff_weight_at_max_fuel_weight = (
+        return (  # takeoff_weight_at_max_fuel_weight
             fuel_at_takeoff + payload + inputs[self.options["OWE_variable"]].item()
         )
-        return takeoff_weight_at_max_fuel_weight
 
     def _calculate_payload_at_max_takeoff_weight_and_max_fuel_weight(self, inputs):
         consumed_fuel_before_takeoff = inputs[
@@ -406,12 +403,11 @@ class PayloadRangeContourInputValues(
         ]
 
         fuel_at_takeoff = inputs[self.options["MFW_variable"]].item() - consumed_fuel_before_takeoff
-        payload_at_max_takeoff_weight_and_max_fuel_weight = (
+        return (  # payload_at_max_takeoff_weight_and_max_fuel_weight
             inputs[self.options["MTOW_variable"]].item()
             - fuel_at_takeoff
             - inputs[self.options["OWE_variable"]].item()
         )
-        return payload_at_max_takeoff_weight_and_max_fuel_weight
 
 
 class PayloadRangeGridInputValues(om.ExplicitComponent, BaseMissionComp, NeedsOWE):
@@ -528,10 +524,9 @@ class PayloadRangeGridInputValues(om.ExplicitComponent, BaseMissionComp, NeedsOW
         fuel_at_takeoff = (
             block_fuel - inputs[self.name_provider.CONSUMED_FUEL_BEFORE_INPUT_WEIGHT.value].item()
         )
-        takeoff_weight_at_max_fuel_weight = (
+        return (  # takeoff_weight_at_max_fuel_weight
             fuel_at_takeoff + payload + inputs[self.options["OWE_variable"]].item()
         )
-        return takeoff_weight_at_max_fuel_weight
 
 
 @dataclass

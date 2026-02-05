@@ -56,12 +56,12 @@ def test_legacy1(cleanup):
     assert var_list["data:geometry:wing:wetted_area"].units == "m**2"
 
     # Check using text file object --------------------
-    with open(file_path, encoding="utf-8") as text_file_io:
+    with Path.open(file_path, encoding="utf-8") as text_file_io:
         var_list_2 = VariableIO(text_file_io, formatter=VariableLegacy1XmlFormatter()).read()
     assert var_list_2 == var_list
 
     # Check using binary file object --------------------
-    with open(file_path, "rb") as binary_file_io:
+    with Path.open(file_path, "rb") as binary_file_io:
         var_list_3 = VariableIO(binary_file_io, formatter=VariableLegacy1XmlFormatter()).read()
     assert var_list_3 == var_list
 

@@ -17,5 +17,5 @@ Exception for GUI
 from fastoad.exceptions import FastError
 
 
-class FastMissingFile(FastError):
+class FastMissingFileError(FastError):
     """Raised when a file does not exist"""

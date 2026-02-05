@@ -13,10 +13,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from collections.abc import Mapping, Sequence
 from copy import deepcopy
 from dataclasses import asdict, dataclass, field, fields
 from numbers import Number
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Union
+from typing import Any, ClassVar
 
 import pandas as pd
 
@@ -32,8 +35,8 @@ class _FieldDescriptor:
     Class to be used as dataclass field metadata.
     """
 
-    is_cumulative: Optional[bool] = False
-    unit: Optional[str] = None
+    is_cumulative: bool | None = False
+    unit: str | None = None
 
 
 @dataclass
@@ -142,11 +145,9 @@ class FlightPoint:
         default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor()}
     )
 
-    # pylint: disable=invalid-name
     #: Lift coefficient.
     CL: float = field(default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="-")})
 
-    # pylint: disable=invalid-name
     #: Drag coefficient.
     CD: float = field(default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="-")})
 
@@ -195,12 +196,12 @@ class FlightPoint:
     name: str = field(default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor()})
 
     # Will store field metadata when needed. Must be accessed through _get_field_descriptors()
-    __field_descriptors = {}
+    __field_descriptors: ClassVar[dict] = {}
 
     def __post_init__(self):
         self._relative_parameters = {"ground_distance", "time"}
 
-    def set_as_relative(self, field_names: Union[Sequence[str], str]):
+    def set_as_relative(self, field_names: Sequence[str] | str):
         """
         Makes that values for given field_names will be considered as relative when
         calling :meth:`make_absolute`.
@@ -212,7 +213,7 @@ class FlightPoint:
         else:
             self._relative_parameters |= set(field_names)
 
-    def set_as_absolute(self, field_names: Union[Sequence[str], str]):
+    def set_as_absolute(self, field_names: Sequence[str] | str):
         """
         Makes that values for given field_names will be considered as absolute when
         calling :meth:`make_absolute`.
@@ -233,7 +234,7 @@ class FlightPoint:
         """
         return field_name in self._relative_parameters
 
-    def make_absolute(self, reference_point: "FlightPoint") -> "FlightPoint":
+    def make_absolute(self, reference_point: FlightPoint) -> FlightPoint:
         """
         Computes a copy flight point where no field is relative.
 
@@ -279,7 +280,7 @@ class FlightPoint:
         }
 
     @classmethod
-    def get_unit(cls, field_name) -> Optional[str]:
+    def get_unit(cls, field_name) -> str:
         """
         Returns unit for asked field.
 
@@ -288,7 +289,7 @@ class FlightPoint:
         return cls._get_field_descriptor(field_name).unit
 
     @classmethod
-    def is_cumulative(cls, field_name) -> Optional[bool]:
+    def is_cumulative(cls, field_name) -> bool | None:
         """
         Tells if asked field is cumulative (sums up during mission).
 
@@ -297,7 +298,7 @@ class FlightPoint:
         return cls._get_field_descriptor(field_name).is_cumulative
 
     @classmethod
-    def create(cls, data: Mapping) -> "FlightPoint":
+    def create(cls, data: Mapping) -> FlightPoint:
         """
         Instantiate FlightPoint from provided data.
 
@@ -309,7 +310,7 @@ class FlightPoint:
         return cls(**dict(data))
 
     @classmethod
-    def create_list(cls, data: pd.DataFrame) -> List["FlightPoint"]:
+    def create_list(cls, data: pd.DataFrame) -> list[FlightPoint]:
         """
         Creates a list of FlightPoint instances from provided DataFrame.
 
@@ -325,6 +326,7 @@ class FlightPoint:
         annotation_type=float,
         default_value: Any = None,
         unit="-",
+        *,
         is_cumulative=False,
     ):
         """
@@ -370,7 +372,7 @@ class FlightPoint:
             dataclass(cls)
 
     @classmethod
-    def _get_field_descriptors(cls) -> Dict[str, _FieldDescriptor]:
+    def _get_field_descriptors(cls) -> dict[str, _FieldDescriptor]:
         """
         Uses this method instead of accessing cls.__field_descriptors to ensure it
         will always be correctly populated.

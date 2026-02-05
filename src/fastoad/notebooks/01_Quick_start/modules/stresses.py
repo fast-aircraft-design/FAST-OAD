@@ -47,8 +47,5 @@ class Stress(om.ExplicitComponent):
         s = inputs["data:material:yield_stress"]
 
         # Max bending location along the beam
-        if w * L - F > 0:
-            y_max = (w * L - F) / w
-        else:
-            y_max = 0
+        y_max = (w * L - F) / w if w * L - F > 0 else 0
         outputs["data:geometry:Ixx"] = (L - y_max) * (F - 0.5 * w * (L - y_max)) * h / (2 * s)

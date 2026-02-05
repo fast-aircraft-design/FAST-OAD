@@ -51,11 +51,12 @@ class CycleGroup(om.Group, abc.ABC):
 
     def __init_subclass__(
         cls,
-        use_solvers_by_default: bool = True,
         default_linear_solver: str = "om.DirectSolver",
         default_nonlinear_solver: str = "om.NonlinearBlockGS",
-        default_linear_options: dict = None,
-        default_nonlinear_options: dict = None,
+        default_linear_options: dict | None = None,
+        default_nonlinear_options: dict | None = None,
+        *,
+        use_solvers_by_default: bool = True,
     ):
         cls.use_solvers_by_default = use_solvers_by_default
         cls.default_linear_solver = default_linear_solver

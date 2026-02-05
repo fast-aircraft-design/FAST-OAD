@@ -17,8 +17,10 @@ Class for managing an OpenMDAO variable.
 from __future__ import annotations
 
 import logging
+from collections.abc import Hashable, Iterable, Mapping
 from os import PathLike
-from typing import Dict, Hashable, Iterable, Mapping, Optional, Tuple, Union
+from pathlib import Path
+from typing import ClassVar
 
 import numpy as np
 import openmdao.api as om
@@ -87,13 +89,13 @@ class Variable(Hashable):
     """
 
     # Will store content of description files
-    _variable_descriptions = {}
+    _variable_descriptions: ClassVar[dict] = {}
 
     # The list of modules of path where description files have been read
-    _loaded_descriptions = set()
+    _loaded_descriptions: ClassVar[set] = set()
 
     # Default metadata
-    _base_metadata = {}
+    _base_metadata: ClassVar[dict] = {}
 
     def __init__(self, name: str, *, init_metadata: bool = True, **kwargs):
         super().__init__()
@@ -101,7 +103,7 @@ class Variable(Hashable):
         self.name = name
         """ Name of the variable """
 
-        self.metadata: Dict = {}
+        self.metadata: dict = {}
         """ Dictionary for metadata of the variable """
 
         # Initialize class attributes once at first instantiation -------------
@@ -142,7 +144,7 @@ class Variable(Hashable):
         if not self.description and self.name in self._variable_descriptions:
             self.description = self._variable_descriptions[self.name]
 
-    def get_val(self, new_units: Optional[str] = None) -> Union[float, np.ndarray]:
+    def get_val(self, new_units: str | None = None) -> float | np.ndarray:
         """
         Returns the variable value converted in the `new_units`. One dimensional lists and np.array
         are scalarized.
@@ -161,7 +163,9 @@ class Variable(Hashable):
 
     def update_missing_metadata(self, source_variable: Variable):
         """
-        Add metadata from source_variable to this variable, but only for keys that don't already exist.
+        Add metadata from source_variable to this variable, but only for keys that don't already
+        exist.
+
         This is used to fill in missing metadata while preserving existing values.
 
         :param source_variable: Source for additional metadata
@@ -172,7 +176,7 @@ class Variable(Hashable):
 
     @classmethod
     def read_variable_descriptions(
-        cls, file_parent: Union[str, PathLike], update_existing: bool = True
+        cls, file_parent: str | PathLike, *, update_existing: bool = True
     ):
         """
         Reads variable descriptions in indicated folder or package, if it contains some.
@@ -201,7 +205,7 @@ class Variable(Hashable):
             if file_parent.is_dir():
                 file_path = file_parent / DESCRIPTION_FILENAME
                 if file_path.is_file():
-                    description_file = open(file_path)
+                    description_file = Path.open(file_path)
             else:
                 # Then it is a module name
                 pack_reader = PackageReader(str(file_parent))
@@ -213,7 +217,14 @@ class Variable(Hashable):
                 variable_descriptions = np.genfromtxt(
                     description_file, delimiter="||", dtype=str, autostrip=True
                 )
-            except Exception as exc:
+            except (OSError, ValueError, UnicodeDecodeError) as exc:
+                # We explicitly catch:
+                # - OSError: file not found, permission denied, or other I/O issues
+                # - ValueError: malformed file contents (e.g. inconsistent columns, bad delimiter)
+                # - UnicodeDecodeError: unexpected encoding while reading the file
+                #
+                # Other exceptions (e.g. TypeError, AttributeError) would indicate a programming
+                # error and should not be silently caught here.
                 # Reading the file is not mandatory, so let's just log the error.
                 _LOGGER.error(
                     "Could not read file %s in %s. Error log is:\n%s",
@@ -235,7 +246,7 @@ class Variable(Hashable):
 
     @classmethod
     def update_variable_descriptions(
-        cls, variable_descriptions: Union[Mapping[str, str], Iterable[Tuple[str, str]]]
+        cls, variable_descriptions: Mapping[str, str] | Iterable[tuple[str, str]]
     ):
         """
         Updates description of variables.
@@ -317,7 +328,7 @@ class Variable(Hashable):
     def is_input(self, value):
         self.metadata["is_input"] = value
 
-    def get_openmdao_kwargs(self, keys: Iterable = None) -> dict:
+    def get_openmdao_kwargs(self, keys: Iterable | None = None) -> dict:
         """
         Provides a dict usable as keyword args by OpenMDAO add_input()/add_output().
 
@@ -345,12 +356,11 @@ class Variable(Hashable):
 
     def _set_default_shape(self):
         """Automatically sets shape if not set"""
-        if "shape" in self.metadata.keys():
-            if self.metadata["shape"] is None:
-                shape = np.shape(self.value)
-                if not shape:
-                    shape = (1,)
-                self.metadata["shape"] = shape
+        if "shape" in self.metadata and self.metadata["shape"] is None:
+            shape = np.shape(self.value)
+            if not shape:
+                shape = (1,)
+            self.metadata["shape"] = shape
 
     def __eq__(self, other):
         # same arrays with nan are declared non equals, so we need a workaround
@@ -361,10 +371,9 @@ class Variable(Hashable):
 
         # Let's also ignore unimportant keys
         for key in METADATA_TO_IGNORE:
-            if key in my_metadata:
-                del my_metadata[key]
-            if key in other_metadata:
-                del other_metadata[key]
+            default_value = None
+            my_metadata.pop(key, default_value)
+            other_metadata.pop(key, default_value)
 
         return (
             isinstance(other, Variable)
@@ -377,7 +386,7 @@ class Variable(Hashable):
         )
 
     def __repr__(self):
-        return "Variable(name=%s, metadata=%s)" % (self.name, self.metadata)
+        return f"Variable(name={self.name}, metadata={self.metadata})"
 
     def __hash__(self) -> int:
         return hash("var=" + self.name)  # Name is normally unique

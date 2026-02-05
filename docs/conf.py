@@ -17,9 +17,9 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-import os
 import sys
 from os import environ
+from pathlib import Path
 
 from sphinx.ext import apidoc
 
@@ -29,10 +29,10 @@ from sphinx.ext import apidoc
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
 # For custom directives
-sys.path.insert(0, os.path.abspath("./directives"))
+sys.path.insert(0, str(Path("./directives").resolve()))
 
 # For autodoc... and custom directives
-sys.path.insert(0, os.path.abspath("../src"))
+sys.path.insert(0, str(Path("../src").resolve()))
 
 # Overload apidoc options, to add "inherited-members" (which was deactivated because of a bug
 # in earlier sphinx releases)
@@ -41,11 +41,12 @@ environ["SPHINX_APIDOC_OPTIONS"] = "members,undoc-members,inherited-members,show
 
 # -- Run sphinx-apidoc ------------------------------------------------------
 def run_apidoc(_):
-    sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-    cur_dir = os.path.abspath(os.path.dirname(__file__))
-    output_dir = os.path.join(cur_dir, "api")
-    module = os.path.join(cur_dir, "..", "src", "fastoad")
-    apidoc.main(["-d", "1", "-e", "-o", output_dir, module, "--force"])
+    sys.path.append(str(Path(__file__).parent.parent))  # Append project root
+    cur_dir = Path(__file__).parent.resolve()
+    output_dir = cur_dir / "api"
+    module = cur_dir.parent / "src" / "fastoad"
+
+    apidoc.main(["-d", "1", "-e", "-o", str(output_dir), str(module), "--force"])
 
 
 def setup(app):
@@ -54,7 +55,7 @@ def setup(app):
 
 # -- Project information -----------------------------------------------------
 project = "FAST-OAD"
-copyright = "2025, ONERA & ISAE-SUPAERO"
+copyright = "2025, ONERA & ISAE-SUPAERO"  # noqa: A001 copyright is a keyword for the sphinx setup
 
 # -- General configuration ---------------------------------------------------
 

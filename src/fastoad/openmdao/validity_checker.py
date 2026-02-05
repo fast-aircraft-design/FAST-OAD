@@ -1,4 +1,5 @@
 """For checking validity domain of OpenMDAO variables."""
+
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -11,6 +12,7 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from __future__ import annotations
 
 import inspect
 import logging
@@ -18,7 +20,7 @@ import uuid
 from collections import namedtuple
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import Dict, List
+from typing import ClassVar
 from uuid import UUID
 
 import numpy as np
@@ -111,9 +113,9 @@ class ValidityDomainChecker:
     - Validity check currently only applies to scalar values
     """
 
-    _limit_definitions: Dict[UUID, "_LimitDefinitions"] = {}
+    _limit_definitions: ClassVar[dict[UUID, _LimitDefinitions]] = {}
 
-    def __init__(self, limits: Dict[str, tuple] = None, logger_name: str = None):
+    def __init__(self, limits: dict[str, tuple] | None = None, logger_name: str | None = None):
         """
         :param limits: a dictionary where keys are variable names and values are two-values tuples
                    that give lower and upper bound. One bound can be set to None.
@@ -147,7 +149,7 @@ class ValidityDomainChecker:
         return om_class
 
     @classmethod
-    def check_problem_variables(cls, problem: om.Problem) -> List[CheckRecord]:
+    def check_problem_variables(cls, problem: om.Problem) -> list[CheckRecord]:
         """
         Checks variable values in provided problem.
 
@@ -170,8 +172,8 @@ class ValidityDomainChecker:
 
     @classmethod
     def check_variables(
-        cls, variables: VariableList, activated_only: bool = True
-    ) -> List[CheckRecord]:
+        cls, variables: VariableList, *, activated_only: bool = True
+    ) -> list[CheckRecord]:
         """
         Check values of provided variables against registered limits.
 
@@ -179,7 +181,7 @@ class ValidityDomainChecker:
         :param activated_only: if True, only activated checkers are considered.
         :return: the list of checks
         """
-        records: List[CheckRecord] = []
+        records: list[CheckRecord] = []
 
         for var in variables:
             for limit_definitions in cls._limit_definitions.values():
@@ -213,7 +215,7 @@ class ValidityDomainChecker:
         return records
 
     @staticmethod
-    def log_records(records: List[CheckRecord]):
+    def log_records(records: list[CheckRecord]):
         """
         Logs warnings through Python logging module for each CheckRecord in provided list if
         it is not OK.

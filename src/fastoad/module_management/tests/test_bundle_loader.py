@@ -37,12 +37,12 @@ DATA_FOLDER_PATH = Path(__file__).parent / "data"
 def delete_framework():
     """Ensures framework is deleted before and after running tests"""
     if FrameworkFactory.is_framework_running():
-        FrameworkFactory.get_framework().delete(True)
+        FrameworkFactory.get_framework().delete(force=True)
 
     yield
 
     if FrameworkFactory.is_framework_running():
-        FrameworkFactory.get_framework().delete(True)
+        FrameworkFactory.get_framework().delete(force=True)
 
 
 def test_init_bundle_loader_from_scratch(delete_framework):
@@ -121,7 +121,7 @@ def test_install_packages_on_faulty_install(delete_framework):
     loader = BundleLoader()
 
     # Create the buggy numpy install
-    import sys
+    import sys  # noqa: PLC0415 # import should stay here
 
     sys.modules["numpy.random.mtrand"].__path__ = None
 
@@ -146,7 +146,7 @@ def test_register_factory(delete_framework):
 
     class Greetings1:
         def hello(self, name="World"):
-            return "Hello, {0}!".format(name)
+            return f"Hello, {name}!"
 
     with pytest.raises(FastBundleLoaderDuplicateFactoryError) as exc_info:
         loader.register_factory(Greetings1, "hello-universe-factory", "hello.world")
@@ -191,9 +191,9 @@ def test_get_services(delete_framework):
     assert greet_service.hello() == "Hi, World!"
 
     # Existing service, case sensitivity
-    services = loader.get_services("hello.world", {"Prop 2": "SAYS.HELLO"}, True)
+    services = loader.get_services("hello.world", {"Prop 2": "SAYS.HELLO"}, case_sensitive=True)
     assert services is None
-    services = loader.get_services("hello.world", {"Prop 2": "Says.Hello"}, True)
+    services = loader.get_services("hello.world", {"Prop 2": "Says.Hello"}, case_sensitive=True)
     assert len(services) == 1
     river = services[0]
     assert river.hello("Sweetie") == "Hello, Sweetie!"
@@ -271,7 +271,11 @@ def test_get_factory_names(delete_framework):
     assert greet_service.hello() == "Hi, World!"
 
     # Existing service, case sensitivity
-    factory_names = loader.get_factory_names("hello.world", {"Prop 2": "SAYS.HELLO"}, True)
+    factory_names = loader.get_factory_names(
+        "hello.world", {"Prop 2": "SAYS.HELLO"}, case_sensitive=True
+    )
     assert not factory_names
-    factory_names = loader.get_factory_names("hello.world", {"Prop 2": "Says.Hello"}, True)
+    factory_names = loader.get_factory_names(
+        "hello.world", {"Prop 2": "Says.Hello"}, case_sensitive=True
+    )
     assert len(factory_names) == 2
