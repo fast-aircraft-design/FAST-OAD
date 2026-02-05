@@ -271,9 +271,11 @@ guaranty an optimal fuel consumption for the whole cruise.
 
 .. note::
 
-  When using mission files, the :code:`climb_segment` attribute is automatically populated when using a route segment with a climb phase, and the climb segment is automatically prepended to the
+  When using mission files, the :code:`climb_segment` attribute is automatically populated when using
+  a route segment with a climb phase, and the climb segment is automatically prepended to the
   :code:`RangedRoute` with the last climb phase before cruise. Explicit definition is only needed
-  when using :code:`ClimbAndCruiseSegment` directly in Python code or when there is need to modify the climb segment before the cruise.
+  when using :code:`ClimbAndCruiseSegment` directly in Python code or when there is need to modify
+  the climb segment before the cruise.
 
 It ends when the target ground distance is covered (including the distance covered during
 prepending climb, if any).
