@@ -264,6 +264,33 @@ def test_climb_target_CL_at_fixed_mach(polar):
     run()
 
 
+def test_climb_start_cl_above_max_cl_returns_start_point_only(polar, caplog):
+    propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
+
+    segment = AltitudeChangeSegment(
+        target=FlightPoint(altitude=10000.0, true_airspeed="constant"),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        thrust_rate=1.0,
+        time_step=2.0,
+        maximum_CL=0.1,
+        name="max_cl_climb_segment",
+    )
+
+    start = FlightPoint(altitude=5000.0, true_airspeed=150.0, mass=70000.0)
+    flight_points = segment.compute_from(start)
+
+    # Here segment is expected to stop immediately, since max CL is already overrun.
+    assert len(flight_points) == 1
+    assert flight_points.iloc[0].altitude == start.altitude
+    assert flight_points.iloc[0].mass == start.mass
+    assert (
+        'The first point in a segment of "max_cl_climb_segment" has a CL = 0.69 > maximum_CL'
+        in caplog.text
+    )
+
+
 def test_climb_optimal_flight_level_at_fixed_mach_with_capped_flight_level(polar):
     propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 

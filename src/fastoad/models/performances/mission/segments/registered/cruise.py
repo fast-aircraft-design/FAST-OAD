@@ -12,6 +12,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 from copy import deepcopy
 from dataclasses import dataclass
 
@@ -31,6 +32,11 @@ from ..time_step_base import (
     AbstractRegulatedThrustSegment,
     AbstractTimeStepFlightSegment,
 )
+
+_LOGGER = logging.getLogger(__name__)  # Logger for this module
+
+# Warn if there's an altitude discontinuity (tolerance accounts for fuel burn during climb)
+ALTITUDE_TOLERANCE = 5.0  # meters
 
 
 @dataclass
@@ -75,17 +81,86 @@ class OptimalCruiseSegment(CruiseSegment):
     the initial value.
     Target should also specify a speed parameter set to "constant", among `mach`,
     `true_airspeed` and `equivalent_airspeed`. If not, Mach will be assumed constant.
+
+    Important: The segment computes the optimal altitude at the start point and sets it
+    immediately. If the previous segment ended at a different altitude, there will be an
+    instantaneous altitude change (no climb segment). To avoid this "teleportation",
+    Consider adding a climb segment with the keyword 'optimal_altitude' as target before
+    optimal cruise.
+
+    Note: Maximum altitude enforcement is done in compute_from_start_to_target and
+    _compute_next_altitude rather than overriding _check_values, since _check_values
+    only validates but does not modify flight point values.
     """
 
+    #: Maximum allowed altitude in meters for the optimal cruise.
+    #: When the optimal altitude exceeds this value, the aircraft will stay at this
+    #: maximum altitude and `CL` will be reduced accordingly. If None, no meter-based
+    #: altitude cap is applied (only maximum_flight_level applies).
+    maximum_altitude: float | None = None
+
+    #: The maximum allowed flight level (i.e. multiple of 100 feet).
+    #: This sets an altitude cap at `maximum_flight_level * 100 ft`. When the optimal
+    #: altitude exceeds this limit, the aircraft will stay at the capped altitude
+    #: and `CL` will be reduced. Both this and maximum_altitude can be set; the
+    #: most restrictive (lowest) cap will be applied.
+    maximum_flight_level: float = 500.0
+
     def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
-        start.altitude = self._get_optimal_altitude(start.mass, start.mach)
+        initial_altitude = start.altitude
+        optimal_altitude = self._get_optimal_altitude(start.mass, start.mach)
+
+        # Compute altitude cap from maximum_altitude and maximum_flight_level (converted to meters)
+        altitude_cap = self._get_altitude_cap()
+
+        # Start of optimal cruise should match either the cap or the optimal starting altitude
+        if altitude_cap is not None and optimal_altitude > altitude_cap:
+            start.altitude = altitude_cap
+        else:
+            start.altitude = optimal_altitude
+
+        # Warn if there's an altitude discontinuity (tolerance accounts for fuel burn during climb)
+        if (
+            initial_altitude is not None
+            and abs(start.altitude - initial_altitude) > ALTITUDE_TOLERANCE
+        ):
+            _LOGGER.warning(
+                "Optimal cruise segment '%s' starting at altitude "
+                "%.0fm to fly at optimum CL, but previous segment ended at %.0fm. "
+                "This creates an instantaneous altitude change of %.0fm. Consider adding a climb "
+                "segment with the keyword 'optimal_altitude' as target before optimal cruise to "
+                "avoid discontinuity.",
+                self.name,
+                start.altitude,
+                initial_altitude,
+                abs(start.altitude - initial_altitude),
+            )
+
         self.complete_flight_point(start)
         return super().compute_from_start_to_target(start, target)
 
     def _compute_next_altitude(self, next_point: FlightPoint, previous_point: FlightPoint):
-        next_point.altitude = self._get_optimal_altitude(
+        optimal_altitude = self._get_optimal_altitude(
             next_point.mass, previous_point.mach, altitude_guess=previous_point.altitude
         )
+        altitude_cap = self._get_altitude_cap()
+
+        if (altitude_cap is not None) and (
+            (optimal_altitude > altitude_cap) or (previous_point.altitude >= altitude_cap)
+        ):
+            next_point.altitude = altitude_cap
+        else:
+            next_point.altitude = optimal_altitude
+
+    def _get_altitude_cap(
+        self,
+    ) -> float | None:
+        altitude_caps = []
+        if self.maximum_altitude is not None:
+            altitude_caps.append(self.maximum_altitude)
+        if self.maximum_flight_level is not None:
+            altitude_caps.append(self.maximum_flight_level * 100.0 * foot)
+        return min(altitude_caps) if altitude_caps else None
 
 
 @RegisterSegment("cruise")
@@ -126,6 +201,9 @@ class ClimbAndCruiseSegment(CruiseSegment):
                 if not key.startswith("_")
             }
             attr_dict["target"] = target
+            attr_dict["name"] = self.name + ":prepended_climb"
+            if self.maximum_CL is not None:
+                attr_dict["maximum_CL"] = self.maximum_CL
             climb_segment = AltitudeChangeSegment(**attr_dict)
         else:
             climb_segment = None
@@ -158,6 +236,10 @@ class ClimbAndCruiseSegment(CruiseSegment):
                 old_mass_loss = mass_loss
                 cruise_altitude = get_closest_flight_level(cruise_altitude + 1.0e-3)
                 if cruise_altitude > self.maximum_flight_level * 100.0 * foot:
+                    break
+                if self.maximum_CL is not None and self.is_next_flight_level_exceeding_maximum_cl(
+                    cruise_altitude, start
+                ):
                     break
 
                 new_results = self._climb_to_altitude_and_cruise(
@@ -207,6 +289,26 @@ class ClimbAndCruiseSegment(CruiseSegment):
         cruise_points = cruise_segment.compute_from(cruise_start)
 
         return pd.concat([climb_points, cruise_points]).reset_index(drop=True)
+
+    def is_next_flight_level_exceeding_maximum_cl(
+        self, altitude_next_flight_level: float, flight_point: FlightPoint
+    ) -> bool:
+        """
+        Returns true if the CL at the next flight level is higher than the maximum_CL
+
+        :param altitude_next_flight_level: the altitude of the next flight level in m
+        :param flight_point: the current flight point
+        """
+
+        actual_flight_point = deepcopy(flight_point)
+        next_level_flight_point = FlightPoint()
+        next_level_flight_point.altitude = altitude_next_flight_level
+        next_level_flight_point.mach = actual_flight_point.mach
+        next_level_flight_point.mass = actual_flight_point.mass
+
+        self.complete_flight_point(next_level_flight_point)
+
+        return bool(next_level_flight_point.CL > self.maximum_CL)  # noqa: SIM300 false positive
 
 
 @RegisterSegment("breguet")

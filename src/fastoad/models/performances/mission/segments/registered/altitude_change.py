@@ -13,6 +13,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 from copy import copy
 from dataclasses import dataclass, field
 
@@ -31,6 +32,8 @@ from fastoad.models.performances.mission.segments.time_step_base import (
     AbstractManualThrustSegment,
 )
 from fastoad.models.performances.mission.util import get_closest_flight_level
+
+_LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
 @RegisterSegment("altitude_change")
@@ -78,7 +81,7 @@ class AltitudeChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightS
     #: The maximum allowed flight level (i.e. multiple of 100 feet).
     maximum_flight_level: float = 500.0
 
-    # To keep track of originally instructed target (used for "optimal_altitude" and so on)
+    #: To keep track of originally instructed target (used for "optimal_altitude" and so on)
     _original_target_altitude: str | None = field(default=None, init=False)
 
     #: Using this value will tell to target the altitude with max lift/drag ratio.
@@ -118,7 +121,39 @@ class AltitudeChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightS
             atm.mach = start.mach
             start.true_airspeed = atm.true_airspeed
 
-        return super().compute_from_start_to_target(start, target)
+        if self.maximum_CL is not None:
+            if start.CL is not None and start.CL > self.maximum_CL:  # noqa: SIM300 False positive
+                # If CL of the starting point is above the max CL, we stop the climb/descent
+                _LOGGER.warning(
+                    'The first point in a segment of "%s" has a CL = %.2f > maximum_CL = %.2f. '
+                    "Skipping segment.",
+                    self.name,
+                    start.CL,
+                    self.maximum_CL,
+                )
+                target.altitude = start.altitude  # to avoid any processing
+                return super().compute_from_start_to_target(
+                    start, target
+                )  # dataframe containing only the start point
+
+            flight_points_df = super().compute_from_start_to_target(start, target)
+            if (flight_points_df["CL"] > self.maximum_CL).any():
+                # We check that no point exceeded the maximum CL. If this is the case we change the
+                # objective from a fixed altitude/speed to the given CL max.
+                target.CL = self.maximum_CL
+                for speed_param in ["true_airspeed", "equivalent_airspeed", "mach"]:
+                    if not isinstance(
+                        getattr(target, speed_param), str
+                    ):  # constant speeds must stay constant
+                        setattr(target, speed_param, None)
+                target.altitude = None
+                # We revaluate the segment
+                flight_points_df = super().compute_from_start_to_target(start, target)
+        else:
+            # No maximum CL defined, we proceed as usual
+            flight_points_df = super().compute_from_start_to_target(start, target)
+
+        return flight_points_df
 
     def get_distance_to_target(
         self, flight_points: list[FlightPoint], target: FlightPoint

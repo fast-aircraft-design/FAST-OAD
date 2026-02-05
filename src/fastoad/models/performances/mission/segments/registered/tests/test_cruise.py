@@ -11,14 +11,17 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 from pathlib import Path
 
 import pytest
 from numpy.testing import assert_allclose
+from scipy.constants import foot
 
 from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import FuelEngineSet
+from fastoad.models.performances.mission.util import get_closest_flight_level
 
 from .conftest import DummyEngine, DummyUnpickableEngine
 from ..altitude_change import AltitudeChangeSegment
@@ -344,3 +347,239 @@ def test_climb_and_cruise_at_optimal_flight_level_with_start_at_exact_flight_lev
 
     # A second call is done to ensure first run did not modify anything (like target definition)
     run()
+
+
+def test_climb_and_cruise_respects_maximum_cl(polar):
+    propulsion = FuelEngineSet(DummyEngine(0.5e5, 3.0e-5), 2)
+    reference_area = 120.0
+    maximum_cl = 0.4
+
+    segment = ClimbAndCruiseSegment(
+        target=FlightPoint(
+            ground_distance=10.0e6, altitude=AltitudeChangeSegment.OPTIMAL_FLIGHT_LEVEL
+        ),
+        propulsion=propulsion,
+        reference_area=reference_area,
+        polar=polar,
+        climb_segment=AltitudeChangeSegment(
+            target=FlightPoint(),
+            propulsion=propulsion,
+            reference_area=reference_area,
+            polar=polar,
+            thrust_rate=0.9,
+        ),
+        maximum_CL=maximum_cl,
+    )
+
+    def run():
+        start = FlightPoint(mass=70000.0, altitude=8000.0, mach=0.78, ground_distance=1.0e6)
+        # First available cruise level at or above start altitude
+        initial_cruise_altitude = get_closest_flight_level(start.altitude - 1.0e-3)
+        next_flight_level = get_closest_flight_level(initial_cruise_altitude + 1.0e-3)
+
+        # Sanity check: next level would breach the imposed CL cap
+        assert segment.is_next_flight_level_exceeding_maximum_cl(next_flight_level, start)
+
+        flight_points = segment.compute_from(start)
+        last_point = flight_points.iloc[-1]
+
+        # Segment must stay at the lower level since the next one exceeds maximum_CL
+        assert_allclose(last_point.altitude, initial_cruise_altitude)
+        assert last_point.altitude < next_flight_level
+        assert flight_points.CL.max() <= maximum_cl + 1.0e-6
+
+    run()
+
+    # A second call is done to ensure first run did not modify anything (like target definition)
+    run()
+
+
+def test_optimal_cruise_with_maximum_altitude_cap(polar, caplog):
+    """Test that optimal cruise respects maximum_altitude parameter."""
+    propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
+
+    # Set a low maximum altitude (lower than what optimal would be)
+    segment = OptimalCruiseSegment(
+        target=FlightPoint(ground_distance=5.0e5),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        engine_setting=EngineSetting.CRUISE,
+        maximum_altitude=8000.0,  # Lower than optimal altitude
+        name="optimal_cruise_segment",
+    )
+
+    # First let's start with an altitude below the cap and optimal altitude. This should log a
+    # warning.
+    start = FlightPoint(mass=70000.0, time=1000.0, ground_distance=1e5, mach=0.78, altitude=7000.0)
+    flight_points = segment.compute_from(start)
+
+    first_point = flight_points.iloc[0]
+    last_point = flight_points.iloc[-1]
+
+    # Should be capped at maximum_altitude
+    assert_allclose(first_point.altitude, 8000.0)
+    assert_allclose(last_point.altitude, 8000.0)
+    # CL should be less than optimal since we're at lower altitude
+    assert polar.optimal_cl > last_point.CL
+    assert "Optimal cruise segment 'optimal_cruise_segment' starting at" in caplog.text
+
+    # Now start above the cap but under optimal altitude. A warning should be logged.
+    caplog.clear()
+
+    start = FlightPoint(mass=70000.0, time=1000.0, ground_distance=1e5, mach=0.78, altitude=9000.0)
+    flight_points = segment.compute_from(start)
+
+    first_point = flight_points.iloc[0]
+    last_point = flight_points.iloc[-1]
+
+    # Should be capped at maximum_altitude
+    assert_allclose(first_point.altitude, 8000.0)
+    assert_allclose(last_point.altitude, 8000.0)
+    # CL should be less than optimal since we're at lower altitude
+    assert polar.optimal_cl > last_point.CL
+    assert "Optimal cruise segment 'optimal_cruise_segment' starting at" in caplog.text
+
+    # Now start at optimal altitude
+    caplog.clear()
+
+    segment = OptimalCruiseSegment(
+        target=FlightPoint(ground_distance=5.0e6),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        engine_setting=EngineSetting.CRUISE,
+        maximum_altitude=9200,  # Higher than optimal altitude
+        name="optimal_cruise_segment",
+    )
+
+    start = FlightPoint(
+        mass=70000.0, time=1000.0, ground_distance=1e5, mach=0.78, altitude=9155.649221719525
+    )
+    flight_points = segment.compute_from(start)
+
+    first_point = flight_points.iloc[0]
+    last_point = flight_points.iloc[-1]
+
+    # Should be capped at maximum_altitude
+    assert_allclose(first_point.altitude, 9155.6492)
+    assert_allclose(last_point.altitude, 9200)
+    # CL should be less than optimal since we're capped by maximum altitude
+    assert polar.optimal_cl > last_point.CL
+    assert "Optimal cruise segment 'optimal_cruise_segment' starting at" not in caplog.text
+
+
+def test_optimal_cruise_with_maximum_flight_level_cap(polar):
+    """Test that optimal cruise respects maximum_flight_level parameter."""
+    propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
+
+    # Set a flight level cap that's lower than optimal altitude
+    # FL250 = 250 * 100 ft ~ 7620m
+    segment = OptimalCruiseSegment(
+        target=FlightPoint(ground_distance=5.0e5),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        engine_setting=EngineSetting.CRUISE,
+        maximum_flight_level=250.0,  # ~7620m
+    )
+
+    flight_points = segment.compute_from(
+        FlightPoint(mass=70000.0, time=1000.0, ground_distance=1e5, mach=0.78, altitude=7000.0)
+    )
+
+    first_point = flight_points.iloc[0]
+    last_point = flight_points.iloc[-1]
+    fl_250_alt = 250.0 * 100.0 * foot
+
+    # Should be capped at flight level altitude
+    assert_allclose(first_point.altitude, fl_250_alt, rtol=1e-3)
+    assert_allclose(last_point.altitude, fl_250_alt, rtol=1e-3)
+
+
+def test_optimal_cruise_with_both_altitude_caps(polar):
+    """Test that optimal cruise applies the most restrictive cap when both are set."""
+    propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
+
+    # Set both caps; maximum_altitude is more restrictive
+    segment = OptimalCruiseSegment(
+        target=FlightPoint(ground_distance=5.0e5),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        engine_setting=EngineSetting.CRUISE,
+        maximum_altitude=7500.0,  # Most restrictive
+        maximum_flight_level=350.0,  # Higher cap (~10668m)
+    )
+
+    flight_points = segment.compute_from(
+        FlightPoint(mass=70000.0, time=1000.0, ground_distance=1e5, mach=0.78, altitude=7000.0)
+    )
+
+    first_point = flight_points.iloc[0]
+
+    # Should use the lower of the two caps (7500m)
+    assert_allclose(first_point.altitude, 7500.0)
+
+
+def test_optimal_cruise_no_warning_with_small_discontinuity(polar, caplog):
+    """Test that no warning is logged when altitude discontinuity is within tolerance."""
+    propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
+
+    segment = OptimalCruiseSegment(
+        target=FlightPoint(ground_distance=5.0e5),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        engine_setting=EngineSetting.CRUISE,
+    )
+
+    # Get the optimal altitude first
+    flight_points_initial = segment.compute_from(
+        FlightPoint(mass=70000.0, time=1000.0, ground_distance=1e5, mach=0.78)
+    )
+    optimal_alt = flight_points_initial.iloc[0].altitude
+
+    caplog.clear()
+
+    # Start at nearly the same altitude (within 5m tolerance)
+    with caplog.at_level(logging.WARNING):
+        segment.compute_from(
+            FlightPoint(
+                mass=70000.0,
+                time=1000.0,
+                ground_distance=1e5,
+                mach=0.78,
+                altitude=optimal_alt + 5.0,  # Within tolerance
+            )
+        )
+
+    # Should not log a warning for discontinuity
+    discontinuity_warnings = [
+        r
+        for r in caplog.records
+        if "altitude" in r.message.lower() and "discontinuity" in r.message.lower()
+    ]
+    assert len(discontinuity_warnings) == 0
+
+
+def test_optimal_cruise_stays_at_altitude_cap_during_segment(polar):
+    """Test that optimal cruise stays at capped altitude for all points if optimal altitude is
+    higher than the cap."""
+    propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
+
+    segment = OptimalCruiseSegment(
+        target=FlightPoint(ground_distance=5.0e5),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        engine_setting=EngineSetting.CRUISE,
+        maximum_altitude=8000.0,
+    )
+
+    flight_points = segment.compute_from(
+        FlightPoint(mass=70000.0, time=1000.0, ground_distance=1e5, mach=0.78)
+    )
+
+    # All points should be at the capped altitude
+    assert_allclose(flight_points.altitude, 8000.0)
