@@ -230,7 +230,7 @@ class ClimbAndCruiseSegment(CruiseSegment):
                 _LOGGER.warning(
                     "Cruise segment '%s' has target altitude OPTIMAL_FLIGHT_LEVEL but no "
                     "climb_segment is provided. Will cruise at current altitude instead. Consider"
-                    " inserting the cruise segment inside a route.",
+                    " inserting the cruise segment inside a route or provide a climb_segment.",
                     self.name if self.name is not None else "<unnamed>",
                 )
                 cruise_segment.target.altitude = None
@@ -266,6 +266,19 @@ class ClimbAndCruiseSegment(CruiseSegment):
                     results = new_results
 
         elif target.altitude is not None and isinstance(target.altitude, (int, float)):
+            if climb_segment is None:
+                # When using mission files via RangedRoute, climb_segment is auto-populated.
+                # If not provided and we reach here, just treat as normal cruise at current
+                # altitude.
+                _LOGGER.warning(
+                    "Cruise segment '%s' has a target altitude %.1f m but no "
+                    "climb_segment is provided. Will cruise at current altitude instead. Consider"
+                    " inserting the cruise segment inside a route or provide a climb_segment.",
+                    self.name if self.name is not None else "<unnamed>",
+                    float(target.altitude),
+                )
+                cruise_segment.target.altitude = None
+                return super().compute_from_start_to_target(start, target)
             results = self._climb_to_altitude_and_cruise(
                 start, target.altitude, climb_segment, cruise_segment
             )
@@ -278,7 +291,7 @@ class ClimbAndCruiseSegment(CruiseSegment):
     def _climb_to_altitude_and_cruise(
         start: FlightPoint,
         cruise_altitude: float,
-        climb_segment: AltitudeChangeSegment | None,
+        climb_segment: AltitudeChangeSegment,
         cruise_segment: CruiseSegment,
     ):
         """
