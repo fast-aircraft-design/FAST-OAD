@@ -126,7 +126,7 @@ class AltitudeChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightS
                 # If CL of the starting point is above the max CL, we stop the climb/descent
                 _LOGGER.warning(
                     'The first point in a segment of "%s" has a CL = %.2f > maximum_CL = %.2f. '
-                    "Skipping segment.",
+                    'Skipping "altitude_change" segment.',
                     self.name,
                     start.CL,
                     self.maximum_CL,
