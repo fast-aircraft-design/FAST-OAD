@@ -51,7 +51,8 @@ dependencies = [
     "click>=8.0.3,<9",
     "pyDOE3>=1.0.0,<2",
     "rich>=14.0.0,<15",
-    "anywidget>=0.9.18,<1"
+    "anywidget>=0.9.18,<1",
+    "jupyterlab-widgets==3.0.15"  # Temporarily fix for #665
 ]
 
 [project.optional-dependencies]
