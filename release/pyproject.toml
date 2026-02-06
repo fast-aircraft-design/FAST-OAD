@@ -1,22 +1,21 @@
 [tool.poetry]
 name = "FAST-OAD"
-version = "0.0.0"
 description = "FAST-OAD is a framework for performing rapid Overall Aircraft Design"
+version = "VERSION_PLACEHOLDER"
 readme = "README.md"
 authors = [
     "Christophe DAVID <christophe.david@onera.fr>",
     "Scott DELBECQ <Scott.DELBECQ@isae-supaero.fr>"
 ]
+
+# Meta-package: no Python code
 packages = [{ include = "_fastoad"}]
 exclude = ["**/tests/**"]
 
 homepage = "https://github.com/fast-aircraft-design/FAST-OAD"
-keywords = [
-    "aircraft",
-    "design",
-    "multi-disciplinary"
-]
+keywords = ["aircraft", "design", "multi-disciplinary"]
 license = "GPL-3.0-only"
+
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
@@ -27,16 +26,18 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX :: Linux",
     "Operating System :: MacOS",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering :: Physics"
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
-fast-oad-core = "^0.0.0.0.0"
+python = ">=3.10,<3.15"
+fast-oad-core = "^VERSION_PLACEHOLDER"
 fast-oad-cs25 = ">=0.1.4"
 
 [tool.poetry-dynamic-versioning]
@@ -45,36 +46,8 @@ vcs = "git"
 style = "semver"
 
 [build-system]
-requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
-build-backend = "poetry_dynamic_versioning.backend"
-
-[tool.black]
-line-length = 100
-
-[tool.pytest.ini_options]
-minversion = "6.0"
-addopts = "--cov fastoad --cov-report term-missing --cov-report html --verbose"
-testpaths = ["src", "tests"]
-norecursedirs = ["dist", "build", ".tox"]
-
-[tool.coverage.run]
-branch = true
-source = ["fastoad"]
-omit = ["*/test/*", "*/tests/*"]
-[tool.coverage.paths]
-source = ["src/", "*/site-packages/"]
-[tool.coverage.report]
-# Regexes for lines to exclude from consideration
-exclude_lines = [
-    # Have to re-enable the standard pragma
-    "pragma: no cover",
-    # Don't complain about missing debug-only code:
-    "def __repr__",
-    "if self.debug",
-    # Don't complain if tests don't hit defensive assertion code:
-    "raise AssertionError",
-    "raise NotImplementedError",
-    # Don't complain if non-runnable code isn't run:
-    "if 0:",
-    "if __name__ = = .__main__.:"
+requires = [
+    "poetry-core>=2.0.0,<3.0.0",
+    "poetry-dynamic-versioning>=1.0.0,<2.0.0"
 ]
+build-backend = "poetry_dynamic_versioning.backend"
