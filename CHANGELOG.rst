@@ -5,7 +5,7 @@ Changelog
 Version 1.9.0
 =============
 
-- Added
+- Added:
     - Add maximum cl and maximum altitude constraints in cruise, optimal_cruise, and altitude_change segments. (https://github.com/fast-aircraft-design/FAST-OAD/pull/666)
     - Start to use Ruff for linting. (https://github.com/fast-aircraft-design/FAST-OAD/pull/634)
     - Add linting rules in CI using Ruff. (https://github.com/fast-aircraft-design/FAST-OAD/pull/657)
@@ -16,14 +16,14 @@ Version 1.9.0
     - Deprecate Python 3.9. (https://github.com/fast-aircraft-design/FAST-OAD/pull/658)
     - Added compatibility with Python 3.14. (https://github.com/fast-aircraft-design/FAST-OAD/pull/661)
 
-- Modified
+- Modified:
     - Enhanced Variable Metadata Handling. (https://github.com/fast-aircraft-design/FAST-OAD/pull/622)
     - Simplify dependencies of the project: Pandas. (https://github.com/fast-aircraft-design/FAST-OAD/pull/660)
     - Update CI to use the organization variable POETRY_VERSION. (https://github.com/fast-aircraft-design/FAST-OAD/pull/662)
     - Update minimum OpenMDAO version to version 3.40. (https://github.com/fast-aircraft-design/FAST-OAD/pull/659)
 
-- Fixed
-    - Fix watchman test, preparing to update the OpenMDAO bounds in master branch. (https://github.com/fast-aircraft-design/FAST-OAD/pull/656
+- Fixed:
+    - Fix watchman test, preparing to update the OpenMDAO bounds in master branch. (https://github.com/fast-aircraft-design/FAST-OAD/pull/656)
 
 Version 1.8.4
 =============
