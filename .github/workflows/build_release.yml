@@ -57,24 +57,28 @@ jobs:
         run: echo "$HOME/.poetry/bin" >> $GITHUB_PATH
         shell: bash
 
-      - name: Build FAST-OAD-core
-        run: poetry build
-        shell: bash
-
-      - name: publish FAST-OAD-core to PyPI
+      - name: Build and publish FAST-OAD-core to PyPI
         env:
           TOKEN: ${{ secrets.PyPI }} # do not use the secret directly in run command, it would write it plainly in the log
         run: |
+          poetry build
           poetry config pypi-token.pypi "$TOKEN"
-          poetry publish
+          ls -la dist/ # list the contents of the dist folder to check that the package was built correctly
+          poetry publish --skip-existing --dist-dir dist
+        shell: bash
+        continue-on-error: true  # Allow workflow to continue if already published
 
       - name: build and publish FAST-OAD
         env:
           TOKEN: ${{ secrets.PyPI }} # do not use the secret directly in run command, it would write it plainly in the log
         run: |
-          cd release
-          cp ../README.md .
-          sed -i "s/0.0.0.0.0/$( poetry version -s )/" pyproject.toml && poetry build
+          cd release # move to the release folder, which contains the pyproject.toml for the FAST-OAD umbrella package
+          cp ../README.md . # copy the README to the release folder, so that it is included in the package
+          VERSION=$(poetry -C .. version -s)
+          sed -i "s/VERSION_PLACEHOLDER/$VERSION/g" pyproject.toml # replace the version placeholder in the pyproject.toml with the actual version
+          poetry version "$VERSION" 
+          poetry build
           poetry config pypi-token.pypi "$TOKEN"
-          poetry publish
+          ls -la dist/ # list the contents of the dist folder to check that the package was built correctly
+          poetry publish --skip-existing --dist-dir dist --dry-run # do a dry run first to check that the package can be published without actually publishing it
         shell: bash
