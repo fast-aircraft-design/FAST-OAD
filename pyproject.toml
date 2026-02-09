@@ -107,7 +107,7 @@ classifiers = [
 # Development dependencies -----------------------------------------------------
 # Development dependencies using Poetry groups instead of [project.optional-dependencies]
 [tool.poetry.group.dev.dependencies]
-fast-oad-cs25 = ">=0.8.0"
+fast-oad-cs25 = ">=0.8.1"
 matplotlib = "^3.9.0"
 
 [tool.poetry.group.test.dependencies]
