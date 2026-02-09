@@ -107,7 +107,7 @@ classifiers = [
 # Development dependencies -----------------------------------------------------
 # Development dependencies using Poetry groups instead of [project.optional-dependencies]
 [tool.poetry.group.dev.dependencies]
-fast-oad-cs25 = ">=0.8.0"
+fast-oad-cs25 = ">=0.8.1"
 matplotlib = "^3.9.0"
 
 [tool.poetry.group.test.dependencies]
@@ -125,7 +125,7 @@ sphinxcontrib-bibtex = "^2.6.3"
 [tool.poetry.group.lint.dependencies]
 pre-commit = "^4.4.0"
 nbstripout = "^0.6.0"
-ruff = "0.14.4"
+ruff = "0.15.0"
 
 
 # Poetry plugins ==================================================
