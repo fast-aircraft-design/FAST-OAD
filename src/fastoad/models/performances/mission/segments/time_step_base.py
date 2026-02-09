@@ -34,6 +34,7 @@ from ..polar import Polar
 from ..polar_modifier import AbstractPolarModifier, UnchangedPolar
 
 DEFAULT_TIME_STEP = 0.2
+MAX_SEGMENT_DURATION = 90000
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
@@ -169,7 +170,19 @@ class AbstractTimeStepFlightSegment(
         flight_points = [start]
         previous_point_to_target = self.get_distance_to_target(flight_points, target)
         tol = 1.0e-5  # Such accuracy is not needed, but ensures reproducibility of results.
+
         while np.abs(previous_point_to_target) > tol:
+            # Check for unrealistic flight points with flight time exceeding 25h to avoid
+            # extremely long segment (when the progression towards the target is very slow)
+            current_point = flight_points[-1]
+            if current_point.time - start.time > MAX_SEGMENT_DURATION:
+                _LOGGER.warning(
+                    'Segment time exceeded max_time (25h) in "%s". Computation interrupted.',
+                    self.name,
+                )
+                del flight_points[-1]
+                break
+
             self._add_new_flight_point(flight_points, self.time_step)
             last_point_to_target = self.get_distance_to_target(flight_points, target)
 
