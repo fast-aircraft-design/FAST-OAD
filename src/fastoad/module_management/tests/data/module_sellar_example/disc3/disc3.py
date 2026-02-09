@@ -34,6 +34,5 @@ class RegisteredDisc3(om.ExplicitComponent):
     def setup(self):
         pass
 
-    # pylint: disable=invalid-name
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         pass
