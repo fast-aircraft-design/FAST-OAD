@@ -1,7 +1,7 @@
 [project]
 name = "FAST-OAD"
 description = "FAST-OAD is a framework for performing rapid Overall Aircraft Design"
-version = "VERSION_PLACEHOLDER"
+version = "VERSION_PLACEHOLDER" # This value is replaced by poetry-dynamic-versioning during the build process. It is kept here to allow users to install the package with pip install . without using poetry.
 readme = "README.md"
 license = {text = "GPL-3.0-only"}
 keywords = ["aircraft", "design", "multi-disciplinary"]
