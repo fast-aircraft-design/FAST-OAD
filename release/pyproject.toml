@@ -1,21 +1,21 @@
-[tool.poetry]
+[project]
 name = "FAST-OAD"
 description = "FAST-OAD is a framework for performing rapid Overall Aircraft Design"
 version = "VERSION_PLACEHOLDER"
 readme = "README.md"
+license = {text = "GPL-3.0-only"}
+keywords = ["aircraft", "design", "multi-disciplinary"]
 authors = [
-    "Christophe DAVID <christophe.david@onera.fr>",
-    "Scott DELBECQ <Scott.DELBECQ@isae-supaero.fr>"
+    {name = "Christophe DAVID", email = "christophe.david@onera.fr"},
+    {name = "Scott DELBECQ", email = "Scott.DELBECQ@isae-supaero.fr"}
+]
+maintainers = [
+    {name = "Florent LUTZ", email = "Florent.LUTZ2@isae-supaero.fr"},
+    {name = "Eric NGUYEN VAN", email = "Eric.Nguyen_Van@onera.fr"},
+    {name = "Enrico STRAGIOTTI", email = "enrico.stragiotti@onera.fr"},
 ]
 
-# Meta-package: no Python code
-packages = [{ include = "_fastoad"}]
-exclude = ["**/tests/**"]
-
-homepage = "https://github.com/fast-aircraft-design/FAST-OAD"
-keywords = ["aircraft", "design", "multi-disciplinary"]
-license = "GPL-3.0-only"
-
+requires-python = ">=3.10,<3.15"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
@@ -32,19 +32,24 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
-    "Topic :: Scientific/Engineering :: Physics"
+    "Topic :: Scientific/Engineering :: Physics",
 ]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.15"
 fast-oad-core = "^VERSION_PLACEHOLDER"
-fast-oad-cs25 = ">=0.1.4"
+fast-oad-cs25 = ">=0.8.1"
 
+[tool.poetry.requires-plugins]
+poetry-plugin-export = ">=1.9" # Used for the poetry export hook in pre-commit
+
+# Dynamic versioning settings ==================================================
 [tool.poetry-dynamic-versioning]
 enable = true
 vcs = "git"
 style = "semver"
 
+# Packaging system =============================================================
 [build-system]
 requires = [
     "poetry-core>=2.0.0,<3.0.0",
