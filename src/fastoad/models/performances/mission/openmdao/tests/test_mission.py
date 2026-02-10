@@ -138,9 +138,7 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
     assert_allclose(
         problem["data:mission:operational:main_route:cruise:distance"], 3392590.0, atol=500.0
     )
-    assert_allclose(
-        problem["data:mission:operational:main_route:cruise:initial_altitude"], 10972.8, atol=1
-    )
+    assert_allclose(problem["data:mission:operational:main_route:cruise:altitude"], 10972.8, atol=1)
 
     assert_allclose(
         problem["data:mission:operational:main_route:descent:duration"], 1424.0, atol=10.0
@@ -469,7 +467,12 @@ def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
     assert_allclose(
         problem["data:mission:operational_optimal:main_route_optimal:cruise:initial_altitude"],
         9821.8,
-        atol=1,
+        atol=1.0,
+    )
+    assert_allclose(
+        problem["data:mission:operational_optimal:main_route_optimal:cruise:final_altitude"],
+        10343.0,
+        atol=1.0,
     )
 
 
