@@ -470,7 +470,7 @@ def test_optimal_cruise_with_maximum_altitude_cap(polar, caplog):
     assert_allclose(last_point.altitude, 8000.0)
     # CL should be less than optimal since we're at lower altitude
     assert polar.optimal_cl > last_point.CL
-    assert "Optimal cruise segment 'optimal_cruise_segment' starting at" in caplog.text
+    assert "Optimal cruise segment 'optimal_cruise_segment' starts at" in caplog.text
 
     # Now start above the cap but under optimal altitude. A warning should be logged.
     caplog.clear()
@@ -486,7 +486,7 @@ def test_optimal_cruise_with_maximum_altitude_cap(polar, caplog):
     assert_allclose(last_point.altitude, 8000.0)
     # CL should be less than optimal since we're at lower altitude
     assert polar.optimal_cl > last_point.CL
-    assert "Optimal cruise segment 'optimal_cruise_segment' starting at" in caplog.text
+    assert "Optimal cruise segment 'optimal_cruise_segment' starts at" in caplog.text
 
     # Now start at optimal altitude
     caplog.clear()
@@ -514,7 +514,7 @@ def test_optimal_cruise_with_maximum_altitude_cap(polar, caplog):
     assert_allclose(last_point.altitude, 9200)
     # CL should be less than optimal since we're capped by maximum altitude
     assert polar.optimal_cl > last_point.CL
-    assert "Optimal cruise segment 'optimal_cruise_segment' starting at" not in caplog.text
+    assert "Optimal cruise segment 'optimal_cruise_segment' starts at" not in caplog.text
 
 
 def test_optimal_cruise_with_maximum_flight_level_cap(polar):
