@@ -254,9 +254,19 @@ class MissionWrapper(MissionBuilder):
         # Check if this is an optimal cruise or any cruise-like segment
         if part_structure:
             if part_structure.get(SEGMENT_TYPE_TAG) == "optimal_cruise":
+                # NOTE:
+                # For optimal cruise segments, this "initial_altitude" output may not reflect
+                # the actual altitude flown at the beginning of the cruise if there is an
+                # altitude discontinuity with the previous segment, i.e., no optimal altitude climb
+                # segment. In such cases, the optimal cruise segment internally enforces its own
+                # starting altitude, but the value reported here corresponds to the previous segment
+                # boundary. To avoid this inconsistency, insert a climb segment with target
+                # "optimal_altitude" before the optimal cruise.
                 output_definition[name_root + ":initial_altitude"] = (
                     "m",
-                    f"initial cruise altitude during {flight_part_desc}",
+                    f"initial cruise altitude during {flight_part_desc}"
+                    " (may differ from actual flown altitude if optimal cruise starts with"
+                    " a discontinuity)",
                 )
                 output_definition[name_root + ":final_altitude"] = (
                     "m",
