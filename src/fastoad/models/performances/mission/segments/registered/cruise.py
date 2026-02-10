@@ -125,11 +125,14 @@ class OptimalCruiseSegment(CruiseSegment):
             and abs(start.altitude - initial_altitude) > ALTITUDE_TOLERANCE
         ):
             _LOGGER.warning(
-                "Optimal cruise segment '%s' starting at altitude "
-                "%.0fm to fly at optimum CL, but previous segment ended at %.0fm. "
-                "This creates an instantaneous altitude change of %.0fm. Consider adding a climb "
-                "segment with the keyword 'optimal_altitude' as target before optimal cruise to "
-                "avoid altitude discontinuity.",
+                "Optimal cruise segment '%s' starts at %.0fm to fly at optimum CL, "
+                "but the previous segment ended at %.0fm. "
+                "This creates an instantaneous altitude change of %.0fm. "
+                "The cruise altitude written in the mission outputs (XML) corresponds "
+                "to the previous segment and is therefore incorrect for this optimal "
+                "cruise segment. Consider inserting a climb segment with the keyword "
+                "'optimal_altitude' as target before the optimal cruise to avoid this "
+                "altitude discontinuity.",
                 self.name,
                 start.altitude,
                 initial_altitude,

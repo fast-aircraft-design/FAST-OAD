@@ -23,13 +23,15 @@ import openmdao.api as om
 import pandas as pd
 from openmdao.vectors.vector import Vector
 
+from fastoad.constants import FlightPhase
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IPropulsion
 
 from ..mission_definition.mission_builder import MissionBuilder
-from ..mission_definition.mission_builder.constants import NAME_TAG, TYPE_TAG
+from ..mission_definition.mission_builder.constants import NAME_TAG, SEGMENT_TYPE_TAG, TYPE_TAG
 from ..mission_definition.schema import (
     CLIMB_PARTS_TAG,
+    CRUISE_PART_TAG,
     DESCENT_PARTS_TAG,
     PARTS_TAG,
     PHASE_TAG,
@@ -137,6 +139,12 @@ class MissionWrapper(MissionBuilder):
                 outputs[name_root + ":fuel"] = start.mass - end.mass
             if name_root + ":distance" in outputs:
                 outputs[name_root + ":distance"] = end.ground_distance - start.ground_distance
+            if name_root + ":initial_altitude" in outputs:
+                outputs[name_root + ":initial_altitude"] = start.altitude
+            if name_root + ":final_altitude" in outputs:
+                outputs[name_root + ":final_altitude"] = end.altitude
+            if name_root + ":altitude" in outputs:  # for non-optimal cruise segments
+                outputs[name_root + ":altitude"] = start.altitude
 
         flight_points = mission.compute_from(start_flight_point)
         flight_points.loc[0, "name"] = flight_points.loc[1, "name"]
@@ -199,16 +207,20 @@ class MissionWrapper(MissionBuilder):
                 for subpart in part[CLIMB_PARTS_TAG] + part[DESCENT_PARTS_TAG]:
                     subpart_name = subpart[NAME_TAG]
                     output_definition.update(self._add_vars(subpart_name))
-                output_definition.update(self._add_vars(route_name + ":cruise"))
+                cruise_part = part[CRUISE_PART_TAG]
+                output_definition.update(
+                    self._add_vars(route_name + ":" + FlightPhase.CRUISE.value, cruise_part)
+                )
 
         return output_definition
 
-    def _add_vars(self, part_name) -> dict:
+    def _add_vars(self, part_name, part_structure=None) -> dict:
         """
         Builds names of OpenMDAO outputs for provided mission, route and phase names.
 
         :param part_name: part name in the form <mission_name>:<route_name:<phase_name>, route_name
         and phase_name being independently optional.
+        :param part_structure: optional structure dict containing segment_type and other metadata
         :return: dictionary with variable name as key and unit, description as value
         """
         output_definition = {}
@@ -239,5 +251,31 @@ class MissionWrapper(MissionBuilder):
             "m",
             f"covered ground distance during {flight_part_desc}",
         )
+        # Check if this is an optimal cruise or any cruise-like segment
+        if part_structure:
+            if part_structure.get(SEGMENT_TYPE_TAG) == "optimal_cruise":
+                # NOTE:
+                # For optimal cruise segments, this "initial_altitude" output may not reflect
+                # the actual altitude flown at the beginning of the cruise if there is an
+                # altitude discontinuity with the previous segment, i.e., no optimal altitude climb
+                # segment. In such cases, the optimal cruise segment internally enforces its own
+                # starting altitude, but the value reported here corresponds to the previous segment
+                # boundary. To avoid this inconsistency, insert a climb segment with target
+                # "optimal_altitude" before the optimal cruise.
+                output_definition[name_root + ":initial_altitude"] = (
+                    "m",
+                    f"initial cruise altitude during {flight_part_desc}"
+                    " (may differ from actual flown altitude if optimal cruise starts with"
+                    " a discontinuity)",
+                )
+                output_definition[name_root + ":final_altitude"] = (
+                    "m",
+                    f"final cruise altitude during {flight_part_desc}",
+                )
+            elif part_structure.get(SEGMENT_TYPE_TAG) in ["cruise", "breguet"]:
+                output_definition[name_root + ":altitude"] = (
+                    "m",
+                    f"cruise altitude during {flight_part_desc}",
+                )
 
         return output_definition
