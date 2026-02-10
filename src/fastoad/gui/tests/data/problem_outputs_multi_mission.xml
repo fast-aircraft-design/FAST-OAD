@@ -577,7 +577,7 @@
         </takeoff>
         <main_route>
           <cruise>
-            <altitude units="m" is_input="True">10668.0</altitude>
+            <altitude_input units="m" is_input="True">10668.0</altitude_input>
           </cruise>
         </main_route>
       </sizing>

@@ -154,7 +154,7 @@
                 </taxi_out>
                 <main_route>
                     <cruise>
-                        <altitude units="ft">35000.0</altitude>
+                        <altitude_input units="ft">35000.0</altitude_input>
                     </cruise>
                 </main_route>
                 <descent>

@@ -32,7 +32,7 @@ def cleanup():
 
 def test_sizing_mission(cleanup, with_dummy_plugin_2):
     ivc = om.IndepVarComp()
-    ivc.add_output("data:mission:sizing:main_route:cruise:altitude", 35000, units="ft")
+    ivc.add_output("data:mission:sizing:main_route:cruise:altitude_input", 35000, units="ft")
     ivc.add_output("data:TLAR:cruise_mach", 0.78)
     ivc.add_output("data:TLAR:range", 2000, units="NM")
     ivc.add_output("data:mission:sizing:TOW", 74000, units="kg")

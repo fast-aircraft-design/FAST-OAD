@@ -299,7 +299,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. -->
             <fuel units="kg" is_input="False">2345.9970836566645<!--burned fuel during phase "climb" of route "main_route" in mission "sizing"--></fuel>
           </climb>
           <cruise>
-            <altitude units="m" is_input="True">10668.0<!--Input defined by the mission.--></altitude>
+            <altitude_input units="m" is_input="True">10668.0<!--Input defined by the mission.--></altitude_input>
             <distance units="m" is_input="False">4593000.0<!--covered ground distance during phase "cruise" of route "main_route" in mission "sizing"--></distance>
             <duration units="s" is_input="False">19857.45794460585<!--duration of phase "cruise" of route "main_route" in mission "sizing"--></duration>
             <fuel units="kg" is_input="False">14187.21680146348<!--burned fuel during phase "cruise" of route "main_route" in mission "sizing"--></fuel>
