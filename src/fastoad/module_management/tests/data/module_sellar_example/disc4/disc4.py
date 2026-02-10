@@ -12,6 +12,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# We introduce a typo here to check that the module management system
+# doesn't crash when the module can't be loaded, but instead just doesn't register it and move on
 import openmdao.ap as om
 
 from fastoad.module_management.constants import ModelDomain
@@ -25,6 +27,5 @@ class RegisteredDisc4(om.ExplicitComponent):
     def setup(self):
         pass
 
-    # pylint: disable=invalid-name
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         pass
