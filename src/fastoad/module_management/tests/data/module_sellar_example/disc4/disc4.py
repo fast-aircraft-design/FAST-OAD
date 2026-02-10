@@ -12,7 +12,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
+# We introduce a typo here to check that the module management system
+# doesn't crash when the module can't be loaded, but instead just doesn't register it and move on
+import openmdao.ap as om
 
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
