@@ -251,7 +251,7 @@ class MissionWrapper(MissionBuilder):
             "m",
             f"covered ground distance during {flight_part_desc}",
         )
-        # Check if this is an optimal_cruise segment
+        # Check if this is an optimal cruise or any cruise-like segment
         if part_structure:
             if part_structure.get(SEGMENT_TYPE_TAG) == "optimal_cruise":
                 output_definition[name_root + ":initial_altitude"] = (
@@ -262,7 +262,7 @@ class MissionWrapper(MissionBuilder):
                     "m",
                     f"final cruise altitude during {flight_part_desc}",
                 )
-            elif part_structure.get(SEGMENT_TYPE_TAG) == "cruise":
+            elif part_structure.get(SEGMENT_TYPE_TAG) in ["cruise", "breguet"]:
                 output_definition[name_root + ":altitude"] = (
                     "m",
                     f"cruise altitude during {flight_part_desc}",
