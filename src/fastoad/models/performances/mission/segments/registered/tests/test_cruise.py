@@ -611,6 +611,42 @@ def test_optimal_cruise_no_warning_with_small_discontinuity(polar, caplog):
     assert len(discontinuity_warnings) == 0
 
 
+def test_optimal_cruise_warning_with_large_discontinuity(polar, caplog):
+    """Test that a warning is logged when altitude discontinuity exceeds tolerance."""
+    propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
+    segment = OptimalCruiseSegment(
+        target=FlightPoint(ground_distance=5.0e5),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        engine_setting=EngineSetting.CRUISE,
+    )
+    # Get the optimal altitude first
+    flight_points_initial = segment.compute_from(
+        FlightPoint(mass=70000.0, time=1000.0, ground_distance=1e5, mach=0.78)
+    )
+    optimal_alt = flight_points_initial.iloc[0].altitude
+    caplog.clear()
+    # Start at a significantly different altitude (exceeding 5m tolerance)
+    with caplog.at_level(logging.WARNING):
+        segment.compute_from(
+            FlightPoint(
+                mass=70000.0,
+                time=1000.0,
+                ground_distance=1e5,
+                mach=0.78,
+                altitude=optimal_alt + 100.0,  # Exceeds tolerance
+            )
+        )
+    # Should log a warning for discontinuity
+    discontinuity_warnings = [
+        r
+        for r in caplog.records
+        if "altitude" in r.message.lower() and "discontinuity" in r.message.lower()
+    ]
+    assert len(discontinuity_warnings) == 1
+
+
 def test_optimal_cruise_stays_at_altitude_cap_during_segment(polar):
     """Test that optimal cruise stays at capped altitude for all points if optimal altitude is
     higher than the cap."""

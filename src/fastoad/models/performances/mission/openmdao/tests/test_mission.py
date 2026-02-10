@@ -11,6 +11,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 import shutil
 from pathlib import Path
 
@@ -499,3 +500,65 @@ def test_mission_group_without_route(cleanup, with_dummy_plugin_2):
     assert_allclose(problem["data:mission:without_route:ZFW"], 55000.0, atol=1.0)
     assert_allclose(problem["data:mission:without_route:needed_block_fuel"], 1136.8, atol=1.0)
     assert_allclose(problem["data:mission:without_route:block_fuel"], 1136.8, atol=1.0)
+
+
+def test_optimal_cruise_initial_altitude_with_discontinuity(cleanup, with_dummy_plugin_2, caplog):
+    """
+    Test that initial_altitude output for optimal cruise reflects the previous segment's
+    ending altitude when there's a discontinuity, not the actual first altitude flown.
+
+    This test uses the test_discontinuity mission where climb ends at 7000m (fixed altitude),
+    then optimal cruise adjusts to its optimal altitude. The initial_altitude output should
+    reflect the climb ending altitude (7000m), and a warning should be logged about the
+    discontinuity. This is due to an actual limitiation of the current implementation of the
+    evaluation of the start and end altitude of the cruise segment, which is based on the previous
+    segment boundary and not the internal optimal cruise starting altitude. To avoid this
+    inconsistency, an optimal altitude climb segment should be inserted before the optimal cruise
+    in case of discontinuity.
+    """
+
+    input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
+    ivc = DataFile(input_file_path).to_ivc()
+
+    # Add mission-specific variables for test_discontinuity
+    ivc.add_output("data:mission:test_discontinuity:max_CL", val=0.45)
+    ivc.add_output("data:mission:test_discontinuity:TOW", val=70000, units="kg")
+
+    # Add dummy variables for phases not used in this mission (but expected by mission wrapper)
+    ivc.add_output("data:mission:test_discontinuity:taxi_out:thrust_rate", val=0.3)
+    ivc.add_output("data:mission:test_discontinuity:taxi_out:duration", val=300, units="s")
+    ivc.add_output("data:mission:test_discontinuity:takeoff:fuel", val=100, units="kg")
+    ivc.add_output("data:mission:test_discontinuity:takeoff:V2", val=70, units="m/s")
+
+    caplog.clear()
+    with caplog.at_level(logging.WARNING):
+        problem = run_system(
+            AdvancedMissionComp(
+                propulsion_id="test.wrapper.propulsion.dummy_engine",
+                out_file=RESULTS_FOLDER_PATH / "optimal_cruise_discontinuity.csv",
+                use_initializer_iteration=False,
+                mission_file_path=MissionWrapper(
+                    DATA_FOLDER_PATH / "test_mission.yml",
+                    mission_name="test_discontinuity",
+                ),
+                reference_area_variable="data:geometry:aircraft:reference_area",
+            ),
+            ivc,
+        )
+
+    # Get the initial_altitude output (should reflect climb ending altitude)
+    initial_altitude_output = problem[
+        "data:mission:test_discontinuity:test_route_discontinuity:cruise:initial_altitude"
+    ]
+
+    # The value reflects the last point of the climb, even though the cruise internally
+    # starts at a different (optimal) altitude
+    assert initial_altitude_output.item() >= 7000.0
+
+    # Check that a warning was logged about the altitude discontinuity
+    discontinuity_warnings = [
+        r
+        for r in caplog.records
+        if "discontinuity" in r.message.lower() and "altitude" in r.message.lower()
+    ]
+    assert len(discontinuity_warnings) > 0, "Expected warning about altitude discontinuity"
