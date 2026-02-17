@@ -1,8 +1,9 @@
 [project]
 name = "FAST-OAD"
 description = "FAST-OAD is a framework for performing rapid Overall Aircraft Design"
+readme = "README.md"
 version = "VERSION_PLACEHOLDER" # This value is replaced by our CI routine during the build process.
-license = {text = "GPL-3.0-only"}
+license = "GPL-3.0-only"
 keywords = ["aircraft", "design", "multi-disciplinary"]
 authors = [
     {name = "Christophe DAVID", email = "christophe.david@onera.fr"},
@@ -33,6 +34,10 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering :: Physics",
 ]
+
+[project.urls]
+homepage = "https://github.com/fast-aircraft-design/FAST-OAD"
+documentation = "https://fast-oad.readthedocs.io/en/stable/"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.15"
