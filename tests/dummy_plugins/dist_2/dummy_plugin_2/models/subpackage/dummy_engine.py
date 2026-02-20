@@ -51,7 +51,7 @@ class DummyEngineWrapper(IOMPropulsionWrapper):
     def setup(self, component: Component):
         component.add_input("data:propulsion:dummy_engine:max_thrust", 1.2e5, units="N")
         component.add_input("data:propulsion:dummy_engine:max_sfc", 1.5e-5, units="kg/N/s")
-        component.add_input("data:geometry:propulsion:engine_count", 2)
+        component.add_input("data:geometry:propulsion:engine_count", 2, units="unitless")
 
     def get_model(self, inputs) -> IPropulsion:
         return FuelEngineSet(
