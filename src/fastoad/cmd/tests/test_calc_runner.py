@@ -11,9 +11,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 import shutil
 from filecmp import cmp
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -167,3 +169,69 @@ def test_multiprocessing_run_2cpu(cleanup):
         max_workers=2,
         use_MPI_if_available=False,
     )
+
+
+def test_safe_run_catches_and_logs_fastoad_errors(caplog):
+    """Test that _safe_run catches FAST-OAD errors and logs details for debugging.
+
+    Without _safe_run, if one case fails due to any FAST-OAD error (convergence,
+    invalid configuration, computation error, etc.), the entire batch crashes.
+    _safe_run prevents this by catching exceptions, logging details, and returning None.
+    """
+    runner = CalcRunner(configuration_file_path=DATA_FOLDER_PATH / "sellar2.yml")
+    input_values = VariableList([Variable("x", val=5.0), Variable("z", val=2.0)])
+    calculation_folder = RESULTS_FOLDER_PATH / "test_safe_run_error"
+
+    # Simulate FAST-OAD raising an error (could be any error: convergence, config, computation)
+    error_message = "Convergence failed: model did not converge"
+    with (
+        patch.object(runner, "run", side_effect=RuntimeError(error_message)),
+        caplog.at_level(logging.WARNING),
+    ):
+        result = CalcRunner._safe_run(runner, input_values, calculation_folder)
+
+    # Verify None is returned instead of propagating the exception
+    assert result is None
+    # Verify error details are logged with context for debugging
+    assert "Computation failed for folder" in caplog.text
+    assert str(calculation_folder) in caplog.text
+    assert error_message in caplog.text
+
+
+def test_run_cases_continue_after_individual_failure(cleanup, caplog):
+    """Test that run_cases completes even when individual cases fail due to FAST-OAD errors.
+
+    This is the key benefit of _safe_run in batch operations: one failing case
+    doesn't kill the entire batch. Failures are logged but the batch continues.
+
+    This test uses actual FAST-OAD errors (not mocks) to demonstrate real robustness.
+    """
+    run_case = CalcRunner(configuration_file_path=DATA_FOLDER_PATH / "sellar2.yml")
+
+    # Create input cases: valid, invalid (will fail in FAST-OAD), valid
+    # The invalid case uses extreme values that cause convergence/computation errors
+    input_vars = [
+        VariableList([Variable("x", val=0.0), Variable("z", val=0.0)]),  # Case 0: OK
+        VariableList(
+            [Variable("x", val="not_a_number"), Variable("z", val=1e10)]
+        ),  # Case 1: Will fail due to invalid input
+        VariableList([Variable("x", val=10.0), Variable("z", val=10.0)]),  # Case 2: OK
+    ]
+
+    # Run with actual error occurring in case 1
+    with caplog.at_level(logging.WARNING):
+        results = run_case.run_cases(
+            input_vars,
+            RESULTS_FOLDER_PATH / "test_batch_continues",
+            max_workers=1,
+            use_MPI_if_available=False,
+        )
+
+    # All 3 cases should have results
+    assert len(results) == 3
+    # First and third succeed (DataFile objects), second fails (None)
+    assert results[0] is not None, "First case should succeed"
+    assert results[1] is None, "Second case should fail and return None due to extreme values"
+    assert results[2] is not None, "Third case should succeed"
+    # Verify the failure was logged (with all 3 cases completing)
+    assert "1 failures out of 3 cases" in caplog.text
