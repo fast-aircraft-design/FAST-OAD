@@ -239,7 +239,7 @@ Design variables
 
 .. code:: yaml
 
-      design_var:
+      design_variables:
         - name: data:geometry:wing:MAC:at25percent:x
           lower: 16.0
           upper: 18.0
