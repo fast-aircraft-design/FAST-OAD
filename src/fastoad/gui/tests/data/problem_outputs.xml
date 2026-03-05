@@ -270,7 +270,7 @@
             <fuel units="kg">2311.1046102485943</fuel>
           </climb>
           <cruise>
-            <altitude units="ft">35000.0</altitude>
+            <altitude_input units="ft">35000.0</altitude_input>
             <distance units="m">4593000.0</distance>
             <fuel units="kg">13556.957108551645</fuel>
             <mass_ratio>0.8185770858683965</mass_ratio>

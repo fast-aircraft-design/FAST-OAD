@@ -41,7 +41,7 @@ phases:
     parts:
       - segment: transition
         target:
-          altitude: data:mission:sizing:main_route:cruise:altitude
+          altitude: data:mission:sizing:main_route:cruise:altitude_input
           mach: data:TLAR:cruise_mach
           delta_ground_distance:
             value: 250

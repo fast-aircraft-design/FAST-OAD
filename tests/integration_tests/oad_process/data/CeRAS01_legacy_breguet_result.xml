@@ -299,7 +299,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. -->
             <fuel units="kg" is_input="False">2312.607693408776<!--burned fuel during phase "climb" of route "main_route" in mission "sizing"--></fuel>
           </climb>
           <cruise>
-            <altitude units="m" is_input="True">10668.0<!--Input defined by the mission.--></altitude>
+            <altitude_input units="m" is_input="True">10668.0<!--Input defined by the mission.--></altitude_input>
             <distance units="m" is_input="False">4593000.0<!--covered ground distance during phase "cruise" of route "main_route" in mission "sizing"--></distance>
             <duration units="s" is_input="False">19857.45794460585<!--duration of phase "cruise" of route "main_route" in mission "sizing"--></duration>
             <fuel units="kg" is_input="False">13571.688402607462<!--burned fuel during phase "cruise" of route "main_route" in mission "sizing"--></fuel>
@@ -340,7 +340,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. -->
         <MTOW units="kg" is_input="False">77086.92311362566<!--maximum takeoff weight--></MTOW>
         <MZFW units="kg" is_input="False">62583.56081766301<!--maximum zero fuel weight--></MZFW>
         <OWE units="kg" is_input="False">42975.56081766301<!--Mass of crew--></OWE>
-        <additional_fuel_capacity units="kg" is_input="False">9.938135917764157e-06<!--fuel mass capacity of wing that exceeds sizing mission requirement--></additional_fuel_capacity>
+        <additional_fuel_capacity units="kg" is_input="False">1.1502499546622857e-05<!--fuel mass capacity of wing that exceeds sizing mission requirement--></additional_fuel_capacity>
         <max_payload units="kg" is_input="False">19608.0<!--max payload weight--></max_payload>
         <payload units="kg" is_input="False">13608.0<!--_inp_data:weight:aircraft:payload--></payload>
         <sizing_block_fuel units="kg" is_input="False">20503.3622860245<!--block fuel quantity (i.e. loaded before taxi-out) used for sizing process--></sizing_block_fuel>

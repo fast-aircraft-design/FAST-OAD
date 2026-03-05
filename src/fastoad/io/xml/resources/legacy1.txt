@@ -289,7 +289,7 @@ data:mission:sizing:main_route:climb:max_climb_rate, Aircraft/mission/sizing/cli
 mission:sizing:initial_climb:hr, Aircraft/mission/sizing/climb/hr_climb
 data:mission:sizing:main_route:cruise:fuel, Aircraft/mission/sizing/cruise/fuel_cruise
 data:mission:sizing:main_route:cruise:duration, Aircraft/mission/sizing/cruise/time_cruise
-data:mission:sizing:main_route:cruise:altitude, Aircraft/mission/sizing/cruise/cruise_altitude
+data:mission:sizing:main_route:cruise:altitude_input, Aircraft/mission/sizing/cruise/cruise_altitude
 mission:sizing:cruise:hr, Aircraft/mission/sizing/cruise/hr_cruise
 data:mission:sizing:main_route:descent:fuel, Aircraft/mission/sizing/descent/fuel_descent
 data:mission:sizing:main_route:descent:duration, Aircraft/mission/sizing/descent/time_descent
