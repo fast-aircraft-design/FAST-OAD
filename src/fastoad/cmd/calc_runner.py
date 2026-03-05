@@ -140,7 +140,7 @@ class CalcRunner:
         max_workers: int | None = None,
         use_MPI_if_available: bool = True,
         overwrite_subfolders: bool = False,
-    ):
+    ) -> list[DataFile | None]:
         """
         Run computations concurrently.
 
@@ -158,6 +158,10 @@ class CalcRunner:
                                      library.
         :param overwrite_subfolders: if False, calculations that match existing subfolders won't be
                                      run (allows batch continuation)
+        :return: a list of output data files, with one entry per input case in `input_list`.
+                 Entries are `DataFile` instances for successful computations, or `None` for
+                 failed computations. Failed computations are caught and logged as warnings
+                 rather than raising exceptions, allowing the batch to continue.
         """
         destination_folder = as_path(destination_folder).resolve()
 
