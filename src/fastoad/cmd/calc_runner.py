@@ -118,9 +118,9 @@ class CalcRunner:
         return problem.write_outputs()  # output_data
 
     @staticmethod
-    def _safe_run(runner, input_values, calculation_folder):
+    def _safe_run(runner, input_values, calculation_folder) -> DataFile | None:
         """Wrapper that catches exceptions and logs them instead of crashing.
-        Expecially useful if e.g., some computations fail due to badly formatted xml files."""
+        Especially useful if e.g., some computations fail due to badly formatted XML files."""
         try:
             return runner.run(input_values, calculation_folder)
         except Exception as e:
@@ -130,7 +130,7 @@ class CalcRunner:
                 str(e),
                 exc_info=True,  # This logs the full traceback
             )
-            return None  # Or return an error indicator
+            return None
 
     def run_cases(
         self,
@@ -189,7 +189,7 @@ class CalcRunner:
                 self._calculation_inputs(
                     input_list, destination_folder, overwrite_subfolders=overwrite_subfolders
                 ),
-                # If a computation crashes, the whole chunk stops.
+                # If a computation stalls, the whole chunk stalls as well.
                 # chunksize=1 ensures all computations will be launched.
                 chunksize=1,
             )
