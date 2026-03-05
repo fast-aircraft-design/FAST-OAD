@@ -234,4 +234,4 @@ def test_run_cases_continue_after_individual_failure(cleanup, caplog):
     assert results[1] is None, "Second case should fail and return None due to extreme values"
     assert results[2] is not None, "Third case should succeed"
     # Verify the failure was logged (with all 3 cases completing)
-    assert "1 failures out of 3 cases" in caplog.text
+    assert "Completed with 1 failures out of 3 cases" in caplog.text
