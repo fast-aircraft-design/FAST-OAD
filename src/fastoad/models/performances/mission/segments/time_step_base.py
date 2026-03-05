@@ -245,18 +245,6 @@ class AbstractTimeStepFlightSegment(
                 del flight_points[-1]
                 break
 
-            elif (
-                flight_points[-1].thrust_rate > 1.0
-                and flight_points[-1].thrust_is_regulated == True
-            ):
-                # During a regulated thrust segment, the calculated thrust rate is above 1
-                # Stop here, the subclass should handle this case
-                _LOGGER.warning(
-                    'Thrust rate is above 1.0 in "%s". Segment computation interrupted.',
-                    self.name,
-                )
-                # We don't delete the last flight point for the subclass to check the last thrust rate
-                break
 
             msg = self._check_values(flight_points[-1])
             if msg:
@@ -410,47 +398,28 @@ class AbstractManualThrustSegment(AbstractTimeStepFlightSegment, ABC):
 @dataclass
 class AbstractRegulatedThrustSegment(AbstractTimeStepFlightSegment, ABC):
     """
-    Base class for computing flight segment where thrust rate is adjusted on drag.
-    """
-
-    time_step: float = 60.0
-
-    def __post_init__(self):
-        super().__post_init__()
-        self.target.mach = self.constant_value_name
-
-    def compute_propulsion(self, flight_point: FlightPoint):
-        flight_point.thrust = flight_point.drag
-        flight_point.thrust_is_regulated = True
-        self.propulsion.compute_flight_points(flight_point)
-
-    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> tuple[float, float]:
-        return 0.0, 0.0
-
-
-@dataclass
-class AbstractRegulatedThrustSegment(AbstractTimeStepFlightSegment, ABC):
-    """
     Base class for computing flight segment where thrust rate is adjusted on drag and slope angle
     """
 
-    time_step: float = 5.0
+    # In case the slope angle is forced (climb/descent at constant slope angle)
+    # For cruise, it is zero
+    slope_angle: float = 0.0  # in radian
 
-    # This private argument is used to distinguish between regulated cruise or climb/descent segment
-    _slope_angle: float = 0.05  # in radian
+    # Optional behaviour if the thrust rate is out of limits <0 or >1
+    thrust_rate_out_of_bound:str = "continue"
 
     def __post_init__(self):
         super().__post_init__()
         self.target.mach = self.constant_value_name
 
     def compute_propulsion(self, flight_point: FlightPoint):
-        flight_point.slope_angle = self._slope_angle
-        flight_point.thrust = flight_point.drag + flight_point.mass * g * np.sin(self._slope_angle)
+        flight_point.slope_angle = self.slope_angle
+        flight_point.thrust = flight_point.drag + flight_point.mass * g * np.sin(self.slope_angle)
         flight_point.thrust_is_regulated = True
         self.propulsion.compute_flight_points(flight_point)
 
     def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> tuple[float, float]:
-        return self._slope_angle, 0.0
+        return self.slope_angle, 0.0
 
 
 @dataclass

@@ -13,9 +13,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from copy import copy
+from copy import copy, deepcopy
 from dataclasses import dataclass, field
 
+import numpy as np
 import pandas as pd
 from scipy.constants import foot, g
 
@@ -30,12 +31,13 @@ from fastoad.models.performances.mission.segments.time_step_base import (
     AbstractLiftFromWeightSegment,
     AbstractRegulatedThrustSegment,
 )
+from fastoad.models.performances.mission.segments.registered.altitude_change import AltitudeChangeSegment
 from fastoad.models.performances.mission.util import get_closest_flight_level
 
 
-@RegisterSegment("altitude_change")
+@RegisterSegment("altitude_change_regulated")
 @dataclass
-class AltitudeChangeSegment(AbstractRegulatedThrustSegment, AbstractLiftFromWeightSegment):
+class AltitudeChangeRegulatedSegment(AbstractRegulatedThrustSegment, AbstractLiftFromWeightSegment):
     """
     Computes a flight path segment where altitude is modified with constant speed and imposed slope angle.
     As a result, the thrust is regulated
@@ -71,6 +73,9 @@ class AltitudeChangeSegment(AbstractRegulatedThrustSegment, AbstractLiftFromWeig
     # The target slope angle in radian
     slope_angle: float = 0.05
 
+    # Optional behaviour if the thrust rate is out of limits <0 or >1
+    thrust_rate_out_of_bound = "extrapolate"
+
     def __post_init__(self):
         super().__post_init__()
         self._slope_angle = self.slope_angle
@@ -79,27 +84,43 @@ class AltitudeChangeSegment(AbstractRegulatedThrustSegment, AbstractLiftFromWeig
         # Use normal settings
         self.interrupt_if_getting_further_from_target = True
 
-        # Need to add a specific mecanism to fall back on to manual thrust segment if thrust_rate > 1
-        flight_points = super().compute_from_start_to_target(FlightPoint, target)
+        # Compute the segment with no limitation on thrust_rate
+        flight_points = super().compute_from_start_to_target(start, target)
 
-        # Check that the thrust rate of the last flight point
-        if flight_points[-1].thrust_rate > 1.0:
-            del flight_points[-1]
-            start = flight_points[-1]
-            # We are asking for a too high thrust rate, falling back on a manual thrust segment
-            climb_segment = AltitudeChangeSegment(
-                target=deepcopy(target),  # deepcopy needed because altitude may be modified.
-                propulsion=self.propulsion,
-                reference_area=self.reference_area,
-                polar=self.polar,
-                name=self.name,
-                engine_setting=self.engine_setting,
-            )
+        # Adjust according to the desired behaviour
+        if self.thrust_rate_out_of_bound == "cap":
+            # Check for out of bound thrust rate and switch to manual thrust segment instead
+            if np.any(flight_points.thrust_rate > 1.0):
+                # We have a too high thrust rate, likely a climb phase
+                idx = np.argwhere(flight_points.thrust_rate > 1.0)
+                start = flight_points[idx-1]
+                start.thrust_rate_is_regulated = False
+                del flight_points[idx:]
 
-            climb_points = climb_segment.compute_from(start)
-            flight_points = pd.concat([flight_points, climb_points]).reset_index(drop=True)
+                climb_segment = AltitudeChangeSegment(
+                    target=deepcopy(target),  # deepcopy needed because altitude may be modified.
+                    propulsion=self.propulsion,
+                    reference_area=self.reference_area,
+                    polar=self.polar,
+                    name=self.name,
+                    engine_setting=self.engine_setting,
+                    thrust_rate= 1.0
+                )
 
-        return flight_points
+                non_regulated_climb_points = climb_segment.compute_from(start)
+                flight_points = pd.concat([flight_points, non_regulated_climb_points]).reset_index(drop=True)
+
+            return flight_points
+
+        elif self.thrust_rate_out_of_bound == "extrapolate":
+            # Do nothing, output the flightpoints with thrust rate out of bounds
+            return flight_points
+
+        else:
+            # Raise a Value error
+            raise ValueError("The value of option 'thrust_rate_out_of_bound' in regulated_altitude_change is invalid,"
+                             " it must be one of ['extrapolate', 'limit']")
+
 
     def get_distance_to_target(
         self, flight_points: list[FlightPoint], target: FlightPoint

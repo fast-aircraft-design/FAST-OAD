@@ -51,6 +51,10 @@ class CruiseSegment(AbstractRegulatedThrustSegment, AbstractLiftFromWeightSegmen
     the initial value.
     """
 
+    time_step:float = 60
+
+    slope_angle:float = 0
+
     def __post_init__(self):
         super().__post_init__()
         # Constant speed at constant altitude is necessarily constant Mach, but
