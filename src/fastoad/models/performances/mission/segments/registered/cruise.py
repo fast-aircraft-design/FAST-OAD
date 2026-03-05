@@ -128,7 +128,7 @@ class OptimalCruiseSegment(CruiseSegment):
                 "Optimal cruise segment '%s' starts at %.0fm to fly at optimum CL, "
                 "but the previous segment ended at %.0fm. "
                 "This creates an instantaneous altitude change of %.0fm. "
-                "The cruise altitude written in the mission outputs (XML) corresponds "
+                "The cruise altitude written in the mission outputs (.CSV) corresponds "
                 "to the previous segment and is therefore incorrect for this optimal "
                 "cruise segment. Consider inserting a climb segment with the keyword "
                 "'optimal_altitude' as target before the optimal cruise to avoid this "
