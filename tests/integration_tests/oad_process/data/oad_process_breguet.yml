@@ -18,6 +18,8 @@ model:
     id: fastoad.mass_performances.compute_MTOW
   aerodynamics:
     id: fastoad.aerodynamics.highspeed.legacy
+  aerodynamics_lowspeed:
+    id: fastoad.aerodynamics.lowspeed.legacy
   aerodynamics_landing:
     id: fastoad.aerodynamics.landing.legacy
     use_xfoil: false
