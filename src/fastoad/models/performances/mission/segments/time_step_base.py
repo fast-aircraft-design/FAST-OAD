@@ -406,7 +406,9 @@ class AbstractRegulatedThrustSegment(AbstractTimeStepFlightSegment, ABC):
     slope_angle: float = 0.0  # in radian
 
     # Optional behaviour if the thrust rate is out of limits <0 or >1
-    thrust_rate_out_of_bound:str = "continue"
+    # extrapolate: means the thrust may be higher of lower than one
+    # limit: means  0 <= thrust_rate <= 1 is forced, when thrust_rate is out of bound, it switches to manual thrust segment
+    thrust_rate_out_of_bound:str = "extrapolate"
 
     def __post_init__(self):
         super().__post_init__()

@@ -18,6 +18,7 @@ from copy import copy
 from dataclasses import dataclass, field
 
 import pandas as pd
+import numpy as np
 from scipy.constants import foot, g
 
 from fastoad.model_base import FlightPoint
@@ -30,6 +31,7 @@ from fastoad.models.performances.mission.segments.base import (
 from fastoad.models.performances.mission.segments.time_step_base import (
     AbstractLiftFromWeightSegment,
     AbstractManualThrustSegment,
+    AbstractRegulatedThrustSegment,
 )
 from fastoad.models.performances.mission.util import get_closest_flight_level
 
@@ -38,7 +40,7 @@ _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 @RegisterSegment("altitude_change")
 @dataclass
-class AltitudeChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightSegment):
+class BaseAltitudeChange(AbstractLiftFromWeightSegment):
     """
     Computes a flight path segment where altitude is modified with constant speed.
 
@@ -91,7 +93,7 @@ class AltitudeChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightS
     #: with max lift/drag ratio.
     OPTIMAL_FLIGHT_LEVEL = "optimal_flight_level"  # used as constant
 
-    def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+    def _handle_target_settings(self, target, start):
         if target.altitude is not None:
             if isinstance(target.altitude, str):
                 # Target altitude will be modified along the process, so we keep track
@@ -192,10 +194,6 @@ class AltitudeChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightS
             )
         return distance_to_target
 
-    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> tuple[float, float]:
-        gamma = (flight_point.thrust - flight_point.drag) / flight_point.mass / g
-        return gamma, 0.0
-
     def _manage_optimal_altitude(self, current, start, target):
         # Optimal altitude is based on a target Mach number, though target speed
         # may be specified as TAS or EAS. If so, Mach number has to be computed
@@ -222,3 +220,86 @@ class AltitudeChangeSegment(AbstractManualThrustSegment, AbstractLiftFromWeightS
             target.altitude = optimal_altitude
         else:  # self._original_target_altitude == self.OPTIMAL_FLIGHT_LEVEL:
             target.altitude = get_closest_flight_level(optimal_altitude, up_direction=False)
+
+@dataclass
+class AltitudeChangeSegment(BaseAltitudeChange, AbstractManualThrustSegment):
+
+    def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> tuple[float, float]:
+        gamma = (flight_point.thrust - flight_point.drag) / flight_point.mass / g
+        return gamma, 0.0
+
+    def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+        self._handle_target_settings(target, start)
+
+        return super().compute_from_start_to_target(start, target)
+
+@dataclass
+class RegulatedAltitudeChangeSegment(BaseAltitudeChange, AbstractRegulatedThrustSegment):
+
+    def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+
+        self._handle_target_settings(target, start)
+
+        # Compute the segment with no limitation on thrust_rate
+        flight_points = super().compute_from_start_to_target(start, target)
+
+        # Adjust according to the desired behaviour
+        if self.thrust_rate_out_of_bound == "limit":
+            # Check for out of bound thrust rate and switch to manual thrust segment instead
+
+            if np.any(flight_points.thrust_rate > 1.0):
+                # We have a too high thrust rate, likely a climb phase, thrust rate forced to 1
+
+                # We use the last FlightPoint where thrust rate is < 1.0 as a starting point.
+                idx = np.argwhere(flight_points.thrust_rate > 1.0)
+                start = FlightPoint.create(flight_points.iloc[idx[0] - 1])
+                start.thrust_rate_is_regulated = False
+                flight_points.drop(flight_points.loc[flight_points.thrust_rate > 1.0].index, inplace=True)
+
+                climb_segment = AltitudeChangeSegment(
+                    target=deepcopy(target),  # deepcopy needed because altitude may be modified.
+                    propulsion=self.propulsion,
+                    reference_area=self.reference_area,
+                    polar=self.polar,
+                    name=self.name,
+                    engine_setting=self.engine_setting,
+                    thrust_rate=1.0,
+                    time_step=self.time_step
+                )
+
+                non_regulated_climb_points = climb_segment.compute_from(start)
+                flight_points = pd.concat([flight_points, non_regulated_climb_points]).reset_index(drop=True)
+
+            elif np.any(flight_points.thrust_rate < 0.0):
+                # We have a too low thrust rate, likely a descent phase, thrust rate forced to 0
+
+                # We use the last FlightPoint where thrust rate is < 1.0 as a starting point.
+                idx = np.argwhere(flight_points.thrust_rate < 0.0)
+                start = FlightPoint.create(flight_points.iloc[idx[0] - 1])
+                start.thrust_rate_is_regulated = False
+                flight_points.drop(flight_points.loc[flight_points.thrust_rate < 0.0].index, inplace=True)
+
+                climb_segment = AltitudeChangeSegment(
+                    target=deepcopy(target),  # deepcopy needed because altitude may be modified.
+                    propulsion=self.propulsion,
+                    reference_area=self.reference_area,
+                    polar=self.polar,
+                    name=self.name,
+                    engine_setting=self.engine_setting,
+                    thrust_rate=0.0,
+                    time_step=self.time_step
+                )
+
+                non_regulated_climb_points = climb_segment.compute_from(start)
+                flight_points = pd.concat([flight_points, non_regulated_climb_points]).reset_index(drop=True)
+
+            return flight_points
+
+        elif self.thrust_rate_out_of_bound == "extrapolate":
+            # Do nothing, output the flightpoints with thrust rate out of bounds
+            return flight_points
+
+        else:
+            # Raise a Value error
+            raise ValueError("The value of option 'thrust_rate_out_of_bound' in regulated_altitude_change is invalid,"
+                             " it must be one of ['extrapolate', 'limit']")
