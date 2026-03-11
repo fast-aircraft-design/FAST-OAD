@@ -14,7 +14,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from copy import copy
+from copy import copy, deepcopy
 from dataclasses import dataclass, field
 
 import pandas as pd
