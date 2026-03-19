@@ -176,7 +176,10 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
         if isinstance(data_source, Path):
             data_source = data_source.as_posix()
 
-        tree.write(data_source, pretty_print=True)
+        # Indent first with lxml API, then disable libxml2 pretty_print at write time,
+        # because libxml2 pretty-print indentation is depth-limited.
+        etree.indent(tree, space="  ")
+        tree.write(data_source, pretty_print=False)
 
     def _read_units(self, elem) -> str | None:
         units = elem.attrib.get(self.xml_unit_attribute, None)

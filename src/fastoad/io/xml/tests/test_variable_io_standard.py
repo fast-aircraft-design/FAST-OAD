@@ -232,3 +232,44 @@ def test_basic_xml_partial_read_and_write_from_variables(cleanup):
     xml_read = VariableIO(varok2_filename, formatter=VariableXmlStandardFormatter())
     new_variables = xml_read.read()
     _check_basic_variables(new_variables)
+
+
+def test_deep_nesting_indentation_not_limited_like_libxml2_pretty_print(cleanup):
+    """
+    Checks that indentation stays correct beyond libxml2's pretty_print depth cap.
+
+    libxml2/xmlsave.c (wrapped by lxml) defines MAX_INDENT=60, so ``tree.write(pretty_print=True)``
+    stops adding indentation past 60 characters of indent. ``etree.indent()`` has
+    no such limit, so deeply nested elements are always indented correctly.
+
+    The path below puts <thickness> 32 levels below the XML root, giving an expected
+    indent of 32 * 2 = 64 spaces — above libxml2's cap.
+    """
+    result_folder = RESULTS_FOLDER_PATH / "deep_nesting"
+    file_path = result_folder / "deep.xml"
+
+    # 32 levels deep; last element indent = 32 x 2 = 64 spaces (above libxml2's cap of 60)
+    deep_path = (
+        "aircraft:geometry:wing:spar:front:upper:skin:stringer:rivet"
+        ":fuselage:frame:longeron:clip:shear:panel:stiffener"
+        ":empennage:horizontal:elevator:hinge:actuator:bracket"
+        ":landing_gear:main:strut:axle:wheel:tire:valve:stem:cap:screw:thickness"
+    )
+    variables = VariableList()
+    variables[deep_path] = {"value": 1.0}
+    VariableIO(file_path, formatter=VariableXmlStandardFormatter()).write(variables)
+
+    thickness_line = next(
+        line for line in file_path.read_text(encoding="utf8").splitlines() if "<thickness" in line
+    )
+    # New behaviour: indent is proportional to depth (64 spaces)
+    assert thickness_line.startswith(" " * 64)
+
+    # Old behaviour: libxml2 pretty_print caps indentation at 60 characters
+    root = etree.parse(file_path.as_posix(), etree.XMLParser(remove_blank_text=True)).getroot()
+    old_thickness_line = next(
+        line
+        for line in etree.tostring(root, pretty_print=True, encoding="unicode").splitlines()
+        if "<thickness" in line
+    )
+    assert not old_thickness_line.startswith(" " * 64)
