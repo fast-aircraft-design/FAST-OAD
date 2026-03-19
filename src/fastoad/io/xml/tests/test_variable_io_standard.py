@@ -264,7 +264,9 @@ def test_mixed_content_children_are_written_on_new_lines(cleanup):
         "units": "drag_count",
     }
 
-    VariableIO(file_path, formatter=VariableXmlStandardFormatter()).write(variables)
+    formatter = VariableXmlStandardFormatter()
+    formatter.path_separator = ":"
+    VariableIO(file_path, formatter=formatter).write(variables)
 
     lines = file_path.read_text(encoding="utf8").splitlines()
     drag_total_line = next(line for line in lines if '<drag_total units="drag_count"' in line)

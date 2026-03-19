@@ -202,7 +202,9 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
             if all(isinstance(child, _Comment) for child in element):
                 continue
 
-            parent_depth = len(list(element.iterancestors()))
+            parent_depth = sum(
+                1 for _ in element.iterancestors()
+            )  # same as len(list(element.iterancestors())), but we don't stock the list in memory
             child_indent = indent_space * (parent_depth + 1)
             parent_indent = indent_space * parent_depth
 
