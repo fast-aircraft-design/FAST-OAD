@@ -41,6 +41,7 @@ ignore = [
     "D105",   # Missing docstring in magic method
     "D212",   # Multi-line docstring summary should start at the first line
     "PD002",  # We want to use inplace for pandas
+    "RUF200", # Invalid pyproject.toml. We use VERSION_PLACEHOLDER in release/pyproject.toml that is replaced during build.
 ]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.
