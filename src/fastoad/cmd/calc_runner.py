@@ -117,6 +117,21 @@ class CalcRunner:
 
         return problem.write_outputs()  # output_data
 
+    @staticmethod
+    def _safe_run(runner, input_values, calculation_folder) -> DataFile | None:
+        """Wrapper that catches exceptions and logs them instead of crashing.
+        Especially useful if e.g., some computations fail due to badly formatted XML files."""
+        try:
+            return runner.run(input_values, calculation_folder)
+        except Exception as e:
+            _LOGGER.error(
+                'Computation failed for folder "%s": %s',
+                calculation_folder,
+                str(e),
+                exc_info=True,  # This logs the full traceback
+            )
+            return None
+
     def run_cases(
         self,
         input_list: list[VariableList],
@@ -125,7 +140,7 @@ class CalcRunner:
         max_workers: int | None = None,
         use_MPI_if_available: bool = True,
         overwrite_subfolders: bool = False,
-    ):
+    ) -> list[DataFile | None]:
         """
         Run computations concurrently.
 
@@ -143,6 +158,10 @@ class CalcRunner:
                                      library.
         :param overwrite_subfolders: if False, calculations that match existing subfolders won't be
                                      run (allows batch continuation)
+        :return: a list of output data files, with one entry per input case in `input_list`.
+                 Entries are `DataFile` instances for successful computations, or `None` for
+                 failed computations. Failed computations are caught and logged as warnings
+                 rather than raising exceptions, allowing the batch to continue.
         """
         destination_folder = as_path(destination_folder).resolve()
 
@@ -169,15 +188,22 @@ class CalcRunner:
         pool_cls = _MPIPool if use_MPI else mp.Pool
 
         with pool_cls(max_workers) as pool:
-            pool.starmap(
-                CalcRunner.run,
+            results = pool.starmap(
+                CalcRunner._safe_run,  # Use the wrapper instead
                 self._calculation_inputs(
                     input_list, destination_folder, overwrite_subfolders=overwrite_subfolders
                 ),
-                # If a computation crashes, the whole chunk stops.
+                # If a computation stalls, the whole chunk stalls as well.
                 # chunksize=1 ensures all computations will be launched.
                 chunksize=1,
             )
+
+        # return results or count failures
+        failures = sum(1 for r in results if r is None)
+        if failures:
+            _LOGGER.warning("Completed with %d failures out of %d cases", failures, len(results))
+
+        return results
 
     def _calculation_inputs(
         self,
