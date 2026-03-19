@@ -151,6 +151,11 @@ def test_basic_xml_read_and_write_from_variables(cleanup):
     new_var_list = xml_check.read()
     _check_basic_variables(new_var_list)
 
+    # Scalar values followed by description comments should remain compact and inline.
+    written_lines = new_file_path.read_text(encoding="utf8").splitlines()
+    span_line = next(line for line in written_lines if '<span units="m"' in line)
+    assert span_line.strip() == '<span units="m">42.0<!--scalar 2--></span>'
+
     # try to write with bad separator
     xml_write.formatter.path_separator = "/"
     with pytest.raises(FastXPathEvalError):
@@ -259,13 +264,15 @@ def test_deep_nesting_indentation_not_limited_like_libxml2_pretty_print(cleanup)
     variables[deep_path] = {"value": 1.0}
     VariableIO(file_path, formatter=VariableXmlStandardFormatter()).write(variables)
 
+    # The FAST-OAD write path should keep the full depth-based indentation.
     thickness_line = next(
         line for line in file_path.read_text(encoding="utf8").splitlines() if "<thickness" in line
     )
     # New behaviour: indent is proportional to depth (64 spaces)
     assert thickness_line.startswith(" " * 64)
 
-    # Old behaviour: libxml2 pretty_print caps indentation at 60 characters
+    # This reproduces the old serialization path used before the fix.
+    # libxml2 pretty_print caps indentation at 60 characters.
     root = etree.parse(file_path.as_posix(), etree.XMLParser(remove_blank_text=True)).getroot()
     old_thickness_line = next(
         line

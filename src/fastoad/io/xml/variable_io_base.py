@@ -179,7 +179,23 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
         # Indent first with lxml API, then disable libxml2 pretty_print at write time,
         # because libxml2 pretty-print indentation is depth-limited.
         etree.indent(tree, space="  ")
+        # etree.indent() also adds whitespace after inline comments, which would move
+        # closing tags to the next line for scalar values with descriptions.
+        self._preserve_inline_comments(root)
         tree.write(data_source, pretty_print=False)
+
+    @staticmethod
+    def _preserve_inline_comments(root: _Element):
+        """Keeps closing tags inline when an element only contains text and XML comments."""
+        for element in root.iter():
+            if not element.text or not element.text.strip() or len(element) == 0:
+                continue
+
+            if all(isinstance(child, _Comment) for child in element):
+                for child in element:
+                    # Remove indentation inserted as comment tail so we keep
+                    # `<tag>value<!--comment--></tag>` on a single line.
+                    child.tail = ""
 
     def _read_units(self, elem) -> str | None:
         units = elem.attrib.get(self.xml_unit_attribute, None)
