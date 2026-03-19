@@ -280,3 +280,44 @@ def test_deep_nesting_indentation_not_limited_like_libxml2_pretty_print(cleanup)
         if "<thickness" in line
     )
     assert not old_thickness_line.startswith(" " * 64)
+
+
+def test_mixed_content_children_are_written_on_new_lines(cleanup):
+    """Checks mixed-content tags keep children on new lines instead of inline after scalar text."""
+    result_folder = RESULTS_FOLDER_PATH / "mixed_content"
+    file_path = result_folder / "mixed_content.xml"
+
+    variables = VariableList()
+    variables["aerodynamics:drag_total"] = {"value": 322.1092510059437, "units": "drag_count"}
+    variables["aerodynamics:drag_total:compressibility"] = {
+        "value": 16.745349064771244,
+        "units": "drag_count",
+    }
+    variables["aerodynamics:drag_total:compressibility:uncertainty"] = {
+        "value": 1.1211161467957889,
+        "units": "drag_count",
+    }
+    variables["aerodynamics:drag_total:uncertainty"] = {
+        "value": 1.2794806939569718,
+        "units": "drag_count",
+    }
+    variables["aerodynamics:drag_induced"] = {"value": 69.24605935876488, "units": "drag_count"}
+    variables["aerodynamics:drag_induced:uncertainty"] = {
+        "value": 0.15836454716118306,
+        "units": "drag_count",
+    }
+
+    VariableIO(file_path, formatter=VariableXmlStandardFormatter()).write(variables)
+
+    lines = file_path.read_text(encoding="utf8").splitlines()
+    drag_total_line = next(line for line in lines if '<drag_total units="drag_count"' in line)
+    compressibility_line = next(
+        line for line in lines if '<compressibility units="drag_count"' in line
+    )
+    drag_induced_line = next(line for line in lines if '<drag_induced units="drag_count"' in line)
+
+    # Children should not stay inline after parent scalar values.
+    assert "<compressibility" not in drag_total_line
+    assert "<uncertainty" not in drag_total_line
+    assert "<uncertainty" not in compressibility_line
+    assert "<uncertainty" not in drag_induced_line

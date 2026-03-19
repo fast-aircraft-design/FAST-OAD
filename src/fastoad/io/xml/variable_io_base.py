@@ -179,10 +179,39 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
         # Indent first with lxml API, then disable libxml2 pretty_print at write time,
         # because libxml2 pretty-print indentation is depth-limited.
         etree.indent(tree, space="  ")
+        # etree.indent() does not split mixed-content nodes (text + element children),
+        # so child tags can stay on the same line as scalar values.
+        self._preserve_mixed_content_line_breaks(root)
         # etree.indent() also adds whitespace after inline comments, which would move
         # closing tags to the next line for scalar values with descriptions.
         self._preserve_inline_comments(root)
         tree.write(data_source, pretty_print=False)
+
+    @staticmethod
+    def _preserve_mixed_content_line_breaks(root: _Element, indent_space: str = "  "):
+        """Ensures children of scalar-valued elements start on a new indented line."""
+        for element in root.iter():
+            if len(element) == 0 or not element.text:
+                continue
+
+            text_value = element.text.strip()
+            if not text_value:
+                continue
+
+            # Keep text+comment-only elements compact; handled in _preserve_inline_comments().
+            if all(isinstance(child, _Comment) for child in element):
+                continue
+
+            parent_depth = len(list(element.iterancestors()))
+            child_indent = indent_space * (parent_depth + 1)
+            parent_indent = indent_space * parent_depth
+
+            element.text = f"{text_value}\n{child_indent}"
+            for index, child in enumerate(element):
+                if index == len(element) - 1:
+                    child.tail = f"\n{parent_indent}"
+                else:
+                    child.tail = f"\n{child_indent}"
 
     @staticmethod
     def _preserve_inline_comments(root: _Element):
