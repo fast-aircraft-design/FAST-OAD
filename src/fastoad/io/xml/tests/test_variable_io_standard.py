@@ -151,6 +151,11 @@ def test_basic_xml_read_and_write_from_variables(cleanup):
     new_var_list = xml_check.read()
     _check_basic_variables(new_var_list)
 
+    # Scalar values followed by description comments should remain compact and inline.
+    written_lines = new_file_path.read_text(encoding="utf8").splitlines()
+    span_line = next(line for line in written_lines if '<span units="m"' in line)
+    assert span_line.strip() == '<span units="m">42.0<!--scalar 2--></span>'
+
     # try to write with bad separator
     xml_write.formatter.path_separator = "/"
     with pytest.raises(FastXPathEvalError):
@@ -232,3 +237,46 @@ def test_basic_xml_partial_read_and_write_from_variables(cleanup):
     xml_read = VariableIO(varok2_filename, formatter=VariableXmlStandardFormatter())
     new_variables = xml_read.read()
     _check_basic_variables(new_variables)
+
+
+def test_mixed_content_children_are_written_on_new_lines(cleanup):
+    """Checks mixed-content tags keep children on new lines instead of inline after scalar text."""
+    result_folder = RESULTS_FOLDER_PATH / "mixed_content"
+    file_path = result_folder / "mixed_content.xml"
+
+    variables = VariableList()
+    variables["aerodynamics:drag_total"] = {"value": 322.1092510059437, "units": "drag_count"}
+    variables["aerodynamics:drag_total:compressibility"] = {
+        "value": 16.745349064771244,
+        "units": "drag_count",
+    }
+    variables["aerodynamics:drag_total:compressibility:uncertainty"] = {
+        "value": 1.1211161467957889,
+        "units": "drag_count",
+    }
+    variables["aerodynamics:drag_total:uncertainty"] = {
+        "value": 1.2794806939569718,
+        "units": "drag_count",
+    }
+    variables["aerodynamics:drag_induced"] = {"value": 69.24605935876488, "units": "drag_count"}
+    variables["aerodynamics:drag_induced:uncertainty"] = {
+        "value": 0.15836454716118306,
+        "units": "drag_count",
+    }
+
+    formatter = VariableXmlStandardFormatter()
+    formatter.path_separator = ":"
+    VariableIO(file_path, formatter=formatter).write(variables)
+
+    lines = file_path.read_text(encoding="utf8").splitlines()
+    drag_total_line = next(line for line in lines if '<drag_total units="drag_count"' in line)
+    compressibility_line = next(
+        line for line in lines if '<compressibility units="drag_count"' in line
+    )
+    drag_induced_line = next(line for line in lines if '<drag_induced units="drag_count"' in line)
+
+    # Children should not stay inline after parent scalar values.
+    assert "<compressibility" not in drag_total_line
+    assert "<uncertainty" not in drag_total_line
+    assert "<uncertainty" not in compressibility_line
+    assert "<uncertainty" not in drag_induced_line
