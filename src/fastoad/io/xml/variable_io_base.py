@@ -189,7 +189,13 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
 
     @staticmethod
     def _preserve_mixed_content_line_breaks(root: _Element, indent_space: str = "  "):
-        """Ensures children of scalar-valued elements start on a new indented line."""
+        """
+        Ensures children of scalar-valued elements start on a new indented line.
+
+        etree.indent() does not split mixed-content nodes (text + element children) if text is a
+        scalar, so this method adds line breaks and indentation to ensure child tags are on their
+        own lines when the parent element has scalar text content.
+        """
         for element in root.iter():
             if len(element) == 0 or not element.text:
                 continue
@@ -217,12 +223,19 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
 
     @staticmethod
     def _preserve_inline_comments(root: _Element):
-        """Keeps closing tags inline when an element only contains text and XML comments."""
+        """
+        Keeps closing tags inline when an element only contains text and XML comments.
+
+        The idea here is that comments are considered as children for xml, so they are mixed nodes
+        and can be badly indented by etree.indent() if we do not handle them separately.
+        """
         for element in root.iter():
             if not element.text or not element.text.strip() or len(element) == 0:
                 continue
 
-            if all(isinstance(child, _Comment) for child in element):
+            if all(
+                isinstance(child, _Comment) for child in element
+            ):  # comment are children for xml
                 for child in element:
                     # Remove indentation inserted as comment tail so we keep
                     # `<tag>value<!--comment--></tag>` on a single line.
