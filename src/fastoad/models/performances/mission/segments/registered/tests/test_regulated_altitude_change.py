@@ -36,16 +36,17 @@ def test_regulated_altitude_change(polar):
         # Note: reference values are obtained by running the process with 2s as time step
         assert_allclose(last_point.altitude, 5000.0)
         assert_allclose(last_point.true_airspeed, 150.0)
+        assert_allclose(flight_points.iloc[0].thrust, 99239.7, atol=1)
+        assert_allclose(last_point.thrust, 101737, atol=1)
 
         #Check the gradient is actually constant along trajectory
         altitude_change_start = flight_points.iloc[1].altitude - flight_points.iloc[0].altitude
         calculated_altitude_change_start = flight_points.iloc[0].true_airspeed*np.sin(required_slope_angle)*2.0
-
         assert approx(altitude_change_start, calculated_altitude_change_start, rtol=1e-3)
 
-        assert_allclose(flight_points.iloc[0].thrust, 99239.7, atol=1)
-        assert_allclose(last_point.thrust, 101737, atol=1)
 
+    run()
+    # second run as usual
     run()
 
     # A second call with thrust_rate limitations
@@ -69,24 +70,25 @@ def test_regulated_altitude_change(polar):
         # Note: reference values are obtained by running the process with 2s as time step
         assert_allclose(last_point.altitude, 5000.0)
         assert_allclose(last_point.true_airspeed, 150.0)
+        assert_allclose(flight_points.iloc[0].thrust, 99239.7, atol=1)
+        assert_allclose(last_point.thrust, 100000, atol=1)
 
         #Check the gradient is actually constant at the beginning of the trajectory
         altitude_change_start = flight_points.iloc[1].altitude - flight_points.iloc[0].altitude
         calculated_altitude_change_start = flight_points.iloc[0].true_airspeed*np.sin(required_slope_angle)*2.0
-
         assert approx(altitude_change_start, calculated_altitude_change_start, rtol=1e-3)
-        assert_allclose(flight_points.iloc[0].thrust, 99239.7, atol=1)
-        assert_allclose(last_point.thrust, 100000, atol=1)
 
         # Check the gradient is lower than asked at the end of trajectory and that thrust rate is never>1
         assert last_point.slope_angle < required_slope_angle
         assert not np.any(flight_points.thrust_rate > 1)
 
     run()
-
-    required_slope_angle = -0.0455
+    # second run as usual
+    run()
 
     ## Now test in descent without limiting the thrust rate
+    required_slope_angle = -0.0455
+
     segment = RegulatedAltitudeChangeSegment(
         target=FlightPoint(altitude=1000.0, true_airspeed="constant"),
         propulsion=propulsion,
@@ -112,19 +114,22 @@ def test_regulated_altitude_change(polar):
         #Check the gradient is actually constant at the beginning of the trajectory
         altitude_change_start = flight_points.iloc[1].altitude - flight_points.iloc[0].altitude
         calculated_altitude_change_start = flight_points.iloc[0].true_airspeed*np.sin(required_slope_angle)*2.0
-
         assert approx(altitude_change_start, calculated_altitude_change_start, rtol=1e-3)
+
+        # Test the thrust required is negative at the end of the trajectory
         assert_allclose(flight_points.iloc[0].thrust, 2424, atol=1)
         assert_allclose(last_point.thrust, -515.9, atol=1)
         assert_allclose(flight_points.iloc[0].thrust_rate, 0.02424, rtol=1e-3)
         assert_allclose(last_point.thrust_rate, -0.00516, rtol=1e-3)
 
-        # Add test to mass when thrust_rate < 0 to check mass is not added
+        # Test to mass when thrust_rate < 0 to check mass is not added
         assert flight_points.iloc[-2].mass > last_point.mass
 
     run()
+    # Second run
+    run()
 
-    ## Now test in descent with limit on the thrust rate
+    ## Now test in descent with limitation on the thrust rate
     segment = RegulatedAltitudeChangeSegment(
         target=FlightPoint(altitude=1000.0, true_airspeed="constant"),
         propulsion=propulsion,
@@ -149,8 +154,8 @@ def test_regulated_altitude_change(polar):
         # Check the gradient is actually constant at the beginning of the trajectory
         altitude_change_start = flight_points.iloc[1].altitude - flight_points.iloc[0].altitude
         calculated_altitude_change_start = flight_points.iloc[0].true_airspeed * np.sin(required_slope_angle) * 2.0
-
         assert approx(altitude_change_start, calculated_altitude_change_start, rtol=1e-3)
+
         assert_allclose(flight_points.iloc[0].thrust, 2424, atol=1)
         assert_allclose(flight_points.iloc[0].thrust_rate, 0.02424, rtol=1e-3)
 
@@ -161,13 +166,20 @@ def test_regulated_altitude_change(polar):
         assert last_point.slope_angle > required_slope_angle
 
     run()
+    # second run
+    run()
 
+# The following tests are here to ensure that we do not lose the common functionalities of altitude change
 
-def test_regulated_altitude_change_with_optimal_options(polar):
+def test_regulated_altitude_change_optimal_no_limit(polar):
+    """Baseline case – no thrust‑rate limitation."""
     propulsion = FuelEngineSet(DummyEngine(5.0e4, 1.0e-5), 2)
 
     segment = RegulatedAltitudeChangeSegment(
-        target=FlightPoint(altitude=RegulatedAltitudeChangeSegment.OPTIMAL_FLIGHT_LEVEL, mach="constant"),
+        target=FlightPoint(
+            altitude=RegulatedAltitudeChangeSegment.OPTIMAL_FLIGHT_LEVEL,
+            mach="constant",
+        ),
         propulsion=propulsion,
         reference_area=120.0,
         polar=polar,
@@ -175,20 +187,57 @@ def test_regulated_altitude_change_with_optimal_options(polar):
         time_step=2.0,
     )
 
-    def run():
-        flight_points = segment.compute_from(FlightPoint(altitude=5000.0, mach=0.82, mass=70000.0))
+    # Execute the segment
+    flight_points = segment.compute_from(
+        FlightPoint(altitude=5000.0, mach=0.82, mass=70000.0)
+    )
+    last_point = flight_points.iloc[-1]
 
-        last_point = flight_points.iloc[-1]
-        assert_allclose(flight_points.mach, 0.82)
-        assert_allclose(last_point.altitude / foot, 32000.0, atol=0.1)
-        assert_allclose(last_point.time, 77.5, rtol=1e-2)
-        assert_allclose(last_point.true_airspeed, 246.44, rtol=1e-4)
-        assert_allclose(last_point.mass, 69843.0, rtol=1e-4)
-        assert_allclose(last_point.ground_distance, 19179.0, rtol=1e-3)
+    # Assertions
+    assert_allclose(flight_points.mach, 0.82)
+    assert_allclose(last_point.altitude / foot, 32000.0, atol=0.1)
+    assert_allclose(last_point.time, 186.9, rtol=1e-2)
+    assert_allclose(last_point.true_airspeed, 246.44, rtol=1e-4)
+    assert_allclose(last_point.mass, 69808.3, rtol=1e-4)
+    assert_allclose(last_point.ground_distance, 47377.4, rtol=1e-3)
 
-    run()
+def test_regulated_altitude_change_optimal_with_limit(polar):
+    """Same flight profile, but the thrust‑rate is forced to stay < 1."""
+    propulsion = FuelEngineSet(DummyEngine(5.0e4, 1.0e-5), 2)
+
+    segment = RegulatedAltitudeChangeSegment(
+        target=FlightPoint(
+            altitude=RegulatedAltitudeChangeSegment.OPTIMAL_FLIGHT_LEVEL,
+            mach="constant",
+        ),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        slope_angle=0.1,
+        time_step=2.0,
+        thrust_rate_out_of_bound="limit",
+    )
+
+    # Execute the segment
+    flight_points = segment.compute_from(
+        FlightPoint(altitude=5000.0, mach=0.82, mass=70000.0)
+    )
+    last_point = flight_points.iloc[-1]
+
+    # Assertions
+    assert_allclose(flight_points.mach, 0.82)
+    assert_allclose(last_point.altitude / foot, 32000.0, atol=0.1)
+    assert_allclose(last_point.time, 192.2, rtol=1e-2)
+    assert_allclose(last_point.true_airspeed, 246.44, rtol=1e-4)
+    assert_allclose(last_point.mass, 69807.8, rtol=1e-4)
+    assert_allclose(last_point.ground_distance, 48758.2, rtol=1e-3)
+
+    # The regulated thrust segment should have been replaced by a manual one,
+    # therefore the thrust rate must be capped at 1.0.
+    assert_allclose(flight_points.thrust_rate, 1.0, rtol=1e-6)
 
 def test_regulated_altitude_change_with_CL_limitation(polar):
+    """Flight is limited by a target lift coefficient (CL)."""
     propulsion = FuelEngineSet(DummyEngine(5.0e4, 1.0e-5), 2)
 
     segment = RegulatedAltitudeChangeSegment(
@@ -200,20 +249,17 @@ def test_regulated_altitude_change_with_CL_limitation(polar):
         time_step=2.0,
     )
 
-    def run():
-        flight_points = segment.compute_from(FlightPoint(altitude=5000.0, mach=0.82, mass=70000.0))
+    # Execute the segment
+    flight_points = segment.compute_from(
+        FlightPoint(altitude=5000.0, mach=0.82, mass=70000.0)
+    )
+    last_point = flight_points.iloc[-1]
 
-        last_point = flight_points.iloc[-1]
-        # Note: reference values are obtained by running the process with 0.01s as time step
-        assert_allclose(flight_points.mach, 0.82)
-        assert_allclose(last_point.altitude / foot, 32000.0, atol=0.1)
-        assert_allclose(last_point.time, 77.5, rtol=1e-2)
-        assert_allclose(last_point.true_airspeed, 246.44, rtol=1e-4)
-        assert_allclose(last_point.mass, 69843.0, rtol=1e-4)
-        assert_allclose(last_point.ground_distance, 19179.0, rtol=1e-3)
-        assert_allclose(last_point.CL, 0.4418, rtol=1e-3)
-
-    run()
-
-    # A second call is done to ensure first run did not modify anything (like target definition)
-    run()
+    # Assertions (note: altitude reference is in metres here)
+    assert_allclose(flight_points.mach, 0.82)
+    assert_allclose(last_point.altitude, 9757.1, atol=0.1)
+    assert_allclose(last_point.time, 187.07, rtol=1e-2)
+    assert_allclose(last_point.true_airspeed, 246.44, rtol=1e-4)
+    assert_allclose(last_point.mass, 69808.1, rtol=1e-4)
+    assert_allclose(last_point.ground_distance, 47412.3, rtol=1e-3)
+    assert_allclose(last_point.CL, 0.4418, rtol=1e-3)
