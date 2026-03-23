@@ -17,8 +17,10 @@ Tests for FAST-OAD variable viewer
 import shutil
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pytest
+from ipydatagrid import DataGrid
 from pandas.testing import assert_frame_equal
 
 from .. import VariableViewer
@@ -159,3 +161,53 @@ def test_variable_reader_save():
         ref_df.sort_values("Name").reset_index(drop=True),
         variable_viewer.dataframe.sort_values("Name").reset_index(drop=True),
     )
+
+
+def test_variable_viewer_with_arrays():
+    """
+    VariableViewer must not raise a ValueError when the XML file contains
+    variables whose values are arrays (mixed scalar / array types in the
+    Value column used to break dataframe serialisation).
+    """
+    # problem_outputs.xml contains both scalar and array-valued variables
+    filename = DATA_FOLDER_PATH / "problem_outputs.xml"
+
+    viewer = VariableViewer()
+    viewer.load(filename)
+
+    # display() must not raise
+    viewer.display()
+
+    # At least one array-valued variable must be present to make the test meaningful
+    has_array = viewer.dataframe["Value"].apply(
+        lambda v: isinstance(v, (list, np.ndarray)) and len(v) > 1
+    )
+    assert has_array.any(), "Test data must contain at least one array-valued variable"
+
+    # The grid must be a DataGrid instance
+    assert isinstance(viewer._grid, DataGrid)
+
+    # get_variables() must still round-trip without error
+    variables = viewer.get_variables()
+    assert len(variables) > 0
+
+
+def test_value_to_display_and_back():
+    """Unit tests for the array from/to string conversion helpers."""
+    # numpy array round-trip
+    arr = np.array([1.0, 2.0, 3.0])
+    display_val = VariableViewer._value_to_display(arr)
+    assert isinstance(display_val, str)
+    recovered = VariableViewer._display_to_value(display_val, arr)
+    np.testing.assert_array_almost_equal(recovered, arr)
+
+    # list round-trip (the actual storage type used by VariableIO)
+    lst = [1.0, 2.0, 3.0]
+    display_val = VariableViewer._value_to_display(lst)
+    assert isinstance(display_val, str)
+    recovered = VariableViewer._display_to_value(display_val, lst)
+    assert recovered == lst
+
+    # Scalar values are preserved as-is
+    assert VariableViewer._value_to_display(3.14) == 3.14
+    assert VariableViewer._display_to_value("2.5", 1.0) == pytest.approx(2.5)

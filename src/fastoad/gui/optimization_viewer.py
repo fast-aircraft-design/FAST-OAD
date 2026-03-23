@@ -14,15 +14,16 @@ Defines the variable viewer for postprocessing
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import contextlib
 from math import isnan
 from pathlib import Path
 from typing import ClassVar
 
-import ipysheet as sh
 import ipywidgets as widgets
 import numpy as np
 import pandas as pd
 from IPython.display import clear_output, display
+from ipydatagrid import DataGrid, TextRenderer
 
 from fastoad.io import DataFile
 from fastoad.io.configuration.configuration import (
@@ -36,6 +37,11 @@ from fastoad.openmdao.variables import Variable, VariableList
 from .exceptions import FastMissingFileError
 
 pd.set_option("display.max_rows", None)
+
+# Columns that are read-only in the grid (cannot be edited by the user)
+_READ_ONLY_COLUMNS = {"Name", "Unit", "Description", "Value"}
+# Columns that can be edited by the user
+_EDITABLE_COLUMNS = {"Initial Value", "Lower", "Upper"}
 
 
 class OptimizationViewer:
@@ -63,14 +69,17 @@ class OptimizationViewer:
         #: The dataframe which is the mirror of self.file
         self.dataframe = pd.DataFrame()
 
-        # The sheet which is the mirror of the design var sheet
-        self._design_var_sheet = None
+        # The grid for design variables
+        self._design_var_grid = None
+        self._design_var_indices: list = []
 
-        # The sheet which is the mirror of the constraint sheet
-        self._constraint_sheet = None
+        # The grid for constraints
+        self._constraint_grid = None
+        self._constraint_indices: list = []
 
-        # The sheet which is the mirror of the objective sheet
-        self._objective_sheet = None
+        # The grid for objectives
+        self._objective_grid = None
+        self._objective_indices: list = []
 
         # The ui containing save and load buttons
         self._save_load_buttons = None
@@ -255,109 +264,86 @@ class OptimizationViewer:
             self.dataframe[column_to_attribute.keys()].rename(columns=column_to_attribute)
         )
 
-    def _df_to_sheet(self, df: pd.DataFrame) -> sh.Sheet:
+    def _df_to_grid(self, df: pd.DataFrame) -> DataGrid:
         """
-        Transforms a pandas DataFrame into a ipysheet Sheet.
-        The cells are set to read only except for the values.
+        Transforms a pandas DataFrame into an ipydatagrid DataGrid.
+
+        Columns in ``_READ_ONLY_COLUMNS`` are rendered with a grey background to
+        signal they are not editable.  The grid itself is editable so that the
+        user can modify the bound / initial-value columns.
+
+        If ``self._MISSING_OUTPUT_FILE`` is True, the *Value* column cells are
+        replaced with ``"-"`` to indicate that no output is available.
 
         :param df: the pandas DataFrame to be converted
-        :return: the equivalent ipysheet Sheet
+        :return: the DataGrid widget
         """
-        if not df.empty:
-            # Adapted from_dataframe() method of ipysheet
-            columns = df.columns.tolist()
-            rows = df.index.tolist()
-            cells = []
+        if df.empty:
+            return DataGrid(pd.DataFrame(), editable=True, layout=widgets.Layout(height="100px"))
 
-            read_only_cells = ["Name", "Unit", "Description", "Value"]
+        display_df = df.copy().reset_index(drop=True)
 
-            style = self._cell_styling(df)
-            for row_idx, r in enumerate(rows):
-                for col_idx, c in enumerate(columns):
-                    value = df.loc[r, c]
-                    if c in read_only_cells:
-                        read_only = True
-                        numeric_format = None
-                    else:
-                        read_only = False
-                        # TODO: make the number of decimals depend on the module ?
-                        # or chosen in the ui by the user
-                        numeric_format = "0.000"
+        if self._MISSING_OUTPUT_FILE and "Value" in display_df.columns:
+            display_df["Value"] = "-"
 
-                    # If no output file is provided make it clearer for the user
-                    if c == "Value" and self._MISSING_OUTPUT_FILE:
-                        value = "-"
+        # Build per-column renderers: grey background for read-only columns
+        renderers = {
+            col: TextRenderer(background_color="#f0f0f0")
+            for col in display_df.columns
+            if col in _READ_ONLY_COLUMNS
+        }
 
-                    cells.append(
-                        sh.Cell(
-                            value=value,
-                            row_start=row_idx,
-                            row_end=row_idx,
-                            column_start=col_idx,
-                            column_end=col_idx,
-                            numeric_format=numeric_format,
-                            read_only=read_only,
-                            style=style[(r, c)],
-                        )
-                    )
-            sheet = sh.Sheet(
-                rows=len(rows),
-                columns=len(columns),
-                cells=cells,
-                row_headers=[str(header) for header in rows],
-                column_headers=[str(header) for header in columns],
-            )
+        # Colour active/violated bounds (yellow = active within threshold, red = violated)
+        # TODO: replace with ipydatagrid VegaExpr conditional formatting for live updates
+        style = self._cell_styling(df)
+        for (r, c), cell_style in style.items():
+            if c in display_df.columns and cell_style.get("backgroundColor"):
+                color = cell_style["backgroundColor"]
+                existing = renderers.get(c, TextRenderer())
+                existing.background_color = color
+                renderers[c] = existing
 
-        else:
-            sheet = sh.sheet(rows=0, columns=0)
-
-        return sheet
-
-    @staticmethod
-    def _sheet_to_df(sheet: sh.Sheet) -> pd.DataFrame:
-        """
-        Transforms a ipysheet Sheet into a pandas DataFrame.
-
-        :param sheet: the ipysheet Sheet to be converted
-        :return: the equivalent pandas DataFrame
-        """
-        return sh.to_dataframe(sheet)
-
-    # change has to be there for observe() to work
-    def _update_df(self, change=None):
-        """
-        Updates the stored DataFrame with respect to the actual values of the Sheet.
-        Then updates the file with respect to the stored DataFrame.
-        """
-        frames = [
-            self._sheet_to_df(self._design_var_sheet),
-            self._sheet_to_df(self._constraint_sheet),
-            self._sheet_to_df(self._objective_sheet),
-        ]
-
-        df = pd.concat(frames, sort=True)
-        columns = {}
-        columns.update(OptimizationViewer._DEFAULT_COLUMN_RENAMING)
-        columns.pop("type")
-
-        column_to_attribute = {value: key for key, value in columns.items()}
-
-        variables = VariableList.from_dataframe(
-            df[column_to_attribute.keys()].rename(columns=column_to_attribute)
+        return DataGrid(
+            display_df,
+            editable=True,
+            renderers=renderers,
+            layout=widgets.Layout(height="200px"),
+            column_widths={
+                "Name": 300,
+                "Value": 80,
+                "Unit": 60,
+                "Description": 300,
+                "Initial Value": 80,
+                "Lower": 80,
+                "Upper": 80,
+            },
         )
 
-        attribute_to_column = columns
-        df = (
-            variables.to_dataframe()
-            .rename(columns=attribute_to_column)[attribute_to_column.values()]
-            .reset_index(drop=True)
-        )
-        rows = df.index.tolist()
-        columns = df.columns.tolist()
+    def _make_update_callback(self, grid_indices: list):
+        """
+        Returns an ``on_cell_change`` callback that updates ``self.dataframe``
+        for the rows identified by *grid_indices*.
 
-        for r in rows:
-            for c in columns:
-                self.dataframe.loc[int(r), c] = df.loc[r, c]
+        Only columns in ``_EDITABLE_COLUMNS`` trigger an update; changes to
+        read-only columns are silently ignored.
+
+        :param grid_indices: list mapping grid row index → original dataframe index
+        """
+
+        def callback(cell: dict):
+            col = cell["column"]
+            if col not in _EDITABLE_COLUMNS:
+                return
+            grid_row = cell["row"]
+            if grid_row >= len(grid_indices):
+                return
+            original_idx = grid_indices[grid_row]
+            value = cell["value"]
+            with contextlib.suppress(ValueError, TypeError):
+                value = float(value)
+            self.dataframe.loc[original_idx, col] = value
+
+        return callback
 
     def _create_save_load_buttons(self):
         """
@@ -398,36 +384,38 @@ class OptimizationViewer:
 
     def _update_sheet(self):
         """
-        Updates the sheet after filtering the dataframe with respect to
-        the actual values of the variable dropdown menus.
+        Rebuilds the three DataGrids (design variables, constraints, objectives)
+        from the current state of ``self.dataframe``.
         """
-        design_var_df = self.dataframe[self.dataframe["Type"] == "design_var"]
-        design_var_df = design_var_df.drop(columns=["Type"])
-        self._design_var_sheet = self._df_to_sheet(design_var_df)
-        constraint_df = self.dataframe[self.dataframe["Type"] == "constraint"]
-        constraint_df = constraint_df.drop(columns=["Type", "Initial Value"])
-        self._constraint_sheet = self._df_to_sheet(constraint_df)
-        objective_df = self.dataframe[self.dataframe["Type"] == "objective"]
-        objective_df = objective_df.drop(columns=["Type", "Initial Value", "Lower", "Upper"])
-        self._objective_sheet = self._df_to_sheet(objective_df)
+        # Design variables
+        design_var_df = self.dataframe[self.dataframe["Type"] == "design_var"].drop(
+            columns=["Type"]
+        )
+        self._design_var_indices = design_var_df.index.tolist()
+        self._design_var_grid = self._df_to_grid(design_var_df)
+        self._design_var_grid.on_cell_change(self._make_update_callback(self._design_var_indices))
 
-        for cell in self._design_var_sheet.cells:
-            cell.observe(self._update_df, "value")
-            cell.observe(self._update_style, "value")
+        # Constraints
+        constraint_df = self.dataframe[self.dataframe["Type"] == "constraint"].drop(
+            columns=["Type", "Initial Value"]
+        )
+        self._constraint_indices = constraint_df.index.tolist()
+        self._constraint_grid = self._df_to_grid(constraint_df)
+        self._constraint_grid.on_cell_change(self._make_update_callback(self._constraint_indices))
 
-        for cell in self._constraint_sheet.cells:
-            cell.observe(self._update_df, "value")
-            cell.observe(self._update_style, "value")
-
-        for cell in self._objective_sheet.cells:
-            cell.observe(self._update_df, "value")
-            cell.observe(self._update_style, "value")
+        # Objectives
+        objective_df = self.dataframe[self.dataframe["Type"] == "objective"].drop(
+            columns=["Type", "Initial Value", "Lower", "Upper"]
+        )
+        self._objective_indices = objective_df.index.tolist()
+        self._objective_grid = self._df_to_grid(objective_df)
+        self._objective_grid.on_cell_change(self._make_update_callback(self._objective_indices))
 
     # change has to be there for observe() to work
     def _render_ui(self, change=None) -> display:
         """
         Renders the dropdown menus for the variable selector and the corresponding
-        ipysheet Sheet containing the variable infos.
+        DataGrids containing the variable infos.
 
         :return: the display object
         """
@@ -444,20 +432,20 @@ class OptimizationViewer:
         return display(ui)
 
     def _design_var_ui(self):
-        return widgets.VBox([widgets.Label(value="Design Variables"), self._design_var_sheet])
+        return widgets.VBox([widgets.Label(value="Design Variables"), self._design_var_grid])
 
     def _constraint_ui(self):
-        return widgets.VBox([widgets.Label(value="Constraints"), self._constraint_sheet])
+        return widgets.VBox([widgets.Label(value="Constraints"), self._constraint_grid])
 
     def _objective_ui(self):
-        return widgets.VBox([widgets.Label(value="Objectives"), self._objective_sheet])
+        return widgets.VBox([widgets.Label(value="Objectives"), self._objective_grid])
 
     @staticmethod
     def _cell_styling(df) -> dict:
         """
-        Returns bound activities in the form of cell style dictionary.
+        Returns bound activities in the form of a cell style dictionary.
 
-        :return: dict containing the style
+        :return: dict mapping ``(row_index, column_name)`` → style dict
         """
 
         def highlight_active_bounds(df, threshold=1e-6):
@@ -506,41 +494,3 @@ class OptimizationViewer:
             return style
 
         return highlight_active_bounds(df, threshold=0.1)  # Style
-
-    def _update_style(self, change=None):
-        """
-        Updates the style of the sheet cells with respect to bound activities
-        of the actual self.dataframe.
-        """
-        # Design variables
-        design_var_df = self.dataframe[self.dataframe["Type"] == "design_var"]
-        design_var_df = design_var_df.drop(columns=["Type"])
-        design_var_df = design_var_df.reset_index(drop=True)
-        style = self._cell_styling(design_var_df)
-
-        for cell in self._design_var_sheet.cells:
-            i, j = cell.row_start, cell.column_start
-            r, c = (design_var_df.index.to_list()[i], design_var_df.columns.to_list()[j])
-            cell.style = style[(r, c)]
-
-        #  Constraints
-        constraint_df = self.dataframe[self.dataframe["Type"] == "constraint"]
-        constraint_df = constraint_df.drop(columns=["Type", "Initial Value"])
-        constraint_df = constraint_df.reset_index(drop=True)
-        style = self._cell_styling(constraint_df)
-
-        for cell in self._constraint_sheet.cells:
-            i, j = cell.row_start, cell.column_start
-            r, c = (constraint_df.index.to_list()[i], constraint_df.columns.to_list()[j])
-            cell.style = style[(r, c)]
-
-        # Objectives
-        objective_df = self.dataframe[self.dataframe["Type"] == "objective"]
-        objective_df = objective_df.drop(columns=["Type", "Initial Value", "Lower", "Upper"])
-        objective_df = objective_df.reset_index(drop=True)
-        style = self._cell_styling(objective_df)
-
-        for cell in self._objective_sheet.cells:
-            i, j = cell.row_start, cell.column_start
-            r, c = (objective_df.index.to_list()[i], objective_df.columns.to_list()[j])
-            cell.style = style[(r, c)]
