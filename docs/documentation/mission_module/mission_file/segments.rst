@@ -251,6 +251,25 @@ than the original altitude target (the climb stops when the maximum CL is reache
 
     Python documentation: :class:`~fastoad.models.performances.mission.segments.registered.altitude_change.AltitudeChangeSegment`
 
+.. _segment-regulated-altitude-change:
+
+:code:`regulated-altitude_change` segment
+===============================
+
+.. list-attributes-for:: regulated-altitude_change
+
+Offers the same functionalities as the altitude change segment, only here the thrust is regulated and the slope angle is prescribed.
+
+.. important::
+
+    **To be used, this segment requires that the propulsion module is able to handle thrust rate > 1 or thrust rate < 0.**
+
+If :code:`thrust_rate_out_of_bound` is set to `limit`, the thrust rate is limited to: 0 <= thrust_rate <= 1.0
+If the thrust rate goes beyond these limits, the segment is replaced by an altitude change with manual thrust (set to either 0 or 1.0)
+starting from the first flightpoint at which the thrust rate limitations are reached.
+
+If :code:`thrust_rate_out_of_bound` is set to `extrapolate`, the segment is simulated with the prescribed slope angle, no matter the value of the thrust rate.
+
 
 .. _segment-cruise:
 
