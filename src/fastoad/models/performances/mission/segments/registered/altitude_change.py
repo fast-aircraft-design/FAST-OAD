@@ -252,9 +252,18 @@ class RegulatedAltitudeChangeSegment(BaseAltitudeChange, AbstractRegulatedThrust
 
                 # We use the last FlightPoint where thrust rate is < 1.0 as a starting point.
                 idx = np.argwhere(flight_points.thrust_rate > 1.0)
-                start = FlightPoint.create(flight_points.iloc[idx[0] - 1])
+
+                if idx[0] == 0:
+                    # Handle first point of segment being already at thrust rate > 1
+                    start = FlightPoint.create(flight_points.iloc[idx[0]])
+                    # In this case, we drop the whole regulated segment and replace it by a manual one
+                    flight_points.drop(flight_points.index, inplace=True)
+                else:
+                    start = FlightPoint.create(flight_points.iloc[idx[0] - 1])
+                    flight_points.drop(flight_points.loc[flight_points.thrust_rate > 1.0].index, inplace=True)
+
                 start.thrust_rate_is_regulated = False
-                flight_points.drop(flight_points.loc[flight_points.thrust_rate > 1.0].index, inplace=True)
+                # flight_points.drop(flight_points.loc[flight_points.thrust_rate > 1.0].index, inplace=True)
 
                 climb_segment = AltitudeChangeSegment(
                     target=deepcopy(target),  # deepcopy needed because altitude may be modified.
@@ -275,7 +284,13 @@ class RegulatedAltitudeChangeSegment(BaseAltitudeChange, AbstractRegulatedThrust
 
                 # We use the last FlightPoint where thrust rate is < 1.0 as a starting point.
                 idx = np.argwhere(flight_points.thrust_rate < 0.0)
-                start = FlightPoint.create(flight_points.iloc[idx[0] - 1])
+
+                if idx[0] == 0:
+                    # Handle first point of segment being already at thrust rate < 0
+                    start = FlightPoint.create(flight_points.iloc[idx[0]])
+                else:
+                    start = FlightPoint.create(flight_points.iloc[idx[0] - 1])
+
                 start.thrust_rate_is_regulated = False
                 flight_points.drop(flight_points.loc[flight_points.thrust_rate < 0.0].index, inplace=True)
 
