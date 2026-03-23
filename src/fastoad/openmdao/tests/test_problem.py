@@ -329,7 +329,8 @@ def test_problem_with_dynamically_shaped_inputs(cleanup):
 
 
 def test_fastoad_problem_with_discrete_inputs(cleanup):
-    """Tests that FASTOADProblem handles discrete input variables correctly throughout its lifecycle.
+    """Tests that FASTOADProblem handles discrete input variables correctly throughout its
+    lifecycle.
 
     Three failure points are tested:
     - setup(): AutoUnitsDefaultGroup.configure() called set_input_defaults() with units='n/a'
