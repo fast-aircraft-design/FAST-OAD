@@ -245,7 +245,6 @@ class AbstractTimeStepFlightSegment(
                 del flight_points[-1]
                 break
 
-
             msg = self._check_values(flight_points[-1])
             if msg:
                 _LOGGER.warning('%s Segment computation interrupted in "%s".', msg, self.name)
@@ -407,8 +406,9 @@ class AbstractRegulatedThrustSegment(AbstractTimeStepFlightSegment, ABC):
 
     # Optional behaviour if the thrust rate is out of limits <0 or >1
     # extrapolate: means the thrust may be higher of lower than one
-    # limit: means  0 <= thrust_rate <= 1 is forced, when thrust_rate is out of bound, it switches to manual thrust segment
-    thrust_rate_out_of_bound:str = "extrapolate"
+    # limit: means  0 <= thrust_rate <= 1 is forced, when thrust_rate is out of bound,
+    # it switches to manual thrust segment
+    thrust_rate_out_of_bound: str = "extrapolate"
 
     def __post_init__(self):
         super().__post_init__()
