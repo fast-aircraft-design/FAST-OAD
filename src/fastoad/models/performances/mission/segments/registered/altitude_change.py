@@ -38,7 +38,7 @@ from fastoad.models.performances.mission.util import get_closest_flight_level
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
 
 
-@RegisterSegment("altitude_change")
+
 @dataclass
 class BaseAltitudeChange(AbstractLiftFromWeightSegment):
     """
@@ -221,6 +221,7 @@ class BaseAltitudeChange(AbstractLiftFromWeightSegment):
         else:  # self._original_target_altitude == self.OPTIMAL_FLIGHT_LEVEL:
             target.altitude = get_closest_flight_level(optimal_altitude, up_direction=False)
 
+@RegisterSegment("altitude_change")
 @dataclass
 class AltitudeChangeSegment(BaseAltitudeChange, AbstractManualThrustSegment):
 
@@ -233,6 +234,7 @@ class AltitudeChangeSegment(BaseAltitudeChange, AbstractManualThrustSegment):
 
         return super().compute_from_start_to_target(start, target)
 
+@RegisterSegment("regulated_altitude_change")
 @dataclass
 class RegulatedAltitudeChangeSegment(BaseAltitudeChange, AbstractRegulatedThrustSegment):
 
