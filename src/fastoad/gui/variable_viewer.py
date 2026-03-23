@@ -15,13 +15,15 @@ Defines the variable viewer for postprocessing
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import ast
 from os import PathLike
 from typing import ClassVar
 
-import ipysheet as sh
 import ipywidgets as widgets
+import numpy as np
 import pandas as pd
 from IPython.display import display
+from ipydatagrid import DataGrid
 
 from fastoad.io import IVariableIOFormatter, VariableIO
 from fastoad.openmdao.variables import VariableList
@@ -39,7 +41,7 @@ class VariableViewer:
     The file data is stored in a pandas DataFrame. The class built so that a modification
     of the DataFrame is instantly replicated on the file file.
     The interaction is achieved using a user interface built with widgets from ipywidgets and
-    Sheets from ipysheet.
+    a DataGrid from ipydatagrid.
 
     A classical usage of this class will be::
 
@@ -66,8 +68,11 @@ class VariableViewer:
         #: The dataframe which is the mirror of self.file
         self.dataframe = pd.DataFrame()
 
-        # The sheet which is the mirror of the dataframe
-        self._sheet = None
+        # The grid which is the mirror of the filtered dataframe
+        self._grid = None
+
+        # Original dataframe indices for the currently displayed (filtered) rows
+        self._filtered_indices: list = []
 
         # The list of stored widgets
         self._filter_widgets = None
@@ -173,56 +178,87 @@ class VariableViewer:
         )
 
     @staticmethod
-    def _df_to_sheet(df: pd.DataFrame) -> sh.Sheet:
+    def _value_to_display(value) -> str | float:
+        """Convert a variable value to a grid-displayable scalar.
+
+        Array values (numpy arrays or lists) are represented as a string so that
+        ipydatagrid can serialize them without raising an inhomogeneous-shape error
+        (the root cause of issue #596).
         """
-        Transforms a pandas DataFrame into a ipysheet Sheet.
-        The cells are set to read only except for the values.
-
-        :param df: the pandas DataFrame to be converted
-        :return the equivalent ipysheet Sheet
-        """
-        if not df.empty:
-            sheet = sh.from_dataframe(df)
-            column = df.columns.get_loc("Value")
-
-            for cell in sheet.cells:
-                if column not in (cell.column_start, cell.column_end):
-                    cell.read_only = True
-                else:
-                    cell.type = "numeric"
-                    # TODO: make the number of decimals depend on the module ?
-                    # or chosen in the ui by the user
-                    cell.numeric_format = "0.000"
-
-            # Name, Value, Unit, Description
-            sheet.column_width = [150, 50, 20, 150]
-
-        else:
-            sheet = sh.sheet()
-        return sheet
+        if isinstance(value, np.ndarray):
+            return str(value.tolist())
+        if isinstance(value, (list, tuple)):
+            return str(list(value))
+        return value
 
     @staticmethod
-    def _sheet_to_df(sheet: sh.Sheet) -> pd.DataFrame:
-        """
-        Transforms a ipysheet Sheet into a pandas DataFrame.
+    def _display_to_value(display_value, original_value):
+        """Parse a value coming back from the grid into the appropriate Python type.
 
-        :param sheet: the ipysheet Sheet to be converted
-        :return the equivalent pandas DataFrame
+        If the original value was an array-like (list, tuple, or numpy array),
+        the edited string is parsed back into the same type.
+        Otherwise a plain float conversion is attempted.
         """
-        return sh.to_dataframe(sheet)
+        if isinstance(original_value, (list, tuple, np.ndarray)):
+            try:
+                parsed = ast.literal_eval(str(display_value))
+                if isinstance(original_value, np.ndarray):
+                    return np.array(parsed, dtype=float)
+                return type(original_value)(parsed)
+            except (ValueError, SyntaxError):
+                return original_value
+        try:
+            return float(display_value)
+        except (ValueError, TypeError):
+            return display_value
 
-    def _update_df(self, change=None):
+    @staticmethod
+    def _df_to_grid(df: pd.DataFrame) -> DataGrid:
         """
-        Updates the stored DataFrame with respect to the actual values of the Sheet.
-        Then updates the file with respect to the stored DataFrame.
+        Transforms a pandas DataFrame into an ipydatagrid DataGrid.
+
+        Array values in the "Value" column are converted to their string
+        representation so the grid can display them without serialization errors.
+
+        :param df: the pandas DataFrame to be converted (may have non-contiguous index)
+        :return: the DataGrid widget
         """
-        df = self._sheet_to_df(self._sheet)
-        for i in df.index:
-            self.dataframe.loc[int(i), :] = df.loc[i, :].to_numpy()
+        if df.empty:
+            return DataGrid(pd.DataFrame(), editable=True, layout=widgets.Layout(height="200px"))
+
+        display_df = df.copy().reset_index(drop=True)
+        if "Value" in display_df.columns:
+            display_df["Value"] = display_df["Value"].apply(VariableViewer._value_to_display)
+
+        return DataGrid(
+            display_df,
+            editable=True,
+            layout=widgets.Layout(height="400px"),
+            column_widths={"Name": 300, "Value": 100, "Unit": 80, "Description": 300, "I/O": 60},
+        )
+
+    def _update_df(self, cell: dict):
+        """
+        Callback for ipydatagrid ``on_cell_change``.  Updates ``self.dataframe``
+        when the user edits the *Value* column.
+
+        :param cell: dict with keys ``row``, ``column``, ``column_index``, ``value``
+        """
+        if cell["column"] != "Value":
+            return
+
+        grid_row = cell["row"]
+        if grid_row >= len(self._filtered_indices):
+            return
+
+        original_idx = self._filtered_indices[grid_row]
+        original_value = self.dataframe.loc[original_idx, "Value"]
+        new_value = self._display_to_value(cell["value"], original_value)
+        self.dataframe.loc[original_idx, "Value"] = new_value
 
     def _render_sheet(self) -> display:
         """
-        Renders an interactive pysheet with dropdown menus of the stored dataframe.
+        Renders an interactive DataGrid with dropdown menus of the stored dataframe.
 
         :return display of the user interface
         """
@@ -324,7 +360,7 @@ class VariableViewer:
 
     def _update_sheet(self):
         """
-        Updates the sheet after filtering the dataframe with respect to
+        Updates the grid after filtering the dataframe with respect to
         the actual values of the variable dropdown menus.
         """
         modules = [item.value for item in self._filter_widgets]
@@ -338,15 +374,16 @@ class VariableViewer:
 
         filtered_var = self._filter_variables(self.dataframe, modules, var_io_type=var_io_type)
 
-        self._sheet = self._df_to_sheet(filtered_var)
+        # Store original indices so _update_df can map grid rows back to self.dataframe
+        self._filtered_indices = filtered_var.index.tolist()
 
-        for cell in self._sheet.cells:
-            cell.observe(self._update_df, "value")
+        self._grid = self._df_to_grid(filtered_var)
+        self._grid.on_cell_change(self._update_df)
 
     def _render_ui(self, change=None) -> display:
         """
         Renders the dropdown menus for the variable selector and the corresponding
-        ipysheet Sheet containing the variable info.
+        DataGrid containing the variable info.
 
         :return the display object
         """
@@ -355,14 +392,13 @@ class VariableViewer:
         self._update_sheet()
         for item in self._filter_widgets:
             item.observe(self._render_ui, "value")
-        self._sheet.layout.height = "400px"
         selectors = widgets.HBox([self._io_selector, self._variable_selector])
 
         if self._ui is not None:
-            self._ui.children = [self._save_load_buttons, selectors, self._sheet]
+            self._ui.children = [self._save_load_buttons, selectors, self._grid]
             return None
 
-        self._ui = widgets.VBox([self._save_load_buttons, selectors, self._sheet])
+        self._ui = widgets.VBox([self._save_load_buttons, selectors, self._grid])
         return display(self._ui)
 
     @staticmethod
