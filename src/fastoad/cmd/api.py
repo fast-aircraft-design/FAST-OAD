@@ -803,7 +803,7 @@ def variable_viewer(
             columns={"name": "Name", "val": "Value", "units": "Unit", "desc": "Description"}
         )
         table["I/O"] = "OUT"
-        table.loc[table["is_input"], "I/O"] = "IN"
+        table.loc[table["is_input"] == True, "I/O"] = "IN"  # noqa: E712
         del table["is_input"]
         table.set_index("Name", drop=True, inplace=True)
 
