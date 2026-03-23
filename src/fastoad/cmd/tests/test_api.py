@@ -473,3 +473,14 @@ def test_variable_viewer(cleanup):
     api.variable_viewer(file_path)
 
     api.variable_viewer(file_path, editable=False)
+
+
+def test_variable_viewer_no_is_input(cleanup):
+    """
+    Regression test for issue #314.
+    variable_viewer(editable=False) must not crash when the XML file contains
+    variables that have no ``is_input`` attribute (is_input == None / NaN).
+    """
+    file_path = DATA_FOLDER_PATH / "outputs_no_is_input.xml"
+    # Should not raise "Cannot mask with non-boolean array containing NA / NaN values"
+    api.variable_viewer(file_path, editable=False)
