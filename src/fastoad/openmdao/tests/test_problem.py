@@ -326,3 +326,48 @@ def test_problem_with_dynamically_shaped_inputs(cleanup):
     fastoad_problem.setup()
     fastoad_problem.final_setup()
     fastoad_problem.run_model()
+
+
+def test_fastoad_problem_with_discrete_inputs(cleanup):
+    """Tests that FASTOADProblem handles discrete input variables correctly throughout its lifecycle.
+
+    Three failure points are tested:
+    - setup(): AutoUnitsDefaultGroup.configure() called set_input_defaults() with units='n/a'
+    - VariableList.from_problem() before run: get_io_metadata() returned units='n/a'
+    - VariableList.from_problem() after run: get_val(name, units='n/a') raised a ValueError
+      because 'n/a' is not a valid unit string (simplify_unit() rejects it)
+
+    See https://github.com/OpenMDAO/OpenMDAO/issues/3734
+    """
+
+    class CompWithDiscreteInput(om.ExplicitComponent):
+        def setup(self):
+            self.add_discrete_input("var1", val="var1_value")
+            self.add_input("x", val=1.0, units="m")
+            self.add_output("y", val=2.0, units="kg")
+
+        def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+            outputs["y"] = inputs["x"]
+
+    problem = FASTOADProblem()
+    problem.model.add_subsystem("comp", CompWithDiscreteInput(), promotes=["*"])
+
+    # 1. setup() must not crash (AutoUnitsDefaultGroup.configure() was passing units='n/a'
+    #    to set_input_defaults())
+    problem.setup()
+    problem.final_setup()
+
+    # 2. from_problem() before run must not crash and discrete units must be None
+    variables = VariableList.from_problem(problem)
+    assert "x" in variables.names()
+    assert "var1" in variables.names()
+    assert variables["var1"].units is None
+
+    # 3. from_problem() after run must not crash: it calls problem.get_val(name, units=units)
+    #    which raises a ValueError if units='n/a' (not a valid unit for simplify_unit())
+    problem["x"] = 3.0
+    problem.run_model()
+    variables_after_run = VariableList.from_problem(problem, use_initial_values=False)
+    assert variables_after_run["var1"].units is None
+    assert_allclose(variables_after_run["x"].value, 3.0)
+    assert_allclose(variables_after_run["y"].value, 3.0)
