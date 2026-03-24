@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 from numpy.ma.testutils import approx
 from numpy.testing import assert_allclose
 from scipy.constants import foot
@@ -184,9 +185,127 @@ def test_regulated_altitude_change(polar):
     # second run
     run()
 
+    # Test that starting with negative thrust rate and limitation,
+    # it switches to manual thrust with thrust_rate = 0
 
+    required_slope_angle = -0.1
+
+    def run():
+        flight_points = segment.compute_from(
+            FlightPoint(
+                altitude=5000.0, mass=70000.0, true_airspeed=150.0, thrust_is_regulated=True
+            )
+        )  # Test with dict
+
+        last_point = flight_points.iloc[-1]
+        # Note: reference values are obtained by running the process with 2s as time step
+        assert_allclose(last_point.altitude, 1000.0)
+        assert_allclose(last_point.true_airspeed, 150.0)
+        assert_allclose(flight_points.thrust_rate, 0, atol=1e-6)
+
+        run()
+        # second call
+        run()
+
+def test_change_of_thrust_rate_limitation(polar):
+    """ Check that changes on thrust rate limitations are effective """
+
+    propulsion = FuelEngineSet(DummyEngine(5.0e4, 1.0e-5), 2)
+    segment = RegulatedAltitudeChangeSegment(
+        target=FlightPoint(altitude=5000.0, true_airspeed="constant"),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        engine_setting=EngineSetting.CLIMB,
+        time_step=2.0,
+        slope_angle=0.1,
+        thrust_rate_out_of_bound="limit",
+        upper_thrust_rate_limit=0.9
+    )
+
+    def run():
+        flight_points = segment.compute_from(
+            FlightPoint(
+                altitude=1000.0, mass=70000.0, true_airspeed=150.0, thrust_is_regulated=True
+            )
+        )  # Test with dict
+
+        last_point = flight_points.iloc[-1]
+        # Note: reference values are obtained by running the process with 2s as time step
+        assert_allclose(last_point.altitude, 5000.0)
+        assert_allclose(last_point.true_airspeed, 150.0)
+
+        assert_allclose(last_point.thrust, 100000*0.9, atol=1)
+
+        # Check the gradient is lower than asked at the end of trajectory and that
+        # thrust rate is never>1
+        assert not np.any(flight_points.thrust_rate > 0.9)
+
+    run()
+    # second run as usual
+    run()
+
+    # Same for descent and lower thrust limit
+    segment = RegulatedAltitudeChangeSegment(
+        target=FlightPoint(altitude=1000.0, true_airspeed="constant"),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        engine_setting=EngineSetting.CLIMB,
+        time_step=2.0,
+        slope_angle=-0.1,
+        thrust_rate_out_of_bound="limit",
+        lower_thrust_rate_limit=0.05
+    )
+
+    def run():
+        flight_points = segment.compute_from(
+            FlightPoint(
+                altitude=5000.0, mass=70000.0, true_airspeed=150.0, thrust_is_regulated=True
+            )
+        )  # Test with dict
+
+        last_point = flight_points.iloc[-1]
+        # Note: reference values are obtained by running the process with 2s as time step
+        assert_allclose(last_point.altitude, 1000.0)
+        assert_allclose(last_point.true_airspeed, 150.0)
+        assert_allclose(flight_points.thrust_rate, 0.05, rtol=1e-6)
+
+        run()
+        # second call
+        run()
+
+
+def test_invalid_thrust_rate_limitation(polar):
+    """Test an error is raised when thrust rate option is invalid"""
+    propulsion = FuelEngineSet(DummyEngine(5.0e4, 1.0e-5), 2)
+
+    segment = RegulatedAltitudeChangeSegment(
+        target=FlightPoint(altitude=1000.0, true_airspeed="constant"),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        engine_setting=EngineSetting.CLIMB,
+        time_step=2.0,
+        slope_angle=0.1,
+        thrust_rate_out_of_bound="something",
+    )
+
+    expected_msg = (
+        "The value of option 'thrust_rate_out_of_bound' in regulated_altitude_change is invalid "
+        "it must be one of ['extrapolate', 'limit']"
+    )
+
+    with pytest.raises(ValueError) as exc_info:
+        segment.compute_from(FlightPoint(altitude=5000.0, mach=0.82, mass=70000.0))
+
+    assert str(exc_info.value) == expected_msg
+
+
+# ------------------------------------------------------------------------------------
 # The following tests are here to ensure that we do not lose the common functionalities
 # of altitude change
+# -------------------------------------------------------------------------------------
 
 
 def test_regulated_altitude_change_optimal_no_limit(polar):
