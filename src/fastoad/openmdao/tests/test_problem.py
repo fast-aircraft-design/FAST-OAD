@@ -370,5 +370,5 @@ def test_fastoad_problem_with_discrete_inputs(cleanup):
     problem.run_model()
     variables_after_run = VariableList.from_problem(problem, use_initial_values=False)
     assert variables_after_run["var1"].units is None
-    assert_allclose(variables_after_run["x"].value, 3.0)
-    assert_allclose(variables_after_run["y"].value, 3.0)
+    assert_allclose(problem.get_val("x", units="m"), 3.0)
+    assert_allclose(problem.get_val("y", units="kg"), 3.0)
