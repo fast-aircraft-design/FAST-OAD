@@ -207,8 +207,9 @@ def test_regulated_altitude_change(polar):
         # second call
         run()
 
+
 def test_change_of_thrust_rate_limitation(polar):
-    """ Check that changes on thrust rate limitations are effective """
+    """Check that changes on thrust rate limitations are effective"""
 
     propulsion = FuelEngineSet(DummyEngine(5.0e4, 1.0e-5), 2)
     segment = RegulatedAltitudeChangeSegment(
@@ -220,7 +221,7 @@ def test_change_of_thrust_rate_limitation(polar):
         time_step=2.0,
         slope_angle=0.1,
         thrust_rate_out_of_bound="limit",
-        upper_thrust_rate_limit=0.9
+        upper_thrust_rate_limit=0.9,
     )
 
     def run():
@@ -235,7 +236,7 @@ def test_change_of_thrust_rate_limitation(polar):
         assert_allclose(last_point.altitude, 5000.0)
         assert_allclose(last_point.true_airspeed, 150.0)
 
-        assert_allclose(last_point.thrust, 100000*0.9, atol=1)
+        assert_allclose(last_point.thrust, 100000 * 0.9, atol=1)
 
         # Check the gradient is lower than asked at the end of trajectory and that
         # thrust rate is never>1
@@ -255,7 +256,7 @@ def test_change_of_thrust_rate_limitation(polar):
         time_step=2.0,
         slope_angle=-0.1,
         thrust_rate_out_of_bound="limit",
-        lower_thrust_rate_limit=0.05
+        lower_thrust_rate_limit=0.05,
     )
 
     def run():
