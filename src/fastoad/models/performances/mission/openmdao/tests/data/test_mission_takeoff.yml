@@ -34,9 +34,9 @@ phases:
         induced_drag_coefficient:
           value: data:aerodynamics:aircraft:low_speed:induced_drag_coefficient
         k_winglet:
-          value: tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k
+          value: tuning:aerodynamics:aircraft:high_speed:CD:winglet_effect:k
         k_cd:
-          value: tuning:aerodynamics:aircraft:cruise:CD:k
+          value: tuning:aerodynamics:aircraft:high_speed:CD:k
     thrust_rate: 1.0
     isa_offset: data:mission:operational:ISA_offset
     parts:
@@ -96,9 +96,9 @@ phases:
         induced_drag_coefficient:
           value: data:aerodynamics:aircraft:low_speed:induced_drag_coefficient
         k_winglet:
-          value: tuning:aerodynamics:aircraft:cruise:CD:winglet_effect:k
+          value: tuning:aerodynamics:aircraft:high_speed:CD:winglet_effect:k
         k_cd:
-          value: tuning:aerodynamics:aircraft:cruise:CD:k
+          value: tuning:aerodynamics:aircraft:high_speed:CD:k
     thrust_rate: 1.0
     isa_offset: data:mission:operational:ISA_offset
     parts:
@@ -142,7 +142,7 @@ phases:
           equivalent_airspeed: constant
   climb:
     engine_setting: climb
-    polar: data:aerodynamics:aircraft:cruise
+    polar: data:aerodynamics:aircraft:high_speed
     thrust_rate: 0.9
     time_step: 5.0
     parts:
@@ -168,7 +168,7 @@ phases:
             value: optimal_flight_level
   descent:
     engine_setting: idle
-    polar: data:aerodynamics:aircraft:cruise
+    polar: data:aerodynamics:aircraft:high_speed
     thrust_rate: 0.07
     time_step: 5.0
     parts:
@@ -207,7 +207,7 @@ routes:
     cruise_part:
       segment: cruise
       engine_setting: cruise
-      polar: data:aerodynamics:aircraft:cruise
+      polar: data:aerodynamics:aircraft:high_speed
     descent_parts:
       - phase: descent
 
