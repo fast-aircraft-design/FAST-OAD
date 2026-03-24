@@ -237,10 +237,9 @@ class AltitudeChangeSegment(BaseAltitudeChange, AbstractManualThrustSegment):
 @RegisterSegment("regulated_altitude_change")
 @dataclass
 class RegulatedAltitudeChangeSegment(BaseAltitudeChange, AbstractRegulatedThrustSegment):
-
     # The thrust rate limitations can be changed by the user
-    upper_thrust_rate_limit:float = 1.0
-    lower_thrust_rate_limit:float = 0.0
+    upper_thrust_rate_limit: float = 1.0
+    lower_thrust_rate_limit: float = 0.0
 
     def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
 
@@ -267,7 +266,10 @@ class RegulatedAltitudeChangeSegment(BaseAltitudeChange, AbstractRegulatedThrust
                 else:
                     start = FlightPoint.create(flight_points.iloc[idx[0] - 1])
                     flight_points.drop(
-                        flight_points.loc[flight_points.thrust_rate > self.upper_thrust_rate_limit].index, inplace=True
+                        flight_points.loc[
+                            flight_points.thrust_rate > self.upper_thrust_rate_limit
+                        ].index,
+                        inplace=True,
                     )
 
                 start.thrust_rate_is_regulated = False
@@ -302,7 +304,10 @@ class RegulatedAltitudeChangeSegment(BaseAltitudeChange, AbstractRegulatedThrust
 
                 start.thrust_rate_is_regulated = False
                 flight_points.drop(
-                    flight_points.loc[flight_points.thrust_rate < self.lower_thrust_rate_limit].index, inplace=True
+                    flight_points.loc[
+                        flight_points.thrust_rate < self.lower_thrust_rate_limit
+                    ].index,
+                    inplace=True,
                 )
 
                 climb_segment = AltitudeChangeSegment(
