@@ -237,6 +237,11 @@ class AltitudeChangeSegment(BaseAltitudeChange, AbstractManualThrustSegment):
 @RegisterSegment("regulated_altitude_change")
 @dataclass
 class RegulatedAltitudeChangeSegment(BaseAltitudeChange, AbstractRegulatedThrustSegment):
+
+    # The thrust rate limitations can be changed by the user
+    upper_thrust_rate_limit:float = 1.0
+    lower_thrust_rate_limit:float = 0.0
+
     def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
 
         self._handle_target_settings(target, start)
@@ -248,11 +253,11 @@ class RegulatedAltitudeChangeSegment(BaseAltitudeChange, AbstractRegulatedThrust
         if self.thrust_rate_out_of_bound == "limit":
             # Check for out of bound thrust rate and switch to manual thrust segment instead
 
-            if np.any(flight_points.thrust_rate > 1.0):
+            if np.any(flight_points.thrust_rate > self.upper_thrust_rate_limit):
                 # We have a too high thrust rate, likely a climb phase, thrust rate forced to 1
 
                 # We use the last FlightPoint where thrust rate is < 1.0 as a starting point.
-                idx = np.argwhere(flight_points.thrust_rate > 1.0)
+                idx = np.argwhere(flight_points.thrust_rate > self.upper_thrust_rate_limit)
 
                 if idx[0] == 0:
                     # Handle first point of segment being already at thrust rate > 1
@@ -262,7 +267,7 @@ class RegulatedAltitudeChangeSegment(BaseAltitudeChange, AbstractRegulatedThrust
                 else:
                     start = FlightPoint.create(flight_points.iloc[idx[0] - 1])
                     flight_points.drop(
-                        flight_points.loc[flight_points.thrust_rate > 1.0].index, inplace=True
+                        flight_points.loc[flight_points.thrust_rate > self.upper_thrust_rate_limit].index, inplace=True
                     )
 
                 start.thrust_rate_is_regulated = False
@@ -274,7 +279,7 @@ class RegulatedAltitudeChangeSegment(BaseAltitudeChange, AbstractRegulatedThrust
                     polar=self.polar,
                     name=self.name,
                     engine_setting=self.engine_setting,
-                    thrust_rate=1.0,
+                    thrust_rate=self.upper_thrust_rate_limit,
                     time_step=self.time_step,
                 )
 
@@ -283,11 +288,11 @@ class RegulatedAltitudeChangeSegment(BaseAltitudeChange, AbstractRegulatedThrust
                     drop=True
                 )
 
-            elif np.any(flight_points.thrust_rate < 0.0):
+            elif np.any(flight_points.thrust_rate < self.lower_thrust_rate_limit):
                 # We have a too low thrust rate, likely a descent phase, thrust rate forced to 0
 
                 # We use the last FlightPoint where thrust rate is < 1.0 as a starting point.
-                idx = np.argwhere(flight_points.thrust_rate < 0.0)
+                idx = np.argwhere(flight_points.thrust_rate < self.lower_thrust_rate_limit)
 
                 if idx[0] == 0:
                     # Handle first point of segment being already at thrust rate < 0
@@ -297,7 +302,7 @@ class RegulatedAltitudeChangeSegment(BaseAltitudeChange, AbstractRegulatedThrust
 
                 start.thrust_rate_is_regulated = False
                 flight_points.drop(
-                    flight_points.loc[flight_points.thrust_rate < 0.0].index, inplace=True
+                    flight_points.loc[flight_points.thrust_rate < self.lower_thrust_rate_limit].index, inplace=True
                 )
 
                 climb_segment = AltitudeChangeSegment(
@@ -307,7 +312,7 @@ class RegulatedAltitudeChangeSegment(BaseAltitudeChange, AbstractRegulatedThrust
                     polar=self.polar,
                     name=self.name,
                     engine_setting=self.engine_setting,
-                    thrust_rate=0.0,
+                    thrust_rate=self.lower_thrust_rate_limit,
                     time_step=self.time_step,
                 )
 
