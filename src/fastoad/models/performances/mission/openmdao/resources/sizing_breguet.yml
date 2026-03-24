@@ -79,7 +79,7 @@ routes:
     cruise_part:
       segment: breguet
       engine_setting: cruise
-      polar: data:aerodynamics:aircraft:cruise
+      polar: data:aerodynamics:aircraft:high_speed
       use_max_lift_drag_ratio: true
     descent_parts:
       - phase: descent
