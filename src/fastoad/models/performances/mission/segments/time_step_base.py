@@ -397,22 +397,31 @@ class AbstractManualThrustSegment(AbstractTimeStepFlightSegment, ABC):
 @dataclass
 class AbstractRegulatedThrustSegment(AbstractTimeStepFlightSegment, ABC):
     """
-    Base class for computing flight segment where thrust rate is adjusted on drag.
+    Base class for computing flight segment where thrust rate is adjusted on drag and slope angle
     """
 
-    time_step: float = 60.0
+    # In case the slope angle is forced (climb/descent at constant slope angle)
+    # For cruise, it is zero
+    slope_angle: float = 0.0  # in radian
+
+    # Optional behaviour if the thrust rate is out of limits <0 or >1
+    # extrapolate: means the thrust may be higher of lower than one
+    # limit: means  0 <= thrust_rate <= 1 is forced, when thrust_rate is out of bound,
+    # it switches to manual thrust segment
+    thrust_rate_out_of_bound: str = "extrapolate"
 
     def __post_init__(self):
         super().__post_init__()
         self.target.mach = self.constant_value_name
 
     def compute_propulsion(self, flight_point: FlightPoint):
-        flight_point.thrust = flight_point.drag
+        flight_point.slope_angle = self.slope_angle
+        flight_point.thrust = flight_point.drag + flight_point.mass * g * np.sin(self.slope_angle)
         flight_point.thrust_is_regulated = True
         self.propulsion.compute_flight_points(flight_point)
 
     def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> tuple[float, float]:
-        return 0.0, 0.0
+        return self.slope_angle, 0.0
 
 
 @dataclass

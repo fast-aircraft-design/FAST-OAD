@@ -242,7 +242,6 @@ def test_climb_target_CL_at_fixed_mach(polar):
         polar=polar,
         thrust_rate=1.0,
         time_step=2.0,
-        maximum_CL=0.1,
     )
 
     def run():
