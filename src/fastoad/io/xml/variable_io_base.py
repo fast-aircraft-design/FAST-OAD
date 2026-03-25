@@ -176,7 +176,70 @@ class VariableXmlBaseFormatter(IVariableIOFormatter):
         if isinstance(data_source, Path):
             data_source = data_source.as_posix()
 
-        tree.write(data_source, pretty_print=True)
+        # Indent first with lxml API, then disable libxml2 pretty_print at write time,
+        # because libxml2 pretty-print indentation is depth-limited.
+        etree.indent(tree, space="  ")
+        # etree.indent() does not split mixed-content nodes (text + element children),
+        # so child tags can stay on the same line as scalar values.
+        self._preserve_mixed_content_line_breaks(root)
+        # etree.indent() also adds whitespace after inline comments, which would move
+        # closing tags to the next line for scalar values with descriptions.
+        self._preserve_inline_comments(root)
+        tree.write(data_source, pretty_print=False)
+
+    @staticmethod
+    def _preserve_mixed_content_line_breaks(root: _Element, indent_space: str = "  "):
+        """
+        Ensures children of scalar-valued elements start on a new indented line.
+
+        etree.indent() does not split mixed-content nodes (text + element children) if text is a
+        scalar, so this method adds line breaks and indentation to ensure child tags are on their
+        own lines when the parent element has scalar text content.
+        """
+        for element in root.iter():
+            if len(element) == 0 or not element.text:
+                continue
+
+            text_value = element.text.strip()
+            if not text_value:
+                continue
+
+            # Keep text+comment-only elements compact; handled in _preserve_inline_comments().
+            if all(isinstance(child, _Comment) for child in element):
+                continue
+
+            parent_depth = sum(
+                1 for _ in element.iterancestors()
+            )  # same as len(list(element.iterancestors())), but we don't stock the list in memory
+            child_indent = indent_space * (parent_depth + 1)
+            parent_indent = indent_space * parent_depth
+
+            element.text = f"{text_value}\n{child_indent}"
+            for index, child in enumerate(element):
+                if index == len(element) - 1:
+                    child.tail = f"\n{parent_indent}"
+                else:
+                    child.tail = f"\n{child_indent}"
+
+    @staticmethod
+    def _preserve_inline_comments(root: _Element):
+        """
+        Keeps closing tags inline when an element only contains text and XML comments.
+
+        The idea here is that comments are considered as children for xml, so they are mixed nodes
+        and can be badly indented by etree.indent() if we do not handle them separately.
+        """
+        for element in root.iter():
+            if not element.text or not element.text.strip() or len(element) == 0:
+                continue
+
+            if all(
+                isinstance(child, _Comment) for child in element
+            ):  # comment are children for xml
+                for child in element:
+                    # Remove indentation inserted as comment tail so we keep
+                    # `<tag>value<!--comment--></tag>` on a single line.
+                    child.tail = ""
 
     def _read_units(self, elem) -> str | None:
         units = elem.attrib.get(self.xml_unit_attribute, None)
