@@ -270,6 +270,34 @@ starting from the first flightpoint at which the thrust rate limitations are rea
 
 If :code:`thrust_rate_out_of_bound` is set to `extrapolate`, the segment is simulated with the prescribed slope angle, no matter the value of the thrust rate.
 
+**Examples:**
+
+.. code-block:: yaml
+
+    segment: regulated_altitude_change
+    polar: data:aerodynamics:aircraft:cruise    # High speed aerodynamic polar
+    engine_setting: climb
+    slope_angle: 0.1                            # In radian, positive for climb
+    thrust_rate_out_of_bound: extrapolate       # No limitation on the thrust rate, the slope angle will be constant.
+    target:                                     # Climb up to 10000. feet at constant EAS
+      altitude:
+        value: 10000.
+        unit: ft
+      equivalent_airspeed: constant
+
+.. code-block:: yaml
+
+    segment: regulated_altitude_change
+    polar: data:aerodynamics:aircraft:cruise    # High speed aerodynamic polar
+    engine_setting: idle
+    slope_angle: -0.1                           # In radian, negative for descent
+    thrust_rate_out_of_bound: limit             # Limitation on the thrust rate active, the slope angle may change.
+    lower_thrust_rate_limit: 0.08               # Lower thrust rate limited to 0.08 instead of 0.
+    target:                                     # Descent down to 10000 feet at constant EAS
+      altitude:
+        value: 10000.
+        unit: ft
+      equivalent_airspeed: constant
 
 .. _segment-cruise:
 
