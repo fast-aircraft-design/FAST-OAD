@@ -308,7 +308,7 @@ class AutoUnitsDefaultGroup(om.Group):
                 }
             )
         for name, units in var_units.items():
-            self.set_input_defaults(name, units=units)
+            self.set_input_defaults(name, units=None if units == "n/a" else units)
 
 
 class FASTOADModel(AutoUnitsDefaultGroup):

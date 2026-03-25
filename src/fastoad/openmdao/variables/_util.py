@@ -20,6 +20,17 @@ from openmdao.core.constants import _SetupStatus
 from fastoad.openmdao._utils import get_mpi_safe_problem_copy
 
 
+def _fix_discrete_units(metadata_dict: dict):
+    """Replace ``units='n/a'`` with ``None`` for discrete variables.
+
+    OpenMDAO versions return ``units='n/a'`` for discrete variables, which is not a valid
+    unit string.
+    """
+    for metadata in metadata_dict.values():
+        if metadata.get("units") == "n/a":
+            metadata["units"] = None
+
+
 def get_problem_variables(
     problem,
     *,
@@ -70,6 +81,8 @@ def get_problem_variables(
         tags=["indep_var", "openmdao:indep_var"],
         excludes="_auto_ivc.*",
     )
+    for metadata_dict in (inputs, outputs, indep_outputs):
+        _fix_discrete_units(metadata_dict)
     # Move outputs from IndepVarComps into inputs
     for abs_name, metadata in indep_outputs.items():
         del outputs[abs_name]
