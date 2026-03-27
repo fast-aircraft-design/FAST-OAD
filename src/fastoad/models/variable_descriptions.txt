@@ -4,8 +4,8 @@
 # The separator "||" can be surrounded with spaces (that will be ignored)
 data:TLAR:cruise_mach || top-level requirement: cruise Mach number
 data:TLAR:range || top-level requirement: design range
-data:aerodynamics:aircraft:cruise:CD || drag coefficient in cruise conditions w.r.t. data:aerodynamics:aircraft:cruise:CL
-data:aerodynamics:aircraft:cruise:CL || scale of lift coefficient values for drag computations in cruise conditions
+data:aerodynamics:aircraft:high_speed:CD || drag coefficient in high speed conditions w.r.t. data:aerodynamics:aircraft:high_speed:CL
+data:aerodynamics:aircraft:high_speed:CL || scale of lift coefficient values for drag computations in high speed conditions
 data:geometry:wing:area || wing reference area
 data:weight:aircraft:CG:aft:MAC_position || most aft X-position of center of gravity as ratio of mean aerodynamic chord
 data:weight:aircraft:CG:aft:x || most aft X-position of aircraft center of gravity
