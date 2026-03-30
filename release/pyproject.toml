@@ -4,7 +4,11 @@ description = "FAST-OAD is a framework for performing rapid Overall Aircraft Des
 readme = "README.md"
 version = "VERSION_PLACEHOLDER" # This value is replaced by our CI routine during the build process.
 license = "GPL-3.0-only"
-keywords = ["aircraft", "design", "multi-disciplinary"]
+keywords = [
+    "aircraft",
+    "design",
+    "multi-disciplinary"
+]
 authors = [
     {name = "Christophe DAVID", email = "christophe.david@onera.fr"},
     {name = "Scott DELBECQ", email = "Scott.DELBECQ@isae-supaero.fr"}
@@ -14,8 +18,23 @@ maintainers = [
     {name = "Eric NGUYEN VAN", email = "Eric.Nguyen_Van@onera.fr"},
     {name = "Enrico STRAGIOTTI", email = "enrico.stragiotti@onera.fr"},
 ]
-
 requires-python = ">=3.10,<3.15"
+dynamic = ["version","classifiers"] # Needed to use poetry-dynamic-versioning
+
+
+dependencies = [
+    # IMPORTANT: when modifying this list, docs/requirements.txt must be updated for
+    # ReadTheDocs to be able to compile the documentation.
+    # A pre-commit hook has been added to do this task. As a result, any modification
+    # of poetry.lock file will modify docs/requirements.txt and make
+    # the commit fail because "files were modified by this hook". In that case,
+    # doing again the commit including changes in docs/requirements.txt will succeed.
+    "fast-oad-core>=VERSION_PLACEHOLDER",
+    "fast-oad-cs25>=0.8.1"
+]
+[project.urls]
+homepage = "https://github.com/fast-aircraft-design/FAST-OAD"
+documentation = "https://fast-oad.readthedocs.io/en/stable/"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
@@ -34,15 +53,6 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering :: Physics",
 ]
-
-[project.urls]
-homepage = "https://github.com/fast-aircraft-design/FAST-OAD"
-documentation = "https://fast-oad.readthedocs.io/en/stable/"
-
-[tool.poetry.dependencies]
-python = ">=3.10,<3.15"
-fast-oad-core = "^VERSION_PLACEHOLDER"
-fast-oad-cs25 = ">=0.8.1"
 
 [tool.poetry.requires-plugins]
 poetry-plugin-export = ">=1.9" # Used for the poetry export hook in pre-commit
