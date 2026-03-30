@@ -19,7 +19,6 @@ maintainers = [
     {name = "Enrico STRAGIOTTI", email = "enrico.stragiotti@onera.fr"},
 ]
 requires-python = ">=3.10,<3.15"
-dynamic = ["version","classifiers"] # Needed to use poetry-dynamic-versioning
 
 
 dependencies = [
@@ -32,9 +31,7 @@ dependencies = [
     "fast-oad-core>=VERSION_PLACEHOLDER",
     "fast-oad-cs25>=0.8.1"
 ]
-[project.urls]
-homepage = "https://github.com/fast-aircraft-design/FAST-OAD"
-documentation = "https://fast-oad.readthedocs.io/en/stable/"
+
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
@@ -53,6 +50,10 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering :: Physics",
 ]
+
+[project.urls]
+homepage = "https://github.com/fast-aircraft-design/FAST-OAD"
+documentation = "https://fast-oad.readthedocs.io/en/stable/"
 
 [tool.poetry.requires-plugins]
 poetry-plugin-export = ">=1.9" # Used for the poetry export hook in pre-commit
