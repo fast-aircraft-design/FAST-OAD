@@ -3,7 +3,7 @@ name = "FAST-OAD"
 description = "FAST-OAD is a framework for performing rapid Overall Aircraft Design"
 readme = "README.md"
 version = "VERSION_PLACEHOLDER" # This value is replaced by our CI routine during the build process.
-license = "GPL-3.0-only"
+license = { text = "GPL-3.0-only" }
 keywords = [
     "aircraft",
     "design",
