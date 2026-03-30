@@ -1,7 +1,10 @@
 line-length = 100
 target-version = "py310" # Version used for the UP rules, to update when we drop support for python versions
 extend-include = ["*.ipynb"]
-exclude = ["tests/dummy_plugins/"]
+exclude = [
+    "tests/dummy_plugins/",
+    "release/pyproject.toml", # Contains VERSION_PLACEHOLDER replaced only during release build
+]
 
 [lint]
 # Specify which rules to enforce. Each code corresponds to a specific linting category:
@@ -81,9 +84,6 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
     "S101",    # Enable assert in tests
     "ANN",     # No annotation on tests
     "D",       # No doc in tests
-]
-"release/*" = [
-    "RUF200",
 ]
 
 [lint.isort] # Add optional configurations for import organization
