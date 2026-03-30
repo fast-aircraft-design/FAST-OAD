@@ -3,7 +3,7 @@
 name = "FAST-OAD-core"
 description = "FAST-OAD is a framework for performing rapid Overall Aircraft Design"
 readme = "README.md"
-license = "GPL-3.0-only"
+license = { text = "GPL-3.0-only" }
 keywords = [
     "aircraft",
     "design",
@@ -14,9 +14,9 @@ authors = [
     {name = "Scott DELBECQ", email = "Scott.DELBECQ@isae-supaero.fr"}
 ]
 maintainers = [
-    { name = "Florent LUTZ", email = "Florent.LUTZ2@isae-supaero.fr" },
-    { name = "Eric NGUYEN VAN", email = "Eric.Nguyen_Van@onera.fr" },
-    { name = "Enrico STRAGIOTTI", email = "enrico.stragiotti@onera.fr" },
+    {name = "Florent LUTZ", email = "Florent.LUTZ2@isae-supaero.fr"},
+    {name = "Eric NGUYEN VAN", email = "Eric.Nguyen_Van@onera.fr"},
+    {name = "Enrico STRAGIOTTI", email = "enrico.stragiotti@onera.fr"},
 ]
 requires-python = ">=3.10,<3.15"
 dynamic = ["version","classifiers"] # Needed to use poetry-dynamic-versioning
@@ -125,7 +125,7 @@ sphinxcontrib-bibtex = "^2.6.3"
 [tool.poetry.group.lint.dependencies]
 pre-commit = "^4.4.0"
 nbstripout = "^0.6.0"
-ruff = "0.15.0"
+ruff = ">0.15.0, <0.16.0"
 
 
 # Poetry plugins ==================================================
@@ -142,10 +142,12 @@ enable = true
 vcs = "git"
 style = "semver"
 
-
 # Packaging system =============================================================
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
+requires = [
+    "poetry-core>=2.0.0,<3.0.0",
+    "poetry-dynamic-versioning>=1.0.0,<2.0.0"
+ ]
 build-backend = "poetry_dynamic_versioning.backend"
 
 
