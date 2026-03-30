@@ -3,7 +3,7 @@
 name = "FAST-OAD-core"
 description = "FAST-OAD is a framework for performing rapid Overall Aircraft Design"
 readme = "README.md"
-license = "GPL-3.0-only"
+license = { text = "GPL-3.0-only" }
 keywords = [
     "aircraft",
     "design",
@@ -125,7 +125,7 @@ sphinxcontrib-bibtex = "^2.6.3"
 [tool.poetry.group.lint.dependencies]
 pre-commit = "^4.4.0"
 nbstripout = "^0.6.0"
-ruff = "0.15.0"
+ruff = ">0.15.0, <0.16.0"
 
 
 # Poetry plugins ==================================================
