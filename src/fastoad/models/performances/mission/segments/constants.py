@@ -1,4 +1,4 @@
-""" Constants for the mission segments"""
+"""Constants for the mission segments"""
 #  This file is part of FAST-OAD : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2026 ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,6 +14,7 @@
 
 from enum import Enum
 
+
 class ThrustRateOutOfBound(Enum):
     """
     Enum for thrust rate out of bound behavior in regulated altitude change segments.
@@ -24,4 +25,3 @@ class ThrustRateOutOfBound(Enum):
 
     EXTRAPOLATE = "extrapolate"
     LIMIT = "limit"
-
