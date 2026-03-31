@@ -37,3 +37,5 @@ class HoldSegment(
     Target is a specified time. The target definition indicates
     the time duration of the segment, independently of the initial time value.
     """
+
+    slope_angle: float = 0.0
