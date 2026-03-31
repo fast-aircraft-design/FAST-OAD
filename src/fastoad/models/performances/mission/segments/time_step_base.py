@@ -32,6 +32,7 @@ from fastoad.model_base.propulsion import IPropulsion
 from .base import AbstractFlightSegment
 from ..polar import Polar
 from ..polar_modifier import AbstractPolarModifier, UnchangedPolar
+from .constants import ThrustRateOutOfBound
 
 DEFAULT_TIME_STEP = 0.2
 MAX_SEGMENT_DURATION = 90000  # equivalent to 25h
@@ -404,11 +405,12 @@ class AbstractRegulatedThrustSegment(AbstractTimeStepFlightSegment, ABC):
     # For cruise, it is zero
     slope_angle: float = 0.0  # in radian
 
-    # Optional behaviour if the thrust rate is out of limits <0 or >1
-    # extrapolate: means the thrust may be higher of lower than one
-    # limit: means  0 <= thrust_rate <= 1 is forced, when thrust_rate is out of bound,
-    # it switches to manual thrust segment
-    thrust_rate_out_of_bound: str = "extrapolate"
+    # The thrust rate limitations can be changed by the user
+    upper_thrust_rate_limit: float = 1.0
+    lower_thrust_rate_limit: float = 0.0
+
+    # Optional behaviour if the thrust rate is out of limitations
+    thrust_rate_out_of_bound: str = ThrustRateOutOfBound.LIMIT.value
 
     def __post_init__(self):
         super().__post_init__()
