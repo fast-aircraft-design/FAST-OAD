@@ -9,10 +9,10 @@ from scipy.constants import foot
 from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import FuelEngineSet
+from fastoad.models.performances.mission.segments.constants import ThrustRateOutOfBound
 
 from .conftest import DummyEngine
 from ..altitude_change import RegulatedAltitudeChangeSegment
-from fastoad.models.performances.mission.segments.constants import ThrustRateOutOfBound
 
 
 def test_regulated_altitude_change(polar):
@@ -239,7 +239,7 @@ def test_change_of_thrust_rate_limitation(polar, caplog):
         slope_angle=0.1,
         thrust_rate_out_of_bound="limit",
         upper_thrust_rate_limit=0.9,
-        name="new_thrust_limitation"
+        name="new_thrust_limitation",
     )
 
     def run():
@@ -287,7 +287,7 @@ def test_change_of_thrust_rate_limitation(polar, caplog):
         slope_angle=-0.1,
         thrust_rate_out_of_bound="limit",
         lower_thrust_rate_limit=0.05,
-        name="descent_thrust_limitation"
+        name="descent_thrust_limitation",
     )
 
     def run():
@@ -343,6 +343,32 @@ def test_invalid_thrust_rate_limitation(polar):
     assert str(exc_info.value) == expected_msg
 
 
+def test_invalid_slope_angle_value(polar):
+    """Test an error is raised when slope angle is not set"""
+    propulsion = FuelEngineSet(DummyEngine(5.0e4, 1.0e-5), 2)
+
+    segment = RegulatedAltitudeChangeSegment(
+        target=FlightPoint(altitude=1000.0, true_airspeed="constant"),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        engine_setting=EngineSetting.CLIMB,
+        time_step=2.0,
+        thrust_rate_out_of_bound="something",
+        name="unset_slope_angle",
+    )
+
+    expected_msg = (
+        "The regulated altitude change segment 'unset_slope_angle'"
+        "requires a value for the slope angle"
+    )
+
+    with pytest.raises(ValueError) as exc_info:
+        segment.compute_from(FlightPoint(altitude=5000.0, mach=0.82, mass=70000.0))
+
+    assert str(exc_info.value) == expected_msg
+
+
 # ------------------------------------------------------------------------------------
 # The following tests are here to ensure that we do not lose the common functionalities
 # of altitude change
@@ -363,6 +389,7 @@ def test_regulated_altitude_change_optimal_no_limit(polar):
         polar=polar,
         slope_angle=0.1,
         time_step=2.0,
+        thrust_rate_out_of_bound="extrapolate",
     )
 
     # Execute the segment
@@ -423,6 +450,7 @@ def test_regulated_altitude_change_with_CL_limitation(polar):
         polar=polar,
         slope_angle=0.1,
         time_step=2.0,
+        thrust_rate_out_of_bound="extrapolate",
     )
 
     # Execute the segment

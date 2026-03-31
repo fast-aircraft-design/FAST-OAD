@@ -25,10 +25,10 @@ from fastoad.model_base import FlightPoint
 from fastoad.models.performances.mission.exceptions import (
     FastFlightSegmentIncompleteFlightPointError,
 )
-from fastoad.models.performances.mission.segments.constants import ThrustRateOutOfBound
 from fastoad.models.performances.mission.segments.base import (
     RegisterSegment,
 )
+from fastoad.models.performances.mission.segments.constants import ThrustRateOutOfBound
 from fastoad.models.performances.mission.segments.time_step_base import (
     AbstractLiftFromWeightSegment,
     AbstractManualThrustSegment,
@@ -37,7 +37,6 @@ from fastoad.models.performances.mission.segments.time_step_base import (
 from fastoad.models.performances.mission.util import get_closest_flight_level
 
 _LOGGER = logging.getLogger(__name__)  # Logger for this module
-
 
 
 @dataclass
@@ -124,17 +123,16 @@ class BaseAltitudeChange(AbstractLiftFromWeightSegment):
             atm.mach = start.mach
             start.true_airspeed = atm.true_airspeed
 
-        if self.maximum_CL is not None:
-            if start.CL is not None and start.CL > self.maximum_CL:  # noqa: SIM300 False positive
-                # If CL of the starting point is above the max CL, we stop the climb/descent
-                _LOGGER.warning(
-                    'The first point in a segment of "%s" has a CL = %.2f > maximum_CL = %.2f. '
-                    'Skipping "altitude_change" segment.',
-                    self.name,
-                    start.CL,
-                    self.maximum_CL,
-                )
-                target.CL = self.maximum_CL  # to avoid any processing
+        if all(x is not None for x in [self.maximum_CL, start.CL]) and self.maximum_CL < start.CL:
+            # If CL of the starting point is above the max CL, we stop the climb/descent
+            _LOGGER.warning(
+                'The first point in a segment of "%s" has a CL = %.2f > maximum_CL = %.2f. '
+                'Skipping "altitude_change" segment.',
+                self.name,
+                start.CL,
+                self.maximum_CL,
+            )
+            target.CL = self.maximum_CL  # to avoid any processing
 
     def get_distance_to_target(
         self, flight_points: list[FlightPoint], target: FlightPoint
@@ -242,6 +240,17 @@ class RegulatedAltitudeChangeSegment(BaseAltitudeChange, AbstractRegulatedThrust
 
     """
 
+    def compute_from(self, start: FlightPoint) -> pd.DataFrame:
+        """Method is surcharged to check the value of slope_angle before doing anything else"""
+
+        if not isinstance(self.slope_angle, float):
+            raise ValueError(
+                f"The regulated altitude change segment '{self.name}'"
+                f"requires a value for the slope angle"
+            )
+
+        return super().compute_from(start)
+
     def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
 
         self._handle_target_settings(target, start)
@@ -257,11 +266,13 @@ class RegulatedAltitudeChangeSegment(BaseAltitudeChange, AbstractRegulatedThrust
                 # We have a thrust rate too high, likely a climb phase,
                 # thrust rate forced to self.upper_thrust_rate_limit
 
-                # We use the last FlightPoint where thrust rate is < self.upper_thrust_rate_limit as a starting point.
+                # We use the last FlightPoint where thrust rate is < self.upper_thrust_rate_limit
+                # as a starting point.
                 idx = np.argwhere(flight_points.thrust_rate > self.upper_thrust_rate_limit)
                 i0 = int(idx[0, 0])
                 if i0 == 0:
-                    # Handle first point of segment being already at thrust rate > self.upper_thrust_rate_limit
+                    # Handle first point of segment being already at
+                    # thrust rate > self.upper_thrust_rate_limit
                     start = FlightPoint.create(flight_points.iloc[i0])
                     # We drop the whole regulated segment and replace it by a manual one
                     flight_points.drop(flight_points.index, inplace=True)
@@ -303,11 +314,13 @@ class RegulatedAltitudeChangeSegment(BaseAltitudeChange, AbstractRegulatedThrust
                 # We have a too low thrust rate, likely a descent phase,
                 # thrust rate forced to self.lower_thrust_rate_limit
 
-                # We use the last FlightPoint where thrust rate is < self.lower_thrust_rate_limit as a starting point.
+                # We use the last FlightPoint where thrust rate is < self.lower_thrust_rate_limit
+                # as a starting point.
                 idx = np.argwhere(flight_points.thrust_rate < self.lower_thrust_rate_limit)
                 i0 = int(idx[0, 0])
                 if i0 == 0:
-                    # Handle first point of segment being already at thrust rate < self.lower_thrust_rate_limit
+                    # Handle first point of segment being already at
+                    # thrust rate < self.lower_thrust_rate_limit
                     start = FlightPoint.create(flight_points.iloc[i0])
                 else:
                     start = FlightPoint.create(flight_points.iloc[i0 - 1])
@@ -346,12 +359,12 @@ class RegulatedAltitudeChangeSegment(BaseAltitudeChange, AbstractRegulatedThrust
 
             return flight_points
 
-        elif self.thrust_rate_out_of_bound == ThrustRateOutOfBound.EXTRAPOLATE.value:
+        if self.thrust_rate_out_of_bound == ThrustRateOutOfBound.EXTRAPOLATE.value:
             # Do nothing, output the flightpoints with thrust rate out of bounds
             return flight_points
 
         # Raise a Value error
         raise ValueError(
-            f"The value of option 'thrust_rate_out_of_bound' in regulated_altitude_change is invalid. "
-            f"It must be one of {[member.value for member in ThrustRateOutOfBound]}"
+            f"The value of option 'thrust_rate_out_of_bound' in regulated_altitude_change"
+            f"is invalid. It must be one of {[member.value for member in ThrustRateOutOfBound]}"
         )

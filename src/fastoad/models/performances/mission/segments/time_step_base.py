@@ -30,9 +30,9 @@ from fastoad.model_base.datacls import MANDATORY_FIELD
 from fastoad.model_base.propulsion import IPropulsion
 
 from .base import AbstractFlightSegment
+from .constants import ThrustRateOutOfBound
 from ..polar import Polar
 from ..polar_modifier import AbstractPolarModifier, UnchangedPolar
-from .constants import ThrustRateOutOfBound
 
 DEFAULT_TIME_STEP = 0.2
 MAX_SEGMENT_DURATION = 90000  # equivalent to 25h
@@ -403,7 +403,7 @@ class AbstractRegulatedThrustSegment(AbstractTimeStepFlightSegment, ABC):
 
     # In case the slope angle is forced (climb/descent at constant slope angle)
     # For cruise, it is zero
-    slope_angle: float = 0.0  # in radian
+    slope_angle: float = None  # in radian
 
     # The thrust rate limitations can be changed by the user
     upper_thrust_rate_limit: float = 1.0
