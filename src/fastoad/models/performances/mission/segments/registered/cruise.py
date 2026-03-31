@@ -51,9 +51,9 @@ class CruiseSegment(AbstractRegulatedThrustSegment, AbstractLiftFromWeightSegmen
     the initial value.
     """
 
-    time_step: float = 60
+    time_step: float = 60.0
 
-    slope_angle: float = 0
+    slope_angle: float = 0.0
 
     def __post_init__(self):
         super().__post_init__()
@@ -67,7 +67,7 @@ class CruiseSegment(AbstractRegulatedThrustSegment, AbstractLiftFromWeightSegmen
             self.target.mach = AbstractTimeStepFlightSegment.constant_value_name
 
         # In cruise segment, the slope angle is forced to 0
-        self._slope_angle = 0
+        self.slope_angle = 0.0
 
     def get_distance_to_target(
         self, flight_points: list[FlightPoint], target: FlightPoint

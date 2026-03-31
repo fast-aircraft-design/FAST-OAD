@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 import pytest
 from numpy.ma.testutils import approx
@@ -10,6 +12,7 @@ from fastoad.model_base.propulsion import FuelEngineSet
 
 from .conftest import DummyEngine
 from ..altitude_change import RegulatedAltitudeChangeSegment
+from fastoad.models.performances.mission.segments.constants import ThrustRateOutOfBound
 
 
 def test_regulated_altitude_change(polar):
@@ -190,6 +193,17 @@ def test_regulated_altitude_change(polar):
 
     required_slope_angle = -0.1
 
+    segment = RegulatedAltitudeChangeSegment(
+        target=FlightPoint(altitude=1000.0, true_airspeed="constant"),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        engine_setting=EngineSetting.CLIMB,
+        time_step=2.0,
+        slope_angle=required_slope_angle,
+        thrust_rate_out_of_bound="limit",
+    )
+
     def run():
         flight_points = segment.compute_from(
             FlightPoint(
@@ -203,13 +217,16 @@ def test_regulated_altitude_change(polar):
         assert_allclose(last_point.true_airspeed, 150.0)
         assert_allclose(flight_points.thrust_rate, 0, atol=1e-6)
 
-        run()
-        # second call
-        run()
+    run()
+    # second call
+    run()
 
 
-def test_change_of_thrust_rate_limitation(polar):
+def test_change_of_thrust_rate_limitation(polar, caplog):
     """Check that changes on thrust rate limitations are effective"""
+
+    # Set up logging capture for INFO level
+    caplog.set_level(logging.INFO)
 
     propulsion = FuelEngineSet(DummyEngine(5.0e4, 1.0e-5), 2)
     segment = RegulatedAltitudeChangeSegment(
@@ -222,6 +239,7 @@ def test_change_of_thrust_rate_limitation(polar):
         slope_angle=0.1,
         thrust_rate_out_of_bound="limit",
         upper_thrust_rate_limit=0.9,
+        name="new_thrust_limitation"
     )
 
     def run():
@@ -239,12 +257,24 @@ def test_change_of_thrust_rate_limitation(polar):
         assert_allclose(last_point.thrust, 100000 * 0.9, atol=1)
 
         # Check the gradient is lower than asked at the end of trajectory and that
-        # thrust rate is never>1
+        # thrust rate is never > upper_thrust_rate_limit
         assert not np.any(flight_points.thrust_rate > 0.9)
 
     run()
     # second run as usual
     run()
+
+    # Verify that the logger.info was called when thrust rate limitation was reached
+    assert any(
+        "Thrust rate limitation reached" in record.message
+        and "new_thrust_limitation" in record.message
+        and "thrust_rate=0.90" in record.message
+        for record in caplog.records
+        if record.levelno == logging.INFO
+    )
+
+    # Clear the log records for the next test
+    caplog.records.clear()
 
     # Same for descent and lower thrust limit
     segment = RegulatedAltitudeChangeSegment(
@@ -257,6 +287,7 @@ def test_change_of_thrust_rate_limitation(polar):
         slope_angle=-0.1,
         thrust_rate_out_of_bound="limit",
         lower_thrust_rate_limit=0.05,
+        name="descent_thrust_limitation"
     )
 
     def run():
@@ -272,9 +303,18 @@ def test_change_of_thrust_rate_limitation(polar):
         assert_allclose(last_point.true_airspeed, 150.0)
         assert_allclose(flight_points.thrust_rate, 0.05, rtol=1e-6)
 
-        run()
-        # second call
-        run()
+    run()
+    # second call
+    run()
+
+    # Verify that the logger.info was called when thrust rate limitation was reached
+    assert any(
+        "Thrust rate limitation reached" in record.message
+        and "descent_thrust_limitation" in record.message
+        and "thrust_rate=0.05" in record.message
+        for record in caplog.records
+        if record.levelno == logging.INFO
+    )
 
 
 def test_invalid_thrust_rate_limitation(polar):
@@ -293,8 +333,8 @@ def test_invalid_thrust_rate_limitation(polar):
     )
 
     expected_msg = (
-        "The value of option 'thrust_rate_out_of_bound' in regulated_altitude_change is invalid "
-        "it must be one of ['extrapolate', 'limit']"
+        "The value of option 'thrust_rate_out_of_bound' in regulated_altitude_change is invalid. "
+        f"It must be one of {[member.value for member in ThrustRateOutOfBound]}"
     )
 
     with pytest.raises(ValueError) as exc_info:
@@ -397,3 +437,4 @@ def test_regulated_altitude_change_with_CL_limitation(polar):
     assert_allclose(last_point.mass, 69808.1, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 47412.3, rtol=1e-3)
     assert_allclose(last_point.CL, 0.4418, rtol=1e-3)
+    assert_allclose(last_point.slope_angle, 0.1, rtol=1e-3)
