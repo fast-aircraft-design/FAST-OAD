@@ -203,7 +203,7 @@ than the original altitude target (the climb stops when the maximum CL is reache
 .. code-block:: yaml
 
     segment: altitude_change
-    polar: data:aerodynamics:aircraft:cruise    # High speed aerodynamic polar
+    polar: data:aerodynamics:aircraft:high_speed    # High speed aerodynamic polar
     engine_setting: idle
     thrust_rate: 0.15                           # Idle throttle
     target:                                     # Descent down to 10000. feet at constant EAS
@@ -215,7 +215,7 @@ than the original altitude target (the climb stops when the maximum CL is reache
 .. code-block:: yaml
 
     segment: altitude_change
-    polar: data:aerodynamics:aircraft:cruise    # High speed aerodynamic polar
+    polar: data:aerodynamics:aircraft:high_speed    # High speed aerodynamic polar
     engine_setting: climb
     thrust_rate: 0.93                           # Climb throttle
     target:                                     # Climb up to Mach 0.78 at constant EAS
@@ -225,7 +225,7 @@ than the original altitude target (the climb stops when the maximum CL is reache
 .. code-block:: yaml
 
     segment: altitude_change
-    polar: data:aerodynamics:aircraft:cruise    # High speed aerodynamic polar
+    polar: data:aerodynamics:aircraft:high_speed    # High speed aerodynamic polar
     engine_setting: climb
     thrust_rate: 0.93                           # Climb throttle
     target:                                     # Climb at constant Mach up to the flight
@@ -239,7 +239,7 @@ than the original altitude target (the climb stops when the maximum CL is reache
 .. code-block:: yaml
 
     segment: altitude_change
-    polar: data:aerodynamics:aircraft:cruise    # High speed aerodynamic polar
+    polar: data:aerodynamics:aircraft:high_speed    # High speed aerodynamic polar
     engine_setting: climb
     thrust_rate: 0.93                           # Climb throttle
     target:
@@ -288,7 +288,7 @@ exceed the maximum lift coefficient. The same limit is passed to the prepended c
 .. code-block:: yaml
 
     segment: cruise
-    polar: data:aerodynamics:aircraft:cruise    # High speed aerodynamic polar
+    polar: data:aerodynamics:aircraft:high_speed    # High speed aerodynamic polar
     engine_setting: cruise
     target:
       # altitude: constant                      # Not needed, because assumed by default
@@ -299,7 +299,7 @@ exceed the maximum lift coefficient. The same limit is passed to the prepended c
 .. code-block:: yaml
 
     segment: cruise
-    polar: data:aerodynamics:aircraft:cruise    # High speed aerodynamic polar
+    polar: data:aerodynamics:aircraft:high_speed    # High speed aerodynamic polar
     engine_setting: cruise
     target:
       altitude: optimal_flight_level            # Commands a prepending climb, id needed
@@ -352,7 +352,7 @@ Such segment will be implemented in the future.*
 .. code-block:: yaml
 
     segment: optimal_cruise
-    polar: data:aerodynamics:aircraft:cruise    # High speed aerodynamic polar
+    polar: data:aerodynamics:aircraft:high_speed    # High speed aerodynamic polar
     engine_setting: cruise
     maximum_CL: 0.6
     maximum_altitude: 8000.0                    # meters (optional cap)
@@ -382,7 +382,7 @@ thrust rate (drag is compensated). It ends when the target time is covered.
 .. code-block:: yaml
 
     segment: holding
-    polar: data:aerodynamics:aircraft:cruise    # High speed aerodynamic polar
+    polar: data:aerodynamics:aircraft:high_speed    # High speed aerodynamic polar
     target:
       # altitude: constant                      # Not needed, because assumed by default
       time:
@@ -758,8 +758,8 @@ will be computed during the process, or provided in the input file. This should 
 
     segment: cruise
     polar:
-      CL: data:aerodynamics:aircraft:cruise:CL
-      CD: data:aerodynamics:aircraft:cruise:CD
+      CL: data:aerodynamics:aircraft:high_speed:CL
+      CD: data:aerodynamics:aircraft:high_speed:CD
 
 Additionally, a convenience feature is proposes, which assumes CL and CD are provided
 by variables with same names, except one ends with :code:`:CL` and the other one by :code:`:CD`.
@@ -770,5 +770,5 @@ Therefore, the next example is equivalent to the previous one:
 .. code-block:: yaml
 
     segment: cruise
-    polar: data:aerodynamics:aircraft:cruise
+    polar: data:aerodynamics:aircraft:high_speed
 
