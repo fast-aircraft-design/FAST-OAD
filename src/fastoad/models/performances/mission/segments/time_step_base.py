@@ -30,6 +30,7 @@ from fastoad.model_base.datacls import MANDATORY_FIELD
 from fastoad.model_base.propulsion import IPropulsion
 
 from .base import AbstractFlightSegment
+from .constants import ThrustRateOutOfBound
 from ..polar import Polar
 from ..polar_modifier import AbstractPolarModifier, UnchangedPolar
 
@@ -397,22 +398,32 @@ class AbstractManualThrustSegment(AbstractTimeStepFlightSegment, ABC):
 @dataclass
 class AbstractRegulatedThrustSegment(AbstractTimeStepFlightSegment, ABC):
     """
-    Base class for computing flight segment where thrust rate is adjusted on drag.
+    Base class for computing flight segment where thrust rate is adjusted on drag and slope angle
     """
 
-    time_step: float = 60.0
+    # In case the slope angle is forced (climb/descent at constant slope angle)
+    # For cruise, it is zero
+    slope_angle: float = None  # in radian
+
+    # The thrust rate limitations can be changed by the user
+    upper_thrust_rate_limit: float = 1.0
+    lower_thrust_rate_limit: float = 0.0
+
+    # Optional behaviour if the thrust rate is out of limitations
+    thrust_rate_out_of_bound: str = ThrustRateOutOfBound.LIMIT.value
 
     def __post_init__(self):
         super().__post_init__()
         self.target.mach = self.constant_value_name
 
     def compute_propulsion(self, flight_point: FlightPoint):
-        flight_point.thrust = flight_point.drag
+        flight_point.slope_angle = self.slope_angle
+        flight_point.thrust = flight_point.drag + flight_point.mass * g * np.sin(self.slope_angle)
         flight_point.thrust_is_regulated = True
         self.propulsion.compute_flight_points(flight_point)
 
     def get_gamma_and_acceleration(self, flight_point: FlightPoint) -> tuple[float, float]:
-        return 0.0, 0.0
+        return self.slope_angle, 0.0
 
 
 @dataclass
