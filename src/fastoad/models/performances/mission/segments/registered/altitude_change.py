@@ -365,6 +365,6 @@ class RegulatedAltitudeChangeSegment(BaseAltitudeChange, AbstractRegulatedThrust
 
         # Raise a Value error
         raise ValueError(
-            f"The value of option 'thrust_rate_out_of_bound' in regulated_altitude_change"
+            f"The value of option 'thrust_rate_out_of_bound' in regulated_altitude_change "
             f"is invalid. It must be one of {[member.value for member in ThrustRateOutOfBound]}"
         )
