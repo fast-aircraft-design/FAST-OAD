@@ -40,6 +40,8 @@ from ..mission_definition.schema import (
     MissionDefinition,
 )
 
+TOFL_FACTOR = 1.15
+
 
 class MissionWrapper(MissionBuilder):
     """
@@ -141,7 +143,7 @@ class MissionWrapper(MissionBuilder):
             if name_root + ":distance" in outputs:
                 outputs[name_root + ":distance"] = distance
             if name_root + ":TOFL" in outputs:
-                outputs[name_root + ":TOFL"] = 1.15 * distance
+                outputs[name_root + ":TOFL"] = TOFL_FACTOR * distance
             if name_root + ":initial_altitude" in outputs:
                 outputs[name_root + ":initial_altitude"] = start.altitude
             if name_root + ":final_altitude" in outputs:
@@ -258,8 +260,8 @@ class MissionWrapper(MissionBuilder):
         if self._is_takeoff_phase(part_structure):
             output_definition[name_root + ":TOFL"] = (
                 "m",
-                "estimated takeoff field length (CS-25.113(a), 1.15 x AEO takeoff distance)"
-                f" during {flight_part_desc}",
+                f"estimated takeoff field length (CS-25.113(a), {TOFL_FACTOR} x AEO takeoff "
+                f"distance) during {flight_part_desc}",
             )
         # Check if this is an optimal cruise or any cruise-like segment
         if part_structure:
