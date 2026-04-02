@@ -238,8 +238,8 @@ def drag_polar_plot(
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
-    cd = np.asarray(variables["data:aerodynamics:aircraft:cruise:CD"].value)
-    cl = np.asarray(variables["data:aerodynamics:aircraft:cruise:CL"].value)
+    cd = np.asarray(variables["data:aerodynamics:aircraft:high_speed:CD"].value)
+    cl = np.asarray(variables["data:aerodynamics:aircraft:high_speed:CL"].value)
 
     # TODO: remove filtering one models provide proper bounds
     cutoff_cd = 2.0

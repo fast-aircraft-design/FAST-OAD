@@ -225,11 +225,11 @@ class AdvancedMissionComp(MissionComp):
         At computation start, polar may be irrelevant and give a very low lift/drag ratio.
 
         In that case, this method returns a fake polar that has DUMMY_MAX_LOD as max lift drag
-        ratio. Otherwise, the actual cruise polar is returned.
+        ratio. Otherwise, the actual high_speed polar is returned.
         """
         high_speed_polar = Polar(
-            inputs["data:aerodynamics:aircraft:cruise:CL"],
-            inputs["data:aerodynamics:aircraft:cruise:CD"],
+            inputs["data:aerodynamics:aircraft:high_speed:CL"],
+            inputs["data:aerodynamics:aircraft:high_speed:CD"],
         )
         use_minimum_l_d_ratio = False
         try:

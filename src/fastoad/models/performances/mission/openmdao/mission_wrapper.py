@@ -40,6 +40,8 @@ from ..mission_definition.schema import (
     MissionDefinition,
 )
 
+TOFL_FACTOR = 1.15
+
 
 class MissionWrapper(MissionBuilder):
     """
@@ -133,12 +135,15 @@ class MissionWrapper(MissionBuilder):
 
         def _compute_vars(name_root, start: FlightPoint, end: FlightPoint):
             """Computes duration, burned fuel and covered distance."""
+            distance = end.ground_distance - start.ground_distance
             if name_root + ":duration" in outputs:
                 outputs[name_root + ":duration"] = end.time - start.time
             if name_root + ":fuel" in outputs:
                 outputs[name_root + ":fuel"] = start.mass - end.mass
             if name_root + ":distance" in outputs:
-                outputs[name_root + ":distance"] = end.ground_distance - start.ground_distance
+                outputs[name_root + ":distance"] = distance
+            if name_root + ":TOFL" in outputs:
+                outputs[name_root + ":TOFL"] = TOFL_FACTOR * distance
             if name_root + ":initial_altitude" in outputs:
                 outputs[name_root + ":initial_altitude"] = start.altitude
             if name_root + ":final_altitude" in outputs:
@@ -200,7 +205,7 @@ class MissionWrapper(MissionBuilder):
                 )
             elif part[TYPE_TAG] == PHASE_TAG:
                 subpart_name = part[NAME_TAG]
-                output_definition.update(self._add_vars(subpart_name))
+                output_definition.update(self._add_vars(subpart_name, part))
             elif part[TYPE_TAG] == ROUTE_TAG:
                 route_name = part[NAME_TAG]
                 output_definition.update(self._add_vars(route_name))
@@ -251,6 +256,13 @@ class MissionWrapper(MissionBuilder):
             "m",
             f"covered ground distance during {flight_part_desc}",
         )
+
+        if self._is_takeoff_phase(part_structure):
+            output_definition[name_root + ":TOFL"] = (
+                "m",
+                f"estimated takeoff field length (CS-25.113(a), {TOFL_FACTOR} x AEO takeoff "
+                f"distance) during {flight_part_desc}",
+            )
         # Check if this is an optimal cruise or any cruise-like segment
         if part_structure:
             if part_structure.get(SEGMENT_TYPE_TAG) == "optimal_cruise":
@@ -279,3 +291,16 @@ class MissionWrapper(MissionBuilder):
                 )
 
         return output_definition
+
+    @staticmethod
+    def _is_takeoff_phase(part_structure: dict | None) -> bool:
+        """Returns True when provided phase structure looks like a takeoff phase."""
+        if not isinstance(part_structure, dict):
+            return False
+
+        for part in part_structure.get(PARTS_TAG, []):
+            segment_type = part.get(SEGMENT_TYPE_TAG)
+            if segment_type in {"takeoff", "rotation", "end_of_takeoff"}:
+                return True
+
+        return False

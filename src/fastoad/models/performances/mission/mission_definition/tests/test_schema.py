@@ -189,7 +189,7 @@ def _get_expected_dict():
                                     ("engine_setting", "climb"),
                                     (
                                         "polar",
-                                        "data:aerodynamics:aircraft:cruise",
+                                        "data:aerodynamics:aircraft:high_speed",
                                     ),
                                     ("thrust_rate", "data:propulsion:climb:thrust_rate"),
                                     ("time_step", OrderedDict([("value", "~"), ("unit", "s")])),
@@ -289,7 +289,7 @@ def _get_expected_dict():
                                     ("engine_setting", "climb"),
                                     (
                                         "polar",
-                                        "data:aerodynamics:aircraft:cruise",
+                                        "data:aerodynamics:aircraft:high_speed",
                                     ),
                                     ("thrust_rate", 0.93),
                                     (
@@ -378,7 +378,7 @@ def _get_expected_dict():
                                     ("engine_setting", OrderedDict([("value", "idle")])),
                                     (
                                         "polar",
-                                        "data:aerodynamics:aircraft:cruise",
+                                        "data:aerodynamics:aircraft:high_speed",
                                     ),
                                     ("thrust_rate", "data:propulsion:descent:thrust_rate"),
                                     (
@@ -495,7 +495,7 @@ def _get_expected_dict():
                                                     ("segment", "holding"),
                                                     (
                                                         "polar",
-                                                        "data:aerodynamics:aircraft:cruise",
+                                                        "data:aerodynamics:aircraft:high_speed",
                                                     ),
                                                     (
                                                         "target",
@@ -595,7 +595,7 @@ def _get_expected_dict():
                                                 ("engine_setting", "cruise"),
                                                 (
                                                     "polar",
-                                                    "data:aerodynamics:aircraft:cruise",
+                                                    "data:aerodynamics:aircraft:high_speed",
                                                 ),
                                             ]
                                         ),
@@ -622,7 +622,7 @@ def _get_expected_dict():
                                                 ("engine_setting", "cruise"),
                                                 (
                                                     "polar",
-                                                    "data:aerodynamics:aircraft:cruise",
+                                                    "data:aerodynamics:aircraft:high_speed",
                                                 ),
                                             ]
                                         ),
