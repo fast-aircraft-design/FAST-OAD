@@ -280,6 +280,7 @@ class AbstractTimeStepFlightSegment(
         )
         next_point.alpha = self.get_next_alpha(previous, time_step)
         self._compute_next_altitude(next_point, previous)
+        self._increment_cumulative_quantities(next_point, previous, time_step)
 
         if self.target.true_airspeed == self.constant_value_name:
             next_point.true_airspeed = previous.true_airspeed
@@ -376,6 +377,19 @@ class AbstractTimeStepFlightSegment(
                 distance_to_optimum, x0=altitude_guess, x1=altitude_guess - 1000.0
             ).root
         )
+
+    @staticmethod
+    def _increment_cumulative_quantities(
+        next_point: FlightPoint, previous_point: FlightPoint, time_step
+    ):
+        for cumulative_field, integrand_field in FlightPoint.get_cumulative_quantities().items():
+            if integrand_field:  # To avoid incrementing default cumulative quantity
+                setattr(
+                    next_point,
+                    cumulative_field,
+                    getattr(previous_point, cumulative_field)
+                    + getattr(previous_point, integrand_field) * time_step,
+                )
 
 
 @dataclass
