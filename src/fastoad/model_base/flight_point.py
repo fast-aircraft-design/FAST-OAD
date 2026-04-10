@@ -36,8 +36,8 @@ class _FieldDescriptor:
     """
 
     is_cumulative: bool | None = False
-    cumulates_from: str | None = (
-        None  # Indicates the field in the flight point that increments that values
+    integrates_from: str | None = (
+        None  # Indicates the field in the flight point that is used to integrate that value
     )
     unit: str | None = None
 
@@ -332,7 +332,7 @@ class FlightPoint:
         unit="-",
         *,
         is_cumulative=False,
-        cumulates_from: str | None = None,
+        integrates_from: str | None = None,
     ):
         """
         Adds the named field to FlightPoint class.
@@ -345,7 +345,8 @@ class FlightPoint:
         :param unit: expected unit for the added field. "-" should be provided for a dimensionless
                      physical quantity. Set to None, when unit concept does not apply.
         :param is_cumulative: True if field value is summed up during mission
-        :param cumulates_from: Name of the other field this value incremented by
+        :param integrates_from: Name of the other field this value is integrated by (in other words,
+                                incremented by that value multiplied by the time step)
         """
         cls._redeclare_fields()
 
@@ -357,7 +358,7 @@ class FlightPoint:
                 default=default_value,
                 metadata={
                     FIELD_DESCRIPTOR: _FieldDescriptor(
-                        unit=unit, is_cumulative=is_cumulative, cumulates_from=cumulates_from
+                        unit=unit, is_cumulative=is_cumulative, integrates_from=integrates_from
                     )
                 },
             ),
@@ -403,14 +404,14 @@ class FlightPoint:
         return cls._get_field_descriptors().get(field_name, _FieldDescriptor(None, None))
 
     @classmethod
-    def _get_cumulative_quantities(cls) -> dict[str, str]:
+    def get_cumulative_quantities(cls) -> dict[str, str]:
         """
         Uses this method instead of accessing cls.__cumulative_quantity to ensure it
         will always be correctly populated.
         """
         if not cls.__cumulative_quantities:
             cls.__cumulative_quantities = {
-                cls_field.name: cls_field.metadata[FIELD_DESCRIPTOR].cumulates_from
+                cls_field.name: cls_field.metadata[FIELD_DESCRIPTOR].integrates_from
                 for cls_field in fields(cls)
                 if not cls_field.name.startswith("_")
                 and cls_field.metadata[FIELD_DESCRIPTOR].is_cumulative
@@ -419,11 +420,11 @@ class FlightPoint:
         return cls.__cumulative_quantities
 
     @classmethod
-    def _get_cumulative_quantity(cls, field_name) -> str | None:
+    def get_cumulative_quantity(cls, field_name) -> str | None:
         """
         Returns the quantity the field cumulates from if it is cumulative and if it was specified.
         """
-        return cls._get_cumulative_quantities().get(field_name, None)
+        return cls.get_cumulative_quantities().get(field_name, None)
 
     @classmethod
     def _redeclare_fields(cls):

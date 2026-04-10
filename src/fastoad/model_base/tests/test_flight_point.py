@@ -116,8 +116,8 @@ def test_cumulative_quantities():
     # the field they cumulate from is handled case by case so they have no field they cumulate from
 
     assert FlightPoint.is_cumulative("time")
-    assert "time" in FlightPoint._get_cumulative_quantities()  # Those two lines do the same thing
-    assert not FlightPoint._get_cumulative_quantity(
+    assert "time" in FlightPoint.get_cumulative_quantities()  # Those two lines do the same thing
+    assert not FlightPoint.get_cumulative_quantity(
         "time"
     )  # Time, like other default cumulative quantities in FlightPoint, have no quantity it
     # cumulates from
@@ -131,9 +131,9 @@ def test_cumulative_quantities():
         default_value=1337.0,
         unit="slug/ft",
         is_cumulative=True,
-        cumulates_from="foo",
+        integrates_from="foo",
     )
 
     assert FlightPoint.is_cumulative("bar")
-    assert "bar" in FlightPoint._get_cumulative_quantities()
-    assert FlightPoint._get_cumulative_quantity("bar") == "foo"
+    assert "bar" in FlightPoint.get_cumulative_quantities()
+    assert FlightPoint.get_cumulative_quantity("bar") == "foo"
