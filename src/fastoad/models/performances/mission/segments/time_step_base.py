@@ -390,6 +390,8 @@ class AbstractTimeStepFlightSegment(
                     getattr(previous_point, cumulative_field)
                     + getattr(previous_point, integrand_field) * time_step,
                 )
+                # If the phenomena that needs to be incremented has a different time constant, this
+                # could cause some issues
 
 
 @dataclass
