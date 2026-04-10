@@ -109,3 +109,31 @@ def test_descriptors():
 
     assert FlightPoint.get_unit("altitude") == "m"
     assert FlightPoint.get_unit("engine_setting") is None
+
+
+def test_cumulative_quantities():
+    # On a default flight point, there are cumulative quantities (fuel, ground distance, ...) but
+    # the field they cumulate from is handled case by case so they have no field they cumulate from
+
+    assert FlightPoint.is_cumulative("time")
+    assert "time" in FlightPoint._get_cumulative_quantities()  # Those two lines do the same thing
+    assert not FlightPoint._get_cumulative_quantity(
+        "time"
+    )  # Time, like other default cumulative quantities in FlightPoint, have no quantity it
+    # cumulates from
+
+    FlightPoint.add_field(
+        "foo", annotation_type=float, default_value=42.0, unit="m", is_cumulative=False
+    )
+    FlightPoint.add_field(
+        "bar",
+        annotation_type=float,
+        default_value=1337.0,
+        unit="slug/ft",
+        is_cumulative=True,
+        cumulates_from="foo",
+    )
+
+    assert FlightPoint.is_cumulative("bar")
+    assert "bar" in FlightPoint._get_cumulative_quantities()
+    assert FlightPoint._get_cumulative_quantity("bar") == "foo"
