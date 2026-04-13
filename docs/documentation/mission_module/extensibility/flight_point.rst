@@ -84,7 +84,7 @@ outside any class or function::
 Time integration
 ***************************
 
-For those additional fields, it is also possible to define their time derivative. If a time derivative is defined this way, the mission model will automatically perform the integration. This integration will be achieved by incrementing the field at each time step by the product of the time derivative and the time step in seconds.
+For those additional fields, it is also possible to define their time derivative. If a time derivative is defined this way, the mission model will automatically perform the integration. This integration will be achieved by incrementing the field at each time step by the product of the time derivative and the length of the time step in seconds.
 
 The order in which a field and its time derivative are defined is irrelevant. However, the existence of the field containing the time derivative will be verified when the analysis process is run::
 
