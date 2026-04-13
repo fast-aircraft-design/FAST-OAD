@@ -280,7 +280,13 @@ def test_hybrid_mission(low_speed_polar, high_speed_polar, hybrid_propulsion):
         0.0,
         1e-6,
     )
-    # Check that the electric energy consumed since the start has been constructed properly
+    # Check for the final value of the electric energy
+    assert_allclose(
+        flight_points.electric_energy.iloc[-1],
+        3.890237e9,
+        1e-6,
+    )
+    # Check that the electric energy consumed since the start has been constructed properly.
     assert_allclose(
         (
             flight_points.electric_energy.iloc[1:101].to_numpy()
