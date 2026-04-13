@@ -111,20 +111,56 @@ def test_descriptors():
     assert FlightPoint.get_unit("engine_setting") is None
 
 
-def test_cumulative_quantities():
+def test_time_integrable_quantities(caplog):
     # On a default flight point, there are cumulative quantities (fuel, ground distance, ...) but
-    # the field they cumulate from is handled case by case so they have no field they cumulate from
+    # they are not time integrated in the sense that there is no other field (as of right now) that
+    # we use to "integrate" them. While it might be complicated for the time because of how the
+    # construction of the mission is handled, it might be feasible for fuel and ground distance :>
 
+    # Time is cumulative but not time integrable
     assert FlightPoint.is_cumulative("time")
-    assert "time" in FlightPoint.get_cumulative_quantities()  # Those two lines do the same thing
-    assert not FlightPoint.get_cumulative_quantity(
-        "time"
-    )  # Time, like other default cumulative quantities in FlightPoint, have no quantity it
-    # cumulates from
+    assert "time" not in FlightPoint.get_time_integrable_quantities()
 
+    # Add a quantity which is declared as having a time derivative but the field it is integrated
+    # from does not exist
+    FlightPoint.add_field(
+        "bar",
+        annotation_type=float,
+        default_value=1337.0,
+        unit="slug/ft",
+        is_cumulative=True,
+        integrates_from="foo",
+    )
+    with pytest.raises(ValueError) as exc_info:
+        FlightPoint.get_time_integrable_quantities()
+
+    assert (
+        "Field 'bar' is declared as integrating from 'foo', but 'foo' is not an existing field."
+        in str(exc_info.value)
+    )
+
+    # Declare the field it integrates from but also redeclare bar as being not cumulative.
     FlightPoint.add_field(
         "foo", annotation_type=float, default_value=42.0, unit="m", is_cumulative=False
     )
+    FlightPoint.add_field(
+        "bar",
+        annotation_type=float,
+        default_value=1337.0,
+        unit="slug/ft",
+        is_cumulative=False,
+        integrates_from="foo",
+    )
+    with caplog.at_level("WARNING"):
+        FlightPoint.get_time_integrable_quantities()
+
+    assert (
+        "Field 'bar' is declared as integrating from another field but is not declared as "
+        "cumulative. 'integrates_from' will only be used if 'is_cumulative' is True."
+        in caplog.records[0].message
+    )
+
+    # Finally declare it cleanly
     FlightPoint.add_field(
         "bar",
         annotation_type=float,
@@ -134,6 +170,5 @@ def test_cumulative_quantities():
         integrates_from="foo",
     )
 
-    assert FlightPoint.is_cumulative("bar")
-    assert "bar" in FlightPoint.get_cumulative_quantities()
-    assert FlightPoint.get_cumulative_quantity("bar") == "foo"
+    assert "bar" in FlightPoint.get_time_integrable_quantities()
+    assert FlightPoint.get_time_integrand("bar") == "foo"

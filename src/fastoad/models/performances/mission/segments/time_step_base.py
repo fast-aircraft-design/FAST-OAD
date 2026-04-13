@@ -382,12 +382,15 @@ class AbstractTimeStepFlightSegment(
     def _increment_cumulative_quantities(
         next_point: FlightPoint, previous_point: FlightPoint, time_step
     ):
-        for cumulative_field, integrand_field in FlightPoint.get_cumulative_quantities().items():
+        for (
+            integrable_field,
+            integrand_field,
+        ) in FlightPoint.get_time_integrable_quantities().items():
             if integrand_field:  # To avoid incrementing default cumulative quantity
                 setattr(
                     next_point,
-                    cumulative_field,
-                    getattr(previous_point, cumulative_field)
+                    integrable_field,
+                    getattr(previous_point, integrable_field)
                     + getattr(previous_point, integrand_field) * time_step,
                 )
                 # If the phenomena that needs to be incremented has a different time constant, this
