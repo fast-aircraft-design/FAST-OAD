@@ -99,6 +99,35 @@ class FlightPoint:
             # Removing a field, even an original one
             >>> FlightPoint.remove_field("sfc")
 
+    **Time integration**
+
+        For those additional fields, it is also possible to define their time derivative. If a time
+        derivative is defined this way, the mission model will automatically perform the
+        integration. This integration will be achieved by incrementing the field at each time step
+        by the product of the time derivative and the time step in seconds.
+
+        The order in which a field and its time derivative are defined is irrelevant. However,
+        the existence of the field containing the time derivative will be verified when the
+        analysis process is run::
+
+            # Adding a time-dependent field and declaring the field which contains its derivative
+            # using the 'integrates_from' descriptor.
+            >>> FlightPoint.add_field(
+            ...    "electric_energy",
+            ...    unit="J",
+            ...    default_value=0.0,
+            ...    is_cumulative=True,
+            ...    integrates_from="electric_power",
+            ... )
+
+            # Now defining the field that contains the derivative. The unit of the derivative must
+            # be the unit of the original field *per second*
+            >>> FlightPoint.add_field(
+            ... "electric_power", default_value=0.0, unit="W", is_cumulative=False
+            ... )
+
+            # Field will be incremented as: field[i+1] = field[i] + time_derivative[i] * time_step
+
     .. note::
 
         All original parameters in FlightPoint instances are expected to be in SI units.
