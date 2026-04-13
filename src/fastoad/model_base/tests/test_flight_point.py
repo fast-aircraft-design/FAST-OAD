@@ -127,7 +127,7 @@ def test_time_integrable_quantities(caplog):
         "bar",
         annotation_type=float,
         default_value=1337.0,
-        unit="slug/ft",
+        unit="slug",
         is_cumulative=True,
         integrates_from="foo",
     )
@@ -141,13 +141,13 @@ def test_time_integrable_quantities(caplog):
 
     # Declare the field it integrates from but also redeclare bar as being not cumulative.
     FlightPoint.add_field(
-        "foo", annotation_type=float, default_value=42.0, unit="m", is_cumulative=False
+        "foo", annotation_type=float, default_value=42.0, unit="slug/s", is_cumulative=False
     )
     FlightPoint.add_field(
         "bar",
         annotation_type=float,
         default_value=1337.0,
-        unit="slug/ft",
+        unit="slug",
         is_cumulative=False,
         integrates_from="foo",
     )
@@ -165,7 +165,7 @@ def test_time_integrable_quantities(caplog):
         "bar",
         annotation_type=float,
         default_value=1337.0,
-        unit="slug/ft",
+        unit="slug",
         is_cumulative=True,
         integrates_from="foo",
     )
