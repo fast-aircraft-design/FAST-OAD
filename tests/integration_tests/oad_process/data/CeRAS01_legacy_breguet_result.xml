@@ -340,7 +340,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. -->
         <MTOW units="kg" is_input="False">77086.92311362566<!--maximum takeoff weight--></MTOW>
         <MZFW units="kg" is_input="False">62583.56081766301<!--maximum zero fuel weight--></MZFW>
         <OWE units="kg" is_input="False">42975.56081766301<!--Mass of crew--></OWE>
-        <additional_fuel_capacity units="kg" is_input="False">1.1502499546622857e-05<!--fuel mass capacity of wing that exceeds sizing mission requirement--></additional_fuel_capacity>
+        <additional_fuel_capacity units="kg" is_input="False">9.938128641806543e-06<!--fuel mass capacity of wing that exceeds sizing mission requirement--></additional_fuel_capacity>
         <max_payload units="kg" is_input="False">19608.0<!--max payload weight--></max_payload>
         <payload units="kg" is_input="False">13608.0<!--_inp_data:weight:aircraft:payload--></payload>
         <sizing_block_fuel units="kg" is_input="False">20503.3622860245<!--block fuel quantity (i.e. loaded before taxi-out) used for sizing process--></sizing_block_fuel>

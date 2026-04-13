@@ -1038,17 +1038,21 @@ name = "fast-oad-cs25"
 version = "0.8.1"
 description = "FAST-OAD_CS25 is a FAST-OAD plugin with CS25/FAR25-related models."
 optional = false
-python-versions = "<3.15,>=3.10"
+python-versions = ">=3.10,<3.15"
 groups = ["dev"]
-files = [
-    {file = "fast_oad_cs25-0.8.1-py3-none-any.whl", hash = "sha256:470616504b146f74d7f42fc76522e1c87c71c05f84698fcf15febf5e7f27dd4f"},
-    {file = "fast_oad_cs25-0.8.1.tar.gz", hash = "sha256:6c330ad498a7e5a9c85d4be784ea567cb68f4fffc205fc4d53c18c6046c3fd9b"},
-]
+files = []
+develop = false
 
 [package.dependencies]
-fast-oad-core = {version = ">=1.9.0", markers = "python_version < \"3.15\""}
+fast-oad-core = {git = "https://github.com/fast-aircraft-design/FAST-OAD.git", rev = "refactor_polars", markers = "python_version < \"3.15\""}
 jupyterlab-widgets = "3.0.15"
 pyparsing = ">=3.2.5,<4.0.0"
+
+[package.source]
+type = "git"
+url = "https://github.com/fast-aircraft-design/FAST-OAD_CS25.git"
+reference = "refactor-polars"
+resolved_reference = "898df1338c2ffead187e5a51acb20a63cffa8bc0"
 
 [[package]]
 name = "fastjsonschema"
@@ -5174,4 +5178,4 @@ mpi = ["mpi4py"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.15"
-content-hash = "802ead42943e9242390d2c5f0364bff9c01b84d1d5a5ddde9fdb995da54f5e8b"
+content-hash = "d7f341a1c1fb083659b933f2b8597d989facb7250c80c76b24402cd1f1a7087a"
