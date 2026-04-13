@@ -75,6 +75,7 @@ class DummyHybridEngine(AbstractFuelPropulsion):
         Electric branch efficiency is assumed constant.
 
         :param max_thrust: thrust when thrust rate = 1.0
+        :param hybridization_ratio: share of thermal power, between 0.0 and 1.0
         :param max_sfc: SFC when thrust rate = 1.0
         :param eta_electric: electric branch efficiency
         """
@@ -91,24 +92,3 @@ class DummyHybridEngine(AbstractFuelPropulsion):
 
         flight_point.sfc = self.max_sfc * (1.0 + flight_point.thrust_rate) / 2.0 * (1.0 - self.hybridization_ratio)
         flight_point.electric_power = flight_point.thrust * flight_point.true_airspeed * self.hybridization_ratio / self.eta_electric
-
-
-@RegisterPropulsion("test.wrapper.propulsion.dummy_hybrid_engine")
-class DummyHybridEngineWrapper(IOMPropulsionWrapper):
-    def setup(self, component: Component):
-        component.add_input("data:propulsion:dummy_engine:max_thrust", 1.2e5, units="N")
-        component.add_input("data:propulsion:dummy_engine:hybridization_ratio", 0.1, units="unitless")
-        component.add_input("data:propulsion:dummy_engine:max_sfc", 1.5e-5, units="kg/N/s")
-        component.add_input("data:propulsion:dummy_engine:electric_efficiency", 0.95, units="unitless")
-        component.add_input("data:geometry:propulsion:engine_count", 2)
-
-    def get_model(self, inputs) -> IPropulsion:
-        return FuelEngineSet(
-            DummyHybridEngine(
-                inputs["data:propulsion:dummy_engine:max_thrust"],
-                inputs["data:propulsion:dummy_engine:hybridization_ratio"],
-                inputs["data:propulsion:dummy_engine:max_sfc"],
-                inputs["data:propulsion:dummy_engine:electric_efficiency"],
-            ),
-            inputs["data:geometry:propulsion:engine_count"],
-        )
