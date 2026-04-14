@@ -426,8 +426,8 @@ def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
 
     # check CL and flight level, CL is lower than 0.45 because the climb phase stops at
     # the closest flight level.
-    assert_allclose(CL_end_climb, 0.445, atol=1e-3)
     assert_allclose(altitude_end_climb, 9753.6, atol=1e-1)
+    assert_allclose(CL_end_climb, 0.445, atol=1e-3)
 
     # Now check climbing cruise with constant CL
     variables.add_var("data:mission:operational_optimal:max_CL", val=0.45)

@@ -123,7 +123,11 @@ class BaseAltitudeChange(AbstractLiftFromWeightSegment):
             atm.mach = start.mach
             start.true_airspeed = atm.true_airspeed
 
-        if all(x is not None for x in [self.maximum_CL, start.CL]) and self.maximum_CL < start.CL:
+        if (
+            isinstance(self.maximum_CL, float)
+            and isinstance(start.CL, float)
+            and self.maximum_CL < start.CL
+        ):
             # If CL of the starting point is above the max CL, we stop the climb/descent
             _LOGGER.warning(
                 'The first point in a segment of "%s" has a CL = %.2f > maximum_CL = %.2f. '
@@ -146,11 +150,15 @@ class BaseAltitudeChange(AbstractLiftFromWeightSegment):
         if current.altitude >= max_authorized_altitude:
             distance_to_target = max_authorized_altitude - current.altitude
 
-        # Max CL is second priority, if it is defined
-        elif isinstance(target.CL, float) or (
-            isinstance(self.maximum_CL, float) and self.maximum_CL < current.CL
-        ):
-            distance_to_target = target.CL - current.CL
+        # We do not check maximum_CL here, it is handled by _get_optimal_altitude()
+
+        # CL target is second priority if it is defined
+        elif isinstance(target.CL, float):
+            # Check that max CL is not reached when target is a CL
+            if isinstance(self.maximum_CL, float) and self.maximum_CL <= current.CL:
+                distance_to_target = self.maximum_CL - current.CL
+            else:
+                distance_to_target = target.CL - current.CL
 
         else:
             if self._original_target_altitude:

@@ -405,8 +405,40 @@ def test_regulated_altitude_change_optimal_no_limit(polar):
     assert_allclose(last_point.ground_distance, 47377.4, rtol=1e-3)
 
 
+def test_regulated_altitude_change_optimal_no_limit_maximum_CL(polar):
+    """Baseline case - no thrust-rate limitation and maximum_CL limitation"""
+    propulsion = FuelEngineSet(DummyEngine(5.0e4, 1.0e-5), 2)
+
+    segment = RegulatedAltitudeChangeSegment(
+        target=FlightPoint(
+            altitude=RegulatedAltitudeChangeSegment.OPTIMAL_FLIGHT_LEVEL,
+            mach="constant",
+        ),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        slope_angle=0.1,
+        time_step=2.0,
+        thrust_rate_out_of_bound="extrapolate",
+        maximum_CL=0.4,
+    )
+
+    # Execute the segment
+    flight_points = segment.compute_from(FlightPoint(altitude=5000.0, mach=0.82, mass=70000.0))
+    last_point = flight_points.iloc[-1]
+
+    # Assertions
+    assert_allclose(flight_points.mach, 0.82)
+    assert_allclose(last_point.altitude / foot, 29000, atol=0.1)
+    assert_allclose(last_point.time, 150, rtol=1e-2)
+    assert_allclose(last_point.true_airspeed, 249.68, rtol=1e-4)
+    assert_allclose(last_point.mass, 69844.7, rtol=1e-4)
+    assert_allclose(last_point.ground_distance, 38264, rtol=1e-3)
+    assert last_point.CL <= 0.4
+
+
 def test_regulated_altitude_change_optimal_with_limit(polar):
-    """Same flight profile, but the thrust-rate is forced to stay < 1."""
+    """Baseline case, but the thrust-rate is forced to stay < 1."""
     propulsion = FuelEngineSet(DummyEngine(5.0e4, 1.0e-5), 2)
 
     segment = RegulatedAltitudeChangeSegment(
@@ -439,8 +471,8 @@ def test_regulated_altitude_change_optimal_with_limit(polar):
     assert_allclose(flight_points.thrust_rate, 1.0, rtol=1e-6)
 
 
-def test_regulated_altitude_change_with_CL_limitation(polar):
-    """Flight is limited by a target lift coefficient (CL)."""
+def test_regulated_altitude_change_with_CL_target(polar):
+    """Segment has a target lift coefficient (CL)."""
     propulsion = FuelEngineSet(DummyEngine(5.0e4, 1.0e-5), 2)
 
     segment = RegulatedAltitudeChangeSegment(
@@ -466,3 +498,36 @@ def test_regulated_altitude_change_with_CL_limitation(polar):
     assert_allclose(last_point.ground_distance, 47412.3, rtol=1e-3)
     assert_allclose(last_point.CL, 0.4418, rtol=1e-3)
     assert_allclose(last_point.slope_angle, 0.1, rtol=1e-3)
+
+
+def test_regulated_altitude_change_with_CL_limitation(polar):
+    """
+    Segment has a target lift coefficient (CL) but
+    it should be caped by the maximum lift coefficient.
+    """
+    propulsion = FuelEngineSet(DummyEngine(5.0e4, 1.0e-5), 2)
+
+    segment = RegulatedAltitudeChangeSegment(
+        target=FlightPoint(CL=0.4418, mach="constant"),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        slope_angle=0.1,
+        time_step=2.0,
+        thrust_rate_out_of_bound="extrapolate",
+        maximum_CL=0.4,
+    )
+
+    # Execute the segment
+    flight_points = segment.compute_from(FlightPoint(altitude=5000.0, mach=0.82, mass=70000.0))
+    last_point = flight_points.iloc[-1]
+
+    # Assertions (note: altitude reference is in metres here)
+    assert_allclose(last_point.CL, 0.4, rtol=1e-3)
+    assert_allclose(last_point.slope_angle, 0.1, rtol=1e-3)
+    assert_allclose(flight_points.mach, 0.82)
+    assert_allclose(last_point.altitude, 9094.52, atol=0.1)
+    assert_allclose(last_point.time, 160.28, rtol=1e-2)
+    assert_allclose(last_point.true_airspeed, 248.78, rtol=1e-4)
+    assert_allclose(last_point.mass, 69834.5, rtol=1e-4)
+    assert_allclose(last_point.ground_distance, 40808.6, rtol=1e-3)
