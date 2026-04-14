@@ -256,7 +256,7 @@ than the original altitude target (the climb stops when the maximum CL is reache
 :code:`regulated_altitude_change` segment
 ===============================
 
-.. list-attributes-for:: regulated-altitude_change
+.. list-attributes-for:: regulated_altitude_change
 
 Offers the same functionalities as the altitude change segment, only here the thrust is regulated and the slope angle is prescribed.
 

@@ -249,7 +249,9 @@ class RegulatedAltitudeChangeSegment(BaseAltitudeChange, AbstractRegulatedThrust
     """
 
     def compute_from(self, start: FlightPoint) -> pd.DataFrame:
-        """Method is surcharged to check the value of slope_angle before doing anything else"""
+        """
+        Method is surcharged to check the value of slope_angle before doing anything else
+        """
 
         if not isinstance(self.slope_angle, float):
             raise ValueError(
