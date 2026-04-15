@@ -172,3 +172,6 @@ def test_time_integrable_quantities():
 
     assert "bar" in FlightPoint.get_time_integrable_quantities()
     assert FlightPoint.get_time_integrand("bar") == "foo"
+
+    FlightPoint.remove_field("foo")
+    FlightPoint.remove_field("bar")
