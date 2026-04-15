@@ -101,17 +101,18 @@ class FlightPoint:
 
     **Time integration**
 
-        For those additional fields, it is also possible to define their time derivative. If a time
-        derivative is defined this way, the mission model will automatically perform the
-        integration. This integration will be achieved by incrementing the field at each time step
-        by the product of the time derivative and the length of the time step in seconds.
+        For those additional user-defined fields, it is also possible to define their time
+        derivative. If a time derivative is defined this way, the mission model will
+        automatically perform the integration. This integration will be achieved by incrementing
+        the field at each time step by the product of the time derivative and the length of the
+        time step in seconds.
 
         The order in which a field and its time derivative are defined is irrelevant. However,
         the existence of the field containing the time derivative will be verified when the
         analysis process is run::
 
             # Adding a time-dependent field and declaring the field which contains its derivative
-            # using the 'integrates_from' descriptor.
+            # using the 'integrates_from' field descriptor.
             >>> FlightPoint.add_field(
             ...    "electric_energy",
             ...    unit="J",
@@ -126,7 +127,8 @@ class FlightPoint:
             ...     "electric_power", default_value=0.0, unit="W", is_cumulative=False
             ... )
 
-            # Field will be incremented as: field[i+1] = field[i] + time_derivative[i] * time_step[i]
+            # Field will be incremented as: field[i+1] = field[i] + time_derivative[i] *
+            # time_step[i]
 
     .. note::
 
@@ -453,11 +455,10 @@ class FlightPoint:
                         # integrable. Worst case, the process won't crash but the results will be
                         # inconsistent
                         if not cls_field.metadata[FIELD_DESCRIPTOR].is_cumulative:
-                            _LOGGER.warning(
-                                "Field '%s' is declared as integrating from another field but is "
-                                "not declared as cumulative. 'integrates_from' will only be used if"
-                                " 'is_cumulative' is True.",
-                                field_name,
+                            raise ValueError(
+                                f"Field '{field_name}' is declared as integrating from another "
+                                f"field but is not declared as cumulative. 'integrates_from' can "
+                                f"only be declared if 'is_cumulative' is True.",
                             )
 
                         # Check that the field we want to integrate from actually exists. If it
@@ -474,7 +475,7 @@ class FlightPoint:
         return cls.__time_integrable_quantities
 
     @classmethod
-    def get_time_integrand(cls, field_name) -> str | None:
+    def get_time_integrand(cls, field_name) -> str:
         """
         Returns the quantity the field integrates from.
         """

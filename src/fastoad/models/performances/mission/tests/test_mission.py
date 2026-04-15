@@ -296,3 +296,6 @@ def test_hybrid_mission(low_speed_polar, high_speed_polar, hybrid_propulsion):
         flight_points.electric_power.iloc[:100].to_numpy(),
         1e-6,
     )
+
+    FlightPoint.remove_field("electric_energy")
+    FlightPoint.remove_field("electric_power")

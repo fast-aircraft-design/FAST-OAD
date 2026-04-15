@@ -111,7 +111,7 @@ def test_descriptors():
     assert FlightPoint.get_unit("engine_setting") is None
 
 
-def test_time_integrable_quantities(caplog):
+def test_time_integrable_quantities():
     # On a default flight point, there are cumulative quantities (fuel, ground distance, ...) but
     # they are not time integrated in the sense that there is no other field (as of right now) that
     # we use to "integrate" them. While it might be complicated for the time because of how the
@@ -151,13 +151,13 @@ def test_time_integrable_quantities(caplog):
         is_cumulative=False,
         integrates_from="foo",
     )
-    with caplog.at_level("WARNING"):
+    with pytest.raises(ValueError) as exc_info:
         FlightPoint.get_time_integrable_quantities()
 
     assert (
         "Field 'bar' is declared as integrating from another field but is not declared as "
-        "cumulative. 'integrates_from' will only be used if 'is_cumulative' is True."
-        in caplog.records[0].message
+        "cumulative. 'integrates_from' can only be declared if 'is_cumulative' is True."
+        in str(exc_info.value)
     )
 
     # Finally declare it cleanly
