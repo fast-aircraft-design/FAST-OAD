@@ -126,7 +126,7 @@ class FlightPoint:
             ...     "electric_power", default_value=0.0, unit="W", is_cumulative=False
             ... )
 
-            # Field will be incremented as: field[i+1] = field[i] + time_derivative[i] * time_step
+            # Field will be incremented as: field[i+1] = field[i] + time_derivative[i] * time_step[i]
 
     .. note::
 
