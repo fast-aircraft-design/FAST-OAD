@@ -15,6 +15,7 @@ import logging
 import shutil
 from pathlib import Path
 
+import openmdao.api as om
 import pytest
 from numpy.testing import assert_allclose
 from scipy.constants import foot, knot, nautical_mile
@@ -310,6 +311,34 @@ def test_mission_group_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
         problem.get_val("data:mission:operational:specific_burned_fuel", "km**-1"),
         1.02283e-4,
         rtol=1.0e-5,
+    )
+
+
+def test_mission_group_with_fuel_adjustment_adds_local_solver(cleanup, with_dummy_plugin_2):
+    input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
+    variables = DataFile(input_file_path)
+    del variables["data:mission:operational:TOW"]
+    ivc = variables.to_ivc()
+
+    problem = run_system(
+        OMMission(
+            propulsion_id="test.wrapper.propulsion.dummy_engine",
+            out_file=RESULTS_FOLDER_PATH / "forced_solver_mission_group.csv",
+            use_initializer_iteration=True,
+            mission_file_path=DATA_FOLDER_PATH / "test_mission.yml",
+            mission_name="operational",
+            use_inner_solvers=False,
+            reference_area_variable="data:geometry:aircraft:reference_area",
+        ),
+        ivc,
+    )
+
+    assert not problem.model.component.options["use_inner_solvers"]
+    assert isinstance(problem.model.component.nonlinear_solver, om.NonlinearBlockGS)
+    assert_allclose(
+        problem["data:mission:operational:needed_block_fuel"],
+        problem["data:mission:operational:block_fuel"],
+        atol=1.0,
     )
 
 

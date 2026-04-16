@@ -114,7 +114,13 @@ class OMMission(
         )
 
     def setup(self):
+        if self.options["adjust_fuel"]:
+            self.options["compute_input_weight"] = True
+
         super().setup()
+
+        if self.options["adjust_fuel"] and not self.options["use_inner_solvers"]:
+            self._add_adjust_fuel_solver()
 
         mission_options = {
             key: val for key, val in self.options.items() if key in AdvancedMissionComp().options
@@ -124,7 +130,6 @@ class OMMission(
         self.add_subsystem("ZFW_computation", self._get_zfw_component(), promotes=["*"])
 
         if self.options["adjust_fuel"]:
-            self.options["compute_input_weight"] = True
             self.connect(
                 self.name_provider.NEEDED_BLOCK_FUEL.value,
                 self.name_provider.BLOCK_FUEL.value,
@@ -199,7 +204,7 @@ class OMMission(
             ],
             units="kg",
             scaling_factors=[1, 1, -1],
-            desc=f'Loaded fuel at beginning for mission "{self.mission_name}"',
+            desc=f'Takeoff weight for mission "{self.mission_name}"',
         )
 
         return computation
@@ -223,7 +228,7 @@ class OMMission(
             ],
             units="kg",
             scaling_factors=[1, 1, -1],
-            desc=f'Loaded fuel at beginning for mission "{self.mission_name}"',
+            desc=f'Loaded fuel at beginning of mission "{self.mission_name}"',
         )
 
         return block_fuel_computation
@@ -233,6 +238,20 @@ class OMMission(
             return "data:weight:aircraft:payload"
 
         return self.name_provider.PAYLOAD.value
+
+    def _add_adjust_fuel_solver(self):
+        # Fuel adjustment creates a local feedback loop on this mission group even when
+        # generic inner solvers are disabled at the component level.
+        linear_solver_class = self._get_solver_class("linear_solver")
+        nonlinear_solver_class = self._get_solver_class("nonlinear_solver")
+
+        linear_solver_options = self._get_solver_options("linear_solver_options")
+        nonlinear_solver_options = self._get_solver_options("nonlinear_solver_options")
+
+        if linear_solver_class:
+            self.linear_solver = linear_solver_class(**linear_solver_options)
+        if nonlinear_solver_class:
+            self.nonlinear_solver = nonlinear_solver_class(**nonlinear_solver_options)
 
 
 class SpecificBurnedFuelComputation(
