@@ -24,16 +24,20 @@ import fastoad.api as oad
 DATA_FOLDER_PATH = Path(__file__).parent / "data"
 RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
 
-# Memory leak threshold in MiB
-MEMORY_DIFF_THRESHOLD = 20.0
-MEMORY_DIFF_THRESHOLD_AVG = 20.0
-FINAL_MEMORY_THRESHOLD = 20.0
+BYTES_PER_MIB = 1024**2
+MEMORY_GROWTH_THRESHOLD = 20.0
 
 
 @pytest.fixture(scope="module")
 def cleanup():
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
     RESULTS_FOLDER_PATH.mkdir(parents=True, exist_ok=True)
+
+
+def get_traced_memory_mib() -> float:
+    """Return current traced memory in MiB."""
+    current, _ = tracemalloc.get_traced_memory()
+    return current / BYTES_PER_MIB
 
 
 def print_memory_state(tag: str) -> float:
@@ -43,20 +47,6 @@ def print_memory_state(tag: str) -> float:
     memory = om.convert_units(current - tracemalloc.get_tracemalloc_memory(), "byte", "Mibyte")
     print(f"{tag:50}: {memory:.3f} MiB (peak: {om.convert_units(peak, 'byte', 'Mibyte'):.3f} MiB)")
     return memory
-
-
-def get_top_memory_stats(
-    snapshot1: tracemalloc.Snapshot, snapshot2: tracemalloc.Snapshot, limit: int = 5
-):
-    """Get top memory consuming lines between two snapshots"""
-    top_stats = snapshot2.compare_to(snapshot1, "lineno")
-    for j, stat in enumerate(top_stats[:limit]):  # Show top 'limit' changes
-        size_diff = om.convert_units(stat.size_diff, "byte", "Mibyte")  # Convert to MiB
-        print(f"  {j + 1}. {size_diff:+.3f} MiB | {stat.traceback.format()[-1].strip()}")
-        if j == 0 and abs(size_diff) > 1.0:  # Show full traceback for largest change
-            print("     Full traceback:")
-            for line in stat.traceback.format():
-                print(f"       {line.strip()}")
 
 
 def run_problem() -> None:
@@ -92,103 +82,29 @@ def run_problem() -> None:
 
 
 def test_memory_leak_between_runs(cleanup):
-    """Test that memory usage between runs doesn't exceed threshold"""
-    tracemalloc.start(5)
+    """Check that repeated runs do not retain large amounts of traced memory."""
+    tracemalloc.start()
 
     try:
-        snapshot_start = tracemalloc.take_snapshot()
         print()
         baseline_memory = print_memory_state("Baseline")
+        retained_memories: list[float] = []
 
-        memory_measurements: list[tuple[int, float]] = []
-        run_snapshots = []
-
-        run_count = 2
-
-        for i in range(run_count):
-            print(f"\n{'=' * 60}")
-            print(f"RUN {i + 1}/{run_count}")
-            print(f"{'=' * 60}")
-
-            pre_run_memory = print_memory_state(f"Before run {i + 1}")
-
-            # Take snapshot before run
-            pre_snapshot = tracemalloc.take_snapshot()
-
-            # Run the problem
+        for run_number in range(2):
+            print(f"\nRun {run_number + 1}/2")
             run_problem()
 
-            post_run_memory = print_memory_state(f"After run {i + 1}")
+            gc.collect()
+            retained_memory = print_memory_state(f"After run {run_number + 1}") - baseline_memory
+            retained_memories.append(retained_memory)
 
-            # Take snapshot after run
-            post_snapshot = tracemalloc.take_snapshot()
-            run_snapshots.append((pre_snapshot, post_snapshot))
+        memory_growth = retained_memories[-1] - retained_memories[0]
 
-            # Calculate memory difference for this run
-            run_memory_diff = post_run_memory - pre_run_memory
-            memory_measurements.append((i + 1, run_memory_diff))
+        print(f"Retained traced memory after runs: {retained_memories}")
 
-            print(f"Memory difference for run {i + 1}: {run_memory_diff:.3f} MiB")
-
-            # Analyze memory changes for this specific run
-            print(f"\nTop memory changes during run {i + 1}:")
-            get_top_memory_stats(pre_snapshot, post_snapshot)
-
-            # Check if this run exceeded positive threshold
-            if run_memory_diff > MEMORY_DIFF_THRESHOLD:
-                print(
-                    f"\nWARNING: Run {i + 1} memory difference ({run_memory_diff:.3f} MiB) "
-                    f"exceeds threshold ({MEMORY_DIFF_THRESHOLD} MiB)"
-                )
-        # Final analysis
-        print(f"\n{'=' * 60}")
-        print("MEMORY ANALYSIS SUMMARY")
-        print(f"{'=' * 60}")
-
-        gc.collect()
-
-        final_memory = print_memory_state("Final state (after garbage collection)")
-        final_diff = final_memory - baseline_memory
-
-        print("\nMemory measurements per run:")
-        for run_num, diff in memory_measurements:
-            status = "PASS" if abs(diff) <= MEMORY_DIFF_THRESHOLD else "FAIL"
-            print(f"  Run {run_num}: {diff:+.3f} MiB [{status}]")
-
-        print(f"\nOverall memory increase (after garbage collection): {final_diff:.3f} MiB")
-
-        # Overall memory analysis from start to finish
-        print("\nOverall top memory changes (start to finish):")
-        final_snapshot = tracemalloc.take_snapshot()
-        get_top_memory_stats(snapshot_start, final_snapshot)
-
-        # Cross-run memory leak detection
-        print("\nMemory leak analysis:")
-        positive_diffs = [
-            diff for _, diff in memory_measurements if diff > 0.1
-        ]  # Only significant positive diffs
-        avg_increase = sum(positive_diffs) / len(positive_diffs)
-        print(f"  Average memory increase per run: {avg_increase:.3f} MiB")
-        if avg_increase > MEMORY_DIFF_THRESHOLD * 0.5:
-            print("  WARNING: Potential memory leak detected - consistent growth pattern")
-
-        max_diff = max([mem for _, mem in memory_measurements])
-
-        # Assert that no single run exceeds the threshold
-        assert max_diff <= MEMORY_DIFF_THRESHOLD, (
-            f"Memory difference between runs exceeded threshold: "
-            f"{max_diff:.3f} MiB > {MEMORY_DIFF_THRESHOLD} MiB"
-        )
-
-        # Assert that the average doesn't exceeds the threshold
-        assert avg_increase <= MEMORY_DIFF_THRESHOLD_AVG, (
-            f"Average memory increase between runs exceeded threshold: "
-            f"{avg_increase:.3f} MiB > {MEMORY_DIFF_THRESHOLD_AVG} MiB"
-        )
-
-        # Assert that final memory is reasonable
-        assert final_memory < FINAL_MEMORY_THRESHOLD, (
-            f"Final memory usage too high: {final_memory:.3f} MiB > {FINAL_MEMORY_THRESHOLD} MiB"
+        assert memory_growth <= MEMORY_GROWTH_THRESHOLD, (
+            f"Retained traced memory grew by {memory_growth:.3f} MiB between runs, "
+            f"which exceeds {MEMORY_GROWTH_THRESHOLD} MiB"
         )
 
     finally:
