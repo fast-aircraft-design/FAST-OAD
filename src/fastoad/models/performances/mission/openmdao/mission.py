@@ -204,7 +204,7 @@ class OMMission(
             ],
             units="kg",
             scaling_factors=[1, 1, -1],
-            desc=f'Takeoff weight for mission "{self.mission_name}"',
+            desc=f'Input weight at mission start/target mass for mission "{self.mission_name}"',
         )
 
         return computation
