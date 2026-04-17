@@ -24,20 +24,13 @@ import fastoad.api as oad
 DATA_FOLDER_PATH = Path(__file__).parent / "data"
 RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
 
-BYTES_PER_MIB = 1024**2
-MEMORY_GROWTH_THRESHOLD = 20.0
+MEMORY_GROWTH_THRESHOLD = 20.0  # MiB - This threshold is somewhat arbitrary and may need adjustment
 
 
 @pytest.fixture(scope="module")
 def cleanup():
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
     RESULTS_FOLDER_PATH.mkdir(parents=True, exist_ok=True)
-
-
-def get_traced_memory_mib() -> float:
-    """Return current traced memory in MiB."""
-    current, _ = tracemalloc.get_traced_memory()
-    return current / BYTES_PER_MIB
 
 
 def print_memory_state(tag: str) -> float:
