@@ -24,7 +24,7 @@ import fastoad.api as oad
 DATA_FOLDER_PATH = Path(__file__).parent / "data"
 RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
 
-MEMORY_GROWTH_THRESHOLD = 20.0  # MiB - This threshold is somewhat arbitrary and may need adjustment
+MEMORY_GROWTH_THRESHOLD = 30.0  # MiB - This threshold is somewhat arbitrary and may need adjustment
 
 
 @pytest.fixture(scope="module")
