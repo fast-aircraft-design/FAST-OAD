@@ -343,6 +343,55 @@ def test_mission_group_with_fuel_adjustment_adds_local_solver(cleanup, with_dumm
     )
 
 
+def test_sizing_mission_group_with_fuel_adjustment_does_not_add_local_solver(
+    cleanup, with_dummy_plugin_2
+):
+    input_file_path = DATA_FOLDER_PATH / "test_breguet.xml"
+    variables = DataFile(input_file_path)
+    del variables["data:mission:operational:ramp_weight"]
+    ivc = variables.to_ivc()
+
+    problem = run_system(
+        OMMission(
+            propulsion_id="test.wrapper.propulsion.dummy_engine",
+            out_file=RESULTS_FOLDER_PATH / "unforced_sizing_solver_mission_group.csv",
+            use_initializer_iteration=True,
+            mission_file_path=DATA_FOLDER_PATH / "test_breguet.yml",
+            use_inner_solvers=False,
+            reference_area_variable="data:geometry:aircraft:reference_area",
+            is_sizing=True,
+        ),
+        ivc,
+    )
+
+    assert isinstance(problem.model.component.nonlinear_solver, om.NonlinearRunOnce)
+
+
+def test_mission_group_with_fuel_adjustment_keeps_existing_local_solver(
+    cleanup, with_dummy_plugin_2
+):
+    input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
+    variables = DataFile(input_file_path)
+    del variables["data:mission:operational:TOW"]
+    ivc = variables.to_ivc()
+
+    component = OMMission(
+        propulsion_id="test.wrapper.propulsion.dummy_engine",
+        out_file=RESULTS_FOLDER_PATH / "preconfigured_solver_mission_group.csv",
+        use_initializer_iteration=True,
+        mission_file_path=DATA_FOLDER_PATH / "test_mission.yml",
+        mission_name="operational",
+        use_inner_solvers=False,
+        reference_area_variable="data:geometry:aircraft:reference_area",
+    )
+    component.linear_solver = om.DirectSolver()
+    component.nonlinear_solver = om.NewtonSolver(solve_subsystems=False)
+
+    problem = run_system(component, ivc)
+
+    assert isinstance(problem.model.component.nonlinear_solver, om.NewtonSolver)
+
+
 def test_mission_group_breguet_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
     # Also checking behavior when is_sizing is True
 

@@ -66,8 +66,9 @@ class OMMission(
             types=bool,
             desc="If True, block fuel will fit fuel consumption during mission. In that case, a "
             "solver (local or global) will be needed. (see `use_inner_solver` option for more"
-            "information). If `use_inner_solvers` is False, this mission group still adds its "
-            "own local solver because fuel adjustment creates a feedback loop.\n"
+            "information). For non-sizing missions, this group may still add its own local "
+            "solver when `use_inner_solvers` is False and no local solver is already defined, "
+            "because fuel adjustment creates a feedback loop.\n"
             "If False, block fuel will be taken from input data.",
         )
         self.options.declare(
@@ -103,8 +104,9 @@ class OMMission(
             desc="If True, a local solver is set for the mission computation.\n"
             "It is useful if `adjust_fuel` is set to True, or to ensure consistency between "
             "ramp weight and takeoff weight + taxi-out fuel.\n"
-            "If `adjust_fuel` is True, this mission group still installs its own local solver "
-            "even when `use_inner_solvers` is False.\n"
+            "For non-sizing missions with `adjust_fuel=True`, this mission group may still "
+            "install its own local solver even when `use_inner_solvers` is False, unless a "
+            "local solver is already defined on the component.\n"
             "If a global solver is used, using a local solver or not should be only a question"
             "of CPU time consumption and is not expected to modify the results.",
         )
@@ -122,9 +124,10 @@ class OMMission(
 
         super().setup()
 
-        if self.options["adjust_fuel"] and not self.options["use_inner_solvers"]:
+        if self._needs_adjust_fuel_solver():
             # This keeps the generic use_inner_solvers option untouched while still
-            # converging the mission-specific fuel-adjustment cycle on this group.
+            # converging the non-sizing mission fuel-adjustment cycle on this group
+            # when no other local solver has already been attached.
             self._add_adjust_fuel_solver()
 
         mission_options = {
@@ -243,6 +246,21 @@ class OMMission(
             return "data:weight:aircraft:payload"
 
         return self.name_provider.PAYLOAD.value
+
+    def _needs_adjust_fuel_solver(self) -> bool:
+        return (
+            self.options["adjust_fuel"]
+            and not self.options["is_sizing"]
+            and not self.options["use_inner_solvers"]
+            and not self._has_local_solver()
+        )
+
+    def _has_local_solver(self) -> bool:
+        nonlinear_solver = getattr(self, "nonlinear_solver", None)
+        linear_solver = getattr(self, "linear_solver", None)
+        return not isinstance(nonlinear_solver, om.NonlinearRunOnce) or not isinstance(
+            linear_solver, om.LinearRunOnce
+        )
 
     def _add_adjust_fuel_solver(self):
         # Fuel adjustment creates a local feedback loop on this mission group even when
