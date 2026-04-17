@@ -83,32 +83,35 @@ def test_scalarize():
 
 
 def test_descriptors():
-    FlightPoint.add_field(
-        "foo", annotation_type=float, default_value=42.0, unit="m", is_cumulative=False
-    )
-    # Testing redeclaration
-    FlightPoint.add_field(
-        "foo",
-        annotation_type=float,
-        default_value=42.0,
-        unit="slug/ft",
-        is_cumulative=True,
-    )
+    try:
+        FlightPoint.add_field(
+            "foo", annotation_type=float, default_value=42.0, unit="m", is_cumulative=False
+        )
+        # Testing redeclaration
+        FlightPoint.add_field(
+            "foo",
+            annotation_type=float,
+            default_value=42.0,
+            unit="slug/ft",
+            is_cumulative=True,
+        )
 
-    assert FlightPoint.get_units()["time"] == "s"
-    assert FlightPoint.get_units()["foo"] == "slug/ft"
+        assert FlightPoint.get_units()["time"] == "s"
+        assert FlightPoint.get_units()["foo"] == "slug/ft"
 
-    assert FlightPoint.get_unit("time") == "s"
-    assert FlightPoint.get_unit("foo") == "slug/ft"
+        assert FlightPoint.get_unit("time") == "s"
+        assert FlightPoint.get_unit("foo") == "slug/ft"
 
-    assert FlightPoint.is_cumulative("time")
-    assert not FlightPoint.is_cumulative("altitude")
-    assert FlightPoint.is_cumulative("foo")
+        assert FlightPoint.is_cumulative("time")
+        assert not FlightPoint.is_cumulative("altitude")
+        assert FlightPoint.is_cumulative("foo")
 
-    FlightPoint.remove_field("foo")
+        assert FlightPoint.get_unit("altitude") == "m"
+        assert FlightPoint.get_unit("engine_setting") is None
 
-    assert FlightPoint.get_unit("altitude") == "m"
-    assert FlightPoint.get_unit("engine_setting") is None
+    finally:
+        # Free the fields we added to ensure that there is no interference with other tests.
+        FlightPoint.remove_field("foo")
 
 
 def test_time_integrable_quantities():
@@ -121,57 +124,60 @@ def test_time_integrable_quantities():
     assert FlightPoint.is_cumulative("time")
     assert "time" not in FlightPoint.get_time_integrable_quantities()
 
-    # Add a quantity which is declared as having a time derivative but the field it is integrated
-    # from does not exist
-    FlightPoint.add_field(
-        "bar",
-        annotation_type=float,
-        default_value=1337.0,
-        unit="slug",
-        is_cumulative=True,
-        integrates_from="foo",
-    )
-    with pytest.raises(ValueError) as exc_info:
-        FlightPoint.get_time_integrable_quantities()
+    try:
+        # Add a quantity which is declared as having a time derivative but the field it is
+        # integrated from does not exist
+        FlightPoint.add_field(
+            "bar",
+            annotation_type=float,
+            default_value=1337.0,
+            unit="slug",
+            is_cumulative=True,
+            integrates_from="foo",
+        )
+        with pytest.raises(ValueError) as exc_info:
+            FlightPoint.get_time_integrable_quantities()
 
-    assert (
-        "Field 'bar' is declared as integrating from 'foo', but 'foo' is not an existing field."
-        in str(exc_info.value)
-    )
+        assert (
+            "Field 'bar' is declared as integrating from 'foo', but 'foo' is not an existing field."
+            in str(exc_info.value)
+        )
 
-    # Declare the field it integrates from but also redeclare bar as being not cumulative.
-    FlightPoint.add_field(
-        "foo", annotation_type=float, default_value=42.0, unit="slug/s", is_cumulative=False
-    )
-    FlightPoint.add_field(
-        "bar",
-        annotation_type=float,
-        default_value=1337.0,
-        unit="slug",
-        is_cumulative=False,
-        integrates_from="foo",
-    )
-    with pytest.raises(ValueError) as exc_info:
-        FlightPoint.get_time_integrable_quantities()
+        # Declare the field it integrates from but also redeclare bar as being not cumulative.
+        FlightPoint.add_field(
+            "foo", annotation_type=float, default_value=42.0, unit="slug/s", is_cumulative=False
+        )
+        FlightPoint.add_field(
+            "bar",
+            annotation_type=float,
+            default_value=1337.0,
+            unit="slug",
+            is_cumulative=False,
+            integrates_from="foo",
+        )
+        with pytest.raises(ValueError) as exc_info:
+            FlightPoint.get_time_integrable_quantities()
 
-    assert (
-        "Field 'bar' is declared as integrating from another field but is not declared as "
-        "cumulative. 'integrates_from' can only be declared if 'is_cumulative' is True."
-        in str(exc_info.value)
-    )
+        assert (
+            "Field 'bar' is declared as integrating from another field but is not declared as "
+            "cumulative. 'integrates_from' can only be declared if 'is_cumulative' is True."
+            in str(exc_info.value)
+        )
 
-    # Finally declare it cleanly
-    FlightPoint.add_field(
-        "bar",
-        annotation_type=float,
-        default_value=1337.0,
-        unit="slug",
-        is_cumulative=True,
-        integrates_from="foo",
-    )
+        # Finally declare it cleanly
+        FlightPoint.add_field(
+            "bar",
+            annotation_type=float,
+            default_value=1337.0,
+            unit="slug",
+            is_cumulative=True,
+            integrates_from="foo",
+        )
 
-    assert "bar" in FlightPoint.get_time_integrable_quantities()
-    assert FlightPoint.get_time_integrand("bar") == "foo"
+        assert "bar" in FlightPoint.get_time_integrable_quantities()
+        assert FlightPoint.get_time_integrand("bar") == "foo"
 
-    FlightPoint.remove_field("foo")
-    FlightPoint.remove_field("bar")
+    finally:
+        # Free the fields we added to ensure that there is no interference with other tests.
+        FlightPoint.remove_field("foo")
+        FlightPoint.remove_field("bar")
