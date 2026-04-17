@@ -150,15 +150,19 @@ class BaseAltitudeChange(AbstractLiftFromWeightSegment):
         if current.altitude >= max_authorized_altitude:
             distance_to_target = max_authorized_altitude - current.altitude
 
-        # We do not check maximum_CL here, it is handled by _get_optimal_altitude()
+        # Max CL is second priority, if it is defined
+        # But maximum_CL should be exceeded without changing the target
+        # when optimal altitude is set (handled in _get_optimal_altitude())
+        elif (
+            isinstance(self.maximum_CL, float)
+            and self.maximum_CL <= current.CL
+            and not self._original_target_altitude
+        ):
+            distance_to_target = self.maximum_CL - current.CL
 
-        # CL target is second priority if it is defined
+        # CL target is third priority if it is defined
         elif isinstance(target.CL, float):
-            # Check that max CL is not reached when target is a CL
-            if isinstance(self.maximum_CL, float) and self.maximum_CL <= current.CL:
-                distance_to_target = self.maximum_CL - current.CL
-            else:
-                distance_to_target = target.CL - current.CL
+            distance_to_target = target.CL - current.CL
 
         else:
             if self._original_target_altitude:

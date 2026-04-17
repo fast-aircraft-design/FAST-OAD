@@ -202,7 +202,7 @@ class AbstractTimeStepFlightSegment(
                     """
 
                     if isinstance(time_step, np.ndarray):
-                        # root_scalar() will provide time_step ad (1,) array, resulting
+                        # root_scalar() will provide time_step as (1,) array, resulting
                         # in all parameters of the new flight point being also (1,) arrays.
                         # We want to avoid that
                         time_step = time_step.item()
