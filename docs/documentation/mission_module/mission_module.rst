@@ -138,9 +138,12 @@ The available parameters for this module are:
     If :code:`true`, block fuel will be adjusted to fuel consumption during mission. If :code:`false`,
     the input block fuel will be used.
 
-    This creates a local feedback loop between mission fuel and mission input weight. Therefore,
-    the mission component will install its own local solver for this loop, even if
-    :code:`use_inner_solvers` is set to :code:`false` for the component.
+    For non-sizing missions, this creates a local feedback loop between mission fuel and mission
+    input weight. Therefore, the mission component may install its own local solver for this loop,
+    even if :code:`use_inner_solvers` is set to :code:`false` for the component.
+
+    This exception is not applied to sizing missions (:code:`is_sizing` set to :code:`true`), which are expected to rely on the outer MDA
+    loop when no inner solver is requested.
 
 
 :code:`compute_TOW`
@@ -163,9 +166,10 @@ The available parameters for this module are:
     Setting this option to False will deactivate the local solver of the component. Useful if a
     global solver is used for the MDA problem.
 
-    For mission fuel adjustment, there is one exception: if :code:`adjust_fuel` is
-    :code:`true`, the mission component still adds a mission-specific local solver for its own
-    fuel-adjustment loop, even when :code:`use_inner_solvers` is :code:`false`.
+    For non-sizing mission fuel adjustment, there is one exception: if :code:`adjust_fuel` is
+    :code:`true`, the mission component may still add a mission-specific local solver for its own
+    fuel-adjustment loop when :code:`use_inner_solvers` is :code:`false` and no local solver is
+    already defined on the component.
 
 
 :code:`is_sizing`
