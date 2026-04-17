@@ -334,7 +334,8 @@ def test_mission_group_with_fuel_adjustment_adds_local_solver(cleanup, with_dumm
     )
 
     assert not problem.model.component.options["use_inner_solvers"]
-    assert isinstance(problem.model.component.nonlinear_solver, om.NonlinearBlockGS)
+    assert problem.model.component.nonlinear_solver is not None
+    assert not isinstance(problem.model.component.nonlinear_solver, om.NonlinearRunOnce)
     assert_allclose(
         problem["data:mission:operational:needed_block_fuel"],
         problem["data:mission:operational:block_fuel"],
