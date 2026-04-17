@@ -138,12 +138,33 @@ The available parameters for this module are:
     If :code:`true`, block fuel will be adjusted to fuel consumption during mission. If :code:`false`,
     the input block fuel will be used.
 
-    For non-sizing missions, this creates a local feedback loop between mission fuel and mission
-    input weight. Therefore, the mission component may install its own local solver for this loop,
-    even if :code:`use_inner_solvers` is set to :code:`false` for the component.
+    This creates a feedback loop between mission fuel, mission input weight, and
+    :code:`needed_block_fuel`. If this loop is not solved, mission mass consistency may be lost,
+    which can lead to incorrect values such as :code:`TOW = ZFW` on a non-sizing evaluation mission.
 
-    This exception is not applied to sizing missions (:code:`is_sizing` set to :code:`true`), which are expected to rely on the outer MDA
-    loop when no inner solver is requested.
+
+:code:`adjust_fuel_solver_mode`
+===============================
+
+    - Optional (Default = :code:`auto` )
+
+    This option provides explicit control over how :code:`OMMission` handles the internal solver
+    need created by :code:`adjust_fuel`.
+
+    The reason for this option is that the fuel-adjustment feedback loop is internal to the mission
+    group itself. In practice, adding a solver only around the mission group is often not enough to
+    converge this loop when the mission is used as a standalone non-sizing evaluation.
+
+    With :code:`auto`, :code:`OMMission` will locally switch :code:`use_inner_solvers` to
+    :code:`true` only for non-sizing missions when :code:`use_inner_solvers` was initially
+    :code:`false`.
+
+    With :code:`always`, the same local switch to :code:`use_inner_solvers=true` is also applied to
+    sizing missions.
+
+    With :code:`never`, :code:`OMMission` never changes :code:`use_inner_solvers`. This keeps full
+    user control and is meant for advanced cases where the mission should explicitly rely on an outer
+    solver, or where the user accepts the unconverged behavior.
 
 
 :code:`compute_TOW`
@@ -166,10 +187,8 @@ The available parameters for this module are:
     Setting this option to False will deactivate the local solver of the component. Useful if a
     global solver is used for the MDA problem.
 
-    For non-sizing mission fuel adjustment, there is one exception: if :code:`adjust_fuel` is
-    :code:`true`, the mission component may still add a mission-specific local solver for its own
-    fuel-adjustment loop when :code:`use_inner_solvers` is :code:`false` and no local solver is
-    already defined on the component.
+    For mission fuel adjustment, prefer :code:`adjust_fuel_solver_mode` when the default
+    :code:`use_inner_solvers` behavior is not precise enough for your use case.
 
 
 :code:`is_sizing`

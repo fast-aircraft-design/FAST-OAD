@@ -77,8 +77,9 @@ class CycleGroup(om.Group, abc.ABC):
             desc="If True, solvers are added to the group. The solver classes are decided "
             'by options "linear_solver" and "nonlinear_solver". '
             "If False, no solver is added and other solver-related options have no effect. "
-            "Some subclasses may still install a model-specific local solver when their own "
-            "setup requires it (e.g., for some non-sizing mission fuel-adjustment loops).",
+            "Some subclasses may still decide to locally turn this option on during their own "
+            "setup when they expose a dedicated option for that behavior (e.g., for some non-sizing"
+            " mission fuel-adjustment loops).",
         )
         self.options.declare(
             "use_inner_solver",
