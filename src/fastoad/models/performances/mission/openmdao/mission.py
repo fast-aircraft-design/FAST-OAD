@@ -66,7 +66,8 @@ class OMMission(
             types=bool,
             desc="If True, block fuel will fit fuel consumption during mission. In that case, a "
             "solver (local or global) will be needed. (see `use_inner_solver` option for more"
-            "information)\n"
+            "information). If `use_inner_solvers` is False, this mission group still adds its "
+            "own local solver because fuel adjustment creates a feedback loop.\n"
             "If False, block fuel will be taken from input data.",
         )
         self.options.declare(
@@ -102,6 +103,8 @@ class OMMission(
             desc="If True, a local solver is set for the mission computation.\n"
             "It is useful if `adjust_fuel` is set to True, or to ensure consistency between "
             "ramp weight and takeoff weight + taxi-out fuel.\n"
+            "If `adjust_fuel` is True, this mission group still installs its own local solver "
+            "even when `use_inner_solvers` is False.\n"
             "If a global solver is used, using a local solver or not should be only a question"
             "of CPU time consumption and is not expected to modify the results.",
         )
@@ -120,6 +123,8 @@ class OMMission(
         super().setup()
 
         if self.options["adjust_fuel"] and not self.options["use_inner_solvers"]:
+            # This keeps the generic use_inner_solvers option untouched while still
+            # converging the mission-specific fuel-adjustment cycle on this group.
             self._add_adjust_fuel_solver()
 
         mission_options = {
