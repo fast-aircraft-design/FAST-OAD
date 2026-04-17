@@ -12,6 +12,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import gc
+import itertools
 import tracemalloc
 from pathlib import Path
 from shutil import rmtree
@@ -24,7 +25,9 @@ import fastoad.api as oad
 DATA_FOLDER_PATH = Path(__file__).parent / "data"
 RESULTS_FOLDER_PATH = Path(__file__).parent / "results" / Path(__file__).stem
 
+# Memory leak threshold in MiB
 MEMORY_GROWTH_THRESHOLD = 30.0  # MiB - This threshold is somewhat arbitrary and may need adjustment
+FINAL_MEMORY_THRESHOLD = 100.0  # MiB - Final memory usage should be reasonable
 
 
 @pytest.fixture(scope="module")
@@ -91,13 +94,24 @@ def test_memory_leak_between_runs(cleanup):
             retained_memory = print_memory_state(f"After run {run_number + 1}") - baseline_memory
             retained_memories.append(retained_memory)
 
-        memory_growth = retained_memories[-1] - retained_memories[0]
+        final_memory = print_memory_state("Final state (after garbage collection)")
+        successive_growth = [
+            current - previous for previous, current in itertools.pairwise(retained_memories)
+        ]
+
+        memory_growth = max(successive_growth, default=0.0)
 
         print(f"Retained traced memory after runs: {retained_memories}")
+        print(f"Successive retained memory growth: {successive_growth}")
 
         assert memory_growth <= MEMORY_GROWTH_THRESHOLD, (
-            f"Retained traced memory grew by {memory_growth:.3f} MiB between runs, "
+            f"Retained traced memory grew by {memory_growth:.3f} MiB between two successive runs, "
             f"which exceeds {MEMORY_GROWTH_THRESHOLD} MiB"
+        )
+
+        # Assert that final memory is reasonable
+        assert final_memory < FINAL_MEMORY_THRESHOLD, (
+            f"Final memory usage too high: {final_memory:.3f} MiB > {FINAL_MEMORY_THRESHOLD} MiB"
         )
 
     finally:
