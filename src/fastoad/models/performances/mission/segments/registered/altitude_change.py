@@ -317,8 +317,8 @@ class RegulatedAltitudeChangeSegment(BaseAltitudeChange, AbstractRegulatedThrust
                     drop=True
                 )
                 _LOGGER.info(
-                    "Thrust rate limitation reached in regulated altitude change segment '%s',"
-                    "cannot satisfy slope angle,"
+                    "Thrust rate limitation reached in regulated altitude change segment '%s', "
+                    "cannot satisfy slope angle, "
                     "falling back on normal altitude change with constant thrust_rate=%.2f",
                     self.name,
                     self.upper_thrust_rate_limit,
@@ -328,8 +328,8 @@ class RegulatedAltitudeChangeSegment(BaseAltitudeChange, AbstractRegulatedThrust
                 # We have a too low thrust rate, likely a descent phase,
                 # thrust rate forced to self.lower_thrust_rate_limit
 
-                # We use the last FlightPoint where thrust rate is < self.lower_thrust_rate_limit
-                # as a starting point.
+                # We use the last FlightPoint where thrust rate is >=
+                # self.lower_thrust_rate_limit as a starting point.
                 idx = np.argwhere(flight_points.thrust_rate < self.lower_thrust_rate_limit)
                 i0 = int(idx[0, 0])
                 if i0 == 0:
@@ -339,7 +339,7 @@ class RegulatedAltitudeChangeSegment(BaseAltitudeChange, AbstractRegulatedThrust
                 else:
                     start = FlightPoint.create(flight_points.iloc[i0 - 1])
 
-                start.thrust_rate_is_regulated = False
+                start.thrust_is_regulated = False
                 flight_points.drop(
                     flight_points.loc[
                         flight_points.thrust_rate < self.lower_thrust_rate_limit
