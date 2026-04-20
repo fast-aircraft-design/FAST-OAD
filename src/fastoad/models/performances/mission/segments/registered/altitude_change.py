@@ -136,7 +136,7 @@ class BaseAltitudeChange(AbstractLiftFromWeightSegment):
                 start.CL,
                 self.maximum_CL,
             )
-            target.CL = self.maximum_CL  # to avoid any processing
+            target.altitude = start.altitude  # to avoid any processing
 
     def get_distance_to_target(
         self, flight_points: list[FlightPoint], target: FlightPoint

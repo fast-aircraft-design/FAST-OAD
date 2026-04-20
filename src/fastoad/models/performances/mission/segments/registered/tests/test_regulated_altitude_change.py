@@ -359,7 +359,7 @@ def test_invalid_slope_angle_value(polar):
     )
 
     expected_msg = (
-        "The regulated altitude change segment 'unset_slope_angle'"
+        "The regulated altitude change segment 'unset_slope_angle' "
         "requires a value for the slope angle"
     )
 
