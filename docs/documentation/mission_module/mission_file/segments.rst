@@ -264,11 +264,11 @@ Offers the same functionalities as the altitude change segment, only here the th
 
     **To be used, this segment requires that the propulsion module is able to handle thrust rate > 1 or thrust rate < 0.**
 
-If :code:`thrust_rate_out_of_bound` is set to `limit`, the thrust rate is limited to: :code:`lower_thrust_rate_limit` <= thrust_rate <= :code:`upper_thrust_rate_limit`
+If :code:`thrust_rate_out_of_bound` is set to :code:`limit`, the thrust rate is limited to: :code:`lower_thrust_rate_limit` <= thrust_rate <= :code:`upper_thrust_rate_limit`
 If the thrust rate goes beyond these limits, the segment is replaced by an altitude change with manual thrust (set to either :code:`lower_thrust_rate_limit` or :code:`upper_thrust_rate_limit`)
 starting from the first flightpoint at which the thrust rate limitation was reached.
 
-If :code:`thrust_rate_out_of_bound` is set to `extrapolate`, the segment is simulated with the prescribed slope angle, no matter the value of the thrust rate.
+If :code:`thrust_rate_out_of_bound` is set to :code:`extrapolate`, the segment is simulated with the prescribed slope angle, no matter the value of the thrust rate.
 
 **Examples:**
 
