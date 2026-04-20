@@ -117,7 +117,10 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
     take_off_distance = problem[
         "data:mission:operational_wo_gnd_effect:takeoff_wo_gnd_effect:distance"
     ]
+    take_off_tofl = problem["data:mission:operational_wo_gnd_effect:takeoff_wo_gnd_effect:TOFL"]
     assert_allclose(take_off_distance, 1774, atol=1.0)
+    assert_allclose(take_off_tofl, 1.15 * take_off_distance, atol=1.0e-8)
+    assert_allclose(take_off_tofl, 2040.1, atol=1.0)
     assert_allclose(
         problem["data:mission:operational_wo_gnd_effect:needed_block_fuel"], 6505, atol=1.0
     )
@@ -161,7 +164,10 @@ def test_ground_effect(cleanup, with_dummy_plugin_2):
     # Useful for debugging
     # plot_flight(problem.model.component.flight_points, "test_mission.png")  # noqa: ERA001
     take_off_distance = problem["data:mission:operational:takeoff:distance"]
+    take_off_tofl = problem["data:mission:operational:takeoff:TOFL"]
     assert_allclose(take_off_distance, 1762, atol=1.0)
+    assert_allclose(take_off_tofl, 1.15 * take_off_distance, atol=1.0e-8)
+    assert_allclose(take_off_tofl, 2026.3, atol=1.0)
     assert_allclose(problem["data:mission:operational:takeoff:fuel"], 122.1, atol=1e-1)
     assert_allclose(problem["data:mission:operational:takeoff:duration"], 33.9, atol=1e-1)
 
@@ -196,6 +202,10 @@ def test_start_stop(cleanup, with_dummy_plugin_2):
     start_stop_distance = problem["data:mission:start_stop_mission:start_stop:distance"]
     assert_allclose(start_stop_distance, 1659, atol=1.0)
     assert_allclose(problem["data:mission:start_stop_mission:start_stop:duration"], 42.8, atol=1e-1)
+    with pytest.raises(
+        KeyError
+    ):  # no takeoff specific outputs should be present in start-stop mission
+        _ = problem["data:mission:start_stop_mission:start_stop:TOFL"]
 
 
 def test_mission_group_without_loop(cleanup, with_dummy_plugin_2):
