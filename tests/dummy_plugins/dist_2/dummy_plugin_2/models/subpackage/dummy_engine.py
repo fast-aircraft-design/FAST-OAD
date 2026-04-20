@@ -61,3 +61,34 @@ class DummyEngineWrapper(IOMPropulsionWrapper):
             ),
             inputs["data:geometry:propulsion:engine_count"],
         )
+
+
+class DummyHybridEngine(AbstractFuelPropulsion):
+    def __init__(self, max_thrust, hybridization_ratio, max_sfc, eta_electric):
+        """
+        Dummy engine model.
+
+        Hybridization ratio is considered constant.
+        Max thrust does not depend on flight conditions.
+        SFC varies linearly with thrust_rate, from max_sfc/2. when thrust rate is 0.,
+        to max_sfc when thrust_rate is 1.0
+        Electric branch efficiency is assumed constant.
+
+        :param max_thrust: thrust when thrust rate = 1.0
+        :param hybridization_ratio: share of thermal power, between 0.0 and 1.0
+        :param max_sfc: SFC when thrust rate = 1.0
+        :param eta_electric: electric branch efficiency
+        """
+        self.max_thrust = max_thrust
+        self.hybridization_ratio = hybridization_ratio
+        self.max_sfc = max_sfc
+        self.eta_electric = eta_electric
+
+    def compute_flight_points(self, flight_point: FlightPoint):
+        if flight_point.thrust_is_regulated or flight_point.thrust_rate is None:
+            flight_point.thrust_rate = flight_point.thrust / self.max_thrust
+        else:
+            flight_point.thrust = self.max_thrust * flight_point.thrust_rate
+
+        flight_point.sfc = self.max_sfc * (1.0 + flight_point.thrust_rate) / 2.0 * (1.0 - self.hybridization_ratio)
+        flight_point.electric_power = flight_point.thrust * flight_point.true_airspeed * self.hybridization_ratio / self.eta_electric

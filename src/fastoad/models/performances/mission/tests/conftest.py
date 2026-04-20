@@ -25,7 +25,10 @@ from fastoad.model_base import FlightPoint
 from fastoad.model_base.datacls import MANDATORY_FIELD
 from fastoad.model_base.propulsion import FuelEngineSet, IPropulsion
 from fastoad.models.performances.mission.base import FlightSequence
-from tests.dummy_plugins.dist_2.dummy_plugin_2.models.subpackage.dummy_engine import DummyEngine
+from tests.dummy_plugins.dist_2.dummy_plugin_2.models.subpackage.dummy_engine import (
+    DummyEngine,
+    DummyHybridEngine,
+)
 
 from ..polar import Polar
 from ..segments.registered.altitude_change import AltitudeChangeSegment
@@ -36,6 +39,11 @@ from ..segments.registered.taxi import TaxiSegment
 @pytest.fixture(scope="module")
 def propulsion():
     return FuelEngineSet(DummyEngine(1.0e5, 1.0e-4), 2)
+
+
+@pytest.fixture(scope="module")
+def hybrid_propulsion():
+    return FuelEngineSet(DummyHybridEngine(1.0e5, 0.1, 1.0e-4, 0.95), 2)
 
 
 @pytest.fixture

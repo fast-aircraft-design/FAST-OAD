@@ -203,3 +203,107 @@ def test_mission(low_speed_polar, high_speed_polar, propulsion):
         atol=1e-10,
         rtol=1e-6,
     )
+
+
+def test_hybrid_mission(low_speed_polar, high_speed_polar, hybrid_propulsion):
+
+    route_distance = 2.0e6
+    kwargs = {"propulsion": hybrid_propulsion, "reference_area": 120.0}
+
+    first_route = RangedRoute(
+        name="route_1",
+        climb_phases=[
+            InitialClimbPhase(
+                **kwargs,
+                polar=low_speed_polar,
+                thrust_rate=1.0,
+                name="initial_climb1",
+                time_step=0.2,
+            ),
+            ClimbPhase(
+                **kwargs,
+                polar=high_speed_polar,
+                thrust_rate=0.8,
+                target_altitude="mach",
+                maximum_mach=0.78,
+                name="climb1",
+                time_step=5.0,
+            ),
+        ],
+        cruise_segment=CruiseSegment(
+            **kwargs,
+            target=FlightPoint(ground_distance=0.0),
+            polar=high_speed_polar,
+            engine_setting=EngineSetting.CRUISE,
+            name=FlightPhase.CRUISE.value,
+        ),
+        descent_phases=[
+            DescentPhase(
+                **kwargs,
+                polar=high_speed_polar,
+                thrust_rate=0.05,
+                target_altitude=1500.0 * foot,
+                name=FlightPhase.DESCENT.value,
+                time_step=5.0,
+            )
+        ],
+        flight_distance=route_distance,
+    )
+    mission_1 = Mission(name="mission1")
+    mission_1.extend([first_route])
+
+    start = FlightPoint(
+        true_airspeed=150.0 * knot,
+        altitude=100.0 * foot,
+        mass=70000.0,
+        ground_distance=100000.0,
+    )
+
+    try:
+        FlightPoint.add_field(
+            "electric_power",
+            annotation_type=float,
+            default_value=0.0,
+            unit="W",
+            is_cumulative=False,
+        )
+        FlightPoint.add_field(
+            "electric_energy",
+            annotation_type=float,
+            default_value=0.0,
+            unit="J",  # SI unit for energy is Joules, even though W*h are more convenient.
+            # Besides, the integrand will be multiplied by the time step in s
+            is_cumulative=True,
+            integrates_from="electric_power",
+        )
+        flight_points = mission_1.compute_from(start)
+
+        # Check that the integration got done correctly, starting with the right initialization
+        assert_allclose(
+            flight_points.electric_energy.iloc[0],
+            0.0,
+            1e-6,
+        )
+        # Check for the final value of the electric energy
+        assert_allclose(
+            flight_points.electric_energy.iloc[-1],
+            3.890237e9,
+            1e-6,
+        )
+        # Check that the electric energy consumed since the start has been constructed properly.
+        assert_allclose(
+            (
+                flight_points.electric_energy.iloc[1:101].to_numpy()
+                - flight_points.electric_energy.iloc[:100].to_numpy()
+            )
+            / (
+                flight_points.time.iloc[1:101].to_numpy() - flight_points.time.iloc[:100].to_numpy()
+            ),
+            flight_points.electric_power.iloc[:100].to_numpy(),
+            1e-6,
+        )
+
+    finally:
+        # Free the fields we added to ensure that there is no interference with other tests.
+        FlightPoint.remove_field("electric_energy")
+        FlightPoint.remove_field("electric_power")

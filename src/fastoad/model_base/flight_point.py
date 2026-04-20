@@ -15,6 +15,7 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Mapping, Sequence
 from copy import deepcopy
 from dataclasses import asdict, dataclass, field, fields
@@ -28,6 +29,8 @@ from fastoad.constants import EngineSetting
 
 FIELD_DESCRIPTOR = "field_descriptor"
 
+_LOGGER = logging.getLogger(__name__)  # Logger for this module
+
 
 @dataclass
 class _FieldDescriptor:
@@ -36,6 +39,9 @@ class _FieldDescriptor:
     """
 
     is_cumulative: bool | None = False
+    integrates_from: str | None = (
+        None  # Indicates the field in the flight point that is used to integrate that value
+    )
     unit: str | None = None
 
 
@@ -92,6 +98,37 @@ class FlightPoint:
 
             # Removing a field, even an original one
             >>> FlightPoint.remove_field("sfc")
+
+    **Time integration**
+
+        For those additional user-defined fields, it is also possible to define their time
+        derivative. If a time derivative is defined this way, the mission model will
+        automatically perform the integration. This integration will be achieved by incrementing
+        the field at each time step by the product of the time derivative and the length of the
+        time step in seconds.
+
+        The order in which a field and its time derivative are defined is irrelevant. However,
+        the existence of the field containing the time derivative will be verified when the
+        analysis process is run::
+
+            # Adding a time-dependent field and declaring the field which contains its derivative
+            # using the 'integrates_from' field descriptor.
+            >>> FlightPoint.add_field(
+            ...    "electric_energy",
+            ...    unit="J",
+            ...    default_value=0.0,
+            ...    is_cumulative=True,
+            ...    integrates_from="electric_power",
+            ... )
+
+            # Now defining the field that contains the derivative. The unit of the derivative must
+            # be the unit of the original field *per second*
+            >>> FlightPoint.add_field(
+            ...     "electric_power", default_value=0.0, unit="W", is_cumulative=False
+            ... )
+
+            # Field will be incremented as: field[i+1] = field[i] + time_derivative[i] *
+            # time_step[i]
 
     .. note::
 
@@ -197,6 +234,7 @@ class FlightPoint:
 
     # Will store field metadata when needed. Must be accessed through _get_field_descriptors()
     __field_descriptors: ClassVar[dict] = {}
+    __time_integrable_quantities: ClassVar[dict] = {}
 
     def __post_init__(self):
         self._relative_parameters = {"ground_distance", "time"}
@@ -328,6 +366,7 @@ class FlightPoint:
         unit="-",
         *,
         is_cumulative=False,
+        integrates_from: str | None = None,
     ):
         """
         Adds the named field to FlightPoint class.
@@ -340,6 +379,8 @@ class FlightPoint:
         :param unit: expected unit for the added field. "-" should be provided for a dimensionless
                      physical quantity. Set to None, when unit concept does not apply.
         :param is_cumulative: True if field value is summed up during mission
+        :param integrates_from: Name of the other field this value is integrated by (in other words,
+                                incremented by that value multiplied by the time step always in s)
         """
         cls._redeclare_fields()
 
@@ -350,7 +391,9 @@ class FlightPoint:
             field(
                 default=default_value,
                 metadata={
-                    FIELD_DESCRIPTOR: _FieldDescriptor(unit=unit, is_cumulative=is_cumulative)
+                    FIELD_DESCRIPTOR: _FieldDescriptor(
+                        unit=unit, is_cumulative=is_cumulative, integrates_from=integrates_from
+                    )
                 },
             ),
         )
@@ -395,6 +438,50 @@ class FlightPoint:
         return cls._get_field_descriptors().get(field_name, _FieldDescriptor(None, None))
 
     @classmethod
+    def get_time_integrable_quantities(cls) -> dict[str, str | None]:
+        """
+        Uses this method instead of accessing cls.__cumulative_quantity to ensure it
+        will always be correctly populated.
+        """
+        if not cls.__time_integrable_quantities:
+            for cls_field in fields(cls):
+                field_name = cls_field.name
+                if not field_name.startswith("_"):
+                    time_derivative = cls_field.metadata[FIELD_DESCRIPTOR].integrates_from
+                    if time_derivative is not None:
+                        # Field is declared as having a derivative through the integrated_from
+                        # descriptor but not through the is_cumulative descriptor. It is not
+                        # consistent, so we raise a warning and ignore the field as being
+                        # integrable. Worst case, the process won't crash but the results will be
+                        # inconsistent
+                        if not cls_field.metadata[FIELD_DESCRIPTOR].is_cumulative:
+                            raise ValueError(
+                                f"Field '{field_name}' is declared as integrating from another "
+                                f"field but is not declared as cumulative. 'integrates_from' can "
+                                f"only be declared if 'is_cumulative' is True.",
+                            )
+
+                        # Check that the field we want to integrate from actually exists. If it
+                        # doesn't raise an error because the process will actually crash.
+                        if time_derivative not in cls._get_field_descriptors():
+                            raise ValueError(
+                                f"Field '{field_name}' is declared as integrating from "
+                                f"'{time_derivative}', but '{time_derivative}' is not an existing "
+                                f"field.",
+                            )
+
+                        cls.__time_integrable_quantities[field_name] = time_derivative
+
+        return cls.__time_integrable_quantities
+
+    @classmethod
+    def get_time_integrand(cls, field_name) -> str:
+        """
+        Returns the quantity the field integrates from.
+        """
+        return cls.get_time_integrable_quantities().get(field_name, None)
+
+    @classmethod
     def _redeclare_fields(cls):
         """
         To be done before "re-dataclassing" cls.
@@ -408,3 +495,4 @@ class FlightPoint:
             )
 
         cls.__field_descriptors = {}  # Will need to rebuild this dict on next usage.
+        cls.__time_integrable_quantities = {}  # Will need to rebuild this dict on next usage.
