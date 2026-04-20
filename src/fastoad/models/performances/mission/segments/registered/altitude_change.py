@@ -259,7 +259,7 @@ class RegulatedAltitudeChangeSegment(BaseAltitudeChange, AbstractRegulatedThrust
 
         if not isinstance(self.slope_angle, float):
             raise ValueError(
-                f"The regulated altitude change segment '{self.name}'"
+                f"The regulated altitude change segment '{self.name}' "
                 f"requires a value for the slope angle"
             )
 
