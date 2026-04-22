@@ -158,6 +158,7 @@ class AbstractTimeStepFlightSegment(
     def complete_flight_point(self, flight_point: FlightPoint):
         super().complete_flight_point(flight_point)
         flight_point.engine_setting = self.engine_setting
+        flight_point.maximum_time_step_length = self.time_step
 
         self._compute_lift_and_drag(flight_point)
         self.compute_propulsion(flight_point)
@@ -280,6 +281,8 @@ class AbstractTimeStepFlightSegment(
         )
         next_point.alpha = self.get_next_alpha(previous, time_step)
         self._compute_next_altitude(next_point, previous)
+        # Here we have the real information, the problem is the propulsion model has already been
+        # ran for the current flight point
         self._increment_cumulative_quantities(next_point, previous, time_step)
 
         if self.target.true_airspeed == self.constant_value_name:
@@ -334,7 +337,17 @@ class AbstractTimeStepFlightSegment(
         :param flight_points: list of previous flight points, modified in place.
         :param time_step: time step for new computed flight point.
         """
+        # Judging from the next function, here we also have already computed the propulsion for the
+        # current flight point.
         new_point = self.compute_next_flight_point(flight_points, time_step)
+        # Here we complete the next flight point, among which is its propulsion, but we don't have
+        # the info on the length of the next time step. Which isn't a problem for thermal propulsion
+        # Since the sfc doesn't depend on time step length. We just need to call, after the fact
+        # the compute_consumed_mass() method which uses the information of the sfc. So maybe what
+        # we really need is to redefine what compute_consumed_mass() should contain. Maybe it should
+        # actually contain a computation of all parameters that depend on time step length. Or we
+        # just go with a max value of the time step length and not the actual time step length.
+        # Actually we could do both.
         self.complete_flight_point(new_point)
         flight_points.append(new_point)
 

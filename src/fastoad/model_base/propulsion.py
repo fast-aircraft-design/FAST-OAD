@@ -198,6 +198,7 @@ class AbstractFuelPropulsion(IPropulsion, ABC):
     """
 
     def get_consumed_mass(self, flight_point: FlightPoint, time_step: float) -> float:
+        flight_point.time_step = time_step
         return time_step * flight_point.sfc * flight_point.thrust
 
 

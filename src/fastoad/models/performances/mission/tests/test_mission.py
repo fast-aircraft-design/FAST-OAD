@@ -203,6 +203,9 @@ def test_mission(low_speed_polar, high_speed_polar, propulsion):
         atol=1e-10,
         rtol=1e-6,
     )
+    flight_points.to_csv(
+        "D:/fl.lutz/FAST/FAST-OAD/FAST-OAD-main-repo/src/fastoad/models/performances/mission/tests/results/tmp.csv"
+    )
 
 
 def test_hybrid_mission(low_speed_polar, high_speed_polar, hybrid_propulsion):

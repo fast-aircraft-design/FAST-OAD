@@ -141,6 +141,14 @@ class FlightPoint:
         default=0.0, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(is_cumulative=True, unit="s")}
     )
 
+    #: Length of the time step in seconds.
+    time_step: float = field(default=0.0, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="s")})
+
+    #: Maximum length of the time step in seconds.
+    maximum_time_step_length: float = field(
+        default=0.0, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="s")}
+    )
+
     #: Altitude in meters.
     altitude: float = field(default=None, metadata={FIELD_DESCRIPTOR: _FieldDescriptor(unit="m")})
 
