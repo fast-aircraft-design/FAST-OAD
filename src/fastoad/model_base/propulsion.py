@@ -192,13 +192,14 @@ class BaseOMPropulsionComponent(om.ExplicitComponent, ABC):
 class AbstractFuelPropulsion(IPropulsion, ABC):
     """
     Propulsion model that consume any fuel should inherit from this one.
+    The hypothesis is that fuel is always consumed, even for negative thrust
 
     In inheritors, :meth:`compute_flight_points` is expected to define
     "sfc" and "thrust" in computed FlightPoint instances.
     """
 
     def get_consumed_mass(self, flight_point: FlightPoint, time_step: float) -> float:
-        return time_step * flight_point.sfc * flight_point.thrust
+        return time_step * flight_point.sfc * np.abs(flight_point.thrust)
 
 
 class FuelEngineSet(AbstractFuelPropulsion):
