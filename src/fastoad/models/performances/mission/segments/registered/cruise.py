@@ -208,7 +208,7 @@ class ClimbAndCruiseSegment(CruiseSegment):
     #: The maximum allowed flight level (i.e. multiple of 100 feet).
     maximum_flight_level: float = 500.0
 
-    def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+    def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:  # noqa: PLR0912
         if self.climb_segment is not None:
             attr_dict = {
                 key: val
@@ -295,6 +295,12 @@ class ClimbAndCruiseSegment(CruiseSegment):
         else:
             results = super().compute_from_start_to_target(start, target)
 
+        if self.maximum_CL is not None and any(results.CL > self.maximum_CL):  # noqa: SIM300 false positive
+            _LOGGER.warning(
+                "Cruise segment '%s' has CL exceeding maximum_CL at some points. Consider reducing "
+                "the target altitude or increase the aircraft speed.",
+                self.name if self.name is not None else "<unnamed>",
+            )
         return results
 
     @staticmethod
