@@ -102,7 +102,7 @@ class InputDefinition:
         if self.output_unit is None:
             # Use alternative default unit definition
             self.output_unit = BASE_UNITS.get(self.parameter_name)
-        if self.output_unit == "-" or self.output_unit is None :
+        if self.output_unit == "-" or self.output_unit is None:
             # If still no unit, forced to 'unitless'
             self.output_unit = "unitless"
 

@@ -142,10 +142,30 @@ def test_inputs(custom_segment_class):
             Variable("data:mission:sizing:takeoff:V2", val=np.nan, units="m/s"),
             Variable("data:mission:sizing:TOW", val=np.nan, units="kg"),
             Variable("data:TLAR:cruise_mach", val=np.nan, units="unitless"),
-            Variable("data:aerodynamics:aircraft:cruise:CD", val=np.nan, shape_by_conn=True, units="unitless"),
-            Variable("data:aerodynamics:aircraft:cruise:CL", val=np.nan, shape_by_conn=True, units="unitless"),
-            Variable("data:aerodynamics:aircraft:takeoff:CD", val=np.nan, shape_by_conn=True, units="unitless"),
-            Variable("data:aerodynamics:aircraft:takeoff:CL", val=np.nan, shape_by_conn=True, units="unitless"),
+            Variable(
+                "data:aerodynamics:aircraft:cruise:CD",
+                val=np.nan,
+                shape_by_conn=True,
+                units="unitless",
+            ),
+            Variable(
+                "data:aerodynamics:aircraft:cruise:CL",
+                val=np.nan,
+                shape_by_conn=True,
+                units="unitless",
+            ),
+            Variable(
+                "data:aerodynamics:aircraft:takeoff:CD",
+                val=np.nan,
+                shape_by_conn=True,
+                units="unitless",
+            ),
+            Variable(
+                "data:aerodynamics:aircraft:takeoff:CL",
+                val=np.nan,
+                shape_by_conn=True,
+                units="unitless",
+            ),
             Variable("data:mission:sizing:diversion:descent:final_altitude", val=np.nan, units="m"),
             Variable("data:mission:sizing:diversion:range", val=np.nan, units="m"),
             Variable("data:mission:sizing:holding:duration", val=np.nan, units="s"),
@@ -167,10 +187,24 @@ def test_inputs(custom_segment_class):
 
     assert set(mission_builder.get_input_variables("operational")) == {
         Variable("data:TLAR:cruise_mach", val=np.nan, units="unitless"),
-        Variable("data:aerodynamics:aircraft:cruise:CD", val=np.nan, shape_by_conn=True, units="unitless"),
-        Variable("data:aerodynamics:aircraft:cruise:CL", val=np.nan, shape_by_conn=True, units="unitless"),
-        Variable("data:aerodynamics:aircraft:takeoff:CD", val=np.nan, shape_by_conn=True, units="unitless"),
-        Variable("data:aerodynamics:aircraft:takeoff:CL", val=np.nan, shape_by_conn=True, units="unitless"),
+        Variable(
+            "data:aerodynamics:aircraft:cruise:CD", val=np.nan, shape_by_conn=True, units="unitless"
+        ),
+        Variable(
+            "data:aerodynamics:aircraft:cruise:CL", val=np.nan, shape_by_conn=True, units="unitless"
+        ),
+        Variable(
+            "data:aerodynamics:aircraft:takeoff:CD",
+            val=np.nan,
+            shape_by_conn=True,
+            units="unitless",
+        ),
+        Variable(
+            "data:aerodynamics:aircraft:takeoff:CL",
+            val=np.nan,
+            shape_by_conn=True,
+            units="unitless",
+        ),
         Variable("data:mission:operational:main:descent:final_altitude", val=np.nan, units="m"),
         Variable("data:mission:operational:main:range", val=np.nan, units="m"),
         Variable("data:mission:operational:taxi_in:duration", val=np.nan, units="s"),
