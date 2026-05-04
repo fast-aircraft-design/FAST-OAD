@@ -42,9 +42,7 @@ phases:
       - segment: transition
         target:
           altitude: data:mission:sizing:main_route:cruise:altitude_input
-          mach: 
-            value: data:TLAR:cruise_mach
-            unit: unitless
+          mach: data:TLAR:cruise_mach
           delta_ground_distance:
             value: 250
             unit: km
