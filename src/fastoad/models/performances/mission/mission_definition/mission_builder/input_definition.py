@@ -95,13 +95,15 @@ class InputDefinition:
             # For ISA offset, it is better to have no unit because we don't want
             # OpenMDAO to try converting between degK and degC, which
             # would add or subtract 273.15 to the offset.
-            self.output_unit = None
+            self.output_unit = "unitless"
         else:
             self.output_unit = FlightPoint.get_unit(self.parameter_name)
 
         if self.output_unit is None:
+            # Use alternative default unit definition
             self.output_unit = BASE_UNITS.get(self.parameter_name)
-        if self.output_unit == "-":
+        if self.output_unit == "-" or self.output_unit is None :
+            # If still no unit, forced to 'unitless'
             self.output_unit = "unitless"
 
         if self.input_unit is None:
@@ -109,14 +111,14 @@ class InputDefinition:
 
         if variable_name_:
             self.variable_name = variable_name_
-            self.input_value = None
+            self.input_value = "unitless"
         elif isinstance(self.input_value, str) and (
             ":" in self.input_value or self.input_value.startswith(("~", "-~"))
         ):
             # This is done at end of initialization, because self.variable_name property may need
             # data as self.parameter_name, self.prefix...
             self.variable_name = self.input_value
-            self.input_value = None
+            self.input_value = "unitless"
 
         if use_opposite_ is not None:
             self._use_opposite = use_opposite_

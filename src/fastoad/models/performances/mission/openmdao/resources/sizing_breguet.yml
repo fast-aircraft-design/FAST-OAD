@@ -54,9 +54,7 @@ phases:
       - segment: transition
         target:
           altitude: 0.
-          mach: 
-            value: 0.
-            unit: unitless
+          mach: 0.
           delta_ground_distance:
             value: 250
             unit: km
@@ -68,9 +66,7 @@ phases:
       - segment: transition
         target:
           altitude: 0.
-          mach: 
-            value: 0.
-            unit: unitless
+          mach: 0.
         reserve_mass_ratio:
           value: settings:mission:sizing:breguet:reserve:mass_ratio
           default: 0.06
