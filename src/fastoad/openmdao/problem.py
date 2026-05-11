@@ -14,6 +14,7 @@
 from __future__ import annotations
 
 import logging
+from collections import defaultdict
 from dataclasses import dataclass, field
 from os import PathLike
 
@@ -296,19 +297,24 @@ class AutoUnitsDefaultGroup(om.Group):
     """
 
     def configure(self):
-        var_units = {}
+        var_units = defaultdict(set)
         system: om.Group
         for system in self.system_iter(recurse=False):
             system_metadata = system.get_io_metadata("input", metadata_keys=["units"])
-            var_units.update(
-                {
-                    metadata["prom_name"]: metadata["units"]
-                    for name, metadata in system_metadata.items()
-                    if "." not in metadata["prom_name"]  # tells that var is promoted
-                }
-            )
-        for name, units in var_units.items():
-            self.set_input_defaults(name, units=None if units == "n/a" else units)
+            for metadata in system_metadata.values():
+                if "." in metadata["prom_name"]:
+                    continue
+                var_units[metadata["prom_name"]].add(metadata["units"])
+
+        for name, declared_units in var_units.items():
+            explicit_units = [
+                unit for unit in declared_units if unit is not None
+            ]  # We prefer explicit units over None
+
+            if explicit_units:
+                self.set_input_defaults(
+                    name, units=None if explicit_units[0] == "n/a" else explicit_units[0]
+                )
 
 
 class FASTOADModel(AutoUnitsDefaultGroup):
