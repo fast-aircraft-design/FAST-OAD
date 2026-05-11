@@ -13,6 +13,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass, field
+from typing import ClassVar
 
 import numpy as np
 
@@ -49,6 +50,13 @@ class TakeOffSequence(
     # avoid calling functions like np.radians() directly in dataclass defaults,
     # as they are evaluated at class definition time instead of instance creation.
     rotation_alpha_limit: float = field(default_factory=lambda: np.radians(13.5))
+
+    _attribute_units: ClassVar[dict] = {
+        **GroundSpeedChangeSegment._attribute_units,
+        **RotationSegment._attribute_units,
+        **EndOfTakeoffSegment._attribute_units,
+        "rotation_alpha_limit": "rad",
+    }
 
     # Used time step for computing the takeoff part after rotation.
     end_time_step: float = 0.05

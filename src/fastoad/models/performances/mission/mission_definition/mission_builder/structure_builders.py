@@ -150,7 +150,7 @@ class AbstractStructureBuilder(ABC):
             name += f":{self.name}"
         return name
 
-    def _parse_inputs(
+    def _parse_inputs(  # noqa: PLR0912
         self,
         structure,
         input_definitions: list[InputDefinition],
@@ -175,6 +175,12 @@ class AbstractStructureBuilder(ABC):
                 input_definition = InputDefinition.from_dict(
                     parent, structure, part_identifier=part_identifier, prefix=self.variable_prefix
                 )
+                if segment_class:
+                    output_unit = getattr(segment_class, "_attribute_units", {}).get(parent)
+                    if output_unit:
+                        input_definition.output_unit = output_unit
+                        if input_definition.input_unit is None:
+                            input_definition.input_unit = output_unit
                 input_definitions.append(input_definition)
                 return input_definition
 
@@ -220,6 +226,12 @@ class AbstractStructureBuilder(ABC):
         )
         if segment_class and isinstance(value, str):
             input_definition.shape_by_conn = self._is_shape_by_conn(key, segment_class)
+        if segment_class:
+            output_unit = getattr(segment_class, "_attribute_units", {}).get(key)
+            if output_unit:
+                input_definition.output_unit = output_unit
+                if input_definition.input_unit is None:
+                    input_definition.input_unit = output_unit
         input_definitions.append(input_definition)
         return input_definition
 

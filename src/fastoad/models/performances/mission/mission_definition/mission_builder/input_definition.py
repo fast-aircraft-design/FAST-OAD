@@ -143,7 +143,7 @@ class InputDefinition:
         return cls(  # input_def
             parameter_name,
             definition_dict["value"],
-            input_unit=definition_dict.get("unit"),
+            input_unit=definition_dict.get("unit", definition_dict.get("units")),
             default_value=definition_dict.get("default", np.nan),
             shape_by_conn=definition_dict.get("shape_by_conn", False),
             part_identifier=part_identifier,

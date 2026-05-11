@@ -14,6 +14,7 @@
 
 import logging
 from dataclasses import dataclass, field
+from typing import ClassVar
 
 import numpy as np
 from numpy import cos, sin
@@ -47,6 +48,12 @@ class RotationSegment(AbstractGroundSegment):
     #: Angle of attack (in radians) where tail strike is expected. Default value
     #: is good for SMR aircraft.
     alpha_limit: float = field(default_factory=lambda: np.radians(13.5))
+
+    _attribute_units: ClassVar[dict] = {
+        **AbstractGroundSegment._attribute_units,
+        "rotation_rate": "rad/s",
+        "alpha_limit": "rad",
+    }
 
     def get_distance_to_target(
         self, flight_points: list[FlightPoint], target: FlightPoint

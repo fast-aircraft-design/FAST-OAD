@@ -72,8 +72,8 @@ phases:
           value: 0.0523
           units: rad/s
         rotation_alpha_limit:
-          value: 0.3489
-          units: rad
+          value: 13.5
+          units: deg
         end_time_step: 0.05
         target:
           delta_altitude:
