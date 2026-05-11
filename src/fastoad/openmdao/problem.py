@@ -22,6 +22,7 @@ import numpy as np
 import openmdao.api as om
 from openmdao.core.constants import _SetupStatus
 from openmdao.core.system import System
+from openmdao.utils.units import conversion_to_base_units
 
 from fastoad.io import DataFile, IVariableIOFormatter
 from fastoad.module_management.service_registry import RegisterSubmodel
@@ -297,7 +298,9 @@ class AutoUnitsDefaultGroup(om.Group):
     """
 
     def configure(self):
-        var_units = defaultdict(set)
+        var_units = defaultdict(
+            set
+        )  # variable name -> set of declared units for this variable in the problem
         system: om.Group
         for system in self.system_iter(recurse=False):
             system_metadata = system.get_io_metadata("input", metadata_keys=["units"])
@@ -311,10 +314,18 @@ class AutoUnitsDefaultGroup(om.Group):
                 unit for unit in declared_units if unit is not None
             ]  # We prefer explicit units over None
 
-            if explicit_units:
-                self.set_input_defaults(
-                    name, units=None if explicit_units[0] == "n/a" else explicit_units[0]
-                )
+            if (
+                explicit_units and explicit_units[0] == "n/a"
+            ):  # OpenMDAO returns units="n/a" for discrete variables
+                self.set_input_defaults(name, units=None)
+            elif explicit_units:
+                si_units = [  # If we can find a SI unit among the declared ones, we prefer it.
+                    unit
+                    for unit in explicit_units
+                    if np.isclose(conversion_to_base_units(unit)[0], 0.0)
+                    and np.isclose(conversion_to_base_units(unit)[1], 1.0)
+                ]
+                self.set_input_defaults(name, units=si_units[0] if si_units else explicit_units[0])
 
 
 class FASTOADModel(AutoUnitsDefaultGroup):
