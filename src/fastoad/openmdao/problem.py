@@ -309,21 +309,21 @@ class AutoUnitsDefaultGroup(om.Group):
                     continue
                 var_units[metadata["prom_name"]].add(metadata["units"])
 
-        for name, declared_units in var_units.items():
-            explicit_units = [
-                unit for unit in declared_units if unit is not None
-            ]  # We prefer explicit units over None
+        def _is_si_base(unit: str) -> bool:
+            """Returns True if the provided unit is a SI base unit, False otherwise."""
+            offset, scale = conversion_to_base_units(unit)
+            return np.isclose(offset, 0.0) and np.isclose(scale, 1.0)
 
-            if (
-                explicit_units and explicit_units[0] == "n/a"
-            ):  # OpenMDAO returns units="n/a" for discrete variables
+        for name, declared_units in var_units.items():
+            explicit_units = sorted(
+                unit for unit in declared_units if unit is not None
+            )  # We prefer explicit units over None and keep deterministic ordering.
+
+            if "n/a" in explicit_units:  # OpenMDAO returns units="n/a" for discrete variables.
                 self.set_input_defaults(name, units=None)
             elif explicit_units:
                 si_units = [  # If we can find a SI unit among the declared ones, we prefer it.
-                    unit
-                    for unit in explicit_units
-                    if np.isclose(conversion_to_base_units(unit)[0], 0.0)
-                    and np.isclose(conversion_to_base_units(unit)[1], 1.0)
+                    unit for unit in explicit_units if _is_si_base(unit)
                 ]
                 self.set_input_defaults(name, units=si_units[0] if si_units else explicit_units[0])
 

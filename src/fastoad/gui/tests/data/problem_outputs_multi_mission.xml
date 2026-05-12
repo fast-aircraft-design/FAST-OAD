@@ -328,7 +328,7 @@
       <fuselage>
         <cruise>
           <CD0 is_input="False">0.008158489130437374<!--profile drag coefficient for fuselage w.r.t. data:aerodynamics:aircraft:cruise:CL--></CD0>
-          <CnBeta is_input="False">-0.12663611852856796<!--derivative of yawing moment against sideslip angle for fuselage in cruise conditions--></CnBeta>
+          <CnBeta units="1/rad" is_input="False">-0.12663611852856796<!--derivative of yawing moment against sideslip angle for fuselage in cruise conditions--></CnBeta>
         </cruise>
       </fuselage>
       <high_lift_devices>
@@ -354,7 +354,7 @@
       <vertical_tail>
         <cruise>
           <CL_alpha units="1/rad" is_input="False">2.350111824850909<!--derivative of lift coefficient of horizontal tail with respect to local "angle of attack" in cruise conditions--></CL_alpha>
-          <CnBeta units="m**2" is_input="False">0.26708285452856795<!--derivative of yawing moment against sideslip angle for vertical tail in cruise conditions--></CnBeta>
+          <CnBeta units="1/rad" is_input="False">0.26708285452856795<!--derivative of yawing moment against sideslip angle for vertical tail in cruise conditions--></CnBeta>
         </cruise>
       </vertical_tail>
       <winglet>
