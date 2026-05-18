@@ -68,6 +68,7 @@ phases:
         wheels_friction: 0.03
         rotation_equivalent_airspeed:
           value: data:mission:operational:takeoff:Vr
+          unit: m/s
         rotation_rate:
           value: 0.0523
           units: rad/s

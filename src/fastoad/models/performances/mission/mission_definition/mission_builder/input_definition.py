@@ -87,8 +87,6 @@ class InputDefinition:
     _variable_name: str | None = field(default=None, init=False, repr=True)
 
     def __post_init__(self, variable_name_: str | None, use_opposite_: bool | None):
-        has_model_default_unit = True
-
         if self.parameter_name.startswith("delta_"):
             self.is_relative = True
             self.parameter_name = self.parameter_name[6:]
@@ -104,16 +102,12 @@ class InputDefinition:
         if self.output_unit is None:
             # Use alternative default unit definition.
             self.output_unit = BASE_UNITS.get(self.parameter_name)
-            if self.output_unit is None:
-                has_model_default_unit = False
         if self.output_unit == "-" or self.output_unit is None:
             # If nothing is known at model/YAML level, unitless is the default semantic unit.
             self.output_unit = "unitless"
 
         if self.input_unit is None:
-            # Priority: model defaults first; unknown/custom inputs are left unit-agnostic so
-            # promoted output metadata (e.g. XML/IVC) can provide units later.
-            self.input_unit = self.output_unit if has_model_default_unit else None
+            self.input_unit = self.output_unit
 
         if variable_name_:
             self.variable_name = variable_name_

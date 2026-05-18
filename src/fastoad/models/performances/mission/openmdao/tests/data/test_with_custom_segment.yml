@@ -13,7 +13,9 @@ phases:
         vector_parameter_1:
           value: data:array1
           unit: g
-        vector_parameter_2: data:array2
+        vector_parameter_2: 
+          value: data:array2
+          unit: kg
         vector_parameter_3:
           value: [10.0, 20.0, 30.0]
           unit: km
