@@ -14,6 +14,7 @@
 from __future__ import annotations
 
 import logging
+from collections import defaultdict
 from dataclasses import dataclass, field
 from os import PathLike
 
@@ -21,6 +22,7 @@ import numpy as np
 import openmdao.api as om
 from openmdao.core.constants import _SetupStatus
 from openmdao.core.system import System
+from openmdao.utils.units import conversion_to_base_units
 
 from fastoad.io import DataFile, IVariableIOFormatter
 from fastoad.module_management.service_registry import RegisterSubmodel
@@ -296,19 +298,34 @@ class AutoUnitsDefaultGroup(om.Group):
     """
 
     def configure(self):
-        var_units = {}
+        var_units = defaultdict(
+            set
+        )  # variable name -> set of declared units for this variable in the problem
         system: om.Group
         for system in self.system_iter(recurse=False):
             system_metadata = system.get_io_metadata("input", metadata_keys=["units"])
-            var_units.update(
-                {
-                    metadata["prom_name"]: metadata["units"]
-                    for name, metadata in system_metadata.items()
-                    if "." not in metadata["prom_name"]  # tells that var is promoted
-                }
-            )
-        for name, units in var_units.items():
-            self.set_input_defaults(name, units=None if units == "n/a" else units)
+            for metadata in system_metadata.values():
+                if "." in metadata["prom_name"]:
+                    continue
+                var_units[metadata["prom_name"]].add(metadata["units"])
+
+        def _is_si_base(unit: str) -> bool:
+            """Returns True if the provided unit is a SI base unit, False otherwise."""
+            offset, scale = conversion_to_base_units(unit)
+            return np.isclose(offset, 0.0) and np.isclose(scale, 1.0)
+
+        for name, declared_units in var_units.items():
+            explicit_units = sorted(
+                unit for unit in declared_units if unit is not None
+            )  # We prefer explicit units over None and keep deterministic ordering.
+
+            if "n/a" in explicit_units:  # OpenMDAO returns units="n/a" for discrete variables.
+                self.set_input_defaults(name, units=None)
+            elif explicit_units:
+                si_units = [  # If we can find a SI unit among the declared ones, we prefer it.
+                    unit for unit in explicit_units if _is_si_base(unit)
+                ]
+                self.set_input_defaults(name, units=si_units[0] if si_units else explicit_units[0])
 
 
 class FASTOADModel(AutoUnitsDefaultGroup):

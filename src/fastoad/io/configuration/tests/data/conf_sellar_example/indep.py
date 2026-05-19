@@ -22,6 +22,6 @@ class Indeps(om.Group):
     def setup(self):
         # System variables
         comp = om.IndepVarComp()
-        comp.add_output("system:x", val=2)
+        comp.add_output("system:x", val=2, units="unitless")
 
         self.add_subsystem("indeps", comp, promotes=["*"])

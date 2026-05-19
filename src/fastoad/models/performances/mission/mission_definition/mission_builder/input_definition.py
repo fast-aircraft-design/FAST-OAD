@@ -95,14 +95,16 @@ class InputDefinition:
             # For ISA offset, it is better to have no unit because we don't want
             # OpenMDAO to try converting between degK and degC, which
             # would add or subtract 273.15 to the offset.
-            self.output_unit = None
+            self.output_unit = "unitless"
         else:
             self.output_unit = FlightPoint.get_unit(self.parameter_name)
 
         if self.output_unit is None:
+            # Use alternative default unit definition.
             self.output_unit = BASE_UNITS.get(self.parameter_name)
-        if self.output_unit == "-":
-            self.output_unit = None
+        if self.output_unit == "-" or self.output_unit is None:
+            # If nothing is known at model/YAML level, unitless is the default semantic unit.
+            self.output_unit = "unitless"
 
         if self.input_unit is None:
             self.input_unit = self.output_unit

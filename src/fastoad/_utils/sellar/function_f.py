@@ -21,12 +21,12 @@ class BasicFunctionF(om.ExplicitComponent):
     """An OpenMDAO component to encapsulate Functions discipline"""
 
     def setup(self):
-        self.add_input("x", val=2.0)
-        self.add_input("z", val=[5.0, 2.0])
-        self.add_input("y1", val=1.0)
-        self.add_input("y2", val=1.0)
+        self.add_input("x", val=2.0, units="unitless")
+        self.add_input("z", val=[5.0, 2.0], units="unitless")
+        self.add_input("y1", val=1.0, units="unitless")
+        self.add_input("y2", val=1.0, units="unitless")
 
-        self.add_output("f", val=1.0)
+        self.add_output("f", val=1.0, units="unitless")
 
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")

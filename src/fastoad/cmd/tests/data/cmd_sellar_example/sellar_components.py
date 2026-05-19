@@ -28,35 +28,39 @@ from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 class RegisteredDisc1(BasicDisc1):
     def setup(self):
         self.add_input(
-            "x", val=np.nan, desc="input x"
+            "x", val=np.nan, desc="input x", units="unitless"
         )  # NaN as default for testing connexion check
         self.add_input(
             "z", val=[5, 2], desc="variable z", units="m**2"
-        )  # for testing non-None units
-        self.add_input("y2", val=1.0, desc="variable y2")  # for testing input description capture
+        )  # for testing non-unitless units
+        self.add_input(
+            "y2", val=1.0, desc="variable y2", units="unitless"
+        )  # for testing input description capture
 
-        self.add_output("y1", val=1.0, desc="variable y1")  # for testing output description capture
+        self.add_output(
+            "y1", val=1.0, desc="variable y1", units="unitless"
+        )  # for testing output description capture
 
 
 @RegisterOpenMDAOSystem("cmd_test.sellar.disc2")
 class RegisteredDisc2(BasicDisc2):
     def setup(self):
-        self.add_input("z", val=[5, 2], desc="", units="m**2")  # for testing non-None units
-        self.add_input("y1", val=1.0, desc="")
+        self.add_input("z", val=[5, 2], desc="", units="m**2")  # for testing non-unitless units
+        self.add_input("y1", val=1.0, desc="", units="unitless")
 
-        self.add_output("y2", val=1.0, desc="")
+        self.add_output("y2", val=1.0, desc="", units="unitless")
 
 
 class NewFunctionF(BasicFunctionF):
     def setup(self):
-        self.add_input("x", val=2, desc="")
+        self.add_input("x", val=2, desc="", units="unitless")
         self.add_input(
             "z", val=[np.nan, np.nan], desc="", units="m**2"
         )  # NaN as default for testing connexion check
-        self.add_input("y1", val=1.0, desc="")
-        self.add_input("y2", val=1.0, desc="")
+        self.add_input("y1", val=1.0, desc="", units="unitless")
+        self.add_input("y2", val=1.0, desc="", units="unitless")
 
-        self.add_output("f", val=1.0, desc="Objective")
+        self.add_output("f", val=1.0, desc="Objective", units="unitless")
 
 
 @RegisterOpenMDAOSystem("cmd_test.sellar.functions")

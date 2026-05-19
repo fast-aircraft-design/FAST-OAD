@@ -15,7 +15,7 @@ class ComputeWingMass(om.ExplicitComponent):
         # formula, so we won't need to convert the wing area in the proper unit
         self.add_input(name="mtow", units="lbm", val=np.nan)
         # Same for the MTOW
-        self.add_input(name="aspect_ratio", val=np.nan)
+        self.add_input(name="aspect_ratio", val=np.nan, units="unitless")
 
         # Defining the output(s)
 
