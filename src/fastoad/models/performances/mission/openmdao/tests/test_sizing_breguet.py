@@ -49,8 +49,8 @@ def test_sizing_breguet(cleanup, with_dummy_plugin_2):
     ivc.add_output("data:geometry:wing:area", 0.0, units="m**2")
 
     # Ensure L/D ratio == 16.0
-    ivc.add_output("data:aerodynamics:aircraft:cruise:CL", np.linspace(0, 1.5, 150))
-    ivc.add_output("data:aerodynamics:aircraft:cruise:CD", np.linspace(0, 1.5, 150) / 16.0)
+    ivc.add_output("data:aerodynamics:aircraft:high_speed:CL", np.linspace(0, 1.5, 150))
+    ivc.add_output("data:aerodynamics:aircraft:high_speed:CD", np.linspace(0, 1.5, 150) / 16.0)
 
     # With direct call to rubber engine
     problem = run_system(
