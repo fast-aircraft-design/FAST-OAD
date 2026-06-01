@@ -242,7 +242,7 @@ Example:
       cruise_part:
         segment: cruise
         engine_setting: cruise
-        polar: data:aerodynamics:aircraft:cruise
+        polar: data:aerodynamics:aircraft:high_speed
         target:
           altitude: optimal_flight_level
         maximum_flight_level: 340
@@ -255,7 +255,7 @@ Example:
       cruise_part:
         segment: breguet
         engine_setting: cruise
-        polar: data:aerodynamics:aircraft:cruise
+        polar: data:aerodynamics:aircraft:high_speed
       descent_parts:
         - phase: descent
 

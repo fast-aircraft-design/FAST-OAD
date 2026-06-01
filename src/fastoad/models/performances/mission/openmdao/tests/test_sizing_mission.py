@@ -52,9 +52,9 @@ def test_sizing_mission(cleanup, with_dummy_plugin_2):
     ivc.add_output("data:geometry:wing:area", 100.0, units="m**2")
 
     # Ensure L/D ratio ~ 17.0 and optimal CL ~ 0.6 (needed for optimal altitude search)
-    ivc.add_output("data:aerodynamics:aircraft:cruise:CL", np.linspace(0, 1.5, 150))
+    ivc.add_output("data:aerodynamics:aircraft:high_speed:CL", np.linspace(0, 1.5, 150))
     ivc.add_output(
-        "data:aerodynamics:aircraft:cruise:CD", (np.linspace(0, 1.5, 150)) ** 2 * 0.05 + 0.017
+        "data:aerodynamics:aircraft:high_speed:CD", (np.linspace(0, 1.5, 150)) ** 2 * 0.05 + 0.017
     )
     # For low speed polar, ensuring L/D ratio = 16.0 is enough
     ivc.add_output("data:aerodynamics:aircraft:takeoff:CL", np.linspace(0, 1.5, 150) + 0.5)
