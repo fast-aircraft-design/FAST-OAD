@@ -2,7 +2,7 @@
 name = "FAST-OAD"
 description = "FAST-OAD is a framework for performing rapid Overall Aircraft Design"
 readme = "README.md"
-version = "VERSION_PLACEHOLDER" # This value is replaced by our CI routine during the build process.
+version = "1.10.0" # This value is replaced by our CI routine during the build process.
 license = { text = "GPL-3.0-only" }
 keywords = [
     "aircraft",
@@ -28,7 +28,7 @@ dependencies = [
     # of poetry.lock file will modify docs/requirements.txt and make
     # the commit fail because "files were modified by this hook". In that case,
     # doing again the commit including changes in docs/requirements.txt will succeed.
-    "fast-oad-core>=VERSION_PLACEHOLDER",
+    "fast-oad-core>=1.10.0",
     "fast-oad-cs25>=0.8.1"
 ]
 
@@ -54,6 +54,11 @@ classifiers = [
 [project.urls]
 homepage = "https://github.com/fast-aircraft-design/FAST-OAD"
 documentation = "https://fast-oad.readthedocs.io/en/stable/"
+
+[tool.poetry]
+packages = [
+    { include = "_fastoad" },
+]
 
 [tool.poetry.requires-plugins]
 poetry-plugin-export = ">=1.9" # Used for the poetry export hook in pre-commit
