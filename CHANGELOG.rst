@@ -2,6 +2,32 @@
 Changelog
 =========
 
+Version 1.10.0
+=============
+
+- Added:
+    - Adding a maximum duration for mission segment execution to improve MDA robustness. (https://github.com/fast-aircraft-design/FAST-OAD/pull/675)
+    - Added initial altitude for cruise segment as mission output and extended maximum CL limitation. (https://github.com/fast-aircraft-design/FAST-OAD/pull/652)
+    - Added low-speed aerodynamics in default configuration files. (https://github.com/fast-aircraft-design/FAST-OAD/pull/681)
+    - Add _safe_run method in calcrunner to catch exceptions instead of crashing the whole process. (https://github.com/fast-aircraft-design/FAST-OAD/pull/682)
+    - Better XML formatting for mixed nodes. (https://github.com/fast-aircraft-design/FAST-OAD/pull/683)
+    - Cumulative quantities in FlightPoint. (https://github.com/fast-aircraft-design/FAST-OAD/pull/690)
+    - Add TOFL length based on CS-25.113(a). (https://github.com/fast-aircraft-design/FAST-OAD/pull/689)
+    - Add altitude change with regulated thrust. (https://github.com/fast-aircraft-design/FAST-OAD/pull/685)
+    - Add explicit "unitless" as unit of measure in registered components. (https://github.com/fast-aircraft-design/FAST-OAD/pull/667)
+    - Refactoring of the aerodynamics polars. (https://github.com/fast-aircraft-design/FAST-OAD/pull/688)
+
+- Fixed:
+    - Pinning jupyterlab-widgets==3.0.15 to fix #665. (https://github.com/fast-aircraft-design/FAST-OAD/pull/673)
+    - Update dependency of cs25 to fix unit and integration tests. (https://github.com/fast-aircraft-design/FAST-OAD/pull/674)
+    - Cleanup of legacy linting files in the project root. (https://github.com/fast-aircraft-design/FAST-OAD/pull/676)
+    - Fix ClimbAndCruiseSegment crashes when OPTIMAL_FLIGHT_LEVEL is used without climb_segment (#670). (https://github.com/fast-aircraft-design/FAST-OAD/pull/671)
+    - Fix incorrect YAML keyword `design_var` in optimization documentation. (https://github.com/fast-aircraft-design/FAST-OAD/pull/680)
+    - Fix discrete variable units handling. (https://github.com/fast-aircraft-design/FAST-OAD/pull/684)
+    - Update toml of the umbrella package FAST-OAD to be PEP621 compliant and fix publishing errors. (https://github.com/fast-aircraft-design/FAST-OAD/pull/678)
+    - Fix memory-leaks test that was misbehaving. (https://github.com/fast-aircraft-design/FAST-OAD/pull/692)
+
+
 Version 1.9.0
 =============
 

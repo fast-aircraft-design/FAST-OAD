@@ -78,7 +78,7 @@ bundled = "fastoad"
 # Poetry settings ==============================================================
 [tool.poetry]
 requires-poetry = ">=2.0" # You should upgrade poetry to v2 using 'pipx upgrade poetry'
-version = "1.9.0"  # This version number is overwritten by GitHub packaging workflow but setting this version here will allow installation of CS25 models in development mode
+version = "1.10.0"  # This version number is overwritten by GitHub packaging workflow but setting this version here will allow installation of CS25 models in development mode
 packages = [
     { include = "fastoad", from = "src" },
 ]
@@ -107,7 +107,7 @@ classifiers = [
 # Development dependencies -----------------------------------------------------
 # Development dependencies using Poetry groups instead of [project.optional-dependencies]
 [tool.poetry.group.dev.dependencies]
-fast-oad-cs25 = "^0.8.1"
+fast-oad-cs25 = ">=0.8.1,<0.10.0"
 matplotlib = "^3.9.0"
 
 [tool.poetry.group.test.dependencies]
