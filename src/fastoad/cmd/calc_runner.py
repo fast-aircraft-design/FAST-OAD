@@ -92,7 +92,7 @@ class CalcRunner:
 
         if calculation_folder:
             make_parent_dir(calculation_folder)
-            configuration.make_local(calculation_folder)
+            configuration.make_local(calculation_folder, copy_output_file=False)
             if input_values:
                 input_data = DataFile(configuration.input_file_path)
                 input_data.update(input_values, merge_metadata=True)
