@@ -280,7 +280,13 @@ class FASTOADProblemConfigurator:
         subpart = {"optimization": subpart}
         self._data.update(subpart)
 
-    def make_local(self, new_folder_path: str | PathLike, *, copy_models: bool = False):
+    def make_local(
+        self,
+        new_folder_path: str | PathLike,
+        *,
+        copy_models: bool = False,
+        copy_output_file: bool = True,
+    ):
         """
         Modify the current configurator so that all input and output files will be in
         the indicated folder.
@@ -288,11 +294,14 @@ class FASTOADProblemConfigurator:
         :param new_folder_path: the folder path that will contain in/out files
         :param copy_models: True if local models (declared in `module_folders`) should
                             be copied in `new_folder_path`
+        :param copy_output_file: True if the output file should be copied in `new_folder_path`
         """
         new_folder_path = as_path(new_folder_path)
 
         self._data[KEY_INPUT_FILE] = self._make_path_local(self.input_file_path, new_folder_path)
-        self._data[KEY_OUTPUT_FILE] = self._make_path_local(self.output_file_path, new_folder_path)
+        self._data[KEY_OUTPUT_FILE] = self._make_path_local(
+            self.output_file_path, new_folder_path, copy_path=copy_output_file
+        )
         if copy_models:
             new_model_folders = []
             for i, module_folder_path in enumerate(self._get_module_folder_paths()):
@@ -411,6 +420,7 @@ class FASTOADProblemConfigurator:
         original_path: str | PathLike,
         new_folder_path: str | PathLike,
         local_path: str | PathLike | None = None,
+        copy_path: bool | int = True,  # noqa: FBT001, FBT002
     ) -> str:
         """
         For 'original_path' "/foo/bar/baz[.ext]", returns "./baz[.ext]" or
@@ -422,6 +432,8 @@ class FASTOADProblemConfigurator:
         :param original_path:
         :param new_folder_path:
         :param local_path:
+        :param copy_path: Whether to copy the original file or folder. If False, only the path is
+        modified, but no file is copied.
         :return: the relative path
         """
         original_path = as_path(original_path)
@@ -430,9 +442,9 @@ class FASTOADProblemConfigurator:
             new_path /= local_path
         new_path.mkdir(parents=True, exist_ok=True)
         new_path /= original_path.name
-        if original_path.is_file():
+        if original_path.is_file() and copy_path:
             shutil.copy(original_path, new_path)
-        if original_path.is_dir():
+        if original_path.is_dir() and copy_path:
             shutil.copytree(original_path, new_path, dirs_exist_ok=True)
         return new_path.relative_to(new_folder_path).as_posix()  # new_relative_path
 
