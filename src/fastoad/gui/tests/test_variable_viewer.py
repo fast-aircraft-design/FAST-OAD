@@ -211,3 +211,50 @@ def test_value_to_display_and_back():
     # Scalar values are preserved as-is
     assert VariableViewer._value_to_display(3.14) == 3.14
     assert VariableViewer._display_to_value("2.5", 1.0) == pytest.approx(2.5)
+
+
+def test_display_to_value_array_edited_to_scalar_falls_back():
+    """Replacing an array-valued cell by a scalar string must not raise.
+
+    ``ast.literal_eval("1.0")`` returns a float, which cannot be cast back into a
+    list/tuple (``list(1.0)`` raises ``TypeError``). In that case the original
+    value must be kept rather than letting the exception propagate.
+    """
+    original_list = [1.0, 2.0, 3.0]
+    assert VariableViewer._display_to_value("1.0", original_list) == original_list
+
+    original_tuple = (1.0, 2.0)
+    assert VariableViewer._display_to_value("5", original_tuple) == original_tuple
+
+
+def test_update_df_persists_value_and_reverts_readonly_edits():
+    """``_update_df`` persists edits to the *Value* column and reverts edits to
+    read-only columns so the grid cannot diverge from ``self.dataframe``.
+    """
+    df = pd.DataFrame(
+        {
+            "Name": ["a", "b"],
+            "Value": [1.0, 2.0],
+            "Unit": ["m", "m"],
+            "Description": ["", ""],
+            "I/O": ["IN", "OUT"],
+        }
+    )
+    viewer = VariableViewer()
+    viewer.dataframe = df.copy()
+    viewer._filtered_indices = [0, 1]
+    viewer._grid = VariableViewer._df_to_grid(df)
+
+    # Spy on set_cell_value to confirm read-only edits are reverted in the grid.
+    reverted = []
+    viewer._grid.set_cell_value = lambda col, row, val: reverted.append((col, row, val))
+
+    # Editing the Value column is persisted.
+    viewer._update_df({"row": 0, "column": "Value", "value": "9.0"})
+    assert viewer.dataframe.loc[0, "Value"] == pytest.approx(9.0)
+    assert reverted == []
+
+    # Editing a read-only column leaves the dataframe untouched and reverts the grid.
+    viewer._update_df({"row": 1, "column": "Name", "value": "HACKED"})
+    assert viewer.dataframe.loc[1, "Name"] == "b"
+    assert reverted == [("Name", 1, "b")]
