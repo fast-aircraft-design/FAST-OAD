@@ -71,6 +71,9 @@ class VariableViewer:
         # The grid which is the mirror of the filtered dataframe
         self._grid = None
 
+        # Guards against re-entrancy when programmatically reverting a read-only edit
+        self._reverting_cell = False
+
         # Original dataframe indices for the currently displayed (filtered) rows
         self._filtered_indices: list = []
 
@@ -178,12 +181,13 @@ class VariableViewer:
         )
 
     @staticmethod
-    def _value_to_display(value) -> str | float:
+    def _value_to_display(value) -> object:
         """Convert a variable value to a grid-displayable scalar.
 
         Array values (numpy arrays or lists) are represented as a string so that
         ipydatagrid can serialize them without raising an inhomogeneous-shape error
-        (the root cause of issue #596).
+        (the root cause of issue #596). Scalar values (float, int, str, None, ...)
+        are returned unchanged, hence the broad ``object`` return type.
         """
         if isinstance(value, np.ndarray):
             return str(value.tolist())
@@ -204,8 +208,11 @@ class VariableViewer:
                 parsed = ast.literal_eval(str(display_value))
                 if isinstance(original_value, np.ndarray):
                     return np.array(parsed, dtype=float)
+                # ``parsed`` may be a scalar (e.g. the user replaced a list with
+                # "1.0"); casting a non-iterable into list/tuple raises TypeError,
+                # in which case we keep the original value.
                 return type(original_value)(parsed)
-            except (ValueError, SyntaxError):
+            except (ValueError, SyntaxError, TypeError):
                 return original_value
         try:
             return float(display_value)
@@ -239,22 +246,43 @@ class VariableViewer:
 
     def _update_df(self, cell: dict):
         """
-        Callback for ipydatagrid ``on_cell_change``.  Updates ``self.dataframe``
-        when the user edits the *Value* column.
+        Callback for ipydatagrid ``on_cell_change``.  Only the *Value* column is
+        editable: edits there are persisted to ``self.dataframe``; edits to any
+        other (read-only) column are reverted in the grid so the displayed data
+        cannot diverge from ``self.dataframe``.
 
         :param cell: dict with keys ``row``, ``column``, ``column_index``, ``value``
         """
-        if cell["column"] != "Value":
+        # Ignore the change event triggered by our own revert below.
+        if self._reverting_cell:
             return
 
         grid_row = cell["row"]
         if grid_row >= len(self._filtered_indices):
             return
-
         original_idx = self._filtered_indices[grid_row]
+
+        if cell["column"] != "Value":
+            # Read-only column: restore the original value in the grid.
+            self._revert_cell(
+                cell["column"], grid_row, self.dataframe.loc[original_idx, cell["column"]]
+            )
+            return
+
         original_value = self.dataframe.loc[original_idx, "Value"]
         new_value = self._display_to_value(cell["value"], original_value)
         self.dataframe.loc[original_idx, "Value"] = new_value
+
+    def _revert_cell(self, column: str, grid_row: int, original_value):
+        """Restore a grid cell to ``original_value``, suppressing the resulting
+        ``on_cell_change`` event to avoid infinite recursion."""
+        if self._grid is None:
+            return
+        self._reverting_cell = True
+        try:
+            self._grid.set_cell_value(column, grid_row, self._value_to_display(original_value))
+        finally:
+            self._reverting_cell = False
 
     def _render_sheet(self) -> display:
         """
