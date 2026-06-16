@@ -182,7 +182,8 @@ class VariableViewer:
 
     @staticmethod
     def _value_to_display(value) -> object:
-        """Convert a variable value to a grid-displayable scalar.
+        """
+        Convert a variable value to a grid-displayable scalar.
 
         Array values (numpy arrays or lists) are represented as a string so that
         ipydatagrid can serialize them without raising an inhomogeneous-shape error
@@ -191,19 +192,20 @@ class VariableViewer:
         """
         if isinstance(value, np.ndarray):
             return str(value.tolist())
-        if isinstance(value, (list, tuple)):
+        if isinstance(value, list | tuple):
             return str(list(value))
         return value
 
     @staticmethod
     def _display_to_value(display_value, original_value):
-        """Parse a value coming back from the grid into the appropriate Python type.
+        """
+        Parse a value coming back from the grid into the appropriate Python type.
 
         If the original value was an array-like (list, tuple, or numpy array),
         the edited string is parsed back into the same type.
         Otherwise a plain float conversion is attempted.
         """
-        if isinstance(original_value, (list, tuple, np.ndarray)):
+        if isinstance(original_value, list | tuple | np.ndarray):
             try:
                 parsed = ast.literal_eval(str(display_value))
                 if isinstance(original_value, np.ndarray):
@@ -274,8 +276,12 @@ class VariableViewer:
         self.dataframe.loc[original_idx, "Value"] = new_value
 
     def _revert_cell(self, column: str, grid_row: int, original_value):
-        """Restore a grid cell to ``original_value``, suppressing the resulting
-        ``on_cell_change`` event to avoid infinite recursion."""
+        """
+        Restore a grid cell to its original value.
+
+        The resulting ``on_cell_change`` event is suppressed to avoid infinite
+        recursion.
+        """
         if self._grid is None:
             return
         self._reverting_cell = True

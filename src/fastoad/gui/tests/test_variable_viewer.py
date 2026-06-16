@@ -214,7 +214,8 @@ def test_value_to_display_and_back():
 
 
 def test_display_to_value_array_edited_to_scalar_falls_back():
-    """Replacing an array-valued cell by a scalar string must not raise.
+    """
+    Replacing an array-valued cell by a scalar string must not raise.
 
     ``ast.literal_eval("1.0")`` returns a float, which cannot be cast back into a
     list/tuple (``list(1.0)`` raises ``TypeError``). In that case the original
@@ -228,7 +229,8 @@ def test_display_to_value_array_edited_to_scalar_falls_back():
 
 
 def test_update_df_persists_value_and_reverts_readonly_edits():
-    """``_update_df`` persists edits to the *Value* column and reverts edits to
+    """
+    ``_update_df`` persists edits to the *Value* column and reverts edits to
     read-only columns so the grid cannot diverge from ``self.dataframe``.
     """
     df = pd.DataFrame(
