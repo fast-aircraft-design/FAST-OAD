@@ -107,7 +107,8 @@ def test_optimization_viewer_display(cleanup):
 
 
 def test_update_callback_persists_editable_and_reverts_readonly():
-    """The ``on_cell_change`` callback persists edits to editable columns and
+    """
+    The ``on_cell_change`` callback persists edits to editable columns and
     reverts edits to read-only columns (ipydatagrid has no per-column editable
     flag), so the grid cannot diverge from ``self.dataframe``.
     """
