@@ -85,7 +85,10 @@ class OptimizationViewer:
         self._save_load_buttons = None
 
         # True if in the absence of an output file
-        self._MISSING_OUTPUT_FILE = None
+        self._missing_output_file = None
+
+        # Guards against re-entrancy when programmatically reverting a read-only edit
+        self._reverting_cell = False
 
     def load(self, problem_configuration: FASTOADProblemConfigurator):
         """
@@ -105,10 +108,10 @@ class OptimizationViewer:
             )
 
         if Path(self.problem_configuration.output_file_path).is_file():
-            self._MISSING_OUTPUT_FILE = False
+            self._missing_output_file = False
             output_variables = DataFile(self.problem_configuration.output_file_path)
         else:
-            self._MISSING_OUTPUT_FILE = True
+            self._missing_output_file = True
             problem = self.problem_configuration.get_problem()
             problem.setup()
             output_variables = VariableList.from_problem(problem)
@@ -272,7 +275,7 @@ class OptimizationViewer:
         signal they are not editable.  The grid itself is editable so that the
         user can modify the bound / initial-value columns.
 
-        If ``self._MISSING_OUTPUT_FILE`` is True, the *Value* column cells are
+        If ``self._missing_output_file`` is True, the *Value* column cells are
         replaced with ``"-"`` to indicate that no output is available.
 
         :param df: the pandas DataFrame to be converted
@@ -283,7 +286,7 @@ class OptimizationViewer:
 
         display_df = df.copy().reset_index(drop=True)
 
-        if self._MISSING_OUTPUT_FILE and "Value" in display_df.columns:
+        if self._missing_output_file and "Value" in display_df.columns:
             display_df["Value"] = "-"
 
         # Build per-column renderers: grey background for read-only columns
@@ -293,8 +296,21 @@ class OptimizationViewer:
             if col in _READ_ONLY_COLUMNS
         }
 
-        # Colour active/violated bounds (yellow = active within threshold, red = violated)
-        # TODO: replace with ipydatagrid VegaExpr conditional formatting for live updates
+        # Colour active/violated bounds (yellow = active within threshold, red = violated).
+        #
+        # KNOWN LIMITATION (ipydatagrid 1.4.0): the grid only supports *per-column*
+        # ``renderers``; there is no per-cell renderer. The only per-cell mechanism is
+        # ``Expr``/``VegaExpr``, but those are transpiled to a Vega expression by py2vega
+        # and accept only a restricted Python subset -- they cannot reproduce the
+        # cross-column, array-aware threshold logic of ``_cell_styling`` (bounds may be
+        # array-valued and are compared with ``np.all``). As a consequence:
+        #   * highlighting is applied at column granularity, so a coloured bound tints the
+        #     whole column rather than the individual active/violated cell (Copilot #3);
+        #   * the colours are computed once when the grid is (re)built and are not
+        #     recomputed live as the user edits Lower/Upper/Initial Value (Copilot #5) --
+        #     they refresh on the next Save/Load round-trip.
+        # This is kept as a best-effort visual cue until ipydatagrid offers per-cell
+        # conditional formatting compatible with this logic.
         style = self._cell_styling(df)
         for (r, c), cell_style in style.items():
             if c in display_df.columns and cell_style.get("backgroundColor"):
@@ -319,25 +335,38 @@ class OptimizationViewer:
             },
         )
 
-    def _make_update_callback(self, grid_indices: list):
+    def _make_update_callback(self, grid_indices: list, grid: DataGrid):
         """
         Returns an ``on_cell_change`` callback that updates ``self.dataframe``
         for the rows identified by *grid_indices*.
 
-        Only columns in ``_EDITABLE_COLUMNS`` trigger an update; changes to
-        read-only columns are silently ignored.
+        Only columns in ``_EDITABLE_COLUMNS`` are persisted; edits to read-only
+        columns are reverted in the grid so the display stays consistent with
+        ``self.dataframe`` (ipydatagrid has no per-column ``editable`` flag).
 
         :param grid_indices: list mapping grid row index → original dataframe index
+        :param grid: the DataGrid the callback is attached to (used to revert edits)
         """
 
         def callback(cell: dict):
-            col = cell["column"]
-            if col not in _EDITABLE_COLUMNS:
+            # Ignore the change event triggered by our own revert below.
+            if self._reverting_cell:
                 return
+            col = cell["column"]
             grid_row = cell["row"]
             if grid_row >= len(grid_indices):
                 return
             original_idx = grid_indices[grid_row]
+
+            if col not in _EDITABLE_COLUMNS:
+                # Read-only column: restore the original value in the grid.
+                self._reverting_cell = True
+                try:
+                    grid.set_cell_value(col, grid_row, self.dataframe.loc[original_idx, col])
+                finally:
+                    self._reverting_cell = False
+                return
+
             value = cell["value"]
             with contextlib.suppress(ValueError, TypeError):
                 value = float(value)
@@ -393,7 +422,9 @@ class OptimizationViewer:
         )
         self._design_var_indices = design_var_df.index.tolist()
         self._design_var_grid = self._df_to_grid(design_var_df)
-        self._design_var_grid.on_cell_change(self._make_update_callback(self._design_var_indices))
+        self._design_var_grid.on_cell_change(
+            self._make_update_callback(self._design_var_indices, self._design_var_grid)
+        )
 
         # Constraints
         constraint_df = self.dataframe[self.dataframe["Type"] == "constraint"].drop(
@@ -401,7 +432,9 @@ class OptimizationViewer:
         )
         self._constraint_indices = constraint_df.index.tolist()
         self._constraint_grid = self._df_to_grid(constraint_df)
-        self._constraint_grid.on_cell_change(self._make_update_callback(self._constraint_indices))
+        self._constraint_grid.on_cell_change(
+            self._make_update_callback(self._constraint_indices, self._constraint_grid)
+        )
 
         # Objectives
         objective_df = self.dataframe[self.dataframe["Type"] == "objective"].drop(
@@ -409,7 +442,9 @@ class OptimizationViewer:
         )
         self._objective_indices = objective_df.index.tolist()
         self._objective_grid = self._df_to_grid(objective_df)
-        self._objective_grid.on_cell_change(self._make_update_callback(self._objective_indices))
+        self._objective_grid.on_cell_change(
+            self._make_update_callback(self._objective_indices, self._objective_grid)
+        )
 
     # change has to be there for observe() to work
     def _render_ui(self, change=None) -> display:
