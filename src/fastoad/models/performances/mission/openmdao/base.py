@@ -120,6 +120,12 @@ class BaseMissionComp(System, metaclass=ABCMeta):
             check_valid=self._update_mission_wrapper,
             desc="How auto-generated names of variables should begin.",
         )
+        self.options.declare(
+            "propulsion_options",
+            default={},
+            types=dict,
+            desc="Defines options for propulsion model using a dictionary",
+        )
 
     @property
     def name_provider(self) -> Enum:

@@ -19,6 +19,8 @@ from numpy.testing import assert_allclose
 from scipy.constants import nautical_mile
 
 from fastoad.io import DataFile
+from fastoad.model_base.openmdao.group import BaseCycleGroup
+from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.testing import run_system
 
 from ..mission_run import MissionComp
@@ -99,3 +101,51 @@ def test_mission_run(cleanup, with_dummy_plugin_2):
         problem["data:payload_range:operational:distance"], 2000.0 * nautical_mile, atol=500.0
     )
     assert_allclose(problem["data:payload_range:operational:duration"], 16573.0, atol=10.0)
+
+
+def test_mission_run_with_options(cleanup, with_dummy_plugin_3):
+    input_file_path = DATA_FOLDER_PATH / "test_mission_run.xml"
+    ivc = DataFile(input_file_path).to_ivc()
+
+    problem = FASTOADProblem()
+    model = problem.model = BaseCycleGroup()
+
+    model.add_subsystem("inputs", ivc, promotes=["*"])
+    model.add_subsystem(
+        "component",
+        MissionComp(
+            propulsion_id="test.wrapper.propulsion.dummy_engine_with_options",
+            out_file=RESULTS_FOLDER_PATH / "mission.csv",
+            mission_file_path=DATA_FOLDER_PATH / "test_mission.yml",
+            mission_name="operational",
+            reference_area_variable="data:geometry:aircraft:reference_area",
+            variable_prefix="data:payload_range",
+        ),
+        promotes=["*"],
+    )
+
+    # Test one time with an option
+    problem.model_options["*"] = {"propulsion_options": {"gas_turbine_fidelity": "high_fidelity"}}
+
+    problem.setup()
+    problem.final_setup()
+    problem.run_model()
+
+    assert_allclose(
+        problem.get_val("data:payload_range:operational:needed_block_fuel", units="kg"),
+        9340.0,
+        atol=1.0,
+    )
+
+    # Test one time with a second option and check that results are different
+    problem.model_options["*"] = {"propulsion_options": {"gas_turbine_fidelity": "low_fidelity"}}
+
+    problem.setup()
+    problem.final_setup()
+    problem.run_model()
+
+    assert_allclose(
+        problem.get_val("data:payload_range:operational:needed_block_fuel", units="kg"),
+        10453.0,
+        atol=1.0,
+    )
