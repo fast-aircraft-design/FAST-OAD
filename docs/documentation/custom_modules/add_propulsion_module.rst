@@ -154,3 +154,42 @@ with the `propulsion_id` keyword, as in following example:
       performance:
         id: fastoad.performances.mission
         propulsion_id: star.trek.propulsion
+
+Passing options to the wrapper
+==============================
+
+When developing your propulsion model, you might want to pass options to change how the model behaves and declares inputs. You can do that by accessing the `propulsion_options` option inside the wrapper::
+
+    import fastoad.api as oad
+
+
+    @oad.RegisterPropulsion("star.wars.propulsion")
+    class WarpDriveWrapper(oad.IOMPropulsionWrapper):
+
+        def setup(self, component: Component):
+
+            if component.options["propulsion_options"].get("fidelity_level", None) == "high_fidelity":
+                [ ... ]
+            else:
+                [ ... ]
+
+
+Options can then be declared directly in the configuration file by using :ref:`model options<configuration-model-options>`.
+
+.. code-block:: yaml
+
+    title: OAD Process with custom propulsion model using options
+
+    [ ... ]
+
+    # Definition of OpenMDAO model
+    model:
+      [ ... ]
+      performance:
+        id: fastoad.performances.mission
+        propulsion_id: star.wars.propulsion
+
+    model_options:
+      '*':
+        propulsion_options:
+          fidelity_level: high_fidelity
