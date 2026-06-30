@@ -160,6 +160,7 @@ Passing options to the wrapper
 
 When developing your propulsion model, you might want to pass options to change how the model behaves and declares inputs. You can do that by accessing the `propulsion_options` option inside the wrapper::
 
+    from openmdao.core.component import Component
     import fastoad.api as oad
 
 

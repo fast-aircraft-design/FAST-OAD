@@ -70,7 +70,7 @@ class DummyEngineHighFidelity(AbstractFuelPropulsion):
             flight_point.thrust = self.max_thrust * flight_point.thrust_rate
 
         flight_point.sfc = self.sfc_min_thrust_rate + (
-                self.sfc_max_thrust_rate - self.sfc_min_thrust_rate
+            self.sfc_max_thrust_rate - self.sfc_min_thrust_rate
         ) * flight_point.thrust_rate
 
 
@@ -87,11 +87,23 @@ class DummyEngineWrapper(IOMPropulsionWrapper):
 
         if component.options["propulsion_options"].get("gas_turbine_fidelity", None) == "high_fidelity":
             self.gas_turbine_fidelity = "high_fidelity"
-            component.add_input("data:propulsion:dummy_engine:sfc_min_thrust_rate", 1.5e-5, units="kg/N/s")
-            component.add_input("data:propulsion:dummy_engine:sfc_max_thrust_rate", 0.75e-5, units="kg/N/s")
+            component.add_input(
+                "data:propulsion:dummy_engine:sfc_min_thrust_rate",
+                1.5e-5,
+                units="kg/N/s"
+            )
+            component.add_input(
+                "data:propulsion:dummy_engine:sfc_max_thrust_rate",
+                0.75e-5,
+                units="kg/N/s"
+            )
         else:
             self.gas_turbine_fidelity = "low_fidelity"
-            component.add_input("data:propulsion:dummy_engine:sfc", 1.5e-5, units="kg/N/s")
+            component.add_input(
+                "data:propulsion:dummy_engine:sfc",
+                1.5e-5,
+                units="kg/N/s"
+            )
 
     def get_model(self, inputs) -> IPropulsion:
         if self.gas_turbine_fidelity == "high_fidelity":

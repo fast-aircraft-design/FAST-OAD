@@ -107,45 +107,61 @@ def test_mission_run_with_options(cleanup, with_dummy_plugin_3):
     input_file_path = DATA_FOLDER_PATH / "test_mission_run.xml"
     ivc = DataFile(input_file_path).to_ivc()
 
-    problem = FASTOADProblem()
-    model = problem.model = BaseCycleGroup()
+    component = MissionComp(
+        propulsion_id="test.wrapper.propulsion.dummy_engine_with_options",
+        out_file=RESULTS_FOLDER_PATH / "mission.csv",
+        mission_file_path=DATA_FOLDER_PATH / "test_mission.yml",
+        mission_name="operational",
+        reference_area_variable="data:geometry:aircraft:reference_area",
+        variable_prefix="data:payload_range",
+    )
 
-    model.add_subsystem("inputs", ivc, promotes=["*"])
-    model.add_subsystem(
+    high_fi_problem = FASTOADProblem()
+    high_fi_model = high_fi_problem.model = BaseCycleGroup()
+
+    high_fi_model.add_subsystem("inputs", ivc, promotes=["*"])
+    high_fi_model.add_subsystem(
         "component",
-        MissionComp(
-            propulsion_id="test.wrapper.propulsion.dummy_engine_with_options",
-            out_file=RESULTS_FOLDER_PATH / "mission.csv",
-            mission_file_path=DATA_FOLDER_PATH / "test_mission.yml",
-            mission_name="operational",
-            reference_area_variable="data:geometry:aircraft:reference_area",
-            variable_prefix="data:payload_range",
-        ),
+        component,
         promotes=["*"],
     )
 
     # Test one time with an option
-    problem.model_options["*"] = {"propulsion_options": {"gas_turbine_fidelity": "high_fidelity"}}
+    high_fi_problem.model_options["*"] = {
+        "propulsion_options": {"gas_turbine_fidelity": "high_fidelity"}
+    }
 
-    problem.setup()
-    problem.final_setup()
-    problem.run_model()
+    high_fi_problem.setup()
+    high_fi_problem.final_setup()
+    high_fi_problem.run_model()
 
     assert_allclose(
-        problem.get_val("data:payload_range:operational:needed_block_fuel", units="kg"),
+        high_fi_problem.get_val("data:payload_range:operational:needed_block_fuel", units="kg"),
         9340.0,
         atol=1.0,
     )
 
-    # Test one time with a second option and check that results are different
-    problem.model_options["*"] = {"propulsion_options": {"gas_turbine_fidelity": "low_fidelity"}}
+    low_fi_problem = FASTOADProblem()
+    low_fi_model = low_fi_problem.model = BaseCycleGroup()
 
-    problem.setup()
-    problem.final_setup()
-    problem.run_model()
+    low_fi_model.add_subsystem("inputs", ivc, promotes=["*"])
+    low_fi_model.add_subsystem(
+        "component",
+        component,  # Same model
+        promotes=["*"],
+    )
+
+    # Test one time with a second option and check that results are different
+    low_fi_problem.model_options["*"] = {
+        "propulsion_options": {"gas_turbine_fidelity": "low_fidelity"}
+    }
+
+    low_fi_problem.setup()
+    low_fi_problem.final_setup()
+    low_fi_problem.run_model()
 
     assert_allclose(
-        problem.get_val("data:payload_range:operational:needed_block_fuel", units="kg"),
+        low_fi_problem.get_val("data:payload_range:operational:needed_block_fuel", units="kg"),
         10453.0,
         atol=1.0,
     )

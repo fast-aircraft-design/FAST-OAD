@@ -146,7 +146,7 @@ def with_dummy_plugin_3():
     dummy_dist_2.name = "dummy-dist-2"
     new_entry_points = [
         importlib_metadata.EntryPoint(
-            name="test_plugin_2",
+            name="test_plugin_3",
             value="tests.dummy_plugins.dist_2.dummy_plugin_3",
             group=MODEL_PLUGIN_ID,
         )
