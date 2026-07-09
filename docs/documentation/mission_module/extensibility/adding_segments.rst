@@ -34,7 +34,7 @@ Flight segment classes must all derive from
 Segment keyword
 ***************
 
-When subclassing, a keyword is associated to the class::
+When using the :class:`RegisterSegment` decorator, a keyword is associated to the class::
 
     import fastoad.api as oad
     from dataclasses import dataclass
@@ -135,7 +135,7 @@ The AbstractFlightSegment class
 
 As :ref:`previously said <adding-segments-links-with-mission-file>`, a segment class has to
 inherit from :class:`~fastoad.models.performances.mission.segments.base.AbstractFlightSegment`
-(and specify the `keyword` if its usage is intended in mission definition files)
+(and be registered with a mission-file keyword using :class:`RegisterSegment` if its usage is intended in mission definition files)
 and will be implemented like this::
 
     import fastoad.api as oad
