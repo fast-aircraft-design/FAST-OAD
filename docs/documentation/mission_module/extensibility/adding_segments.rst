@@ -34,16 +34,17 @@ Flight segment classes must all derive from
 Segment keyword
 ***************
 
-When subclassing, a keyword is associated to the class::
+When using the :class:`RegisterSegment` decorator, a keyword is associated to the class::
 
     import fastoad.api as oad
     from dataclasses import dataclass
 
+    @oad.RegisterSegment(keyword="new_segment")
     @dataclass
-    class NewSegment(oad.AbstractFlightSegment, mission_file_keyword="new_segment"):
+    class NewSegment(oad.AbstractFlightSegment):
         ...
 
-As soon as your code is interpreted, the :code:`mission_file_keyword` will be usable in mission
+As soon as your code is interpreted, the :code:`keyword` will be usable in mission
 definition file when specifying segments:
 
 .. code-block:: yaml
@@ -83,8 +84,9 @@ Given this implementation::
     from dataclasses import dataclass, field
     from typing import List
 
+    @oad.RegisterSegment(keyword="new_segment")
     @dataclass
-    class NewSegment(oad.AbstractFlightSegment, mission_file_keyword="new_segment"):
+    class NewSegment(oad.AbstractFlightSegment):
         my_float: float = 0.0
         my_bool: bool = True
         my_array: List[float] = field(default_factory=list)
@@ -114,8 +116,9 @@ Given this implementation::
         import fastoad.api as oad
         from dataclasses import dataclass
 
+        @oad.RegisterSegment(keyword="new_segment")
         @dataclass
-        class NewSegment(oad.AbstractFlightSegment, mission_file_keyword="new_segment"):
+        class NewSegment(oad.AbstractFlightSegment):
             my_mandatory_float: float = oad.MANDATORY_FIELD
             ...
 
@@ -132,15 +135,16 @@ The AbstractFlightSegment class
 
 As :ref:`previously said <adding-segments-links-with-mission-file>`, a segment class has to
 inherit from :class:`~fastoad.models.performances.mission.segments.base.AbstractFlightSegment`
-(and specify the `mission_file_keyword` if its usage is intended in mission definition files)
+(and be registered with a mission-file keyword using :class:`RegisterSegment` if its usage is intended in mission definition files)
 and will be implemented like this::
 
     import fastoad.api as oad
     from dataclasses import dataclass, field
     from typing import List
 
+    @oad.RegisterSegment(keyword="new_segment")
     @dataclass
-    class NewSegment(oad.AbstractFlightSegment, mission_file_keyword="new_segment"):
+    class NewSegment(oad.AbstractFlightSegment):
         my_float: float = 0.0
         ...
 
