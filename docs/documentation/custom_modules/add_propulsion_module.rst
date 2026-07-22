@@ -194,3 +194,20 @@ Options can then be declared directly in the configuration file by using :ref:`m
       '*':
         propulsion_options:
           fidelity_level: high_fidelity
+
+Propulsion options can also be declared by passing them directly to the performance module.
+
+.. code-block:: yaml
+
+    title: OAD Process with custom propulsion model using options
+
+    [ ... ]
+
+    # Definition of OpenMDAO model
+    model:
+      [ ... ]
+      performance:
+        id: fastoad.performances.mission
+        propulsion_id: star.wars.propulsion
+        propulsion_options:
+          fidelity_level: high_fidelity
