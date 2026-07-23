@@ -52,8 +52,8 @@ class DummyEngineHighFidelity(AbstractFuelPropulsion):
         Dummy engine model.
 
         Max thrust does not depend on flight conditions.
-        SFC varies linearly between a value when thrust rate is nul and another value when thrust
-        rate is at 1.
+        SFC varies linearly between a value when thrust rate is zero and another value when thrust
+        rate is one.
 
         :param max_thrust: thrust when thrust rate = 1.0
         :param sfc_min_thrust_rate: SFC at minimum thrust rate
