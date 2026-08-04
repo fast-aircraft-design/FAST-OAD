@@ -659,7 +659,9 @@ def write_xdsm(
     problem.setup()
     problem.final_setup()
 
-    fastoad.openmdao.whatsopt.write_xdsm(problem, xdsm_file_path, depth, wop_server_url, dry_run)
+    fastoad.openmdao.whatsopt.write_xdsm(
+        problem, xdsm_file_path, depth, wop_server_url, dry_run=dry_run
+    )
     return xdsm_file_path
 
 
