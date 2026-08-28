@@ -17,6 +17,7 @@ Tests for FAST-OAD optimization viewer
 import shutil
 from pathlib import Path
 
+import pandas as pd
 import pytest
 
 from fastoad.cmd import api
@@ -103,3 +104,36 @@ def test_optimization_viewer_display(cleanup):
 
     optim_viewer.load(problem_configuration)
     optim_viewer.display()
+
+
+def test_update_callback_persists_editable_and_reverts_readonly():
+    """
+    The ``on_cell_change`` callback persists edits to editable columns and
+    reverts edits to read-only columns (ipydatagrid has no per-column editable
+    flag), so the grid cannot diverge from ``self.dataframe``.
+    """
+
+    class _FakeGrid:
+        def __init__(self):
+            self.reverted = []
+
+        def set_cell_value(self, col, row, value):
+            self.reverted.append((col, row, value))
+
+    optim_viewer = OptimizationViewer()
+    optim_viewer.dataframe = pd.DataFrame(
+        {"Name": ["x"], "Value": [3.0], "Lower": [0.0], "Upper": [10.0]}
+    )
+
+    grid = _FakeGrid()
+    callback = optim_viewer._make_update_callback([0], grid)
+
+    # An editable column is persisted (and converted to float).
+    callback({"row": 0, "column": "Lower", "value": "1.5"})
+    assert optim_viewer.dataframe.loc[0, "Lower"] == pytest.approx(1.5)
+    assert grid.reverted == []
+
+    # A read-only column is reverted and the dataframe is left untouched.
+    callback({"row": 0, "column": "Name", "value": "HACKED"})
+    assert optim_viewer.dataframe.loc[0, "Name"] == "x"
+    assert grid.reverted == [("Name", 0, "x")]
