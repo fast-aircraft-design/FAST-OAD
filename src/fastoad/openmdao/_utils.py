@@ -37,7 +37,14 @@ def get_mpi_safe_problem_copy(problem: T) -> T:
     :return: a copy of the problem with a FakeComm object as problem.comm
     """
     with copyable_problem(problem) as no_mpi_problem:
-        return deepcopy(no_mpi_problem)
+        problem_copy = deepcopy(no_mpi_problem)
+
+    # Since OpenMDAO 3.44, the driver keeps a weakref to its problem, which deepcopy
+    # does not update: without this, the copied driver would work on the original model.
+    if hasattr(problem_copy.driver, "_set_problem"):
+        problem_copy.driver._set_problem(problem_copy)
+
+    return problem_copy
 
 
 @contextmanager
