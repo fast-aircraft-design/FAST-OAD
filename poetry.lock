@@ -2901,14 +2901,14 @@ files = [
 
 [[package]]
 name = "openmdao"
-version = "3.42.0"
+version = "3.45.1"
 description = "OpenMDAO framework infrastructure"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "openmdao-3.42.0-py3-none-any.whl", hash = "sha256:15bbf998472728dbf858d053a5775ad9ebab022443e1837c1550e2aac8762c53"},
-    {file = "openmdao-3.42.0.tar.gz", hash = "sha256:6eeb0629659cadf269b2fc13feef64fad0c76fdb9b4f3ba22d3467e14e4f5fd8"},
+    {file = "openmdao-3.45.1-py3-none-any.whl", hash = "sha256:2ac96fcd3ebd4f3096d527f6f792f4b5ddb8823093c2fff1f89f147159fab6da"},
+    {file = "openmdao-3.45.1.tar.gz", hash = "sha256:314c5d796c5dbcc4334b70cd9d306cb8f8db78c84918b8406b88ede56d5cc909"},
 ]
 
 [package.dependencies]
@@ -2919,13 +2919,14 @@ requests = "*"
 scipy = ">=1.13"
 
 [package.extras]
-all = ["aiounittest", "bokeh (>=3.4.0)", "colorama", "idna (>=3.7)", "ipympl", "ipyparallel", "jax (>=0.4.0)", "jaxlib (>=0.4.0)", "jinja2 (>=3.1.4)", "jupyter-book (>=1.0.3,<2)", "matplotlib", "notebook", "num2words", "numpydoc (>=1.1)", "panel", "parameterized", "playwright (>=1.20)", "pre-commit", "pycodestyle (>=2.4.0)", "pydocstyle (>=2.0.0)", "pydoe3", "rich", "sphinx-sitemap", "testflo (>=1.3.6)", "tqdm (>=4.66.3)", "websockets (>8)"]
-docs = ["idna (>=3.7)", "ipyparallel", "jinja2 (>=3.1.4)", "jupyter-book (>=1.0.3,<2)", "matplotlib", "numpydoc (>=1.1)", "sphinx-sitemap", "tqdm (>=4.66.3)"]
-doe = ["pydoe3"]
+all = ["aiounittest", "bokeh (>=3.4.0)", "colorama", "coverage (>=7.6.0)", "idna (>=3.7)", "ipympl", "ipyparallel", "jax (>=0.4.0)", "jaxlib (>=0.4.0)", "jinja2 (>=3.1.4)", "jupyter-book (>=1.0.3,<2)", "matplotlib", "notebook", "num2words", "numpydoc (>=1.1)", "panel", "parameterized", "playwright (>=1.20)", "pre-commit", "pycodestyle (>=2.4.0)", "pydata-sphinx-theme (>=0.15.0,<0.16.0)", "pydocstyle (>=2.0.0)", "pydoe", "rich", "sphinx-sitemap", "testflo (>=1.3.6)", "tqdm (>=4.66.3)", "websockets (>8)"]
+docs = ["idna (>=3.7)", "ipyparallel", "jinja2 (>=3.1.4)", "jupyter-book (>=1.0.3,<2)", "matplotlib", "numpydoc (>=1.1)", "pydata-sphinx-theme (>=0.15.0,<0.16.0)", "sphinx-sitemap", "tqdm (>=4.66.3)"]
+doe = ["pydoe"]
 jax = ["jax (>=0.4.0)", "jaxlib (>=0.4.0)"]
+julia = ["omjlcomps (>=0.2.6)"]
 notebooks = ["idna (>=3.7)", "ipympl", "notebook"]
 numba = ["numba"]
-test = ["aiounittest", "num2words", "numpydoc (>=1.1)", "parameterized", "playwright (>=1.20)", "pre-commit", "pycodestyle (>=2.4.0)", "pydocstyle (>=2.0.0)", "testflo (>=1.3.6)", "websockets (>8)"]
+test = ["aiounittest", "coverage (>=7.6.0)", "num2words", "numpydoc (>=1.1)", "parameterized", "playwright (>=1.20)", "pre-commit", "pycodestyle (>=2.4.0)", "pydocstyle (>=2.0.0)", "testflo (>=1.3.6)", "websockets (>8)"]
 visualization = ["bokeh (>=3.4.0)", "colorama", "matplotlib", "panel", "rich"]
 
 [[package]]
@@ -5234,4 +5235,4 @@ mpi = ["mpi4py"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.15"
-content-hash = "f55486659fe6ca0448485f6667e0db10baee4384017b40f497ea033c01db795f"
+content-hash = "279682ab51fbb19236ca60886a54f416ad13589ee81111abb4797ea1c7d2a9f8"
