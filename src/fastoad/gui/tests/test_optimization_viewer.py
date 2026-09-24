@@ -117,7 +117,7 @@ def test_update_callback_persists_editable_and_reverts_readonly():
         def __init__(self):
             self.reverted = []
 
-        def set_cell_value(self, col, row, value):
+        def set_cell_value_by_index(self, col, row, value):
             self.reverted.append((col, row, value))
 
     optim_viewer = OptimizationViewer()
@@ -136,4 +136,8 @@ def test_update_callback_persists_editable_and_reverts_readonly():
     # A read-only column is reverted and the dataframe is left untouched.
     callback({"row": 0, "column": "Name", "value": "HACKED"})
     assert optim_viewer.dataframe.loc[0, "Name"] == "x"
+    assert grid.reverted == [("Name", 0, "x")]
+
+    # The frontend echoes the revert back; the echo must not trigger another revert.
+    callback({"row": 0, "column": "Name", "value": "x"})
     assert grid.reverted == [("Name", 0, "x")]

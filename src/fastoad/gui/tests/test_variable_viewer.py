@@ -24,6 +24,7 @@ from ipydatagrid import DataGrid
 from pandas.testing import assert_frame_equal
 
 from .. import VariableViewer
+from ..variable_viewer import _is_same_cell_value
 
 DATA_FOLDER_PATH = Path(__file__).parent / "data"
 RESULTS_FOLDER_PATH = Path(__file__).parent / "results"
@@ -247,9 +248,9 @@ def test_update_df_persists_value_and_reverts_readonly_edits():
     viewer._filtered_indices = [0, 1]
     viewer._grid = VariableViewer._df_to_grid(df)
 
-    # Spy on set_cell_value to confirm read-only edits are reverted in the grid.
+    # Spy on set_cell_value_by_index to confirm read-only edits are reverted in the grid.
     reverted = []
-    viewer._grid.set_cell_value = lambda col, row, val: reverted.append((col, row, val))
+    viewer._grid.set_cell_value_by_index = lambda col, row, val: reverted.append((col, row, val))
 
     # Editing the Value column is persisted.
     viewer._update_df({"row": 0, "column": "Value", "value": "9.0"})
@@ -260,3 +261,16 @@ def test_update_df_persists_value_and_reverts_readonly_edits():
     viewer._update_df({"row": 1, "column": "Name", "value": "HACKED"})
     assert viewer.dataframe.loc[1, "Name"] == "b"
     assert reverted == [("Name", 1, "b")]
+
+    # The frontend echoes the revert back; the echo must not trigger another revert.
+    viewer._update_df({"row": 1, "column": "Name", "value": "b"})
+    assert reverted == [("Name", 1, "b")]
+
+
+def test_is_same_cell_value():
+    assert _is_same_cell_value("b", "b")
+    assert not _is_same_cell_value("HACKED", "b")
+    assert _is_same_cell_value(None, np.nan)
+    assert not _is_same_cell_value(None, "m")
+    assert _is_same_cell_value([1.0, 2.0], np.array([1.0, 2.0]))
+    assert not _is_same_cell_value([1.0, 2.0], np.array([1.0, 3.0]))

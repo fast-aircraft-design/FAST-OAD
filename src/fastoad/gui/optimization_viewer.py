@@ -35,6 +35,7 @@ from fastoad.io.configuration.configuration import (
 from fastoad.openmdao.variables import Variable, VariableList
 
 from .exceptions import FastMissingFileError
+from .variable_viewer import _is_same_cell_value
 
 pd.set_option("display.max_rows", None)
 
@@ -86,9 +87,6 @@ class OptimizationViewer:
 
         # True if in the absence of an output file
         self._missing_output_file = None
-
-        # Guards against re-entrancy when programmatically reverting a read-only edit
-        self._reverting_cell = False
 
     def load(self, problem_configuration: FASTOADProblemConfigurator):
         """
@@ -349,9 +347,6 @@ class OptimizationViewer:
         """
 
         def callback(cell: dict):
-            # Ignore the change event triggered by our own revert below.
-            if self._reverting_cell:
-                return
             col = cell["column"]
             grid_row = cell["row"]
             if grid_row >= len(grid_indices):
@@ -359,12 +354,11 @@ class OptimizationViewer:
             original_idx = grid_indices[grid_row]
 
             if col not in _EDITABLE_COLUMNS:
-                # Read-only column: restore the original value in the grid.
-                self._reverting_cell = True
-                try:
-                    grid.set_cell_value(col, grid_row, self.dataframe.loc[original_idx, col])
-                finally:
-                    self._reverting_cell = False
+                # Read-only column: restore the original value in the grid, unless the
+                # event is the echo of that restore.
+                original_value = self.dataframe.loc[original_idx, col]
+                if not _is_same_cell_value(cell["value"], original_value):
+                    grid.set_cell_value_by_index(col, grid_row, original_value)
                 return
 
             value = cell["value"]

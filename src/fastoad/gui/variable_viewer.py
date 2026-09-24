@@ -16,6 +16,7 @@ Defines the variable viewer for postprocessing
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import ast
+import contextlib
 from os import PathLike
 from typing import ClassVar
 
@@ -33,6 +34,19 @@ INPUT = "IN"
 OUTPUT = "OUT"
 NA = "N/A"
 TAG_ALL = "--ALL--"
+
+
+def _is_same_cell_value(grid_value, value) -> bool:
+    """
+    True if a grid cell already holds ``value``, None and NaN being equivalent.
+
+    Used to ignore the ``cell-changed`` event that ipydatagrid's frontend echoes back
+    after a programmatic ``set_cell_value``; reverting on that echo loops forever.
+    """
+    with contextlib.suppress(TypeError, ValueError):
+        if pd.isna(grid_value) and pd.isna(value):
+            return True
+    return np.array_equal(np.asarray(grid_value, dtype=object), np.asarray(value, dtype=object))
 
 
 class VariableViewer:
@@ -70,9 +84,6 @@ class VariableViewer:
 
         # The grid which is the mirror of the filtered dataframe
         self._grid = None
-
-        # Guards against re-entrancy when programmatically reverting a read-only edit
-        self._reverting_cell = False
 
         # Original dataframe indices for the currently displayed (filtered) rows
         self._filtered_indices: list = []
@@ -255,40 +266,24 @@ class VariableViewer:
 
         :param cell: dict with keys ``row``, ``column``, ``column_index``, ``value``
         """
-        # Ignore the change event triggered by our own revert below.
-        if self._reverting_cell:
-            return
-
         grid_row = cell["row"]
         if grid_row >= len(self._filtered_indices):
             return
         original_idx = self._filtered_indices[grid_row]
 
         if cell["column"] != "Value":
-            # Read-only column: restore the original value in the grid.
-            self._revert_cell(
-                cell["column"], grid_row, self.dataframe.loc[original_idx, cell["column"]]
+            # Read-only column: restore the original value in the grid, unless the event
+            # is the echo of that restore.
+            original_value = self._value_to_display(
+                self.dataframe.loc[original_idx, cell["column"]]
             )
+            if not _is_same_cell_value(cell["value"], original_value) and self._grid is not None:
+                self._grid.set_cell_value_by_index(cell["column"], grid_row, original_value)
             return
 
         original_value = self.dataframe.loc[original_idx, "Value"]
         new_value = self._display_to_value(cell["value"], original_value)
         self.dataframe.loc[original_idx, "Value"] = new_value
-
-    def _revert_cell(self, column: str, grid_row: int, original_value):
-        """
-        Restore a grid cell to its original value.
-
-        The resulting ``on_cell_change`` event is suppressed to avoid infinite
-        recursion.
-        """
-        if self._grid is None:
-            return
-        self._reverting_cell = True
-        try:
-            self._grid.set_cell_value(column, grid_row, self._value_to_display(original_value))
-        finally:
-            self._reverting_cell = False
 
     def _render_sheet(self) -> display:
         """
