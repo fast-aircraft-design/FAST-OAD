@@ -24,7 +24,7 @@ import ipywidgets as widgets
 import numpy as np
 import pandas as pd
 from IPython.display import display
-from ipydatagrid import DataGrid
+from ipydatagrid import DataGrid, TextRenderer
 
 from fastoad.io import IVariableIOFormatter, VariableIO
 from fastoad.openmdao.variables import VariableList
@@ -239,6 +239,7 @@ class VariableViewer:
 
         Array values in the "Value" column are converted to their string
         representation so the grid can display them without serialization errors.
+        Every other column is read-only and rendered with a grey background.
 
         :param df: the pandas DataFrame to be converted (may have non-contiguous index)
         :return: the DataGrid widget
@@ -253,6 +254,11 @@ class VariableViewer:
         return DataGrid(
             display_df,
             editable=True,
+            renderers={
+                col: TextRenderer(background_color="#f0f0f0")
+                for col in display_df.columns
+                if col != "Value"
+            },
             layout=widgets.Layout(height="400px"),
             column_widths={"Name": 300, "Value": 100, "Unit": 80, "Description": 300, "I/O": 60},
         )

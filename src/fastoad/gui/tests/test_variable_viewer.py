@@ -267,6 +267,13 @@ def test_update_df_persists_value_and_reverts_readonly_edits():
     assert reverted == [("Name", 1, "b")]
 
 
+def test_readonly_columns_are_greyed():
+    df = pd.DataFrame({"Name": ["a"], "Value": [1.0], "Unit": ["m"]})
+    grid = VariableViewer._df_to_grid(df)
+    assert set(grid.renderers) == {"Name", "Unit"}
+    assert grid.renderers["Name"].background_color == "#f0f0f0"
+
+
 def test_is_same_cell_value():
     assert _is_same_cell_value("b", "b")
     assert not _is_same_cell_value("HACKED", "b")
