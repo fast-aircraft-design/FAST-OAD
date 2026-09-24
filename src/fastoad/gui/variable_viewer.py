@@ -53,7 +53,7 @@ class VariableViewer:
     """
     A class for interacting with FAST-OAD files.
     The file data is stored in a pandas DataFrame. The class built so that a modification
-    of the DataFrame is instantly replicated on the file file.
+    of the DataFrame is instantly replicated on the file.
     The interaction is achieved using a user interface built with widgets from ipywidgets and
     a DataGrid from ipydatagrid.
 
