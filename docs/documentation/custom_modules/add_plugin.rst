@@ -74,7 +74,8 @@ Plugin packaging
 To make your custom modules usable as a FAST-OAD plugin, you have to package them
 and declare your package as a plugin with :code:`fastoad.plugins` as plugin group name.
 
-Here under is a brief tutorial about these operations using `Poetry <https://python-poetry.org>`_.
+Here under is a brief tutorial about these operations using `hatchling <https://github.com/hatchling/hatchling>`_
+and `uv <https://github.com/astral-sh/uv>`_.
 
 .. note::
 
@@ -120,16 +121,14 @@ file with:
 
     ...
 
-    [tool.poetry]
-    # Tells location of sources
-    packages = [
-        { include = "star_trek", from = "src" },
-    ]
+    [project]
+    name = "star_trek_models"
+    version = "1.0.0"
 
     ...
 
     # Plugin declaration
-    [tool.poetry.plugins."fastoad.plugins"]
+    [project.entry-points."fastoad.plugins"]
     "ST_plugin" = "star_trek.drives"
 
     ...
@@ -138,7 +137,7 @@ file with:
 
     It is discouraged to declare several FAST-OAD plugins for a same project.
 
-Once your :code:`pyproject.toml` is set, you can do :code:`poetry install`. Besides
+Once your :code:`pyproject.toml` is set, you can do :code:`uv sync`. Besides
 installing your project dependencies, it will make your models **locally** available (i.e.
 you could use their identifiers in your FAST-OAD configuration file without setting
 the :code:`custom_modules` field)
@@ -147,7 +146,7 @@ the :code:`custom_modules` field)
 ******************************
 Building
 ******************************
-You can build your package with the command line :code:`poetry build`.
+You can build your package with the command line :code:`uv build`.
 Let's assume your :code:`pyproject.toml` file is configured so that your project name is
 :code:`ST_drive_models`, as below:
 
@@ -155,30 +154,25 @@ Let's assume your :code:`pyproject.toml` file is configured so that your project
 
     ...
 
-    [tool.poetry]
+    [project]
     name = "ST_drive_models"
     version = "1.0.0"
 
-    # Tells location of sources
-    packages = [
-        { include = "star_trek", from = "src" },
-    ]
-
-    ...
-
-    # Specify that Poetry is used for building the package
     [build-system]
-    requires = ["poetry-core>=1.0.0"]
-    build-backend = "poetry.core.masonry.api"
+    requires = ["hatchling"]
+    build-backend = "hatchling.build"
+
+    [tool.hatch.build.targets.wheel]
+    packages = ["src/star_trek"]
 
     ...
 
     # Plugin declaration
-    [tool.poetry.plugins."fastoad.plugins"]
+    [project.entry-points."fastoad.plugins"]
     "ST_plugin" = "star_trek.drives"
     ...
 
-The command :code:`poetry build` will create a :code:`dist` folder with two files:
+The command :code:`uv build` will create a :code:`dist` folder with two files:
 
 :code:`ST_drive_models-1.0.0.tar.gz` and :code:`ST_drive_models-1.0.0-py3-none-any.whl`
 (or something like this).
@@ -190,11 +184,16 @@ using :code:`pip` with:
 
     $ pip install ST_drive_models-1.0.0-py3-none-any.whl  # or ST_drive_models-1.0.0.tar.gz
 
+.. note::
+
+    Alternatively, you can install directly from the source with :code:`uv sync` if you want
+    to develop the package locally.
+
 ******************************
 Publishing
 ******************************
 Once you have built your package, you may publish it on a a package repository.
-:code:`poetry publish` will publish your package on `PyPI <https://pypi.org>`_,
+:code:`uv publish` will publish your package on `PyPI <https://pypi.org>`_,
 provided that you have correctly set your account.
 
 .. note::
@@ -202,7 +201,7 @@ provided that you have correctly set your account.
     Publishing on PyPI requires a valid account, and also that the chosen package name (defined by
     `name` field in the `pyproject.toml` file) is unused, or already associated to your account.
 
-Poetry can also publish to another destination.
+uv can also publish to another destination.
 
-Please see `here <https://python-poetry.org/docs/cli/#publish>`_ for detailed information.
+Please see `here <https://docs.astral.sh/uv/reference/cli/#uv-publish>`_ for detailed information.
 
