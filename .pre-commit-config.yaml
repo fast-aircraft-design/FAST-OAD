@@ -28,6 +28,8 @@ repos:
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: '0.12.19' 
     hooks:
+      # Update the uv lockfile
+      - id: uv-lock
       - id: uv-export
         args: [ "--group", "doc", "--no-hashes", "-o", "docs/requirements.txt", "--format", "requirements-txt" ]
         files: '^uv\.lock$'

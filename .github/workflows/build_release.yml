@@ -76,7 +76,7 @@ jobs:
           # --match 'v*' excludes the moving "latest-release" tag (created by
           # the move-tag job, possibly concurrently) so this always resolves
           # to the real semantic-version tag rather than racing with it.
-          VERSION=$(git describe --tags --abbrev=0 --match 'v*')
+          VERSION=$(git describe --tags --abbrev=0 --match 'v*' | sed 's/^v//') # remove v from the version
           sed -i "s/__FAST_OAD_VERSION__/$VERSION/g" pyproject.toml
           echo "Published FAST-OAD version: $VERSION"
           uv build # this step was missing before: without it there is nothing in dist/ to publish
