@@ -2,7 +2,6 @@
 name = "FAST-OAD"
 description = "FAST-OAD is a framework for performing rapid Overall Aircraft Design"
 readme = "README.md"
-version = "VERSION_PLACEHOLDER" # This value is replaced by our CI routine during the build process.
 license = { text = "GPL-3.0-only" }
 keywords = [
     "aircraft",
@@ -19,18 +18,7 @@ maintainers = [
     {name = "Enrico STRAGIOTTI", email = "enrico.stragiotti@onera.fr"},
 ]
 requires-python = ">=3.10,<3.15"
-
-
-dependencies = [
-    # IMPORTANT: when modifying this list, docs/requirements.txt must be updated for
-    # ReadTheDocs to be able to compile the documentation.
-    # A pre-commit hook has been added to do this task. As a result, any modification
-    # of poetry.lock file will modify docs/requirements.txt and make
-    # the commit fail because "files were modified by this hook". In that case,
-    # doing again the commit including changes in docs/requirements.txt will succeed.
-    "fast-oad-core>=VERSION_PLACEHOLDER",
-    "fast-oad-cs25>=0.8.1"
-]
+dynamic = ["version"]
 
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -51,28 +39,27 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Physics",
 ]
 
+dependencies = [
+    # Version constraint is dynamically replaced by CI before publishing (see build_release.yml).
+    # It should always match the FAST-OAD umbrella version to ensure consistency.
+    "fast-oad-core>=__FAST_OAD_VERSION__",
+    "fast-oad-cs25>=0.8.1"
+]
+
 [project.urls]
 homepage = "https://github.com/fast-aircraft-design/FAST-OAD"
 documentation = "https://fast-oad.readthedocs.io/en/stable/"
 
-[tool.poetry]
-packages = [
-    { include = "_fastoad" },
-]
+[tool.hatch.build.targets.wheel]
+packages = ["_fastoad"]
 
-[tool.poetry.requires-plugins]
-poetry-plugin-export = ">=1.9" # Used for the poetry export hook in pre-commit
-
-# Dynamic versioning settings ==================================================
-[tool.poetry-dynamic-versioning]
-enable = true
-vcs = "git"
-style = "semver"
+[tool.uv]
+package = false
 
 # Packaging system =============================================================
 [build-system]
 requires = [
-    "poetry-core>=2.0.0,<3.0.0",
-    "poetry-dynamic-versioning>=1.0.0,<2.0.0"
+    "hatchling",
+    "hatch-vcs",
 ]
-build-backend = "poetry_dynamic_versioning.backend"
+build-backend = "hatchling.build"

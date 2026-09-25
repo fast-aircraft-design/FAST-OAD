@@ -1,42 +1,34 @@
 repos:
-  - repo: https://github.com/python-poetry/poetry
-    rev: '2.2.1'
-    hooks:
-      - id: poetry-check
-  - repo: https://github.com/python-poetry/poetry-plugin-export
-    rev: '1.9.0'
-    hooks:
-      - id: poetry-export # Hooks copied from https://python-poetry.org/docs/pre-commit-hooks/#poetry-export
-        args: [ "--with", "doc", "--without-hashes", "-o", "docs/requirements.txt", "-f", "requirements.txt" ]
-        files: 'poetry.lock'
-        verbose: true
   - repo: local
     hooks:
-      # Ruff hooks are copied from https://github.com/astral-sh/ruff-pre-commit, but specifying
-      # a local repo ensures using locked version of Ruff in Poetry.
       - id: ruff
         name: ruff
         description: "Run 'ruff' for extremely fast Python linting"
-        entry: poetry run ruff check --force-exclude
-        language: python
+        entry: ruff check --force-exclude
+        language: system
         types_or: [ python, pyi, jupyter ]
         args: [ ]
         require_serial: true
-        additional_dependencies: [ ]
       - id: ruff-format
         name: ruff-format
         description: "Run 'ruff format' for extremely fast Python formatting"
-        entry: poetry run ruff format --force-exclude
-        language: python
+        entry: ruff format --force-exclude
+        language: system
         types_or: [ python, pyi, jupyter ]
         args: [ ]
         require_serial: true
-        additional_dependencies: [ ]
-
       - id: nbstripout
         name: nbstripout
         description: 'nbstripout: strip output from Jupyter and IPython notebooks'
-        entry: poetry run nbstripout
+        entry: nbstripout
         language: system
         types: [ jupyter ]
         require_serial: true
+
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: '0.12.19' 
+    hooks:
+      - id: uv-export
+        args: [ "--group", "doc", "--no-hashes", "-o", "docs/requirements.txt", "--format", "requirements-txt" ]
+        files: '^uv\.lock$'
+        verbose: true

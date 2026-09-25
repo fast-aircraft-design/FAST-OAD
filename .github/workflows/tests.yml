@@ -24,6 +24,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - name: Set up MPI
         uses: mpi4py/setup-mpi@v1
         with:
@@ -34,14 +36,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
         with:
-          version: ${{ vars.POETRY_VERSION }}
-          virtualenvs-create: true
-          # virtualenvs-in-project: true # These should stay false iw we want to use caching
-          # virtualenvs-path: .venv
-          installer-parallel: true
+          version: ${{ vars.UV_VERSION }}
 
       - name: Load cached venv # Copied from https://github.com/snok/install-poetry/blob/d526ede1e27960b7b181a5ac53044f552afdaa38/README.md
       # load cached venv if cache exists
@@ -49,45 +47,45 @@ jobs:
       # GitHub Actions will try to restore any cache whose key *starts with* the prefixes listed here.
       # This helps reuse older venv caches for the same OS & Python version when poetry.lock changes slightly,
       # instead of reinstalling all dependencies from scratch.
-        id: cached-poetry-dependencies
+        id: cached-uv-dependencies
         uses: actions/cache@v4
         with:
           path: .venv
-          key: venv-${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}
+          key: venv-${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('uv.lock') }}
           restore-keys: |
             venv-${{ matrix.os }}-${{ matrix.python-version }}-
 
       - name: Install dependencies # Heavy dependencies (cached) - only runs on cache miss
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install -E mpi --no-interaction --no-root
+        if: steps.cached-uv-dependencies.outputs.cache-hit != 'true'
+        run: uv sync --extra mpi --no-install-project
 
       - name: Install library # Light project install (always runs) - runs every time
-        run: poetry install -E mpi --no-interaction
+        run: uv sync --extra mpi
 
       - name: Check with Ruff
         run: |
-          poetry run ruff check .           # Check coding rules
-          poetry run ruff format --check .  # Check format and import sorting
+          uv run ruff check .           # Check coding rules
+          uv run ruff format --check .  # Check format and import sorting
         shell: bash
       
       ## Tests without MPI
       # Runners that won't send coverage report are run without coverage overhead
       - name: Unit tests without coverage
         if: ${{( runner.os != 'Linux' || matrix.python-version != '3.10' )}}
-        run: poetry run pytest src -m "not mpi"
+        run: uv run pytest src -m "not mpi"
         shell: bash
       
       ## Tests with MPI
       - name: MPI unit tests
-        run: poetry run mpiexec -n 1 pytest src -m mpi
+        run: uv run mpiexec -n 1 pytest src -m mpi
         shell: bash
 
       - name: Unit tests with coverage
         # Only for runner that will send coverage reports (see below)
         if: ${{ runner.os == 'Linux' && matrix.python-version == '3.10' }}
         run: |
-          poetry run mpiexec -n 1 pytest src --cov
-          poetry run coverage xml  # for sending coverage report
+          uv run mpiexec -n 1 pytest src --cov
+          uv run coverage xml  # for sending coverage report
         shell: bash
 
       - name: Run codacy coverage reporter
@@ -109,19 +107,19 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV }} # do not use the secret directly in run command, it would write it plainly in the log
 
       - name: Integration tests
-        run: poetry run pytest --no-cov tests/integration_tests
+        run: uv run pytest --no-cov tests/integration_tests
         shell: bash
 
       - name: Memory tests
-        run: poetry run pytest --no-cov tests/memory_tests
+        run: uv run pytest --no-cov tests/memory_tests
         shell: bash
 
       # There is a problem with notebook tests in MPI environment
       - name: Deactivate MPI
-        run: poetry run pip uninstall mpi4py --yes
+        run: uv pip uninstall mpi4py
         shell: bash
 
       - name: Notebook tests
         #        if: ${{ github.event_name == 'pull_request' || contains(github.event.head_commit.message, '[test nb]') || github.ref == 'refs/heads/master' }}
-        run: poetry run pytest --no-cov --nbval-lax -p no:python src/fastoad/notebooks
+        run: uv run pytest --no-cov --nbval-lax -p no:python src/fastoad/notebooks
         shell: bash

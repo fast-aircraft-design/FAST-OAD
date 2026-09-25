@@ -44,27 +44,24 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install Poetry
-        run: pipx install poetry==${{ vars.POETRY_VERSION }}
-        shell: bash
-
-      - name: Poetry path
-        run: echo "$HOME/.poetry/bin" >> $GITHUB_PATH
+      - name: Install uv
+        run: uv self update
         shell: bash
 
       - name: Build and publish FAST-OAD-core to PyPI
         env:
           TOKEN: ${{ secrets.PyPI }} # do not use the secret directly in run command, it would write it plainly in the log
         run: |
-          poetry build
-          poetry config pypi-token.pypi "$TOKEN"
+          uv build
           ls -la dist/ # list the contents of the dist folder to check that the package was built correctly
-          poetry publish --skip-existing --dist-dir dist
+          uv publish --token "$TOKEN" --check-url https://pypi.org/simple/ --dist-dir dist
         shell: bash
 
       - name: build and publish FAST-OAD
@@ -73,11 +70,9 @@ jobs:
         run: |
           cd release # move to the release folder, which contains the pyproject.toml for the FAST-OAD umbrella package
           cp ../README.md . # copy the README to the release folder, so that it is included in the package
-          VERSION=$(poetry -C .. version -s)
-          sed -i "s/VERSION_PLACEHOLDER/$VERSION/g" pyproject.toml # replace the version placeholder in the pyproject.toml with the actual version
-          poetry version "$VERSION" 
-          poetry build
-          poetry config pypi-token.pypi "$TOKEN"
-          ls -la dist/ # list the contents of the dist folder to check that the package was built correctly
-          poetry publish --skip-existing --dist-dir dist
+          # Replace the version placeholder with the current FAST-OAD version (same as umbrella version via hatch-vcs)
+          VERSION=$(git describe --tags --abbrev=0)
+          sed -i "s/__FAST_OAD_VERSION__/$VERSION/g" pyproject.toml
+          echo "Published FAST-OAD version: $VERSION"
+          uv publish --directory release --token "$TOKEN" --check-url https://pypi.org/simple/ --dist-dir dist
         shell: bash

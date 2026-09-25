@@ -3,7 +3,7 @@ target-version = "py310" # Version used for the UP rules, to update when we drop
 extend-include = ["*.ipynb"]
 exclude = [
     "tests/dummy_plugins/",
-    "release/pyproject.toml", # Contains VERSION_PLACEHOLDER replaced only during release build
+    "release/pyproject.toml", # Needed because we have a version placeholder that is dynamically changed during CI
 ]
 
 [lint]
