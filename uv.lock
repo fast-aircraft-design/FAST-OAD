@@ -1028,7 +1028,7 @@ provides-extras = ["mpi"]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "fast-oad-cs25", specifier = ">=0.9.0,<0.10.0" },
+    { name = "fast-oad-cs25", specifier = ">=0.9.1,<0.10.0" },
     { name = "matplotlib", specifier = ">=3.9.0,<4.0.0" },
 ]
 doc = [
@@ -1051,16 +1051,15 @@ test = [
 
 [[package]]
 name = "fast-oad-cs25"
-version = "0.9.0"
+version = "0.9.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fast-oad-core" },
-    { name = "jupyterlab-widgets" },
     { name = "pyparsing" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/30/9d/a481188c441e2259dd5e4ca3e99ef95fa3dea97aa6d43d09a5d94d931201/fast_oad_cs25-0.9.0.tar.gz", hash = "sha256:0e7d711aac72da0d4fc62197dad2e2e581d3693753ade688100b229efeb548bd", size = 3485033, upload-time = "2026-06-02T14:41:03.882Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/84/45/7a2029e8691bcb3b0bc1141d41a363ec521aa47f47fc5362d763bbc1002c/fast_oad_cs25-0.9.1.tar.gz", hash = "sha256:6f90c03036e417361b94e9f4decd55eb7e2e2a8233842b795d16c5e90ccbee34", size = 3485382, upload-time = "2026-09-25T14:35:23.391Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/64/95/249a9983c129503671f00b4aa5a841da45d81f737bcb48809d4d77cea7bc/fast_oad_cs25-0.9.0-py3-none-any.whl", hash = "sha256:1ce01342ecac6ece9198655d2b5cf280159acfda9445b422394b1587ea6d7c29", size = 3665090, upload-time = "2026-06-02T14:41:02.295Z" },
+    { url = "https://files.pythonhosted.org/packages/ec/64/37156441d1afe2b5b7e6340dbd3aec7bd1bfaa67b1d5aa2737850f5c7e3a/fast_oad_cs25-0.9.1-py3-none-any.whl", hash = "sha256:8eaf2db9b4818c6468b7d2ffcbec9c4671f6d307f1c77018f164bc15b6b25680", size = 3665377, upload-time = "2026-09-25T14:35:17.706Z" },
 ]
 
 [[package]]
