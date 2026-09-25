@@ -39,40 +39,47 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: [ "3.10" ]
+        python-version: [ "3.13" ]
         os: [ ubuntu-latest ]
 
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Install uv
-        run: uv self update
-        shell: bash
+        uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: ${{ vars.UV_VERSION }}
 
       - name: Build and publish FAST-OAD-core to PyPI
         env:
-          TOKEN: ${{ secrets.PyPI }} # do not use the secret directly in run command, it would write it plainly in the log
+          UV_PUBLISH_TOKEN: ${{ secrets.PyPI }} # do not use the secret directly in run command, it would write it plainly in the log
         run: |
           uv build
           ls -la dist/ # list the contents of the dist folder to check that the package was built correctly
-          uv publish --token "$TOKEN" --check-url https://pypi.org/simple/ --dist-dir dist
+          uv publish --check-url https://pypi.org/simple/
         shell: bash
 
-      - name: build and publish FAST-OAD
+      - name: Build and publish FAST-OAD
         env:
-          TOKEN: ${{ secrets.PyPI }} # do not use the secret directly in run command, it would write it plainly in the log
+          UV_PUBLISH_TOKEN: ${{ secrets.PyPI }} # do not use the secret directly in run command, it would write it plainly in the log
         run: |
           cd release # move to the release folder, which contains the pyproject.toml for the FAST-OAD umbrella package
           cp ../README.md . # copy the README to the release folder, so that it is included in the package
-          # Replace the version placeholder with the current FAST-OAD version (same as umbrella version via hatch-vcs)
-          VERSION=$(git describe --tags --abbrev=0)
+          # Replace the version placeholder with the current FAST-OAD version.
+          # --match 'v*' excludes the moving "latest-release" tag (created by
+          # the move-tag job, possibly concurrently) so this always resolves
+          # to the real semantic-version tag rather than racing with it.
+          VERSION=$(git describe --tags --abbrev=0 --match 'v*')
           sed -i "s/__FAST_OAD_VERSION__/$VERSION/g" pyproject.toml
           echo "Published FAST-OAD version: $VERSION"
-          uv publish --directory release --token "$TOKEN" --check-url https://pypi.org/simple/ --dist-dir dist
+          uv build # this step was missing before: without it there is nothing in dist/ to publish
+          ls -la dist/ # list the contents of the dist folder to check that the package was built correctly
+          uv publish --check-url https://pypi.org/simple/
         shell: bash
