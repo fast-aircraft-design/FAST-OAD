@@ -23,7 +23,7 @@ jobs:
     timeout-minutes: 25
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Set up MPI
@@ -32,7 +32,7 @@ jobs:
           mpi: ${{ (runner.os == 'Windows') && 'microsoftmpi' || 'openmpi' }} # openmpi and microsoftmpi are the only MPI implementations that works
       
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -48,7 +48,7 @@ jobs:
       # This helps reuse older venv caches for the same OS & Python version when poetry.lock changes slightly,
       # instead of reinstalling all dependencies from scratch.
         id: cached-uv-dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .venv
           key: venv-${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('uv.lock') }}
@@ -57,10 +57,10 @@ jobs:
 
       - name: Install dependencies # Heavy dependencies (cached) - only runs on cache miss
         if: steps.cached-uv-dependencies.outputs.cache-hit != 'true'
-        run: uv sync --extra mpi --no-install-project
+        run: uv sync --extra mpi --group dev --group test --group lint --no-install-project
 
       - name: Install library # Light project install (always runs) - runs every time
-        run: uv sync --extra mpi
+        run: uv sync --extra mpi --group dev --group test --group lint
 
       - name: Check with Ruff
         run: |
@@ -97,7 +97,7 @@ jobs:
         shell: bash
 
       - name: Publish code coverage on Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v7
         if: ${{ runner.os == 'Linux' && matrix.python-version == '3.10' }}
         with:
           #          flags: unittests  # optional

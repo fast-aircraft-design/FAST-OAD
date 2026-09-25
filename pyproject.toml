@@ -98,7 +98,7 @@ lint = [
     "ruff>=0.16.0,<0.17.0",
 ]
 
-[uv]
+[tool.uv]
 default-groups = ["dev", "test", "lint"]
 
 [tool.hatch.version]
