@@ -31,6 +31,5 @@ repos:
       # Update the uv lockfile
       - id: uv-lock
       - id: uv-export
-        args: [ "--group", "doc", "--no-hashes", "-o", "docs/requirements.txt", "--format", "requirements-txt" ]
-        files: '^uv\.lock$'
+        args: [ "--no-default-groups", "--group", "doc", "--no-hashes", "-o", "docs/requirements.txt", "--format", "requirements-txt" ]
         verbose: true
