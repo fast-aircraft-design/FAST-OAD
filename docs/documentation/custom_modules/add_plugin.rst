@@ -74,7 +74,7 @@ Plugin packaging
 To make your custom modules usable as a FAST-OAD plugin, you have to package them
 and declare your package as a plugin with :code:`fastoad.plugins` as plugin group name.
 
-Here under is a brief tutorial about these operations using `hatchling <https://github.com/hatchling/hatchling>`_
+Here under is a brief tutorial about these operations using `hatchling <https://hatch.pypa.io/dev/why/>`_
 and `uv <https://github.com/astral-sh/uv>`_.
 
 .. note::
