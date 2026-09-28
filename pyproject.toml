@@ -19,14 +19,32 @@ maintainers = [
     {name = "Enrico STRAGIOTTI", email = "enrico.stragiotti@onera.fr"},
 ]
 requires-python = ">=3.10,<3.15"
-dynamic = ["version","classifiers"] # Needed to use poetry-dynamic-versioning
+dynamic = ["version"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Natural Language :: English",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Physics",
+]
 
 # User dependencies ------------------------------------------------------------
 dependencies = [
     # IMPORTANT: when modifying this list, docs/requirements.txt must be updated for
     # ReadTheDocs to be able to compile the documentation.
     # A pre-commit hook has been added to do this task. As a result, any modification
-    # of poetry.lock file will modify docs/requirements.txt and make
+    # of uv.lock file will modify docs/requirements.txt and make
     # the commit fail because "files were modified by this hook". In that case,
     # doing again the commit including changes in docs/requirements.txt will succeed.
     "numpy>=1.23.2,<3",
@@ -57,7 +75,7 @@ dependencies = [
 
 [project.optional-dependencies]
 # Activated with:
-#    poetry install --extras mpi
+#    uv sync --extra mpi
 # or, as a user:
 #    pip install fast-oad-core[mpi]
 mpi = ["mpi4py>=4.0.2,<5"]
@@ -75,80 +93,48 @@ fast-oad = "fastoad.cmd.cli:fast_oad"
 bundled = "fastoad"
 
 
-# Poetry settings ==============================================================
-[tool.poetry]
-requires-poetry = ">=2.0" # You should upgrade poetry to v2 using 'pipx upgrade poetry'
-version = "1.10.0"  # This version number is overwritten by GitHub packaging workflow but setting this version here will allow installation of CS25 models in development mode
-packages = [
-    { include = "fastoad", from = "src" },
+[dependency-groups]
+dev = [
+    "fast-oad-cs25>=0.9.1,<0.10.0",
+    "matplotlib>=3.9.0,<4.0.0",
 ]
+test = [
+    "pytest>=9.0,<10.0",
+    "pytest-cov>=7.0,<8.0",
+    "coverage[toml]>=7.0,<8.0",
+    "nbval>=0.11,<0.12",
+    "wrapt>=2.0.1,<3.0.0",
+]
+doc = [
+    "sphinx>=7.1.2",
+    "sphinx-rtd-theme>=2.0",
+    "sphinxcontrib-bibtex>=2.6.3,<3",
+]
+lint = [
+    "pre-commit>=4.4.0,<5",
+    "nbstripout>=0.6.0,<0.7",
+    "ruff>=0.16.0,<0.17.0",
+]
+
+[tool.uv]
+default-groups = ["dev", "test", "lint"]
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fastoad"]
+
+[tool.hatch.build]
 exclude = ["**/tests/**"]
-
-#  Suitable classifiers based on python requirement and license are not automatically added if classifiers are statically defined in the project section
-classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Environment :: Console",
-    "Intended Audience :: Science/Research",
-    "Intended Audience :: Education",
-    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-    "Natural Language :: English",
-    "Operating System :: Microsoft :: Windows",
-    "Operating System :: POSIX :: Linux",
-    "Operating System :: MacOS",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3.14",
-    "Topic :: Scientific/Engineering :: Physics",
-]
-
-# Development dependencies -----------------------------------------------------
-# Development dependencies using Poetry groups instead of [project.optional-dependencies]
-[tool.poetry.group.dev.dependencies]
-fast-oad-cs25 = ">=0.9.0,<0.10.0"
-matplotlib = "^3.9.0"
-
-[tool.poetry.group.test.dependencies]
-pytest = "^9.0"
-pytest-cov = "^7.0"
-coverage = { version = "^7.0", extras = ["toml"] }
-nbval = "^0.11"
-wrapt = "^2.0.1"
-
-[tool.poetry.group.doc.dependencies]
-sphinx = ">=7.1.2"
-sphinx-rtd-theme = ">=2.0"
-sphinxcontrib-bibtex = "^2.6.3"
-
-[tool.poetry.group.lint.dependencies]
-pre-commit = "^4.4.0"
-nbstripout = "^0.6.0"
-ruff = ">0.15.0, <0.16.0"
-
-
-# Poetry plugins ==================================================
-[tool.poetry.requires-plugins]
-poetry-plugin-export = ">=1.9" # Used for the poetry export hook in pre-commit
-
-
-# Dynamic versioning settings ==================================================
-# poetry-dynamic-versioning has to be installed in the same environment as
-# Poetry (normally outside your project environment).
-# see https://github.com/mtkennerly/poetry-dynamic-versioning#installation
-[tool.poetry-dynamic-versioning]
-enable = true
-vcs = "git"
-style = "semver"
 
 # Packaging system =============================================================
 [build-system]
 requires = [
-    "poetry-core>=2.0.0,<3.0.0",
-    "poetry-dynamic-versioning>=1.0.0,<2.0.0"
- ]
-build-backend = "poetry_dynamic_versioning.backend"
+    "hatchling",
+    "hatch-vcs",
+]
+build-backend = "hatchling.build"
 
 
 # Pytest settings ==============================================================

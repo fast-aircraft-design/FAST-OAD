@@ -260,8 +260,10 @@ class MissionWrapper(MissionBuilder):
         if self._is_takeoff_phase(part_structure):
             output_definition[name_root + ":TOFL"] = (
                 "m",
-                f"estimated takeoff field length (CS-25.113(a), {TOFL_FACTOR} x AEO takeoff "
-                f"distance) during {flight_part_desc}",
+                (
+                    f"estimated takeoff field length (CS-25.113(a), {TOFL_FACTOR} x AEO takeoff "
+                    f"distance) during {flight_part_desc}"
+                ),
             )
         # Check if this is an optimal cruise or any cruise-like segment
         if part_structure:
@@ -276,9 +278,11 @@ class MissionWrapper(MissionBuilder):
                 # "optimal_altitude" before the optimal cruise.
                 output_definition[name_root + ":initial_altitude"] = (
                     "m",
-                    f"initial cruise altitude during {flight_part_desc}"
-                    " (may differ from actual flown altitude if optimal cruise starts with"
-                    " a discontinuity)",
+                    (
+                        f"initial cruise altitude during {flight_part_desc}"
+                        " (may differ from actual flown altitude if optimal cruise starts with"
+                        " a discontinuity)"
+                    ),
                 )
                 output_definition[name_root + ":final_altitude"] = (
                     "m",
