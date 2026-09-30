@@ -161,6 +161,9 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
         problem["data:weight:aircraft:sizing_onboard_fuel_at_input_weight"], 6395.0, atol=1.0
     )
 
+    completed = problem.get_val("data:mission:operational:tagets_reached")
+    assert bool(completed)
+
 
 def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
     input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
@@ -207,6 +210,9 @@ def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
         problem["data:mission:operational:main_route:descent:distance"], 463000.0, atol=1.0
     )
 
+    completed = problem.get_val("data:mission:operational:tagets_reached")
+    assert bool(completed)
+
 
 def test_mission_group_without_fuel_adjustment(cleanup, with_dummy_plugin_2):
     input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
@@ -246,6 +252,9 @@ def test_mission_group_without_fuel_adjustment(cleanup, with_dummy_plugin_2):
     assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6590.0, atol=1.0)
     assert_allclose(problem["data:mission:operational:block_fuel"], 15195.0, atol=1.0)
 
+    completed = problem.get_val("data:mission:operational:tagets_reached")
+    assert bool(completed)
+
 
 def test_mission_group_breguet_without_fuel_adjustment(cleanup, with_dummy_plugin_2):
     input_file_path = DATA_FOLDER_PATH / "test_breguet.xml"
@@ -266,6 +275,9 @@ def test_mission_group_breguet_without_fuel_adjustment(cleanup, with_dummy_plugi
     assert_allclose(problem["data:mission:operational:needed_block_fuel"], 6245.0, atol=1.0)
     assert_allclose(problem["data:mission:operational:ZFW"], 55000.0, atol=1.0)
     assert_allclose(problem["data:mission:operational:block_fuel"], 15000.0, atol=1.0)
+
+    completed = problem.get_val("data:mission:operational:tagets_reached")
+    assert bool(completed)
 
 
 def test_mission_group_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
@@ -311,6 +323,9 @@ def test_mission_group_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
         1.02283e-4,
         rtol=1.0e-5,
     )
+
+    completed = problem.get_val("data:mission:operational:tagets_reached")
+    assert bool(completed)
 
 
 def test_mission_group_breguet_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
@@ -359,6 +374,9 @@ def test_mission_group_breguet_with_fuel_adjustment(cleanup, with_dummy_plugin_2
     )
     assert_allclose(problem["data:mission:operational:needed_block_fuel"], 5449.0, atol=1.0)
 
+    completed = problem.get_val("data:mission:operational:tagets_reached")
+    assert bool(completed)
+
 
 def test_mission_group_with_fuel_objective(cleanup, with_dummy_plugin_2):
     input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
@@ -396,6 +414,9 @@ def test_mission_group_with_fuel_objective(cleanup, with_dummy_plugin_2):
 
     assert_allclose(problem["data:mission:fuel_as_objective:needed_block_fuel"], 10000.0, atol=1.0)
     assert_allclose(problem["data:mission:fuel_as_objective:reserve:fuel"], 260.0, atol=1.0)
+
+    completed = problem.get_val("data:mission:fuel_as_objective:tagets_reached")
+    assert bool(completed)
 
 
 def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
@@ -475,6 +496,9 @@ def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
         10343.0,
         atol=1.0,
     )
+
+    completed = problem.get_val("data:mission:operational_optimal:tagets_reached")
+    assert bool(completed)
 
 
 def test_mission_group_without_route(cleanup, with_dummy_plugin_2):
@@ -562,3 +586,58 @@ def test_optimal_cruise_initial_altitude_with_discontinuity(cleanup, with_dummy_
         if "discontinuity" in r.message.lower() and "altitude" in r.message.lower()
     ]
     assert len(discontinuity_warnings) > 0, "Expected warning about altitude discontinuity"
+
+
+def test_mission_component_completed_false(cleanup, with_dummy_plugin_2):
+    """
+    Check that the :attr:`data:mission:operational:tagets_reached` output is False when the mission
+    cannot reach its targets.
+    """
+    input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
+    variables = DataFile(input_file_path)
+
+    # Make the mission impossible by setting an extremely low max_CL
+    variables["data:mission:operational:max_CL"].value = 0.01
+
+    problem = run_system(
+        AdvancedMissionComp(
+            propulsion_id="test.wrapper.propulsion.dummy_engine",
+            out_file=RESULTS_FOLDER_PATH / "mission_completed_false.csv",
+            use_initializer_iteration=False,
+            mission_file_path=MissionWrapper(
+                DATA_FOLDER_PATH / "test_mission.yml",
+                mission_name="operational",
+            ),
+            reference_area_variable="data:geometry:aircraft:reference_area",
+        ),
+        variables,
+    )
+
+    completed = problem.get_val("data:mission:operational:tagets_reached")
+    assert not bool(completed)
+
+
+def test_mission_component_completed_true(cleanup, with_dummy_plugin_2):
+    """
+    Check that data:mission:operational:tagets_reached is True when all segments reach their
+    targets.
+    """
+    input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
+    variables = DataFile(input_file_path)
+
+    problem = run_system(
+        AdvancedMissionComp(
+            propulsion_id="test.wrapper.propulsion.dummy_engine",
+            out_file=RESULTS_FOLDER_PATH / "mission_completed_true.csv",
+            use_initializer_iteration=False,
+            mission_file_path=MissionWrapper(
+                DATA_FOLDER_PATH / "test_mission.yml",
+                mission_name="operational",
+            ),
+            reference_area_variable="data:geometry:aircraft:reference_area",
+        ),
+        variables,
+    )
+
+    completed = problem.get_val("data:mission:operational:tagets_reached")
+    assert bool(completed)

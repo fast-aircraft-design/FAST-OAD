@@ -209,6 +209,12 @@ class ClimbAndCruiseSegment(CruiseSegment):
     maximum_flight_level: float = 500.0
 
     def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:  # noqa: PLR0912
+        # Reset stored state (critical for reuse of the segment instance), needed because here we
+        # reimplement compute_from_start_to_target instead of using the one in
+        # AbstractTimeStepFlightSegment
+        self.target_reached = False
+        self.final_distance_to_target = float("inf")
+        inner_segments_used = False
         if self.climb_segment is not None:
             attr_dict = {
                 key: val
@@ -252,6 +258,7 @@ class ClimbAndCruiseSegment(CruiseSegment):
             results = self._climb_to_altitude_and_cruise(
                 start, cruise_altitude, climb_segment, cruise_segment
             )
+            inner_segments_used = True
             mass_loss = start.mass - results.mass.iloc[-1]
 
             go_to_next_level = True
@@ -292,6 +299,7 @@ class ClimbAndCruiseSegment(CruiseSegment):
             results = self._climb_to_altitude_and_cruise(
                 start, target.altitude, climb_segment, cruise_segment
             )
+            inner_segments_used = True
         else:
             results = super().compute_from_start_to_target(start, target)
 
@@ -300,6 +308,17 @@ class ClimbAndCruiseSegment(CruiseSegment):
                 "Cruise segment '%s' has CL exceeding maximum_CL at some points. Consider reducing "
                 "the target altitude or increase the aircraft speed.",
                 self.name if self.name is not None else "<unnamed>",
+            )
+
+        # Only override target_reached from inner segments when they are actually
+        # used. When target.altitude is None the else branch uses super() directly
+        # and its self.target_reached must not be overwritten by unused segments.
+        if inner_segments_used:
+            self.target_reached = bool(climb_segment.target_reached) & bool(
+                cruise_segment.target_reached
+            )
+            self.final_distance_to_target = (
+                climb_segment.final_distance_to_target + cruise_segment.final_distance_to_target
             )
         return results
 
@@ -384,6 +403,9 @@ class BreguetCruiseSegment(CruiseSegment):
         end.name = self.name
         self.complete_flight_point(end)
 
+        # Breguet can't fail
+        self.target_reached = True
+        self.final_distance_to_target = 0.0
         return pd.DataFrame([start, end])
 
     def _compute_cruise_mass_ratio(self, start: FlightPoint, cruise_distance):

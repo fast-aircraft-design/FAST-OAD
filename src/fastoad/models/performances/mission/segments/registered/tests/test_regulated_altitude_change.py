@@ -503,7 +503,7 @@ def test_regulated_altitude_change_with_CL_target(polar):
 def test_regulated_altitude_change_with_CL_limitation(polar):
     """
     Segment has a target lift coefficient (CL) but
-    it should be caped by the maximum lift coefficient.
+    it should be capped by the maximum lift coefficient.
     """
     propulsion = FuelEngineSet(DummyEngine(5.0e4, 1.0e-5), 2)
 
@@ -531,3 +531,24 @@ def test_regulated_altitude_change_with_CL_limitation(polar):
     assert_allclose(last_point.true_airspeed, 248.78, rtol=1e-4)
     assert_allclose(last_point.mass, 69834.5, rtol=1e-4)
     assert_allclose(last_point.ground_distance, 40808.6, rtol=1e-3)
+
+
+def test_regulated_target_not_reached_unreachable(polar):
+    """When target is unreachable, target_reached is False."""
+    propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
+    segment = RegulatedAltitudeChangeSegment(
+        target=FlightPoint(altitude=50000.0, true_airspeed="constant"),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        engine_setting=EngineSetting.CLIMB,
+        slope_angle=0.0,  # Impossible to climb
+        thrust_rate_out_of_bound=ThrustRateOutOfBound.EXTRAPOLATE.value,
+        maximum_flight_level=400.0,
+    )
+    flight_points = segment.compute_from(
+        FlightPoint(altitude=1000.0, mass=70000.0, true_airspeed=150.0)
+    )
+    assert segment.target_reached is False
+    assert segment.final_distance_to_target > 0
+    assert len(flight_points) > 0

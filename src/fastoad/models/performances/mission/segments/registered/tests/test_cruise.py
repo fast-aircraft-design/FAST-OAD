@@ -69,6 +69,23 @@ def test_cruise_at_constant_altitude(polar):
     run()
 
 
+def test_cruise_target_reached_after_compute(polar):
+    """After successful compute_from, target_reached is True and final_distance_to_target is ~0."""
+    propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
+    segment = CruiseSegment(
+        target=FlightPoint(ground_distance=5.0e5),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        engine_setting=EngineSetting.CRUISE,
+    )
+    segment.compute_from(
+        FlightPoint(mass=70000.0, altitude=10000.0, mach=0.78, ground_distance=1000.0)
+    )
+    assert segment.target_reached is True
+    assert segment.final_distance_to_target < 1.0e-5
+
+
 def test_breguet_cruise(polar):
     propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
@@ -436,6 +453,10 @@ def test_climb_and_cruise_respects_maximum_cl(polar):
         assert last_point.altitude < next_flight_level
         assert flight_points.CL.max() <= maximum_cl + 1.0e-6
 
+        # Target is reached anyway
+        assert segment.target_reached is True
+        assert segment.final_distance_to_target < 1.0e-5
+
     run()
 
     # A second call is done to ensure first run did not modify anything (like target definition)
@@ -516,6 +537,10 @@ def test_optimal_cruise_with_maximum_altitude_cap(polar, caplog):
     assert polar.optimal_cl > last_point.CL
     assert "Optimal cruise segment 'optimal_cruise_segment' starts at" not in caplog.text
 
+    # Target is reached anyway
+    assert segment.target_reached is True
+    assert segment.final_distance_to_target < 1.0e-5
+
 
 def test_optimal_cruise_with_maximum_flight_level_cap(polar):
     """Test that optimal cruise respects maximum_flight_level parameter."""
@@ -544,6 +569,10 @@ def test_optimal_cruise_with_maximum_flight_level_cap(polar):
     assert_allclose(first_point.altitude, fl_250_alt, rtol=1e-3)
     assert_allclose(last_point.altitude, fl_250_alt, rtol=1e-3)
 
+    # Target is reached anyway
+    assert segment.target_reached is True
+    assert segment.final_distance_to_target < 1.0e-5
+
 
 def test_optimal_cruise_with_both_altitude_caps(polar):
     """Test that optimal cruise applies the most restrictive cap when both are set."""
@@ -568,6 +597,10 @@ def test_optimal_cruise_with_both_altitude_caps(polar):
 
     # Should use the lower of the two caps (7500m)
     assert_allclose(first_point.altitude, 7500.0)
+
+    # Target is reached anyway
+    assert segment.target_reached is True
+    assert segment.final_distance_to_target < 1.0e-5
 
 
 def test_optimal_cruise_no_warning_with_small_discontinuity(polar, caplog):
@@ -610,6 +643,10 @@ def test_optimal_cruise_no_warning_with_small_discontinuity(polar, caplog):
     ]
     assert len(discontinuity_warnings) == 0
 
+    # Target is reached anyway
+    assert segment.target_reached is True
+    assert segment.final_distance_to_target < 1.0e-5
+
 
 def test_optimal_cruise_warning_with_large_discontinuity(polar, caplog):
     """Test that a warning is logged when altitude discontinuity exceeds tolerance."""
@@ -646,6 +683,10 @@ def test_optimal_cruise_warning_with_large_discontinuity(polar, caplog):
     ]
     assert len(discontinuity_warnings) == 1
 
+    # Target is reached anyway
+    assert segment.target_reached is True
+    assert segment.final_distance_to_target < 1.0e-5
+
 
 def test_optimal_cruise_stays_at_altitude_cap_during_segment(polar):
     """Test that optimal cruise stays at capped altitude for all points if optimal altitude is
@@ -667,6 +708,10 @@ def test_optimal_cruise_stays_at_altitude_cap_during_segment(polar):
 
     # All points should be at the capped altitude
     assert_allclose(flight_points.altitude, 8000.0)
+
+    # Target is reached anyway
+    assert segment.target_reached is True
+    assert segment.final_distance_to_target < 1.0e-5
 
 
 def test_climb_and_cruise_optimal_flight_level_without_climb_segment(polar, caplog):
@@ -703,3 +748,7 @@ def test_climb_and_cruise_optimal_flight_level_without_climb_segment(polar, capl
     # Should still compute cruise at the starting altitude
     assert_allclose(flight_points.iloc[0].altitude, 8000.0)
     assert_allclose(flight_points.iloc[-1].altitude, 8000.0)
+
+    # Target is reached anyway
+    assert segment.target_reached is True
+    assert segment.final_distance_to_target < 1.0e-5

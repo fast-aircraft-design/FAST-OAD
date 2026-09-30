@@ -44,6 +44,10 @@ def test_taxi():
         assert_allclose(last_point.ground_distance, 5000.0)
         assert last_point.engine_setting == EngineSetting.IDLE
 
+        # Target is reached
+        assert segment.target_reached is True
+        assert segment.final_distance_to_target < 1.0e-5
+
     run()
 
     # A second call is done to ensure first run did not modify anything (like target definition)
