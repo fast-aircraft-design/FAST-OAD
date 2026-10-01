@@ -121,6 +121,9 @@ class MissionWrapper(MissionBuilder):
 
         component.add_output(
             f"{self.variable_prefix}:{self.mission_name}:tagets_reached",
+            units="unitless",
+            desc=f"True (1.0) when all the segments of mision {self.mission_name} have met their "
+            "targets",
             val=False,
         )
 
