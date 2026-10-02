@@ -392,9 +392,8 @@ class BreguetCruiseSegment(CruiseSegment):
     reference_area: float = 1.0
 
     def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
-        cruise_mass_ratio = self._compute_cruise_mass_ratio(
-            start, target.ground_distance - start.ground_distance
-        )
+        cruise_distance = target.ground_distance - start.ground_distance
+        cruise_mass_ratio = self._compute_cruise_mass_ratio(start, cruise_distance)
 
         end = deepcopy(start)
         self.consume_fuel(end, previous=start, mass_ratio=cruise_mass_ratio)
@@ -403,9 +402,15 @@ class BreguetCruiseSegment(CruiseSegment):
         end.name = self.name
         self.complete_flight_point(end)
 
-        # Breguet can't fail
-        self.target_reached = True
-        self.final_distance_to_target = 0.0
+        if (cruise_distance >= 0.0) and (
+            np.isfinite(cruise_mass_ratio) and 0.0 < cruise_mass_ratio <= 1.0
+        ):
+            self.target_reached = True
+            self.final_distance_to_target = 0.0
+        else:
+            self.target_reached = False
+            self.final_distance_to_target = float("inf")
+
         return pd.DataFrame([start, end])
 
     def _compute_cruise_mass_ratio(self, start: FlightPoint, cruise_distance):

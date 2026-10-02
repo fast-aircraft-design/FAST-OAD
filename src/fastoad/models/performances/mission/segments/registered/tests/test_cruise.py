@@ -123,6 +123,30 @@ def test_breguet_cruise(polar):
     run()
 
 
+def test_breguet_cruise_target_not_reached(polar):
+    propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
+
+    segment = BreguetCruiseSegment(
+        target=FlightPoint(ground_distance=1.0e100),  # Insane value
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        engine_setting=EngineSetting.CRUISE,
+    )
+
+    segment.compute_from(
+        FlightPoint(
+            time=10000.0,
+            mass=70000.0,
+            altitude=10000.0,
+            mach=0.78,
+        )
+    )
+
+    assert segment.target_reached is False
+    assert segment.final_distance_to_target == float("inf")
+
+
 def test_optimal_cruise(polar):
     propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
