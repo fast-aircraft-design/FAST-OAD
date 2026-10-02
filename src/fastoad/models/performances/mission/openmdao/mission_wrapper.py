@@ -191,7 +191,7 @@ class MissionWrapper(MissionBuilder):
         if mission.reserve_ratio:
             outputs[self.get_reserve_variable_name()] = mission.get_reserve_fuel()
 
-        outputs[f"{self.variable_prefix}:{self.mission_name}:targets_reached"] = (
+        outputs[f"{self.variable_prefix}:{self.mission_name}:targets_reached"] = float(
             self.mission_completed
         )
 
@@ -204,7 +204,7 @@ class MissionWrapper(MissionBuilder):
         Recursively traverses all nested FlightSequence instances (mission → route →
         phase → segment). The flight sequence is considered completed only if every
         segment at every level of nesting reaches its target. Segments that do not
-        expose a ``target_reached`` attribute (non-standard segments) are ignored.
+        expose a ``targets_reached`` attribute (non-standard segments) are ignored.
 
         :param sequence: the computed :class:`FlightSequence` (may be a sub-sequence
                          such as a route, phase, or the top-level mission)
@@ -214,7 +214,7 @@ class MissionWrapper(MissionBuilder):
             if hasattr(element, "_sequence"):
                 if not self._check_targets_reached(element):
                     return False
-            elif hasattr(element, "target_reached") and not element.target_reached:
+            elif hasattr(element, "targets_reached") and not element.targets_reached:
                 _LOGGER.warning("Segment '%s' did not reach its target.", element.name)
                 return False
         return True
