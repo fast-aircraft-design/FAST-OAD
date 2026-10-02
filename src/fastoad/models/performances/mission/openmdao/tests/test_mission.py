@@ -19,6 +19,7 @@ import pytest
 from numpy.testing import assert_allclose
 from scipy.constants import foot, knot, nautical_mile
 
+from fastoad._utils.arrays import scalarize
 from fastoad.io import DataFile
 from fastoad.testing import run_system
 
@@ -162,7 +163,7 @@ def test_mission_component(cleanup, with_dummy_plugin_2):
     )
 
     completed = problem.get_val("data:mission:operational:targets_reached")
-    assert bool(completed)
+    assert bool(scalarize(completed))
 
 
 def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
@@ -211,7 +212,7 @@ def test_mission_component_breguet(cleanup, with_dummy_plugin_2):
     )
 
     completed = problem.get_val("data:mission:operational:targets_reached")
-    assert bool(completed)
+    assert bool(scalarize(completed))
 
 
 def test_mission_group_without_fuel_adjustment(cleanup, with_dummy_plugin_2):
@@ -253,7 +254,7 @@ def test_mission_group_without_fuel_adjustment(cleanup, with_dummy_plugin_2):
     assert_allclose(problem["data:mission:operational:block_fuel"], 15195.0, atol=1.0)
 
     completed = problem.get_val("data:mission:operational:targets_reached")
-    assert bool(completed)
+    assert bool(scalarize(completed))
 
 
 def test_mission_group_breguet_without_fuel_adjustment(cleanup, with_dummy_plugin_2):
@@ -277,7 +278,7 @@ def test_mission_group_breguet_without_fuel_adjustment(cleanup, with_dummy_plugi
     assert_allclose(problem["data:mission:operational:block_fuel"], 15000.0, atol=1.0)
 
     completed = problem.get_val("data:mission:operational:targets_reached")
-    assert bool(completed)
+    assert bool(scalarize(completed))
 
 
 def test_mission_group_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
@@ -325,7 +326,7 @@ def test_mission_group_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
     )
 
     completed = problem.get_val("data:mission:operational:targets_reached")
-    assert bool(completed)
+    assert bool(scalarize(completed))
 
 
 def test_mission_group_breguet_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
@@ -375,7 +376,7 @@ def test_mission_group_breguet_with_fuel_adjustment(cleanup, with_dummy_plugin_2
     assert_allclose(problem["data:mission:operational:needed_block_fuel"], 5449.0, atol=1.0)
 
     completed = problem.get_val("data:mission:operational:targets_reached")
-    assert bool(completed)
+    assert bool(scalarize(completed))
 
 
 def test_mission_group_with_fuel_objective(cleanup, with_dummy_plugin_2):
@@ -416,7 +417,7 @@ def test_mission_group_with_fuel_objective(cleanup, with_dummy_plugin_2):
     assert_allclose(problem["data:mission:fuel_as_objective:reserve:fuel"], 260.0, atol=1.0)
 
     completed = problem.get_val("data:mission:fuel_as_objective:targets_reached")
-    assert bool(completed)
+    assert bool(scalarize(completed))
 
 
 def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
@@ -498,7 +499,7 @@ def test_mission_group_with_CL_limitation(cleanup, with_dummy_plugin_2):
     )
 
     completed = problem.get_val("data:mission:operational_optimal:targets_reached")
-    assert bool(completed)
+    assert bool(scalarize(completed))
 
 
 def test_mission_group_without_route(cleanup, with_dummy_plugin_2):
@@ -640,4 +641,4 @@ def test_mission_component_completed_true(cleanup, with_dummy_plugin_2):
     )
 
     completed = problem.get_val("data:mission:operational:targets_reached")
-    assert bool(completed)
+    assert bool(scalarize(completed))
