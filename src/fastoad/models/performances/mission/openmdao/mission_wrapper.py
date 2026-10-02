@@ -120,7 +120,7 @@ class MissionWrapper(MissionBuilder):
             component.add_output(name, 0.0, units=units, desc=desc)
 
         component.add_output(
-            f"{self.variable_prefix}:{self.mission_name}:targets_reached",
+            f"{self.variable_prefix}:{self.mission_name}:all_targets_reached",
             units="unitless",
             desc=f"True (1.0) when all the segments of mision {self.mission_name} have met their "
             "targets",
@@ -191,7 +191,7 @@ class MissionWrapper(MissionBuilder):
         if mission.reserve_ratio:
             outputs[self.get_reserve_variable_name()] = mission.get_reserve_fuel()
 
-        outputs[f"{self.variable_prefix}:{self.mission_name}:targets_reached"] = float(
+        outputs[f"{self.variable_prefix}:{self.mission_name}:all_targets_reached"] = float(
             self.mission_completed
         )
 
@@ -204,7 +204,7 @@ class MissionWrapper(MissionBuilder):
         Recursively traverses all nested FlightSequence instances (mission → route →
         phase → segment). The flight sequence is considered completed only if every
         segment at every level of nesting reaches its target. Segments that do not
-        expose a ``targets_reached`` attribute (non-standard segments) are ignored.
+        expose a ``target_reached`` attribute (non-standard segments) are ignored.
 
         :param sequence: the computed :class:`FlightSequence` (may be a sub-sequence
                          such as a route, phase, or the top-level mission)
@@ -214,8 +214,12 @@ class MissionWrapper(MissionBuilder):
             if hasattr(element, "_sequence"):
                 if not self._check_targets_reached(element):
                     return False
-            elif hasattr(element, "targets_reached") and not element.targets_reached:
-                _LOGGER.warning("Segment '%s' did not reach its target.", element.name)
+            elif hasattr(element, "target_reached") and not element.target_reached:
+                _LOGGER.warning(
+                    "Segment '%s' did not reach its target, its distance to target is %f",
+                    element.name,
+                    element.final_distance_to_target,
+                )
                 return False
         return True
 
