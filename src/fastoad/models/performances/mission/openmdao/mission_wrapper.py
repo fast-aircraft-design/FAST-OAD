@@ -120,7 +120,7 @@ class MissionWrapper(MissionBuilder):
             component.add_output(name, 0.0, units=units, desc=desc)
 
         component.add_output(
-            f"{self.variable_prefix}:{self.mission_name}:tagets_reached",
+            f"{self.variable_prefix}:{self.mission_name}:targets_reached",
             units="unitless",
             desc=f"True (1.0) when all the segments of mision {self.mission_name} have met their "
             "targets",
@@ -191,7 +191,7 @@ class MissionWrapper(MissionBuilder):
         if mission.reserve_ratio:
             outputs[self.get_reserve_variable_name()] = mission.get_reserve_fuel()
 
-        outputs[f"{self.variable_prefix}:{self.mission_name}:tagets_reached"] = (
+        outputs[f"{self.variable_prefix}:{self.mission_name}:targets_reached"] = (
             self.mission_completed
         )
 
