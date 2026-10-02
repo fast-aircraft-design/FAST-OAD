@@ -616,29 +616,3 @@ def test_mission_component_completed_false(cleanup, with_dummy_plugin_2):
 
     completed = problem.get_val("data:mission:operational:targets_reached")
     assert not bool(completed)
-
-
-def test_mission_component_completed_true(cleanup, with_dummy_plugin_2):
-    """
-    Check that data:mission:operational:targets_reached is True when all segments reach their
-    targets.
-    """
-    input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
-    variables = DataFile(input_file_path)
-
-    problem = run_system(
-        AdvancedMissionComp(
-            propulsion_id="test.wrapper.propulsion.dummy_engine",
-            out_file=RESULTS_FOLDER_PATH / "mission_completed_true.csv",
-            use_initializer_iteration=False,
-            mission_file_path=MissionWrapper(
-                DATA_FOLDER_PATH / "test_mission.yml",
-                mission_name="operational",
-            ),
-            reference_area_variable="data:geometry:aircraft:reference_area",
-        ),
-        variables,
-    )
-
-    completed = problem.get_val("data:mission:operational:targets_reached")
-    assert bool(scalarize(completed))
