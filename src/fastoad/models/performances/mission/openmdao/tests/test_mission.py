@@ -15,6 +15,7 @@ import logging
 import shutil
 from pathlib import Path
 
+import openmdao.api as om
 import pytest
 from numpy.testing import assert_allclose
 from scipy.constants import foot, knot, nautical_mile
@@ -311,6 +312,140 @@ def test_mission_group_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
         1.02283e-4,
         rtol=1.0e-5,
     )
+
+
+def test_mission_group_with_fuel_adjustment_auto_activates_inner_solvers(
+    cleanup, with_dummy_plugin_2
+):
+    input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
+    variables = DataFile(input_file_path)
+    del variables["data:mission:operational:TOW"]
+    ivc = variables.to_ivc()
+
+    problem = run_system(
+        OMMission(
+            propulsion_id="test.wrapper.propulsion.dummy_engine",
+            out_file=RESULTS_FOLDER_PATH / "forced_solver_mission_group.csv",
+            use_initializer_iteration=True,
+            mission_file_path=DATA_FOLDER_PATH / "test_mission.yml",
+            mission_name="operational",
+            use_inner_solvers=False,
+            reference_area_variable="data:geometry:aircraft:reference_area",
+        ),
+        ivc,
+    )
+
+    assert problem.model.component.options["use_inner_solvers"]
+    assert problem.model.component.nonlinear_solver is not None
+    assert not isinstance(problem.model.component.nonlinear_solver, om.NonlinearRunOnce)
+    assert_allclose(
+        problem["data:mission:operational:needed_block_fuel"],
+        problem["data:mission:operational:block_fuel"],
+        atol=1.0,
+    )
+
+
+def test_sizing_mission_group_with_fuel_adjustment_does_not_add_local_solver(
+    cleanup, with_dummy_plugin_2
+):
+    input_file_path = DATA_FOLDER_PATH / "test_breguet.xml"
+    variables = DataFile(input_file_path)
+    del variables["data:mission:operational:ramp_weight"]
+    ivc = variables.to_ivc()
+
+    problem = run_system(
+        OMMission(
+            propulsion_id="test.wrapper.propulsion.dummy_engine",
+            out_file=RESULTS_FOLDER_PATH / "unforced_sizing_solver_mission_group.csv",
+            use_initializer_iteration=True,
+            mission_file_path=DATA_FOLDER_PATH / "test_breguet.yml",
+            use_inner_solvers=False,
+            reference_area_variable="data:geometry:aircraft:reference_area",
+            is_sizing=True,
+        ),
+        ivc,
+    )
+
+    assert not problem.model.component.options["use_inner_solvers"]
+    assert isinstance(problem.model.component.nonlinear_solver, om.NonlinearRunOnce)
+
+
+def test_mission_group_with_fuel_adjustment_overrides_existing_local_solver(
+    cleanup, with_dummy_plugin_2
+):
+    input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
+    variables = DataFile(input_file_path)
+    del variables["data:mission:operational:TOW"]
+    ivc = variables.to_ivc()
+
+    component = OMMission(
+        propulsion_id="test.wrapper.propulsion.dummy_engine",
+        out_file=RESULTS_FOLDER_PATH / "preconfigured_solver_mission_group.csv",
+        use_initializer_iteration=True,
+        mission_file_path=DATA_FOLDER_PATH / "test_mission.yml",
+        mission_name="operational",
+        use_inner_solvers=False,
+        reference_area_variable="data:geometry:aircraft:reference_area",
+    )
+    component.linear_solver = om.DirectSolver()
+    component.nonlinear_solver = om.NewtonSolver(solve_subsystems=False)
+
+    problem = run_system(component, ivc)
+
+    assert problem.model.component.options["use_inner_solvers"]
+    assert isinstance(problem.model.component.nonlinear_solver, om.NonlinearBlockGS)
+
+
+def test_mission_group_with_fuel_adjustment_never_mode_preserves_run_once_solvers(
+    cleanup, with_dummy_plugin_2
+):
+    input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
+    variables = DataFile(input_file_path)
+    del variables["data:mission:operational:TOW"]
+    ivc = variables.to_ivc()
+
+    problem = run_system(
+        OMMission(
+            propulsion_id="test.wrapper.propulsion.dummy_engine",
+            out_file=RESULTS_FOLDER_PATH / "never_mode_solver_mission_group.csv",
+            use_initializer_iteration=True,
+            mission_file_path=DATA_FOLDER_PATH / "test_mission.yml",
+            mission_name="operational",
+            use_inner_solvers=False,
+            adjust_fuel_solver_mode="never",
+            reference_area_variable="data:geometry:aircraft:reference_area",
+        ),
+        ivc,
+    )
+
+    assert not problem.model.component.options["use_inner_solvers"]
+    assert isinstance(problem.model.component.nonlinear_solver, om.NonlinearRunOnce)
+
+
+def test_sizing_mission_group_with_fuel_adjustment_always_mode_activates_inner_solvers(
+    cleanup, with_dummy_plugin_2
+):
+    input_file_path = DATA_FOLDER_PATH / "test_breguet.xml"
+    variables = DataFile(input_file_path)
+    del variables["data:mission:operational:ramp_weight"]
+    ivc = variables.to_ivc()
+
+    problem = run_system(
+        OMMission(
+            propulsion_id="test.wrapper.propulsion.dummy_engine",
+            out_file=RESULTS_FOLDER_PATH / "forced_sizing_solver_mission_group.csv",
+            use_initializer_iteration=True,
+            mission_file_path=DATA_FOLDER_PATH / "test_breguet.yml",
+            use_inner_solvers=False,
+            adjust_fuel_solver_mode="always",
+            reference_area_variable="data:geometry:aircraft:reference_area",
+            is_sizing=True,
+        ),
+        ivc,
+    )
+
+    assert problem.model.component.options["use_inner_solvers"]
+    assert not isinstance(problem.model.component.nonlinear_solver, om.NonlinearRunOnce)
 
 
 def test_mission_group_breguet_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
