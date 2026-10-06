@@ -22,6 +22,57 @@ from .conftest import DummyEngine
 from ..altitude_change import AltitudeChangeSegment
 
 
+def test_climb_target_reached_initial_state(polar):
+    """Before any compute, target_reached is False and final_distance_to_target is inf."""
+    propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
+    segment = AltitudeChangeSegment(
+        target=FlightPoint(altitude=6000.0),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        engine_setting=EngineSetting.CLIMB,
+        maximum_CL=1.5,
+    )
+    assert segment.target_reached is False
+    assert segment.final_distance_to_target == float("inf")
+
+
+def test_climb_target_reached_after_compute(polar):
+    """After successful compute_from, target_reached is True and final_distance_to_target is ~0."""
+    propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
+    segment = AltitudeChangeSegment(
+        target=FlightPoint(altitude=6000.0),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        engine_setting=EngineSetting.CLIMB,
+        maximum_CL=1.5,
+    )
+    segment.compute_from(FlightPoint(altitude=5000.0, mass=70000.0, true_airspeed=150.0))
+    assert segment.target_reached is True
+    assert segment.final_distance_to_target < 1.0e-5
+
+
+def test_climb_target_reached_reset_on_recompute(polar):
+    """Re-computation properly resets and re-sets target_reached and final_distance_to_target."""
+    propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
+    segment = AltitudeChangeSegment(
+        target=FlightPoint(altitude=6000.0),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        engine_setting=EngineSetting.CLIMB,
+        maximum_CL=1.5,
+    )
+    segment.compute_from(FlightPoint(altitude=5000.0, mass=70000.0, true_airspeed=150.0))
+    assert segment.target_reached is True
+    assert segment.final_distance_to_target < 1.0e-5
+    # Second call — attributes should be reset at start and re-set after
+    segment.compute_from(FlightPoint(altitude=5500.0, mass=70000.0, true_airspeed=150.0))
+    assert segment.target_reached is True
+    assert segment.final_distance_to_target < 1.0e-5
+
+
 def test_climb_fixed_altitude_at_constant_TAS(polar):
     propulsion = FuelEngineSet(DummyEngine(1.0e5, 1.0e-5), 2)
 

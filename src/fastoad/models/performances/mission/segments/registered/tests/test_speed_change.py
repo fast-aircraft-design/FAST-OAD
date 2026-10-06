@@ -22,6 +22,38 @@ from .conftest import DummyEngine
 from ..speed_change import SpeedChangeSegment
 
 
+def test_target_reached_initial_state(polar):
+    """Before any compute, target_reached is False and final_distance_to_target is inf."""
+    propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
+    segment = SpeedChangeSegment(
+        target=FlightPoint(true_airspeed=250.0),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        thrust_rate=1.0,
+        time_step=0.2,
+    )
+    assert segment.target_reached is False
+    assert segment.final_distance_to_target == float("inf")
+
+
+def test_target_reached_after_compute(polar):
+    """After successful compute_from, target_reached is True and final_distance_to_target is ~0."""
+    propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
+    segment = SpeedChangeSegment(
+        target=FlightPoint(true_airspeed=250.0),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        thrust_rate=1.0,
+        time_step=0.2,
+        engine_setting=EngineSetting.CLIMB,
+    )
+    segment.compute_from(FlightPoint(altitude=5000.0, true_airspeed=150.0, mass=70000.0))
+    assert segment.target_reached is True
+    assert segment.final_distance_to_target < 1.0e-5
+
+
 def test_acceleration_to_TAS(polar):
     propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
@@ -164,8 +196,12 @@ def test_acceleration_not_enough_thrust(polar):
         segment.compute_from(FlightPoint(altitude=5000.0, true_airspeed=150.0, mass=70000.0))
     )
 
+    # Target is not reached
+    assert segment.target_reached is False
+    assert segment.final_distance_to_target > 1.0e-5
 
-def test_deceleration_not_enough_thrust(polar):
+
+def test_deceleration(polar):
     propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
 
     segment = SpeedChangeSegment(
@@ -190,6 +226,36 @@ def test_deceleration_not_enough_thrust(polar):
         assert_allclose(last_point.true_airspeed, 150.0)
         assert_allclose(last_point.mass, 69982.0, rtol=1e-4)
         assert_allclose(last_point.ground_distance, 62804.0, rtol=1e-3)
+
+        # Target is reached
+        assert segment.target_reached is True
+        assert segment.final_distance_to_target < 1.0e-5
+
+    run()
+
+    # A second call is done to ensure first run did not modify anything (like target definition)
+    run()
+
+
+def test_deceleration_too_much_thrust(polar):
+    propulsion = FuelEngineSet(DummyEngine(0.5e5, 1.0e-5), 2)
+
+    segment = SpeedChangeSegment(
+        target=FlightPoint(true_airspeed=150.0),
+        propulsion=propulsion,
+        reference_area=120.0,
+        polar=polar,
+        thrust_rate=0.8,
+        time_step=1.0,
+    )
+    segment.time_step = 1.0
+
+    def run():
+        segment.compute_from(FlightPoint(altitude=5000.0, true_airspeed=250.0, mass=70000.0))
+
+        # Target is reached
+        assert segment.target_reached is False
+        assert segment.final_distance_to_target < 1.0e-5
 
     run()
 

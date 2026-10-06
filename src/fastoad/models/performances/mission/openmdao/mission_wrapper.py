@@ -15,6 +15,7 @@ Mission wrapper.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 from itertools import pairwise
 from os import PathLike
 
@@ -41,6 +42,8 @@ from ..mission_definition.schema import (
 )
 
 TOFL_FACTOR = 1.15
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class MissionWrapper(MissionBuilder):
@@ -84,6 +87,7 @@ class MissionWrapper(MissionBuilder):
             variable_prefix=variable_prefix,
         )
         self.consumed_fuel_before_input_weight = 0.0
+        self.mission_completed = False
         if force_all_block_fuel_usage:
             self.force_all_block_fuel_usage()
 
@@ -114,6 +118,14 @@ class MissionWrapper(MissionBuilder):
 
         for name, (units, desc) in output_definition.items():
             component.add_output(name, 0.0, units=units, desc=desc)
+
+        component.add_output(
+            f"{self.variable_prefix}:{self.mission_name}:all_targets_reached",
+            units="unitless",
+            desc=f"True (1.0) when all the segments of mision {self.mission_name} have met their "
+            "targets",
+            val=False,
+        )
 
     def compute(
         self, start_flight_point: FlightPoint, inputs: Vector, outputs: Vector
@@ -152,6 +164,7 @@ class MissionWrapper(MissionBuilder):
                 outputs[name_root + ":altitude"] = start.altitude
 
         flight_points = mission.compute_from(start_flight_point)
+        self.mission_completed = self._check_targets_reached(mission)
         flight_points.loc[0, "name"] = flight_points.loc[1, "name"]
 
         nb_levels = np.max([len(n.split(":")) for n in flight_points["name"]])
@@ -178,7 +191,37 @@ class MissionWrapper(MissionBuilder):
         if mission.reserve_ratio:
             outputs[self.get_reserve_variable_name()] = mission.get_reserve_fuel()
 
+        outputs[f"{self.variable_prefix}:{self.mission_name}:all_targets_reached"] = float(
+            self.mission_completed
+        )
+
         return flight_points
+
+    def _check_targets_reached(self, sequence):
+        """
+        Check whether each segment in the flight sequence actually reached its target.
+
+        Recursively traverses all nested FlightSequence instances (mission → route →
+        phase → segment). The flight sequence is considered completed only if every
+        segment at every level of nesting reaches its target. Segments that do not
+        expose a ``target_reached`` attribute (non-standard segments) are ignored.
+
+        :param sequence: the computed :class:`FlightSequence` (may be a sub-sequence
+                         such as a route, phase, or the top-level mission)
+        :return: True if all segments reached their targets, False otherwise
+        """
+        for element in sequence:
+            if hasattr(element, "_sequence"):
+                if not self._check_targets_reached(element):
+                    return False
+            elif hasattr(element, "target_reached") and not element.target_reached:
+                _LOGGER.debug(
+                    "Segment '%s' did not reach its target, its distance to target is %f",
+                    element.name,
+                    element.final_distance_to_target,
+                )
+                return False
+        return True
 
     def get_reserve_variable_name(self) -> str:
         """
