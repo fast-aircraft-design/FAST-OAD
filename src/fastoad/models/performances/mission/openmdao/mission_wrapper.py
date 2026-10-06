@@ -215,7 +215,7 @@ class MissionWrapper(MissionBuilder):
                 if not self._check_targets_reached(element):
                     return False
             elif hasattr(element, "target_reached") and not element.target_reached:
-                _LOGGER.warning(
+                _LOGGER.debug(
                     "Segment '%s' did not reach its target, its distance to target is %f",
                     element.name,
                     element.final_distance_to_target,

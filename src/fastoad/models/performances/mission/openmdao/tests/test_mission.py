@@ -615,4 +615,4 @@ def test_mission_component_completed_false(cleanup, with_dummy_plugin_2):
     )
 
     completed = problem.get_val("data:mission:operational:all_targets_reached")
-    assert not bool(completed)
+    assert not bool(scalarize(completed))
