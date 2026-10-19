@@ -253,7 +253,7 @@ def test_deceleration_too_much_thrust(polar):
     def run():
         segment.compute_from(FlightPoint(altitude=5000.0, true_airspeed=250.0, mass=70000.0))
 
-        # Target is reached
+        # Target is not reached
         assert segment.target_reached is False
         assert segment.final_distance_to_target < 1.0e-5
 
