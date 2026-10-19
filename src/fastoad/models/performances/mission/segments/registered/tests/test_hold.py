@@ -93,6 +93,10 @@ def test_hold_with_additional_load(polar):
         assert_allclose(last_point.CL, 0.8058, rtol=1.0e-3)
         assert_allclose(last_point.CD, 0.04246, rtol=1.0e-3)
 
+        # Target is reached anyway
+        assert segment.target_reached is True
+        assert segment.final_distance_to_target < 1.0e-5
+
     run()
 
     # A second call is done to ensure first run did not modify anything (like target definition)

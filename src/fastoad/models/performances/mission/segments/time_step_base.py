@@ -92,6 +92,12 @@ class AbstractTimeStepFlightSegment(
     #: propulsion model.
     engine_setting: EngineSetting = EngineSetting.CLIMB
 
+    #: Whether the target was reached in the last compute_from_start_to_target call.
+    target_reached: bool = False
+
+    #: The final distance to target after the last computation.
+    final_distance_to_target: float = field(default=float("inf"), repr=False)
+
     @abstractmethod
     def get_distance_to_target(
         self, flight_points: list[FlightPoint], target: FlightPoint
@@ -168,6 +174,10 @@ class AbstractTimeStepFlightSegment(
         flight_point.scalarize()
 
     def compute_from_start_to_target(self, start: FlightPoint, target: FlightPoint) -> pd.DataFrame:
+        # Reset stored state (critical for reuse of the segment instance)
+        self.target_reached = False
+        self.final_distance_to_target = float("inf")
+
         flight_points = [start]
         previous_point_to_target = self.get_distance_to_target(flight_points, target)
         tol = 1.0e-5  # Such accuracy is not needed, but ensures reproducibility of results.
@@ -252,6 +262,9 @@ class AbstractTimeStepFlightSegment(
                 break
 
             previous_point_to_target = last_point_to_target
+
+        self.final_distance_to_target = previous_point_to_target
+        self.target_reached = abs(previous_point_to_target) <= tol
 
         return pd.DataFrame(flight_points)  # flight_points_df
 
