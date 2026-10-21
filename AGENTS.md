@@ -117,6 +117,22 @@ Apply the transversal rules, plus:
    `poetry run sphinx-build -b html docs docs/_build/html` without new
    warnings. Report anything you could not verify.
 
+## 3. Workflow & test execution (good practices for working in FAST-OAD)
+
+Apply the transversal rules, plus:
+
+1. **Unit tests**: after generating or modifying unit tests, run them
+   (they are fast) and iterate until they pass. Report the result.
+2. **Integration tests** (`tests/` at repository root): they are long
+   (up to 10 minutes). Do NOT run them systematically. Run them only
+   if legacy code (existing source code, configuration files, or test
+   files other than the ones you created) has been modified — in that
+   case, run them at the END of your work, once all other tasks are
+   complete, and report the result.
+3. If your task does not require touching legacy code, skip the
+   integration tests and say so explicitly: "Integration tests not run
+   (no legacy code modified)."
+
 ## 3. Mandatory final self-check
 
 Before returning your answer, verify and confirm:
