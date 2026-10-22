@@ -50,10 +50,6 @@ dependencies = [
 homepage = "https://github.com/fast-aircraft-design/FAST-OAD"
 documentation = "https://fast-oad.readthedocs.io/en/stable/"
 
-[tool.hatch.version]
-source = "vcs"
-fallback-version = "__FAST_OAD_VERSION__"  # used when no vcs/tag history is available (e.g. shallow clone, sdist rebuild)
-
 [tool.hatch.build.targets.wheel]
 packages = ["_fastoad"]
 
