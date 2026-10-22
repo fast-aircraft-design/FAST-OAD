@@ -41,11 +41,11 @@ jobs:
         with:
           version: ${{ vars.UV_VERSION }}
 
-      - name: Load cached venv # Copied from https://github.com/snok/install-poetry/blob/d526ede1e27960b7b181a5ac53044f552afdaa38/README.md
+      - name: Load cached venv
       # load cached venv if cache exists
       # restore-keys allow fallback cache hits when the exact key is not found.
       # GitHub Actions will try to restore any cache whose key *starts with* the prefixes listed here.
-      # This helps reuse older venv caches for the same OS & Python version when poetry.lock changes slightly,
+      # This helps reuse older venv caches for the same OS & Python version when uv.lock changes slightly,
       # instead of reinstalling all dependencies from scratch.
         id: cached-uv-dependencies
         uses: actions/cache@v6
