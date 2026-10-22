@@ -121,6 +121,8 @@ default-groups = ["dev", "test", "lint"]
 
 [tool.hatch.version]
 source = "vcs"
+# Used when no tag is reachable (fork, archive). Must satisfy the fast-oad-core bound of fast-oad-cs25.
+fallback-version = "1.10.0"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/fastoad"]
