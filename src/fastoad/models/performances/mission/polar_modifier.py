@@ -23,45 +23,70 @@ from .polar import Polar
 
 @dataclass
 class AbstractPolarModifier(ABC):
-    """
-    Base class to implement a change to the polar during the mission computation
+    """Base class to implement a change to the aerodynamic polar during mission computation.
+
+    A polar modifier is applied to the segment's polar at each computation step,
+    allowing dynamic modification of drag (e.g. ground effect) based on flight conditions.
+
+    Subclasses must implement :meth:`modify_polar` and be registered using
+    :class:`RegisterPolarModifier` to be usable in a mission definition file.
     """
 
     @abstractmethod
     def modify_polar(self, polar: Polar, flight_point: FlightPoint) -> Polar:
-        """
-        :param polar: an instance of Polar
-        :param flight_point: an intance of FlightPoint containg only floats
-        :return: the modified polar for the flight point
+        """Apply a modification to the polar for a given flight point.
+
+        :param polar: the original polar instance (unitless CL/CD)
+        :param flight_point: a FlightPoint instance containing the flight conditions
+            (altitude, speed, etc.) as floats
+        :return: a new Polar instance with the modification applied
         """
 
 
 class RegisterPolarModifier(RegisterElement, base_class=AbstractPolarModifier):
-    """
-    Decorator for registering AbstractPolarModifier classes.
+    """Decorator for registering an AbstractPolarModifier subclass for use in mission files.
 
-        >>> @RegisterPolarModifier("polar_modifier_foo")
-        >>> class FooPolarModifier(IFlightPart):
-        >>>     ...
+    The keyword provided to the decorator is used as the ``name`` value in the
+    ``modifier`` sub-key of the ``polar`` parameter in a mission definition file.
 
-    Then the registered class can be obtained by:
+    Usage example::
 
-        >>> my_class = RegisterPolarModifier.get_class("polar_modifier_foo")
+        @RegisterPolarModifier("ground_effect_raymer")
+        @dataclass
+        class MyPolarModifier(AbstractPolarModifier):
+            ...
+
+    The registered class can then be retrieved using
+    :meth:`RegisterPolarModifier.get_class`.
+
+    In a mission definition file, the registered modifier is used as follows:
+
+    .. code-block:: yaml
+
+        polar:
+          CL: data:aerodynamics:aircraft:takeoff:CL
+          CD: data:aerodynamics:aircraft:takeoff:CD
+          modifier:
+            name: ground_effect_raymer
+            ...
     """
 
 
 @RegisterPolarModifier("none")
 @dataclass
 class UnchangedPolar(AbstractPolarModifier):
-    """
-    Default polar modifier returning the polar without changes
+    """Default polar modifier that returns the polar unchanged.
+
+    This modifier applies no transformation and is equivalent to not specifying
+    a modifier at all.
     """
 
     def modify_polar(self, polar: Polar, flight_point: FlightPoint) -> Polar:
-        """
-        :param polar: a polar instance
+        """Return the polar unchanged.
+
+        :param polar: a Polar instance
         :param flight_point: a FlightPoint instance
-        :return: the polar instance
+        :return: the same polar instance
         """
         return polar
 
@@ -69,9 +94,21 @@ class UnchangedPolar(AbstractPolarModifier):
 @RegisterPolarModifier("ground_effect_raymer")
 @dataclass
 class GroundEffectRaymer(AbstractPolarModifier):
-    """
-    Evaluates the drag in ground effect, using Raymer's model:
-        'Aircraft Design A conceptual approach', D. Raymer p304
+    """Evaluates drag increase due to ground effect using Raymer's model.
+
+    Reference: *Aircraft Design: A Conceptual Approach*, D. Raymer, p. 304.
+
+    The ground effect is computed from the altitude of the flight point relative
+    to the ground, the wingspan, and the main landing gear height. The induced
+    drag is increased by a factor that depends on the proximity to the ground.
+
+    Fields:
+        span: wingspan (m)
+        landing_gear_height: main landing gear height (m)
+        induced_drag_coefficient: coefficient multiplying CL**2 for induced drag (unitless)
+        k_winglet: winglet effect tuning coefficient (unitless)
+        k_cd: total drag tuning coefficient (unitless)
+        ground_altitude: altitude of ground w.r.t. sea level (m), default 0.0
     """
 
     #: Wingspan
@@ -93,21 +130,23 @@ class GroundEffectRaymer(AbstractPolarModifier):
     ground_altitude: float = 0.0
 
     def modify_polar(self, polar: Polar, flight_point: FlightPoint) -> Polar:
-        """
-        Compute the ground effect based on altitude from ground and return an updated polar
+        """Compute the ground effect drag increase and return a modified polar.
 
-        :param polar: a Polar instance used as basis to apply ground effect
-        :param flight_point: a flight point containing the flight conditions
-        for calculation of ground effect
-        :return: a copy of polar with ground effect
+        :param polar: the original Polar instance to modify
+        :param flight_point: a FlightPoint instance containing the flight conditions
+            (altitude, speed, etc.) for ground effect calculation
+        :return: a new Polar instance with added ground effect drag
         """
 
         h_b = (
-            self.span * 0.1
-            + self.landing_gear_height
-            + flight_point.altitude
-            - self.ground_altitude
-        ) / self.span
+            abs(
+                self.span * 0.1
+                + self.landing_gear_height
+                + flight_point.altitude
+                - self.ground_altitude
+            )
+            / self.span
+        )
         k_ground = 33.0 * h_b**1.5 / (1 + 33.0 * h_b**1.5)
         cd_ground = (
             self.induced_drag_coefficient
