@@ -183,91 +183,92 @@ def test_modify_polar_with_ground_altitude(polar):
     )
 
 
-def test_register_and_get_class():
-    """Registered polar modifiers should be retrievable by keyword."""
-    none_class = RegisterPolarModifier.get_class("none")
-    assert none_class is not None
-    assert issubclass(none_class, AbstractPolarModifier)
+class TestRegister:
+    """Tests for polar modifier registration and retrieval."""
 
-    ground_class = RegisterPolarModifier.get_class("ground_effect_raymer")
-    assert ground_class is not None
-    assert issubclass(ground_class, AbstractPolarModifier)
+    def test_register_and_get_class(self):
+        """Registered polar modifiers should be retrievable by keyword."""
+        none_class = RegisterPolarModifier.get_class("none")
+        assert none_class is not None
+        assert issubclass(none_class, AbstractPolarModifier)
 
+        ground_class = RegisterPolarModifier.get_class("ground_effect_raymer")
+        assert ground_class is not None
+        assert issubclass(ground_class, AbstractPolarModifier)
 
-def test_get_classes_contains_all():
-    """get_classes should return all registered polar modifiers."""
-    classes = RegisterPolarModifier.get_classes()
-    assert "none" in classes
-    assert "ground_effect_raymer" in classes
+    def test_get_classes_contains_all(self):
+        """get_classes should return all registered polar modifiers."""
+        classes = RegisterPolarModifier.get_classes()
+        assert "none" in classes
+        assert "ground_effect_raymer" in classes
 
+    def test_get_unknown_class_raises(self):
+        """get_class should raise FastUnknownMissionElementError for unknown keyword."""
+        with pytest.raises(FastUnknownMissionElementError):
+            RegisterPolarModifier.get_class("nonexistent_modifier")
 
-def test_get_unknown_class_raises():
-    """get_class should raise FastUnknownMissionElementError for unknown keyword."""
-    with pytest.raises(FastUnknownMissionElementError):
-        RegisterPolarModifier.get_class("nonexistent_modifier")
+    def test_register_decorator(self):
+        """The @RegisterPolarModifier decorator should register the class."""
 
+        @RegisterPolarModifier("test_modifier")
+        class TestModifier(AbstractPolarModifier):
+            def modify_polar(self, polar: Polar, flight_point: FlightPoint) -> Polar:
+                return polar
 
-def test_register_decorator():
-    """The @RegisterPolarModifier decorator should register the class."""
-
-    @RegisterPolarModifier("test_modifier")
-    class TestModifier(AbstractPolarModifier):
-        def modify_polar(self, polar: Polar, flight_point: FlightPoint) -> Polar:
-            return polar
-
-    retrieved = RegisterPolarModifier.get_class("test_modifier")
-    assert retrieved is TestModifier
-
-
-def test_modify_polar_zero_span_raises_zero_division(polar):
-    """Zero span must raise ZeroDivisionError due to h_b computation (h_b = .../span)."""
-    modifier = GroundEffectRaymer(
-        span=0.0,
-        landing_gear_height=2.5,
-        induced_drag_coefficient=0.034,
-        k_winglet=1.0,
-        k_cd=1.0,
-    )
-    fp = FlightPoint(altitude=1.0)
-    with pytest.raises(ZeroDivisionError):
-        modifier.modify_polar(polar, fp)
+        retrieved = RegisterPolarModifier.get_class("test_modifier")
+        assert retrieved is TestModifier
 
 
-def test_modify_polar_negative_altitude_nan_effect(polar):
-    """Robust to negative altitude values."""
-    modifier = GroundEffectRaymer(
-        span=34.5,
-        landing_gear_height=2.5,
-        induced_drag_coefficient=0.034,
-        k_winglet=1.0,
-        k_cd=1.0,
-        ground_altitude=1000.0,
-    )
-    fp = FlightPoint(altitude=-10.0)
-    result = modifier.modify_polar(polar, fp)
+class TestBoundaryCases:
+    """Tests for boundary and edge-case inputs."""
 
-    assert not np.any(np.isnan(result.definition_cd))
+    def test_modify_polar_zero_span_raises_zero_division(self, polar):
+        """Zero span must raise ZeroDivisionError due to h_b computation (h_b = .../span)."""
+        modifier = GroundEffectRaymer(
+            span=0.0,
+            landing_gear_height=2.5,
+            induced_drag_coefficient=0.034,
+            k_winglet=1.0,
+            k_cd=1.0,
+        )
+        fp = FlightPoint(altitude=1.0)
+        with pytest.raises(ZeroDivisionError):
+            modifier.modify_polar(polar, fp)
 
+    def test_modify_polar_negative_altitude_nan_effect(self, polar):
+        """Robust to negative altitude values."""
+        modifier = GroundEffectRaymer(
+            span=34.5,
+            landing_gear_height=2.5,
+            induced_drag_coefficient=0.034,
+            k_winglet=1.0,
+            k_cd=1.0,
+            ground_altitude=1000.0,
+        )
+        fp = FlightPoint(altitude=-10.0)
+        result = modifier.modify_polar(polar, fp)
 
-def test_modify_polar_negative_cl(polar, flight_point):
-    """Negative CL squared yields same ground effect as positive CL of same magnitude."""
-    modifier = _ground_effect_modifier()
-    polar_neg_cl = Polar(
-        np.array([-0.5, -1.0, -1.5]),
-        polar.definition_cd,
-        polar.definition_alpha,
-    )
-    result_neg = modifier.modify_polar(polar_neg_cl, flight_point)
-    polar_pos_cl = Polar(
-        np.array([0.5, 1.0, 1.5]),
-        polar.definition_cd,
-        polar.definition_alpha,
-    )
-    result_pos = modifier.modify_polar(polar_pos_cl, flight_point)
-    # cd_ground is proportional to CL**2, so negative and positive CL of same
-    # magnitude should produce the same result
-    assert_allclose(
-        result_neg.definition_cd,
-        result_pos.definition_cd,
-        rtol=1e-10,
-    )
+        assert not np.any(np.isnan(result.definition_cd))
+
+    def test_modify_polar_negative_cl(self, polar, flight_point):
+        """Negative CL squared yields same ground effect as positive CL of same magnitude."""
+        modifier = _ground_effect_modifier()
+        polar_neg_cl = Polar(
+            np.array([-0.5, -1.0, -1.5]),
+            polar.definition_cd,
+            polar.definition_alpha,
+        )
+        result_neg = modifier.modify_polar(polar_neg_cl, flight_point)
+        polar_pos_cl = Polar(
+            np.array([0.5, 1.0, 1.5]),
+            polar.definition_cd,
+            polar.definition_alpha,
+        )
+        result_pos = modifier.modify_polar(polar_pos_cl, flight_point)
+        # cd_ground is proportional to CL**2, so negative and positive CL of same
+        # magnitude should produce the same result
+        assert_allclose(
+            result_neg.definition_cd,
+            result_pos.definition_cd,
+            rtol=1e-10,
+        )
