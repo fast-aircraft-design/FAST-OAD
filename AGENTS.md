@@ -143,7 +143,7 @@ Before returning your answer, verify and confirm:
 - [ ] I did not modify any source file.
 - [ ] I added no dependency and created only the requested files.
 - [ ] Every numeric value is traceable or tagged `[TO VALIDATE]`.
-- [ ] Style rules (PEP8, <= 100 chars) are respected.
+- [ ] I ran ruff check and ruff format and corrected the errors
 - [ ] I listed findings and uncertainties for human review.
 - [ ] I ran the unit tests I created; I ran integration tests only if
       legacy code was modified (at the end of my work), or I stated why not.

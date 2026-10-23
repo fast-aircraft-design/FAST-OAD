@@ -138,12 +138,15 @@ class GroundEffectRaymer(AbstractPolarModifier):
         :return: a new Polar instance with added ground effect drag
         """
 
-        h_b = abs(
-            self.span * 0.1
-            + self.landing_gear_height
-            + flight_point.altitude
-            - self.ground_altitude
-        ) / self.span
+        h_b = (
+            abs(
+                self.span * 0.1
+                + self.landing_gear_height
+                + flight_point.altitude
+                - self.ground_altitude
+            )
+            / self.span
+        )
         k_ground = 33.0 * h_b**1.5 / (1 + 33.0 * h_b**1.5)
         cd_ground = (
             self.induced_drag_coefficient

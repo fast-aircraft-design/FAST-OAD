@@ -12,7 +12,6 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from numpy import ndarray
 from scipy.interpolate import interp1d
 from scipy.optimize import fmin
 
@@ -67,7 +66,8 @@ class Polar:
 
     @property
     def definition_alpha(self):
-        """The angle of attack (alpha) vector used for defining the polar (rad), or None if not provided."""
+        """The angle of attack (alpha) vector used for defining the polar (rad),
+        or None if not provided."""
         return self._definition_alpha
 
     @property
