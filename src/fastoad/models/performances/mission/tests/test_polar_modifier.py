@@ -76,10 +76,7 @@ def test_modify_polar_computes_drag_increase(polar, flight_point):
     # Manually compute expected values using the same formula
     span = modifier.span
     h_b = (
-        span * 0.1
-        + modifier.landing_gear_height
-        + flight_point.altitude
-        - modifier.ground_altitude
+        span * 0.1 + modifier.landing_gear_height + flight_point.altitude - modifier.ground_altitude
     ) / span
     k_ground = 33.0 * h_b**1.5 / (1 + 33.0 * h_b**1.5)
     cd_ground = (
