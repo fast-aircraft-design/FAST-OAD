@@ -63,8 +63,10 @@ Apply the transversal rules, plus:
    - Each test has a short reST docstring stating the physical relation
      verified and its source (report, bibliography, analytical relation).
    - Nominal case: compare against an analytical result, repository
-     reference data, or a value from literature, using `pytest.approx()`
-     with an explicit tolerance. Justify the tolerance in a comment.
+     reference data, or a value from literature. Use the comparison
+     convention of the repository: `pytest.approx()` for scalars, and
+     `numpy.testing.assert_allclose()` for lists or NumPy arrays
+     (explicit `rtol`/`atol`). Justify the tolerance in a comment.
    - Boundary cases: zero, negative, out-of-domain inputs must be tested
      for the *expected* behavior (raised error, NaN, clipped value...),
      not merely for "does not crash".
@@ -85,6 +87,8 @@ Apply the transversal rules, plus:
    expected) to start from the docstrings and `add_input`/`add_output`
    declarations rather than guessing behavior that is not documented;
    in that case, list the unclear points in "Findings".
+7. **Convention**: gather tests in classes, unless explicitly 
+   ask differently by user.
 
 ## 2. Documentation generation (.rst)
 
@@ -133,7 +137,7 @@ Apply the transversal rules, plus:
    integration tests and say so explicitly: "Integration tests not run
    (no legacy code modified)."
 
-## 3. Mandatory final self-check
+## 4. Mandatory final self-check
 
 Before returning your answer, verify and confirm:
 - [ ] I did not modify any source file.
@@ -141,3 +145,5 @@ Before returning your answer, verify and confirm:
 - [ ] Every numeric value is traceable or tagged `[TO VALIDATE]`.
 - [ ] Style rules (PEP8, <= 100 chars) are respected.
 - [ ] I listed findings and uncertainties for human review.
+- [ ] I ran the unit tests I created; I ran integration tests only if
+      legacy code was modified (at the end of my work), or I stated why not.
