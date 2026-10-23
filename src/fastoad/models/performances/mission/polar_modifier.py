@@ -102,7 +102,7 @@ class GroundEffectRaymer(AbstractPolarModifier):
         :return: a copy of polar with ground effect
         """
 
-        h_b = (
+        h_b = abs(
             self.span * 0.1
             + self.landing_gear_height
             + flight_point.altitude
