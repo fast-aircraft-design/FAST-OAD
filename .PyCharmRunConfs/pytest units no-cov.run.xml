@@ -18,7 +18,7 @@
     <option name="_new_target" value="&quot;$PROJECT_DIR$/src&quot;" />
     <option name="_new_targetType" value="&quot;PATH&quot;" />
     <method v="2">
-      <option name="RunConfigurationTask" enabled="true" run_configuration_name="Poetry install" run_configuration_type="ShConfigurationType" />
+      <option name="RunConfigurationTask" enabled="true" run_configuration_name="uv sync" run_configuration_type="ShConfigurationType" />
     </method>
   </configuration>
 </component>
