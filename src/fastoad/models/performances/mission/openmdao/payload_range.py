@@ -16,7 +16,7 @@ from dataclasses import dataclass
 
 import numpy as np
 import openmdao.api as om
-from pyDOE3 import lhs
+from pydoe import lhs
 from scipy.interpolate import interp1d
 
 from fastoad.module_management.constants import ModelDomain

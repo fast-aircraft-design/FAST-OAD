@@ -25,7 +25,6 @@ import pytest
 import tomlkit
 import yaml
 from jsonschema import ValidationError
-from ruamel.yaml import YAML
 
 from fastoad.io import DataFile
 from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
@@ -327,7 +326,7 @@ def test_set_optimization_definition(cleanup):
             "objective": [{"name": "f"}],
         }
 
-        read = tomlkit.loads if extension == "toml" else YAML(typ="safe").load
+        read = tomlkit.loads if extension == "toml" else yaml.safe_load
 
         with Path.open(reference_file, "r") as file:
             d = file.read()

@@ -20,9 +20,9 @@ from collections import OrderedDict
 from os import PathLike
 from pathlib import Path
 
+import yaml
 from ensure import Ensure
 from jsonschema import validate
-from ruamel.yaml import YAML
 
 from fastoad._utils.files import as_path
 from fastoad._utils.resource_management.contents import PackageReader
@@ -69,12 +69,12 @@ class MissionDefinition(OrderedDict):
         :param file_path: path of YAML file to read.
         """
         self.clear()
-        yaml = YAML(typ="safe", pure=True)
-
         file_path = as_path(file_path)
 
         with Path.open(file_path) as yaml_file:
-            data = yaml.load(yaml_file)
+            # The old pure=True is unecessary, as pyyaml always use the python implementation
+            # for safe_load
+            data = yaml.safe_load(yaml_file)
 
         with PackageReader(resources).open_text(JSON_SCHEMA_NAME) as json_file:
             json_schema = json.loads(json_file.read())

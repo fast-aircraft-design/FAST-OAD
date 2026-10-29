@@ -27,8 +27,8 @@ from pathlib import Path
 
 import openmdao.api as om
 import tomlkit
+import yaml
 from jsonschema import validate
-from ruamel.yaml import YAML
 
 from fastoad._utils.files import as_path, make_parent_dir
 from fastoad._utils.resource_management.contents import PackageReader
@@ -679,16 +679,13 @@ class _YAMLSerializer(_IDictSerializer):
     def data(self):
         return self._data
 
-    def read(self, file_path: str | PathLike):
-        yaml = YAML(typ="safe")
+    def read(self, file_path):
         with Path.open(file_path, "r") as yaml_file:
-            self._data = yaml.load(yaml_file)
+            self._data = yaml.safe_load(yaml_file)
 
     def write(self, file_path: str | PathLike):
-        yaml = YAML()
-        yaml.default_flow_style = False
         with Path.open(file_path, "w") as file:
-            yaml.dump(self._data, file)
+            yaml.safe_dump(self._data, file, default_flow_style=False, sort_keys=False)
 
 
 class _IConfigurationModifier(ABC):
