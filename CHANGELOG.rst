@@ -2,6 +2,23 @@
 Changelog
 =========
 
+Version 1.11.0
+==============
+
+- Added:
+    - Add option to avoid copying an existing output file in the local folder of CalcRunner. (https://github.com/fast-aircraft-design/FAST-OAD/pull/697)
+    - Add a way to pass options to propulsion wrappers used in performance computation. (https://github.com/fast-aircraft-design/FAST-OAD/pull/700)
+    - Add target_reached attribute in segments and use it to check if the mission has properly converged. (https://github.com/fast-aircraft-design/FAST-OAD/pull/707)
+
+- Modified:
+    - Migrate from Poetry to uv. (https://github.com/fast-aircraft-design/FAST-OAD/pull/706)
+    - Allow OpenMDAO up to version 3.45. (https://github.com/fast-aircraft-design/FAST-OAD/pull/705)
+    - Bump fast-oad-cs25 version. (https://github.com/fast-aircraft-design/FAST-OAD/pull/696)
+    - Update documentation on custom mission segment registration. (https://github.com/fast-aircraft-design/FAST-OAD/pull/702)
+
+- Fixed:
+    - Fix XDSM generation. (https://github.com/fast-aircraft-design/FAST-OAD/pull/703)
+
 Version 1.10.0
 =============
 
