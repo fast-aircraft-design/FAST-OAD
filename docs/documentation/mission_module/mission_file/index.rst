@@ -10,4 +10,3 @@ Here you will find information about the mission definition files for the FAST-O
     Mission file <mission_file>
     Flight segments <segments>
     Setting values <setting_values>
-   Polar <polar>
