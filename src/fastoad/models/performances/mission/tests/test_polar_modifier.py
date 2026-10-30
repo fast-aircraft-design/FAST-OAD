@@ -66,7 +66,7 @@ def _ground_effect_modifier() -> GroundEffectRaymer:
     )
 
 
-def test_modify_polar_computes_drag_increase(polar: Polar, flight_point: FlightPoint) -> None:
+def test_modify_polar_computes_drag_reduction(polar: Polar, flight_point: FlightPoint) -> None:
     """GroundEffectRaymer should compute drag per Raymer's formula.
 
     Reference: 'Aircraft Design A conceptual approach', D. Raymer p304.
