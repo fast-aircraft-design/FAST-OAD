@@ -1,149 +1,267 @@
-# AI Assistant Rules for FAST-OAD
+# AI assistant rules for FAST-OAD
 
-This file defines the mandatory rules for any AI-assisted contribution
-(tests, documentation, refactoring, ...) to FAST-OAD, regardless of the
-AI tool or model used.
+This file tells an AI assistant how to work in this repository. It applies to any
+AI tool and any model, and to any task: code, tests, documentation, refactoring.
 
-When asked to perform one of the tasks described below, an AI assistant
-MUST follow these rules. If a rule conflicts with the user's request,
-the assistant must say so instead of silently breaking it.
+Read it before starting. If a rule conflicts with the user's request, say so
+instead of silently breaking it.
 
-Project context:
-- Python >= 3.10, OpenMDAO-based framework for aircraft design.
-- Code style: PEP8, line length <= 100 characters, enforced by Ruff
-  (fixed version, configuration in `pyproject.toml`).
-- Docstrings: reStructuredText (PEP 287).
-- Tests: pytest, unit tests in `src/*/tests`, integration tests in `tests/`.
-- Documentation: Sphinx (.rst only), bibliography via sphinxcontrib-bibtex.
-- License: GPL-3.0.
-- Target reader: contributors and users may NOT be professional developers.
-  Keep everything readable and understandable.
+Priority order: (1) the explicit instruction of the user, (2) this file, (3) your
+own habits. When in doubt, ask instead of guessing.
 
-## 0. Transversal rules (apply to EVERY AI-assisted task)
+## 1. What FAST-OAD is
 
-1. **Scope**: do ONLY what is asked. No extra file, no extra feature, no
-   drive-by fix, no reformatting of untouched code.
-2. **Never modify source code** in a test or documentation task. If you find
-   a bug, a wrong docstring, or a suspicious result: do NOT fix it, report
-   it in a separate "Findings" list in your answer.
-3. **No new dependency** without explicit user approval.
-4. **Traceability of values**: every numeric value you introduce (tolerance,
-   reference result, default input) must come from the provided code, an
-   existing test, repository data, or cited literature. If you had to
-   choose a value by yourself, flag it as `[TO VALIDATE]` so a human can
-   check it.
-5. **Simplicity**: FAST-OAD aims at being readable by non-professional
-   developers. No metaprogramming, no cryptic one-liners, no clever
-   tricks when a plain loop is clearer.
-6. **Style**: PEP8, lines <= 100 chars, type hints encouraged, reST
-   docstrings. Ruff and pre-commit will reject violations anyway.
-7. **Output format**: give only the requested files/artifacts as the main
-   answer, then an optional short "Findings / To validate by a human"
-   list. No unrequested tutorial or advice.
-8. **Attribution**: the contribution is AI-assisted. The contributor (a
-   human) remains responsible: they must mention "Assisted-by-AI" in the
-   PR description and review the generated content before submitting.
-   AI output is never merged without human review and green CI.
-9. **License**: generated content is a contribution to FAST-OAD under
-   GPL-3.0, like any other contribution. Never include code or text
-   copied from proprietary sources.
+FAST-OAD runs on Python 3.10 to 3.14, on top of OpenMDAO (version bounds in
+`pyproject.toml`).
 
-## 1. Unit test generation
+FAST-OAD (Future Aircraft Sizing Tool - Overall Aircraft Design) is a framework
+for rapid Overall Aircraft Design. It is a **layer on top of OpenMDAO**: OpenMDAO
+solves the multidisciplinary problem, FAST-OAD adds what an aircraft design study
+needs around it:
 
-Apply the transversal rules, plus:
+- **I/O**: reading and writing variables and data files (DataFile, XML/YAML/TOML),
+- **configuration in natural language**: a computation process is described in a
+  readable configuration/mission file with named variables (for instance
+  `data:geometry:wing:span`), not in Python code,
+- **plugins and model library**: a discipline is a swappable model registered by
+  name, so the same process can run with different models,
+- **post-processing**: mission viewer, optimization viewer, variable viewer and
+  standard plots.
+
+Two consequences:
+
+- **Physics and sizing models are owned by their own model package**, not by this
+  repository: FAST-OAD-CS25 (CS-25/FAR-25 transport aircraft), RTA, FAST-OAD-GA,
+  CS23-HE, FAST-UAV, and any custom plugin. If the defect (formula, coefficient,
+  hypothesis, meaning of a variable) is in a model, say it and stop: the fix belongs
+  to the model package. Do NOT patch, copy or work around a model here. What core
+  really owns is the framework, plus the mission computation
+  (`src/fastoad/models/performances/mission`).
+- A change in core must stay **neutral**: it must not encode the assumptions of one
+  particular aircraft model package.
+
+## 2. Where the code is
+
+`src/fastoad/` (unit tests live in the `tests/` folder next to the tested code):
+
+| Folder | Content |
+| --- | --- |
+| `api.py` | Public import surface: `import fastoad.api as oad`. Use it first. |
+| `cmd/` | User entry points: CLI (`cli.py`, the `fastoad` command) and Python API (`api.py`: `evaluate_problem`, `optimize_problem`, `generate_inputs`, `list_variables`, `write_n2`...), plus `calc_runner.py` (batch runs, MPI). |
+| `io/` | Variable containers: `DataFile` (load/save), `io/xml/` (legacy XML format), `io/configuration/` (`FASTOADProblemConfigurator`: reads the configuration file and builds the problem). |
+| `openmdao/` | The FAST-OAD / OpenMDAO bridge: `problem.FASTOADProblem`, `variables/` (`Variable`, `VariableList`), `validity_checker.py`, MPI and utility helpers. |
+| `model_base/` | Building blocks for models: `Atmosphere`, `FlightPoint`, `Propulsion`, `datacls`, cycle `Group`. |
+| `models/` | Models shipped by core: only `performances/mission` (mission computation: `mission.py`, `polar.py`, `polar_modifier.py`, `segments/`, and `mission_definition/` which parses the mission file). |
+| `module_management/` | Plugin discovery and service registry (`RegisterService`, `RegisterSegment`, `RegisterOpenMDAOSystem`). |
+| `gui/` | Post-processing: `variable_viewer`, `optimization_viewer`, `mission_viewer`, `analysis_and_plots` (standard figures). |
+| `configurations/`, `source_data_files/`, `_utils/`, `constants.py`, `exceptions.py` | Package/plugin configuration, source data files, generic helpers, constants, exceptions. |
+| `testing.py` | `run_system(component, VariableList(...))`: convenience helper to run a component in a test. |
+| `notebooks/` | Tutorial notebooks, tested with nbval. |
+
+Other places: `docs/documentation/` (hand-written pages), `docs/api/` (**generated by
+Sphinx, never edit**), `docs/directives/` (custom directives), `docs/refs.bib`,
+`tests/` (integration and memory tests), `tests/dummy_plugins/`, and
+`src/conftest.py` (shared pytest fixtures).
+
+## 3. Golden rules (every task)
+
+1. **Scope**: do only what is asked. No extra file, no extra feature, no drive-by
+   fix, no reformatting of untouched code.
+2. **Blast radius**: keep the diff small. Changing 5 files is already a lot. If you
+   think more files are needed, do not write a new plan: ask the user a short
+   question and wait for the answer. The goal is to save review time and tokens. A
+   change touching tens of files at once is never acceptable for a single request.
+3. **Source code is editable when the task requires it** (fix, feature,
+   refactoring). In a *test* or *documentation* task, do not modify source code: if
+   you find a bug, a wrong docstring or a suspicious result, put it in a separate
+   "Findings" list instead of fixing it. If the requested work cannot be correct
+   without a source change, say so and let the user decide.
+4. **No new dependency** without explicit user approval. No command that modifies
+   the environment (`uv add`, `pip install`) unless asked.
+5. **Traceability of values**: every numeric value you introduce (tolerance,
+   reference result, default input) must come from the provided code, an existing
+   test, repository data, or cited literature. If you had to choose a value by
+   yourself, tag it `[TO VALIDATE]` so a human can check it.
+6. **Never make a test green artificially**: no loosened tolerance, no `skip` or
+   `xfail`, no `# noqa`, no deleted assertion to satisfy a run.
+7. **Git is read-only** for you: never `commit`, `push`, `amend`, `reset`,
+   `checkout`, `stash`, or clean the working tree. The human owns the history.
+8. **Never touch generated or derived files**: `docs/api/`, `docs/_build/`,
+   `docs/requirements.txt`, `uv.lock` (regenerated by `uv lock` and pre-commit
+   hooks), `htmlcov/`, `reports/`, `*.openmdao_out`.
+9. **Do not edit `CHANGELOG.rst` or the version number** unless explicitly asked.
+10. **No network** at run time: no download in code, tests or documentation.
+11. **Simplicity**: readers may not be professional developers. No metaprogramming,
+    no cryptic one-liners, no clever tricks when a plain loop is clearer.
+12. **Output format**: give only the requested files/artifacts as the main answer,
+    then an optional short "Findings / To validate by a human" list. No unrequested
+    tutorial or advice.
+13. **Attribution**: the contribution is AI-assisted. The contributor (a human)
+    remains responsible: they mention "Assisted-by-AI" in the PR description and
+    review the generated content before submitting. AI output is never merged
+    without human review and green CI.
+14. **License**: generated content is a contribution to FAST-OAD under GPL-3.0, like
+    any other contribution. Never include code or text copied from proprietary
+    sources.
+
+## 4. Coding conventions
+
+- **Units of measure**: every `add_input()` / `add_output()` declares `units=`. Use
+  `units=None` only for genuinely dimensionless quantities, and say it in the
+  docstring. Variable names follow the `data:<discipline>:...` / `tuning:...`
+  convention (see `docs/documentation/variables.rst`).
+- **Use `get_val()` everywhere**: read values through `get_val(...)` with the target
+  unit (`variable.get_val("m")`, `problem.get_val("data:geometry:wing:span")`),
+  never through the raw `.value` / `.val` attribute, so that unit conversion is
+  explicit and the code stays unit-safe.
+- **Prefer FAST-OAD to vanilla OpenMDAO** when an equivalent exists:
+
+| Instead of | Use |
+| --- | --- |
+| `om.Problem` | `fastoad.openmdao.problem.FASTOADProblem` |
+| hand-made `om.IndepVarComp` and wiring | `VariableList.to_ivc()`, or `fastoad.testing.run_system()` in tests |
+| reading YAML/XML by hand (`yaml`, `lxml`) | `fastoad.io.DataFile`, `FASTOADProblemConfigurator` |
+| ad-hoc dicts / DataFrames of variables | `Variable`, `VariableList` |
+| own plotting code | `fastoad.gui.analysis_and_plots` |
+| own registration mechanism | `@RegisterService`, `RegisterOpenMDAOSystem`, `RegisterSegment` |
+| `os.path` string handling for packaged data | `fastoad._utils.files`, `resource_management` |
+
+- **Type hints everywhere**: every function and method signature is annotated
+  (including test helpers). We may enable `ty` as a type checker later, so write
+  annotations that would pass it.
+- **Docstrings**: every function, method and class has a docstring, written in the
+  Sphinx documentation style used in this repository (reStructuredText: short
+  summary, then `:param <name>:`, `:return:`, `:raise <Exception>:` field lists).
+- **Style is enforced by Ruff** (configuration and selected rules in `ruff.toml`):
+  do not argue about style, run the tool. At the end of **every** modification, run
+
+```
+uv run ruff format <files you touched>
+uv run ruff check --fix <files you touched>
+```
+
+  and mention it in your answer. Never run them on the whole repository, it would
+  reformat untouched files. To reproduce the CI check:
+  `uv run ruff check . && uv run ruff format --check .`.
+
+## 5. Writing unit tests
 
 1. **Framework**: pytest only, no new test dependency.
-2. **Location and naming**:
-   - Unit tests go next to the tested code, following the existing
-     structure of the package (look at neighboring `tests/` folders).
-   - File: `test_<module>.py`. Functions: `test_<behavior>` where
-     `<behavior>` describes the physical or functional property verified.
-3. **Test content**:
-   - One test per behavior. Name must state what property is verified.
-   - Each test has a short reST docstring stating the physical relation
-     verified and its source (report, bibliography, analytical relation).
-   - Nominal case: compare against an analytical result, repository
-     reference data, or a value from literature. Use the comparison
-     convention of the repository: `pytest.approx()` for scalars, and
-     `numpy.testing.assert_allclose()` for lists or NumPy arrays
-     (explicit `rtol`/`atol`). Justify the tolerance in a comment.
-   - Boundary cases: zero, negative, out-of-domain inputs must be tested
-     for the *expected* behavior (raised error, NaN, clipped value...),
-     not merely for "does not crash".
-   - If reference values exist in the repository (XML files, existing
-     tests, docs), prefer them over invented values.
-4. **OpenMDAO specifics**:
-   - Test components through `setup()` / `compute()` (or
-     `setup_partials()` / `compute_partials()`) with explicit inputs.
-   - When the component declares partials, add a test using OpenMDAO's
-     `assert_check_partials` against finite differences, unless the
-     user says otherwise.
-   - No dependency on the plugin registry or external files unless the
-     tested code itself requires it; if needed, use the repository's
-     existing test fixtures and resources.
-5. **Isolation**: tests must pass with only the package installed
-   (`poetry install`, `pytest`). No network access, no absolute paths.
-6. **Completeness**: the test file must pass as-is. It is OK (and
-   expected) to start from the docstrings and `add_input`/`add_output`
-   declarations rather than guessing behavior that is not documented;
-   in that case, list the unclear points in "Findings".
-7. **Convention**: gather tests in classes, unless explicitly 
-   ask differently by user.
+2. **Module-level functions, never classes**: one `def test_<behavior>(...)` per
+   verified behaviour, in `test_<module>.py` next to the tested code
+   (`src/.../tests/`). Share data with `@pytest.fixture` (see `src/conftest.py`:
+   `with_no_plugin`, `with_dummy_plugin_1`, `plugin_root_path`, `xfoil_path`, and
+   the marker `skip_if_no_xfoil`), never with `setup_method` or a class.
+3. **Name and docstring**: the name states the verified property (physical or
+   functional), and a short reST docstring gives the relation verified and its
+   source (report, bibliography, analytical relation).
+4. **Comparisons and tolerances**: `pytest.approx()` for scalars and
+   `numpy.testing.assert_allclose()` with explicit `rtol`/`atol` for lists and NumPy
+   arrays; justify the tolerance in a comment. Prefer repository reference data
+   (`tests/data/`, `tests/results/`, existing tests, documentation) to invented
+   values.
+5. **Boundary cases**: zero, negative and out-of-domain inputs are tested for the
+   *expected* behaviour (raised error, NaN, clipped value...), not merely for "it
+   does not crash".
+6. **OpenMDAO specifics**: exercise components through `setup()` / `compute()` (or
+   `setup_partials()` / `compute_partials()`) with explicit inputs, preferably via
+   `fastoad.testing.run_system()`. No dependency on the plugin registry or on
+   external files unless the tested code itself requires it; then reuse the
+   existing fixtures and resources.
+7. **Analytic derivatives must be checked**: as soon as a component you write
+   declares analytic partials (`declare_partials(..., method="exact")`), its test
+   includes a finite-difference comparison with
+   `openmdao.utils.assert_utils.assert_check_partials`. It is not needed when the
+   component relies on finite differences (the OpenMDAO default). This repository
+   hosts no physics model (models live in their own packages, see section 1), so it
+   applies to every new component added here; no test in `src/` does it yet, so
+   mention it in your answer.
+8. **Isolation**: tests must pass with the environment installed (`uv sync`) and no
+   extra setup. No network, no absolute paths.
+9. **Completeness**: the test file must pass as-is. It is acceptable (and expected)
+   to start from the docstrings and `add_input` / `add_output` declarations rather
+   than guessing behaviour that is not documented; in that case, list the unclear
+   points in "Findings".
 
-## 2. Documentation generation (.rst)
+## 6. Writing documentation (.rst)
 
-Apply the transversal rules, plus:
+1. **Format**: reStructuredText only, no Markdown.
+2. **Consistency**: reuse the structure of the existing pages of the same
+   package/topic, and read the neighbours first: `docs/documentation/` for
+   hand-written pages (`docs/api/` is generated, never edit it). House style is
+   `.. code-block::`, `.. code::`, `.. note::`, `.. seealso::`, `.. versionadded::`,
+   `.. list-table::`, and the custom `.. list-attributes-for::` and
+   `.. list-segments-for::` directives used to list segment parameters.
+3. **Cross references**: declare a target (`.. _my-label:`) and point to it with the
+   Sphinx `:ref:` role, e.g. ``:ref:`text <my-label>` ``.
+4. **Scope**: document only the public API of the provided module. No new tutorial,
+   no new section, no page you were not asked for.
+5. **Physics content**: for each model, give the governing equation(s) rendered
+   with the `:math:` role, the meaning of each variable WITH its unit (units
+   declared in `add_input` / `add_output`), the assumptions and the domain of
+   validity, and the source of the model cited through the keys of `docs/refs.bib`
+   (the `:cite:` role, provided by sphinxcontrib-bibtex). Never invent a
+   bibliography entry: if no suitable key exists, write the plain-text reference
+   and tag it `[TO VALIDATE: reference]`.
+6. **`:math:` is mandatory in new pages**: every new documentation file that
+   presents a model or a computation writes its equations with `:math:` (LaTeX
+   syntax, `$...$` inline or `.. math::` block). Existing pages are not to be
+   converted: the rule applies to the files you create or extend.
+7. **Readability**: short sentences, acronyms defined, no implicit jargon. The
+   reader may be an engineering student using FAST-OAD for the first time.
+8. **Docstrings**: in a documentation task, do not rewrite existing docstrings; the
+   .rst page and the docstrings must stay consistent. If a docstring is missing,
+   wrong, or inconsistent with the code, report it in "Findings" instead of editing
+   the source.
+9. **Build check**: `uv sync --group doc` once, then
+   `uv run sphinx-build -b html docs docs/_build/html`. The build is `nitpicky`:
+   compare with a build from `master` and introduce no new warning. Report anything
+   you could not verify.
 
-1. **Format**: reStructuredText only, using the Sphinx directives already
-   used in `docs/` (`autoclass`, `automodule`, `math`, `figure`,
-   `bibliography`...). No Markdown.
-2. **Consistency**: reuse the structure of the existing documentation
-   pages of the same package/topic (browse `docs/source/` first) so the
-   new page blends in.
-3. **Scope**: document only the public API of the provided module. No
-   new tutorial, no new section, no page you were not asked for.
-4. **Physics content** — for each model, the documentation must give:
-   - the governing equation(s) with a `:math:` directive,
-   - the meaning of each variable, WITH its unit (use the units declared
-     in `add_input`/`add_output`),
-   - the assumptions and the domain of validity,
-   - the source of the model, cited through the existing
-     sphinxcontrib-bibtex keys. Never invent a bibliography entry;
-     if no suitable key exists, put `[TO VALIDATE: reference]`.
-5. **Readability**: short sentences, defined acronyms, no implicit
-   jargon. The reader may be an engineering student using FAST-OAD for
-   the first time.
-6. **Docstrings**: in a documentation task, do not rewrite existing
-   docstrings; the .rst page and the docstrings must stay consistent.
-   If a docstring is missing, wrong, or inconsistent with the code,
-   report it in "Findings" instead of editing the source.
-7. **Build check**: the generated .rst must build with
-   `poetry run sphinx-build -b html docs docs/_build/html` without new
-   warnings. Report anything you could not verify.
+## 7. Running things
 
-## 3. Workflow & test execution (good practices for working in FAST-OAD)
+| Goal | Command |
+| --- | --- |
+| Environment | `uv sync` (default groups: dev, test, lint); add `--extra mpi` for MPI and `--group doc` for the documentation |
+| Pre-commit hooks | `uv run pre-commit install` |
+| Lint / format | `uv run ruff check --fix <files>` / `uv run ruff format <files>` |
+| CI-style lint | `uv run ruff check . && uv run ruff format --check .` |
+| One test file | `uv run pytest src/fastoad/.../tests/test_x.py` |
+| Unit tests | `uv run pytest src/fastoad/<sub-package>`, `-m "not mpi"` to skip MPI tests |
+| Integration tests | `uv run pytest --no-cov tests/integration_tests` |
+| Memory tests | `uv run pytest --no-cov tests/memory_tests` |
+| Notebook tests | `uv run pytest --no-cov --nbval-lax -p no:python src/fastoad/notebooks` |
 
-Apply the transversal rules, plus:
+Note: `testpaths` is `src` in `pyproject.toml`, so a bare `pytest` never collects
+`tests/`; give the path explicitly.
 
-1. **Unit tests**: after generating or modifying unit tests, run them
-   (they are fast) and iterate until they pass. Report the result.
-2. **Integration tests** (`tests/` at repository root): they are long
-   (up to 10 minutes). Do NOT run them systematically. Run them only
-   if legacy code (existing source code, configuration files, or test
-   files other than the ones you created) has been modified — in that
-   case, run them at the END of your work, once all other tasks are
-   complete, and report the result.
-3. If your task does not require touching legacy code, skip the
-   integration tests and say so explicitly: "Integration tests not run
-   (no legacy code modified)."
+Execution policy:
 
-## 4. Mandatory final self-check
+1. **Unit tests**: always run the test file(s) you created or modified (they are
+   fast), iterate until they pass, and report the command and the result.
+2. **Integration tests and the full unit test suite** (`tests/integration_tests`,
+   `pytest src`) are long: do not run them systematically. Run them at the END of
+   your work, and only if pre-existing code (source, configuration, data or tests
+   you did not create) has been modified. Report the result.
+3. If you skipped them, say it explicitly: "Integration tests not run (no
+   pre-existing code modified)."
+4. **Memory tests are very heavy**: never run them, the GitHub Action takes care of
+   that.
 
-Before returning your answer, verify and confirm:
-- [ ] I did not modify any source file.
+## 8. Mandatory final self-check
+
+Before answering, verify and confirm:
+- [ ] I did only what was asked, and the diff is small (5 files or fewer).
+- [ ] In a test or documentation task, I did not modify any source file, and my
+      findings are listed instead.
 - [ ] I added no dependency and created only the requested files.
 - [ ] Every numeric value is traceable or tagged `[TO VALIDATE]`.
-- [ ] I ran ruff check and ruff format and corrected the errors
+- [ ] Units are declared and values read with `get_val()`; FAST-OAD helpers are
+      preferred to vanilla OpenMDAO.
+- [ ] Type hints and a Sphinx-style docstring are present on everything I wrote or
+      modified.
+- [ ] Analytic partials I introduced are checked with `assert_check_partials`.
+- [ ] I ran `uv run ruff format` and `uv run ruff check --fix` on the touched files.
 - [ ] I listed findings and uncertainties for human review.
-- [ ] I ran the unit tests I created; I ran integration tests only if
-      legacy code was modified (at the end of my work), or I stated why not.
+- [ ] I ran the unit tests I created or modified; I ran integration tests only if
+      pre-existing code was modified (at the end of my work), or I stated why not.
