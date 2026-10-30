@@ -819,3 +819,48 @@ Therefore, the next example is equivalent to the previous one:
     segment: cruise
     polar: data:aerodynamics:aircraft:high_speed
 
+.. _the-polar-modifier-sub-key:
+
+:code:`modifier` sub-key of the :code:`polar` parameter
+=======================================================
+
+The :code:`polar` parameter can optionally include a :code:`modifier` sub-key.
+This sub-key allows specifying a polar modifier that dynamically changes the polar
+during the mission computation (e.g. to model ground effect).
+
+The :code:`modifier` sub-key has a mandatory :code:`name` field matching the keyword
+of a registered polar modifier, and additional parameters required by that modifier.
+
+Example with the ``ground_effect_raymer`` modifier:
+
+.. code-block:: yaml
+
+    polar:
+      CL: data:aerodynamics:aircraft:takeoff:CL
+      CD: data:aerodynamics:aircraft:takeoff:CD
+      alpha: data:aerodynamics:aircraft:takeoff:AoA
+      modifier:
+        name: ground_effect_raymer
+        span:
+          value: data:geometry:wing:span
+          unit: m
+        landing_gear_height:
+          value: data:geometry:landing_gear:height
+          unit: m
+        induced_drag_coefficient:
+          value: data:aerodynamics:aircraft:low_speed:CD:induced:coefficient
+        k_winglet:
+          value: tuning:aerodynamics:aircraft:high_speed:CD:winglet_effect:k
+        k_cd:
+          value: tuning:aerodynamics:aircraft:high_speed:CD:k
+
+A modifier may be used to change the polar during the computation: the modifiers
+provided by FAST-OAD (including the Raymer ground effect model) and the way to
+write a new one are described in
+:ref:`Polar and polar modifications <polar-modifier>`.
+
+.. seealso::
+
+    :ref:`Polar and polar modifications <polar-modifier>` for the available
+    modifiers and for writing your own.
+

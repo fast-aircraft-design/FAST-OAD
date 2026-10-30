@@ -15,3 +15,4 @@ file.
 
     Adding segment types <adding_segments>
     The FlightPoint class <flight_point>
+    Using polar modifiers <polar_modifier>

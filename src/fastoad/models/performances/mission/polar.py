@@ -12,29 +12,32 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from numpy import ndarray
+import numpy as np
 from scipy.interpolate import interp1d
 from scipy.optimize import fmin
 
 
 class Polar:
-    def __init__(self, cl: ndarray, cd: ndarray, alpha: ndarray = None):
-        """
-        Class for managing aerodynamic polar data.
+    """Aerodynamic polar linking lift coefficient (CL) to drag coefficient (CD).
 
-        Links drag coefficient (CD) to lift coefficient (CL).
-        It is defined by two vectors with CL and CD values.
-        If a vector of angle of attack (alpha) is given, it links alpha and CL
+    This class manages aerodynamic polar data, providing an interpolation-based
+    relation between CL and CD. It is defined by two vectors of equal size: one
+    for CL values and one for the corresponding CD values.
 
-        Once defined, for any CL value, CD can be obtained using :meth:`cd`.
-        For any alpha given, CL is obtained using :meth:'cl'.
+    If a vector of angle of attack (alpha) is provided, the polar also provides
+    CL as a function of alpha.
 
-        :param cl: a N-elements array with CL values
-        :param cd: a N-elements array with CD values that match CL
-        :param alpha: a N-elements array with angle of attack corresponding to CL values
+    Once defined, for any CL value, CD can be obtained using :meth:`cd`.
+    For any alpha value, CL can be obtained using :meth:`cl`.
 
-        """
+    :param cl: a N-elements array with lift coefficient (CL) values, unitless
+    :param cd: a N-elements array with drag coefficient (CD) values, matching CL
+    :param alpha: a N-elements array with angle of attack (alpha) in radians,
+        corresponding to the CL values
 
+    """
+
+    def __init__(self, cl: np.ndarray, cd: np.ndarray, alpha: np.ndarray | None = None) -> None:
         self._definition_CL = cl
         self._definition_CD = cd
 
@@ -46,50 +49,50 @@ class Polar:
         if alpha is not None:
             self._cl_vs_alpha = interp1d(alpha, cl, kind="linear", fill_value="extrapolate")
 
-        def _negated_lift_drag_ratio(lift_coeff):
+        def _negated_lift_drag_ratio(lift_coeff: float) -> float:
             """Returns -CL/CD."""
             return -lift_coeff / self.cd(lift_coeff)
 
         self._optimal_CL = fmin(_negated_lift_drag_ratio, cl[0], disp=0)
 
     @property
-    def definition_cl(self):
-        """The vector that has been used for defining lift coefficient."""
+    def definition_cl(self) -> np.ndarray:
+        """The CL vector used for defining the polar (unitless)."""
         return self._definition_CL
 
     @property
-    def definition_cd(self):
-        """The vector that has been used for defining drag coefficient."""
+    def definition_cd(self) -> np.ndarray:
+        """The CD vector used for defining the polar (unitless)."""
         return self._definition_CD
 
     @property
-    def definition_alpha(self):
-        """The vector that has been used for defining AoA."""
+    def definition_alpha(self) -> np.ndarray | None:
+        """The angle of attack (alpha) vector used for defining the polar (rad),
+        or None if not provided."""
         return self._definition_alpha
 
     @property
-    def optimal_cl(self):
-        """The CL value that provides larger lift/drag ratio."""
+    def optimal_cl(self) -> np.ndarray:
+        """The CL value providing the best lift/drag ratio (unitless)."""
         return self._optimal_CL
 
-    def cd(self, cl=None):
-        """
-        Computes drag coefficient (CD) by interpolation in definition data.
+    def cd(self, cl: float | np.ndarray | None = None) -> np.ndarray:
+        """Compute drag coefficient (CD) by interpolation in definition data.
 
-        :param cl: lift coefficient (CL) values. If not provided, the CL definition vector will be
-                   used (i.e. CD definition vector will be returned)
-        :return: CD values for each provide CL values
+        :param cl: lift coefficient (CL) value(s). If None, the CD values for the
+            definition CL vector are returned.
+        :return: drag coefficient (CD) value(s), unitless
         """
         if cl is None:
             return self._cd_vs_cl(self._definition_CL)
         return self._cd_vs_cl(cl)
 
-    def cl(self, alpha):
-        """
-        The lift coefficient corresponding to alpha (rad)
+    def cl(self, alpha: float | np.ndarray) -> np.ndarray:
+        """Compute lift coefficient (CL) from angle of attack (alpha).
 
-        :param alpha: the angle of attack at which CL is evaluated
-        :return: CL value for each alpha.
+        :param alpha: angle of attack in radians
+        :return: lift coefficient (CL) value(s), unitless
+        :raises ValueError: if the polar was instantiated without an alpha vector
         """
         if self._definition_alpha is None:
             raise ValueError("Polar was instantiated without alpha vector.")

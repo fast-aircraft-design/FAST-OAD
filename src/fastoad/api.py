@@ -46,6 +46,8 @@ from fastoad.model_base import Atmosphere, AtmosphereSI, FlightPoint
 from fastoad.model_base.datacls import MANDATORY_FIELD
 from fastoad.model_base.openmdao.group import BaseCycleGroup, CycleGroup
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
+from fastoad.models.performances.mission.polar import Polar
+from fastoad.models.performances.mission.polar_modifier import RegisterPolarModifier
 from fastoad.models.performances.mission.segments.base import (
     AbstractFlightSegment,
     IFlightPart,
@@ -95,7 +97,9 @@ __all__ = [
     "IOMPropulsionWrapper",
     "MissionViewer",
     "OptimizationViewer",
+    "Polar",
     "RegisterOpenMDAOSystem",
+    "RegisterPolarModifier",
     "RegisterPropulsion",
     "RegisterSegment",
     "RegisterSpecializedService",

@@ -197,9 +197,6 @@
         "polar": {
           "$ref": "#/definitions/polar"
         },
-        "polar_modifier": {
-          "$ref": "#/definitions/polar_modifier"
-        },
         "thrust_rate": {
           "$ref": "#/definitions/parameter_value_without_unit"
         },
