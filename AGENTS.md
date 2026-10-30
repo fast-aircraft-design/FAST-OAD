@@ -192,31 +192,38 @@ uv run ruff check --fix <files you touched>
    `.. code-block::`, `.. code::`, `.. note::`, `.. seealso::`, `.. versionadded::`,
    `.. list-table::`, and the custom `.. list-attributes-for::` and
    `.. list-segments-for::` directives used to list segment parameters.
-3. **Cross references**: declare a target (`.. _my-label:`) and point to it with the
+3. **Examples are mandatory**: readers must be able to see how to use what is
+   described. Every page, and every section presenting a feature, contains at least
+   one concrete example that can be copied and adapted: `.. code-block:: yaml` for a
+   configuration or mission file, `.. code:: python` for the API, a `.. list-table::`
+   for parameters. Say *where* things go (file, folder, module) and *how* the
+   feature is discovered (keyword, registration, plugin), each with an example.
+   A page that only describes concepts is incomplete.
+4. **Cross references**: declare a target (`.. _my-label:`) and point to it with the
    Sphinx `:ref:` role, e.g. ``:ref:`text <my-label>` ``.
-4. **Scope**: document only the public API of the provided module. No new tutorial,
+5. **Scope**: document only the public API of the provided module. No new tutorial,
    no new section, no page you were not asked for.
-5. **Physics content**: for each model, give the governing equation(s) rendered
+6. **Physics content**: for each model, give the governing equation(s) rendered
    with the `:math:` role, the meaning of each variable WITH its unit (units
    declared in `add_input` / `add_output`), the assumptions and the domain of
    validity, and the source of the model cited through the keys of `docs/refs.bib`
    (the `:cite:` role, provided by sphinxcontrib-bibtex). Never invent a
    bibliography entry: if no suitable key exists, write the plain-text reference
    and tag it `[TO VALIDATE: reference]`.
-6. **`:math:` is mandatory in new pages**: every new documentation file that
+7. **`:math:` is mandatory in new pages**: every new documentation file that
    presents a model or a computation writes its equations with `:math:` (LaTeX
    syntax, `$...$` inline or `.. math::` block). Existing pages are not to be
    converted: the rule applies to the files you create or extend.
-7. **Readability**: short sentences, acronyms defined, no implicit jargon. The
+8. **Readability**: short sentences, acronyms defined, no implicit jargon. The
    reader may be an engineering student using FAST-OAD for the first time.
-8. **Docstrings**: in a documentation task, do not rewrite existing docstrings; the
+9. **Docstrings**: in a documentation task, do not rewrite existing docstrings; the
    .rst page and the docstrings must stay consistent. If a docstring is missing,
    wrong, or inconsistent with the code, report it in "Findings" instead of editing
    the source.
-9. **Build check**: `uv sync --group doc` once, then
-   `uv run sphinx-build -b html docs docs/_build/html`. The build is `nitpicky`:
-   compare with a build from `master` and introduce no new warning. Report anything
-   you could not verify.
+10. **Build check**: `uv sync --group doc` once, then
+    `uv run sphinx-build -b html docs docs/_build/html`. The build is `nitpicky`:
+    compare with a build from `master` and introduce no new warning. Report anything
+    you could not verify.
 
 ## 7. Running things
 
