@@ -39,19 +39,8 @@ def run_system(
     :return: a FASTOADProblem instance
     """
 
-    if "nonlinear_solver" not in kwargs:
-        if isinstance(component, om.ImplicitComponent):
-            kwargs["nonlinear_solver"] = "om.NewtonSolver"
-            kwargs["linear_solver"] = "om.DirectSolver"
-
-            if kwargs.get("nonlinear_solver_options", {}).get("solve_subsystems") is None:
-                kwargs["nonlinear_solver_options"]["solve_subsystems"] = False
-
-        else:
-            kwargs["nonlinear_solver"] = "om.NonlinearRunOnce"
-
     problem = FASTOADProblem()
-    model = problem.model = BaseCycleGroup(**kwargs)
+    model = problem.model = BaseCycleGroup(**_get_solver_kwargs(component, kwargs))
 
     if isinstance(input_vars, VariableList):
         input_vars = input_vars.to_ivc()
@@ -72,3 +61,41 @@ def run_system(
     problem.run_model()
 
     return problem
+
+
+def setup_component(component: System, **kwargs) -> FASTOADProblem:
+    """
+    Returns a problem containing provided component, after `setup()` only.
+
+    No input data is provided and no computation is done, which is enough when one only
+    needs to check model wiring, e.g. solvers that have been added during `setup()`.
+
+    :param component: OpenMDAO component to be set up
+    :param kwargs: options of :class:`fastoad.api.BaseCycleGroup`, to add control solvers
+                   in the problem
+    :return: a FASTOADProblem instance
+    """
+    problem = FASTOADProblem()
+    model = problem.model = BaseCycleGroup(**_get_solver_kwargs(component, kwargs))
+    model.add_subsystem("component", component, promotes=["*"])
+    problem.setup()
+
+    return problem
+
+
+def _get_solver_kwargs(component: System, kwargs: dict) -> dict:
+    """
+    Provides arguments for :class:`BaseCycleGroup`.
+    """
+    if "nonlinear_solver" not in kwargs:
+        if isinstance(component, om.ImplicitComponent):
+            kwargs["nonlinear_solver"] = "om.NewtonSolver"
+            kwargs["linear_solver"] = "om.DirectSolver"
+
+            if kwargs.get("nonlinear_solver_options", {}).get("solve_subsystems") is None:
+                kwargs["nonlinear_solver_options"]["solve_subsystems"] = False
+
+        else:
+            kwargs["nonlinear_solver"] = "om.NonlinearRunOnce"
+
+    return kwargs
