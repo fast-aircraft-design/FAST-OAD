@@ -84,9 +84,7 @@ def setup_component(component: System, **kwargs) -> FASTOADProblem:
 
 
 def _get_solver_kwargs(component: System, kwargs: dict) -> dict:
-    """
-    Provides arguments for :class:`BaseCycleGroup`.
-    """
+    """Provides arguments for :class:`BaseCycleGroup`."""
     if "nonlinear_solver" not in kwargs:
         if isinstance(component, om.ImplicitComponent):
             kwargs["nonlinear_solver"] = "om.NewtonSolver"
