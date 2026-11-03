@@ -12,6 +12,7 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import numpy as np
 from scipy.interpolate import interp1d
 from scipy.optimize import fmin
 
@@ -36,7 +37,7 @@ class Polar:
 
     """
 
-    def __init__(self, cl, cd, alpha=None):
+    def __init__(self, cl: np.ndarray, cd: np.ndarray, alpha: np.ndarray | None = None) -> None:
         self._definition_CL = cl
         self._definition_CD = cd
 
@@ -48,34 +49,34 @@ class Polar:
         if alpha is not None:
             self._cl_vs_alpha = interp1d(alpha, cl, kind="linear", fill_value="extrapolate")
 
-        def _negated_lift_drag_ratio(lift_coeff):
+        def _negated_lift_drag_ratio(lift_coeff: float) -> float:
             """Returns -CL/CD."""
             return -lift_coeff / self.cd(lift_coeff)
 
         self._optimal_CL = fmin(_negated_lift_drag_ratio, cl[0], disp=0)
 
     @property
-    def definition_cl(self):
+    def definition_cl(self) -> np.ndarray:
         """The CL vector used for defining the polar (unitless)."""
         return self._definition_CL
 
     @property
-    def definition_cd(self):
+    def definition_cd(self) -> np.ndarray:
         """The CD vector used for defining the polar (unitless)."""
         return self._definition_CD
 
     @property
-    def definition_alpha(self):
+    def definition_alpha(self) -> np.ndarray | None:
         """The angle of attack (alpha) vector used for defining the polar (rad),
         or None if not provided."""
         return self._definition_alpha
 
     @property
-    def optimal_cl(self):
+    def optimal_cl(self) -> np.ndarray:
         """The CL value providing the best lift/drag ratio (unitless)."""
         return self._optimal_CL
 
-    def cd(self, cl=None):
+    def cd(self, cl: float | np.ndarray | None = None) -> np.ndarray:
         """Compute drag coefficient (CD) by interpolation in definition data.
 
         :param cl: lift coefficient (CL) value(s). If None, the CD values for the
@@ -86,7 +87,7 @@ class Polar:
             return self._cd_vs_cl(self._definition_CL)
         return self._cd_vs_cl(cl)
 
-    def cl(self, alpha):
+    def cl(self, alpha: float | np.ndarray) -> np.ndarray:
         """Compute lift coefficient (CL) from angle of attack (alpha).
 
         :param alpha: angle of attack in radians

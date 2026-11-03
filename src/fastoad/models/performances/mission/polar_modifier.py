@@ -94,48 +94,51 @@ class UnchangedPolar(AbstractPolarModifier):
 @RegisterPolarModifier("ground_effect_raymer")
 @dataclass
 class GroundEffectRaymer(AbstractPolarModifier):
-    """Evaluates drag increase due to ground effect using Raymer's model.
+    """Evaluates the drag reduction due to ground effect using Raymer's model.
 
     Reference: *Aircraft Design: A Conceptual Approach*, D. Raymer, p. 304.
 
     The ground effect is computed from the altitude of the flight point relative
     to the ground, the wingspan, and the main landing gear height. The induced
-    drag is increased by a factor that depends on the proximity to the ground.
+    drag is decreased by a factor that depends on the proximity to the ground:
+    the correction term (k_ground - 1) is negative, hence the drag coefficient
+    of the polar is reduced.
 
-    Fields:
-        span: wingspan (m)
-        landing_gear_height: main landing gear height (m)
-        induced_drag_coefficient: coefficient multiplying CL**2 for induced drag (unitless)
-        k_winglet: winglet effect tuning coefficient (unitless)
-        k_cd: total drag tuning coefficient (unitless)
-        ground_altitude: altitude of ground w.r.t. sea level (m), default 0.0
+    :param span: wingspan (m)
+    :param landing_gear_height: main landing gear height (m)
+    :param induced_drag_coefficient: coefficient multiplying CL**2 for induced drag
+        (unitless)
+    :param k_winglet: winglet effect tuning coefficient (unitless)
+    :param k_cd: total drag tuning coefficient (unitless)
+    :param ground_altitude: altitude of ground w.r.t. sea level (m), default 0.0
     """
 
-    #: Wingspan
+    #: Wingspan (m)
     span: float
 
-    #: Main landing gear height
+    #: Main landing gear height (m)
     landing_gear_height: float
 
-    #: Induced drag coefficient, multiplies CL**2 to obtain the induced drag
+    #: Induced drag coefficient (unitless), multiplies CL**2 to obtain the induced drag
     induced_drag_coefficient: float
 
-    #: Winglet effect tuning coefficient
+    #: Winglet effect tuning coefficient (unitless)
     k_winglet: float
 
-    #: Total drag tuning coefficient
+    #: Total drag tuning coefficient (unitless)
     k_cd: float
 
-    #: Altitude of ground w.r.t. sea level
+    #: Altitude of ground w.r.t. sea level (m)
     ground_altitude: float = 0.0
 
     def modify_polar(self, polar: Polar, flight_point: FlightPoint) -> Polar:
-        """Compute the ground effect drag increase and return a modified polar.
+        """Compute the ground effect correction and return a modified polar.
 
         :param polar: the original Polar instance to modify
         :param flight_point: a FlightPoint instance containing the flight conditions
-            (altitude, speed, etc.) for ground effect calculation
-        :return: a new Polar instance with added ground effect drag
+            (altitude (m), speed, etc.) for ground effect calculation
+        :return: a new Polar instance, with the ground effect correction applied to
+            the drag coefficient
         """
 
         h_b = (
