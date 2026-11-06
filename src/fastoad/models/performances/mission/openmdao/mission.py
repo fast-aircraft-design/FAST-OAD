@@ -82,8 +82,10 @@ class OMMission(
             default=False,
             types=bool,
             deprecation=(
-                'Option "compute_TOW" is deprecated for mission module. '
-                'Please use "compute_input_weight" instead.',
+                (
+                    'Option "compute_TOW" is deprecated for mission module. '
+                    'Please use "compute_input_weight" instead.'
+                ),
                 "compute_input_weight",
             ),
             desc="If True, TakeOff Weight will be computed from onboard fuel at takeoff and ZFW.\n"
@@ -95,8 +97,10 @@ class OMMission(
             default=self.use_solvers_by_default,
             types=bool,
             deprecation=(
-                'Option "add_solver" is deprecated for mission module. '
-                'Please use "use_inner_solvers" instead.',
+                (
+                    'Option "add_solver" is deprecated for mission module. '
+                    'Please use "use_inner_solvers" instead.'
+                ),
                 "use_inner_solvers",
             ),
             desc="If True, a local solver is set for the mission computation.\n"

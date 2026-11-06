@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Poetry install" type="ShConfigurationType">
-    <option name="SCRIPT_TEXT" value="poetry install" />
+  <configuration default="false" name="uv sync" type="ShConfigurationType">
+    <option name="SCRIPT_TEXT" value="uv sync" />
     <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
     <option name="SCRIPT_PATH" value="" />
     <option name="SCRIPT_OPTIONS" value="" />
