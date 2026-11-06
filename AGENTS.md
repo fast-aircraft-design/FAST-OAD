@@ -87,8 +87,6 @@ Apply the transversal rules, plus:
    expected) to start from the docstrings and `add_input`/`add_output`
    declarations rather than guessing behavior that is not documented;
    in that case, list the unclear points in "Findings".
-7. **Convention**: gather tests in classes, unless explicitly 
-   ask differently by user.
 
 ## 2. Documentation generation (.rst)
 
