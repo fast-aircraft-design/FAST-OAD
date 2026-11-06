@@ -180,8 +180,8 @@ def test_modify_polar_with_ground_altitude(polar):
     )
 
 
-
 """Tests for polar modifier registration and retrieval."""
+
 
 def test_register_and_get_class():
     """Registered polar modifiers should be retrievable by keyword."""
@@ -193,16 +193,19 @@ def test_register_and_get_class():
     assert ground_class is not None
     assert issubclass(ground_class, AbstractPolarModifier)
 
+
 def test_get_classes_contains_all():
     """get_classes should return all registered polar modifiers."""
     classes = RegisterPolarModifier.get_classes()
     assert "none" in classes
     assert "ground_effect_raymer" in classes
 
+
 def test_get_unknown_class_raises():
     """get_class should raise FastUnknownMissionElementError for unknown keyword."""
     with pytest.raises(FastUnknownMissionElementError):
         RegisterPolarModifier.get_class("nonexistent_modifier")
+
 
 def test_register_decorator():
     """The @RegisterPolarModifier decorator should register the class."""
@@ -216,8 +219,8 @@ def test_register_decorator():
     assert retrieved is TestModifier
 
 
-
 """Tests for boundary and edge-case inputs."""
+
 
 def test_modify_polar_zero_span_raises_zero_division(polar):
     """Zero span must raise ZeroDivisionError due to h_b computation (h_b = .../span)."""
@@ -231,6 +234,7 @@ def test_modify_polar_zero_span_raises_zero_division(polar):
     fp = FlightPoint(altitude=1.0)
     with pytest.raises(ZeroDivisionError):
         modifier.modify_polar(polar, fp)
+
 
 def test_modify_polar_negative_altitude_nan_effect(polar):
     """Robust to negative altitude values."""
@@ -246,6 +250,7 @@ def test_modify_polar_negative_altitude_nan_effect(polar):
     result = modifier.modify_polar(polar, fp)
 
     assert not np.any(np.isnan(result.definition_cd))
+
 
 def test_modify_polar_negative_cl(polar, flight_point):
     """Negative CL squared yields same ground effect as positive CL of same magnitude."""
