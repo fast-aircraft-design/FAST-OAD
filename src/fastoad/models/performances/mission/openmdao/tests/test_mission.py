@@ -15,13 +15,14 @@ import logging
 import shutil
 from pathlib import Path
 
+import openmdao.api as om
 import pytest
 from numpy.testing import assert_allclose
 from scipy.constants import foot, knot, nautical_mile
 
 from fastoad._utils.arrays import scalarize
 from fastoad.io import DataFile
-from fastoad.testing import run_system
+from fastoad.testing import run_system, setup_component
 
 from ..mission import OMMission
 from ..mission_run import AdvancedMissionComp
@@ -327,6 +328,102 @@ def test_mission_group_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
 
     completed = problem.get_val("data:mission:operational:all_targets_reached")
     assert bool(scalarize(completed))
+
+
+def test_mission_group_with_fuel_adjustment_auto_activates_inner_solvers(
+    cleanup, with_dummy_plugin_2
+):
+    input_file_path = DATA_FOLDER_PATH / "test_mission.xml"
+    variables = DataFile(input_file_path)
+    del variables["data:mission:operational:TOW"]
+    ivc = variables.to_ivc()
+
+    problem = run_system(
+        OMMission(
+            propulsion_id="test.wrapper.propulsion.dummy_engine",
+            out_file=RESULTS_FOLDER_PATH / "forced_solver_mission_group.csv",
+            use_initializer_iteration=True,
+            mission_file_path=DATA_FOLDER_PATH / "test_mission.yml",
+            mission_name="operational",
+            use_inner_solvers=False,
+            reference_area_variable="data:geometry:aircraft:reference_area",
+        ),
+        ivc,
+    )
+
+    assert problem.model.component.options["use_inner_solvers"]
+    assert problem.model.component.nonlinear_solver is not None
+    assert not isinstance(problem.model.component.nonlinear_solver, om.NonlinearRunOnce)
+    assert_allclose(
+        problem["data:mission:operational:needed_block_fuel"],
+        problem["data:mission:operational:block_fuel"],
+        atol=1.0,
+    )
+
+
+def test_sizing_mission_group_with_fuel_adjustment_does_not_add_local_solver(with_dummy_plugin_2):
+    mission = OMMission(
+        propulsion_id="test.wrapper.propulsion.dummy_engine",
+        mission_file_path=DATA_FOLDER_PATH / "test_breguet.yml",
+        reference_area_variable="data:geometry:aircraft:reference_area",
+        use_inner_solvers=False,
+        is_sizing=True,
+    )
+    problem = setup_component(mission)
+
+    assert not problem.model.component.options["use_inner_solvers"]
+    assert isinstance(problem.model.component.nonlinear_solver, om.NonlinearRunOnce)
+
+
+def test_mission_group_with_fuel_adjustment_overrides_existing_local_solver(with_dummy_plugin_2):
+    mission = OMMission(
+        propulsion_id="test.wrapper.propulsion.dummy_engine",
+        mission_file_path=DATA_FOLDER_PATH / "test_mission.yml",
+        mission_name="operational",
+        reference_area_variable="data:geometry:aircraft:reference_area",
+        use_inner_solvers=False,
+    )
+    mission.linear_solver = om.DirectSolver()
+    mission.nonlinear_solver = om.NewtonSolver(solve_subsystems=False)
+
+    problem = setup_component(mission)
+
+    assert problem.model.component.options["use_inner_solvers"]
+    assert isinstance(problem.model.component.nonlinear_solver, om.NonlinearBlockGS)
+
+
+def test_mission_group_with_fuel_adjustment_never_mode_preserves_run_once_solvers(
+    with_dummy_plugin_2,
+):
+    mission = OMMission(
+        propulsion_id="test.wrapper.propulsion.dummy_engine",
+        mission_file_path=DATA_FOLDER_PATH / "test_mission.yml",
+        mission_name="operational",
+        reference_area_variable="data:geometry:aircraft:reference_area",
+        use_inner_solvers=False,
+        adjust_fuel_solver_mode="never",
+    )
+    problem = setup_component(mission)
+
+    assert not problem.model.component.options["use_inner_solvers"]
+    assert isinstance(problem.model.component.nonlinear_solver, om.NonlinearRunOnce)
+
+
+def test_sizing_mission_group_with_fuel_adjustment_always_mode_activates_inner_solvers(
+    with_dummy_plugin_2,
+):
+    mission = OMMission(
+        propulsion_id="test.wrapper.propulsion.dummy_engine",
+        mission_file_path=DATA_FOLDER_PATH / "test_breguet.yml",
+        reference_area_variable="data:geometry:aircraft:reference_area",
+        use_inner_solvers=False,
+        adjust_fuel_solver_mode="always",
+        is_sizing=True,
+    )
+    problem = setup_component(mission)
+
+    assert problem.model.component.options["use_inner_solvers"]
+    assert not isinstance(problem.model.component.nonlinear_solver, om.NonlinearRunOnce)
 
 
 def test_mission_group_breguet_with_fuel_adjustment(cleanup, with_dummy_plugin_2):
